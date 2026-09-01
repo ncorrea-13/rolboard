@@ -18,11 +18,11 @@ Nace de dos necesidades combinadas:
 
 ## Documentos
 
-- [`arquitectura.md`](./arquitectura.md) — stack, despliegue, decisiones de infraestructura
-- [`modelo-de-datos.md`](./modelo-de-datos.md) — entidades, relaciones, esquema SQL
-- [`api.md`](./api.md) — endpoints REST
-- [`vault-indexador.md`](./vault-indexador.md) — cómo se lee e indexa el vault de Obsidian
-- [`decisiones.md`](./decisiones.md) — registro de decisiones tomadas y su razonamiento (ADR-style, liviano)
+- [`arquitectura.md`](./docs/ARCHITECTURE.md) — stack, despliegue, decisiones de infraestructura
+- [`modelo-de-datos.md`](/docs/DATA_MODEL.md) — entidades, relaciones, esquema SQL
+- [`api.md`](/docs/API.md) — endpoints REST
+- [`vault-indexador.md`](/docs/VAULT_INDEXER.md) — cómo se lee e indexa el vault de Obsidian
+- [`decisiones.md`](/docs/DECISIONS.md) — registro de decisiones tomadas y su razonamiento (ADR-style, liviano)
 
 ## Estado actual
 
