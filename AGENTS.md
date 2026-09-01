@@ -24,18 +24,18 @@ Aplica el mismo enfoque que en la migración de `homelab-status-api` (Python/Fas
 
 Toda la documentación vive en `docs/`. Antes de proponer cambios de arquitectura, modelo de datos, o alcance, **leé estos archivos**:
 
-- `docs/README.md` — qué es el proyecto y por qué existe
-- `docs/arquitectura.md` — stack, despliegue, decisiones de infra
-- `docs/modelo-de-datos.md` — entidades y esquema
-- `docs/api.md` — endpoints REST definidos
-- `docs/vault-indexador.md` — cómo se lee e indexa el vault de Obsidian
-- `docs/decisiones.md` — registro de decisiones ya tomadas, con su razonamiento — **no las vuelvas a proponer como si fueran nuevas**
+- `README.md` — qué es el proyecto y por qué existe
+- `docs/ARCHITECTURE.md` — stack, despliegue, decisiones de infra
+- `docs/DATA_MODEL.md` — entidades y esquema
+- `docs/API.md` — endpoints REST definidos
+- `docs/VAULT_INDEXER.md` — cómo se lee e indexa el vault de Obsidian
+- `docs/DECISIONS.md` — registro de decisiones ya tomadas, con su razonamiento — **no las vuelvas a proponer como si fueran nuevas**
 
 ## Estado del proyecto
 
-- Backend (`server/`) en Go, arrancando: `main.go` con servidor HTTP básico y conexión a SQLite ya funcionando (`GET /api/health` responde).
-- Modelo de datos definido pero **no implementado como migraciones SQL todavía**.
-- Vault de Obsidian ya auditado y normalizado (ver `docs/decisiones.md`, sección de audit) — 115 archivos con frontmatter YAML consistente, listos para ser leídos por el futuro indexador.
+- Backend (`server/`) en Go, arrancando: `server/cmd/server/main.go` con servidor HTTP básico y conexión a SQLite ya funcionando (`GET /api/health` responde).
+- Modelo de datos definido pero **no implementado como migraciones SQL todavía** — ver `docs/DATA_MODEL.md`.
+- Vault de Obsidian ya auditado y normalizado (ver `docs/DECISIONS.md`, sección "Audit y normalización del frontmatter del vault") — 115 archivos con frontmatter YAML consistente, listos para ser leídos por el futuro indexador.
 - Frontend (`client/`) — no iniciado aún.
 
 ## Naming del proyecto

@@ -4,11 +4,11 @@
 
 El dashboard **no reemplaza** el vault de Obsidian — lo complementa. El vault sigue siendo la fuente de verdad para contenido narrativo largo (historias, lore, reglas); el dashboard indexa la **metadata estructurada** (frontmatter YAML) para dar una vista rápida, consultable y navegable que Obsidian no ofrece de fábrica (estado de NPCs, quién está dónde, qué quests están activas).
 
-Cada entidad indexada guarda un campo `obsidian_path` que permite volver a la nota original en cualquier momento (ver `modelo-de-datos.md` y `api.md`).
+Cada entidad indexada guarda un campo `obsidian_path` que permite volver a la nota original en cualquier momento (ver `DATA_MODEL.md` y `API.md`).
 
 ## Estado real del vault (auditado)
 
-Un audit de frontmatter (ver `decisiones.md`) sobre 166 archivos con contenido indexable arrojó:
+Un audit de frontmatter (ver `DECISIONS.md`) sobre 166 archivos con contenido indexable arrojó:
 
 - **97% de cobertura de frontmatter** antes de cualquier normalización.
 - **0 inconsistencias críticas** de keys o valores.
@@ -31,7 +31,7 @@ vault/
 └── indexer.go      -- orquesta el flujo completo
 ```
 
-Es un paquete separado de `handlers`/`service` porque el indexado es un proceso batch, no un flujo de request/response típico — se dispara desde `POST /api/admin/reindex` (ver `api.md`), no responde a cada request del dashboard.
+Es un paquete separado de `handlers`/`service` porque el indexado es un proceso batch, no un flujo de request/response típico — se dispara desde `POST /api/admin/reindex` (ver `API.md`), no responde a cada request del dashboard.
 
 ## Flujo de indexado
 
@@ -120,7 +120,7 @@ lider: [[Wikilink]], opcional
 tags: [...]
 ```
 
-> `miembros_conocidos` **no se usa como fuente** — se calcula programáticamente desde `npc_groups` en la resolución (ver `modelo-de-datos.md`).
+> `miembros_conocidos` **no se usa como fuente** — se calcula programáticamente desde `npc_groups` en la resolución (ver `DATA_MODEL.md`).
 
 ### Sessions
 
@@ -172,7 +172,7 @@ El vault tiene casos de archivos con el mismo nombre en carpetas distintas (ej. 
 
 ## Render de notas individuales
 
-Ver `GET /api/notes/render` en `api.md`. Usa `goldmark` para convertir Markdown a HTML. Fuera del MVP de este endpoint: manejo completo de wikilinks y embeds de Obsidian dentro del render (`[[link]]` y `![[embed]]` no son Markdown estándar) — se deja como mejora incremental; el contenido se lee igual aunque esos elementos queden como texto plano por ahora.
+Ver `GET /api/notes/render` en `API.md`. Usa `goldmark` para convertir Markdown a HTML. Fuera del MVP de este endpoint: manejo completo de wikilinks y embeds de Obsidian dentro del render (`[[link]]` y `![[embed]]` no son Markdown estándar) — se deja como mejora incremental; el contenido se lee igual aunque esos elementos queden como texto plano por ahora.
 
 ## Link de apertura directa en Obsidian
 

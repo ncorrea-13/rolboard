@@ -61,7 +61,7 @@ No hay tooling de monorepo (Turborepo/Nx) — el proyecto es lo bastante chico c
 - Vive en una carpeta sincronizada por **Syncthing** entre varios dispositivos, incluido (o incluible) el ThinkCentre.
 - El backend **monta esa carpeta como volumen read-only** dentro del contenedor — nunca escribe sobre el vault.
 - **Codeberg** (repo privado) es el backup/versionado del vault, gestionado de forma independiente — el dashboard no depende de Codeberg para funcionar, solo lee del filesystem local sincronizado.
-- Ver [`vault-indexador.md`](./vault-indexador.md) para el detalle de cómo se lee y procesa el contenido.
+- Ver [`VAULT_INDEXER.md`](./VAULT_INDEXER.md) para el detalle de cómo se lee y procesa el contenido.
 
 ## Por qué NO WebSockets (por ahora)
 

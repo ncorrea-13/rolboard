@@ -2,7 +2,7 @@
 
 ## Alcance del MVP (núcleo)
 
-Entidades confirmadas para la primera versión. Quedan **fuera** del MVP: grafo de relaciones NPC↔NPC (odios, alianzas informales), mapa interactivo, tracker de combate en vivo — todo eso es capa 2/3, ver `decisiones.md`.
+Entidades confirmadas para la primera versión. Quedan **fuera** del MVP: grafo de relaciones NPC↔NPC (odios, alianzas informales), mapa interactivo, tracker de combate en vivo — todo eso es capa 2/3, ver `DECISIONS.md`.
 
 ## Diagrama de entidades
 
@@ -77,7 +77,7 @@ Facciones/organizaciones — entidad completa desde el MVP (no un campo de texto
 | notes                  | text           |       |
 | created_at, updated_at | timestamp      |       |
 
-> Nota de implementación: `miembros_conocidos` (grupo → NPCs) **no se guarda como campo propio** — se calcula con una query sobre `npc_groups`, poblada desde el campo `groups`/`faccion` del **NPC**. Evita duplicar la misma relación en dos lugares (ver `vault-indexador.md`).
+> Nota de implementación: `miembros_conocidos` (grupo → NPCs) **no se guarda como campo propio** — se calcula con una query sobre `npc_groups`, poblada desde el campo `groups`/`faccion` del **NPC**. Evita duplicar la misma relación en dos lugares (ver `VAULT_INDEXER.md`).
 
 ### locations
 
@@ -153,7 +153,7 @@ A partir de esa única ruta, el backend arma en tiempo de respuesta:
 - **Link de apertura en Obsidian**: `obsidian://open?vault=<nombre>&file=<ruta>` (el nombre del vault es config del servidor, no un campo de la base)
 - **Link de render server-side**: `GET /api/notes/render?path=<ruta>`
 
-Ver `vault-indexador.md` y `api.md` para el detalle de cada uno.
+Ver `VAULT_INDEXER.md` y `API.md` para el detalle de cada uno.
 
 ## Tablas puente (many-to-many)
 
