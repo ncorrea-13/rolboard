@@ -1,3 +1,4 @@
+// Package repository handles the SQLite connection, migrations, and per-entity data access.
 package repository
 
 import (

@@ -1,3 +1,4 @@
+// Package models holds the structs shared across repository, service, and handlers.
 package models
 
 type Campaign struct {

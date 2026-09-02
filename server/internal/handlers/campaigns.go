@@ -1,3 +1,4 @@
+// Package handlers exposes the REST API's HTTP endpoints.
 package handlers
 
 import (

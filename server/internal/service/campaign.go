@@ -1,3 +1,4 @@
+// Package service holds the business logic between the HTTP handlers and the repository.
 package service
 
 import (
