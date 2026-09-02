@@ -145,3 +145,27 @@ Se evaluaron: to-do básico, gestor de gastos personal, dashboard de hábitos, l
 **Por qué**: el usuario priorizó prolijidad y consistencia a largo plazo por sobre el ahorro de trabajo de escribir un indexador más tolerante. Ejecutado en dos fases con Claude Code (dry-run + confirmación antes de escribir): Fase 1 normalizó keys (95 archivos), Fase 2 completó campos deducibles desde prosa/nombre de archivo (20 archivos adicionales) — total 115 archivos modificados, 41 casos quedaron pendientes de revisión manual por ambigüedad genuina (sin inventar datos).
 
 **Decisión derivada 2 — no duplicar la relación grupo↔NPC en YAML**: pese a que el audit sugería agregar `miembros_conocidos` en el YAML de cada grupo, se decidió calcular esa relación programáticamente desde el campo `groups`/`faccion` de cada NPC, para evitar mantener la misma información en dos lugares con riesgo de desincronización.
+
+---
+
+## Modelo de datos: convenciones y constraints (antes de la primera migración)
+
+Discutido a fondo antes de escribir la primera migración SQL — ver `DATA_MODEL.md` para el detalle completo por tabla. Resumen de decisiones:
+
+**Migraciones versionadas**, no un `schema.sql` único: archivos numerados (`0001_...sql`, `0002_...sql`) embebidos con `go:embed`, tracking de versión aplicada en tabla `schema_migrations`. Por qué: aunque es un proyecto de un solo dev, el modelo tiene evolución esperada (capas 2/3 del roadmap) y versionar desde el día uno es más barato que migrar el enfoque después.
+
+**Baja lógica (`deleted_at`), no `DELETE` físico**: todas las tablas de entidad (no las puente) llevan `deleted_at TEXT NULL`. El `DELETE` físico queda como excepción rara. Por qué: decisión explícita del usuario, perder datos de campaña por error es peor que acumular filas inactivas — un vault de rol no genera volumen que justifique purgar.
+
+**FKs con `ON DELETE RESTRICT`, no `CASCADE`**: ninguna fila padre se puede borrar físicamente mientras algo la referencie, sea la FK nullable o no. Por qué: decisión explícita del usuario — mismo espíritu que la baja lógica, preferir bloquear antes que borrar en cadena por accidente. Requiere `PRAGMA foreign_keys = ON` por conexión (SQLite lo trae apagado por default).
+
+**`CHECK` constraints en campos enum-like** (`status`, `npc_kind`, `session_type`, `location_type`, etc.), no solo validación del lado Go. Por qué: decisión explícita del usuario — no depender de que todo el acceso a la DB pase por el código de la app para mantener la integridad de esos valores.
+
+**PK compuesta en tablas puente** (`PRIMARY KEY (a_id, b_id)`), no `id` surrogate + `UNIQUE` aparte. Por qué: es el estándar para many-to-many puro sin atributos propios que necesiten ser referenciados desde otro lado — ahorra una columna y el índice de unicidad sale gratis de la PK.
+
+**Timestamps como `TEXT` ISO 8601** (`datetime('now')`), no `INTEGER` epoch. Por qué: con el volumen del proyecto (~166 entidades) la diferencia de performance es irrelevante; gana la legibilidad de poder inspeccionar el `.db` a mano con `sqlite3` sin convertir fechas.
+
+**`obsidian_path` único por campaña** (`UNIQUE(campaign_id, obsidian_path)`), no único global. Por qué: la ruta tiene sentido dentro del scope de su campaña/vault — el root absoluto del vault (ej. `/home/ncorrea/Documents/Obsidian/Cosmere` en esta laptop) NO se guarda en la base, es config de servidor (env var) porque difiere entre esta laptop y el ThinkCentre.
+
+**Índices sobre FKs, diferidos**: SQLite no indexa automático las foreign keys comunes (solo PK y `UNIQUE`). Se documentó la falta pero se decidió no bloquear el MVP por esto — con ~166 entidades un table scan es instantáneo; se agregan cuando el volumen lo justifique.
+
+**Comparación con `homelab-status-api`**: se confirmó mismo enfoque de fondo (SQL crudo, `database/sql` + `modernc.org/sqlite`, sin ORM, sin atajos) pero no mismo nivel de aparataje — ese proyecto tiene 2 tablas sin relación FK real entre sí (apto para un poller de eventos append-only), mientras que `campaign-dashboard` tiene un grafo relacional de 7 entidades con jerarquía y many-to-many, que sí justifica migraciones versionadas, `CHECK`, y PK compuesta. El patrón de baja lógica (columna `active`) ya estaba validado en `homelab-status-api` (`internal/store/sqlite.go`, `RemoveService`), reforzando que no es sobre-ingeniería nueva sino un patrón que el usuario ya usa.
