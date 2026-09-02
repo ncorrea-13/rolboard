@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/ncorrea/campaign-dashboard/server/internal/service"
+	"github.com/ncorrea-13/rolboard/server/internal/service"
 )
 
 type Handlers struct {

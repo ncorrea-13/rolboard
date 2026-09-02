@@ -1,4 +1,4 @@
-module github.com/ncorrea/campaign-dashboard/server
+module github.com/ncorrea-13/rolboard/server
 
 go 1.27.0
 

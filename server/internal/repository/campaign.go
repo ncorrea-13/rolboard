@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/ncorrea/campaign-dashboard/server/internal/models"
+	"github.com/ncorrea-13/rolboard/server/internal/models"
 )
 
 type CampaignRepository struct {

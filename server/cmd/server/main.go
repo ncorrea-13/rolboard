@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/ncorrea/campaign-dashboard/server/internal/repository"
+	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
 func main() {

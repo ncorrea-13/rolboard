@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/ncorrea/campaign-dashboard/server/internal/models"
-	"github.com/ncorrea/campaign-dashboard/server/internal/repository"
+	"github.com/ncorrea-13/rolboard/server/internal/models"
+	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
 type CampaignService struct {
