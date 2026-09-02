@@ -1,22 +1,21 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
-	_ "modernc.org/sqlite"
+	"github.com/ncorrea/campaign-dashboard/server/internal/repository"
 )
 
 func main() {
-	db, err := sql.Open("sqlite", "./data/campaign.db")
+	db, err := repository.Open("./data/campaign.db")
 	if err != nil {
 		log.Fatalf("error abriendo la base de datos: %v", err)
 	}
 	defer db.Close()
 
-	if err := db.Ping(); err != nil {
-		log.Fatalf("error conectando a la base de datos: %v", err)
+	if err := repository.Migrate(db); err != nil {
+		log.Fatalf("error al realizar migraciones: %v", err)
 	}
 
 	mux := http.NewServeMux()
