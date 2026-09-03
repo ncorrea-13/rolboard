@@ -67,3 +67,17 @@ func (r *CampaignRepository) GetByID(ctx context.Context, id int64) (*models.Cam
 
 	return &c, nil
 }
+
+func (r *CampaignRepository) Update(ctx context.Context, id int64, c *models.Campaign) error {
+	err := r.db.QueryRowContext(ctx, `
+              UPDATE campaigns
+              SET name = ?, system = ?, description = ?, status = ?, updated_at = datetime('now')
+              WHERE id = ? AND deleted_at IS NULL
+              RETURNING id, name, system, description, status, created_at, updated_at`,
+		c.Name, c.System, c.Description, c.Status, id,
+	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.CreatedAt, &c.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return ErrNotFound
+	}
+	return err
+}

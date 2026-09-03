@@ -32,3 +32,7 @@ func (s *CampaignService) Create(ctx context.Context, campaign *models.Campaign)
 func (s *CampaignService) GetByID(ctx context.Context, id int64) (*models.Campaign, error) {
 	return s.repo.GetByID(ctx, id)
 }
+
+func (s *CampaignService) Update(ctx context.Context, id int64, campaign *models.Campaign) error {
+	return s.repo.Update(ctx, id, campaign)
+}

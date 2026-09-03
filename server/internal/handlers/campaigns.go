@@ -22,6 +22,19 @@ type CreateCampaignPayload struct {
 	Description string `json:"description"`
 }
 
+type UpdateCampaignPayload struct {
+	Name        string `json:"name"`
+	System      string `json:"system"`
+	Description string `json:"description"`
+	Status      string `json:"status"`
+}
+
+var validCampaignStatuses = map[string]bool{
+	"active":   true,
+	"paused":   true,
+	"finished": true,
+}
+
 func NewHandlers(campaigns *service.CampaignService) *Handlers {
 	return &Handlers{campaigns: campaigns}
 }
@@ -77,6 +90,48 @@ func (h *Handlers) GetCampaign(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		http.Error(w, "Error retrieving campaign", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(campaign)
+}
+
+func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var payload UpdateCampaignPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if payload.Name == "" || payload.System == "" {
+		http.Error(w, "Name and System are required fields", http.StatusBadRequest)
+		return
+	}
+	if !validCampaignStatuses[payload.Status] {
+		http.Error(w, "Invalid status", http.StatusBadRequest)
+		return
+	}
+
+	campaign := models.Campaign{
+		Name:        payload.Name,
+		System:      payload.System,
+		Description: payload.Description,
+		Status:      payload.Status,
+	}
+	err = h.campaigns.Update(r.Context(), id, &campaign)
+
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "Campaign not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error updating campaign", http.StatusInternalServerError)
 		return
 	}
 
