@@ -37,3 +37,12 @@ func (r *CampaignRepository) List(ctx context.Context) ([]models.Campaign, error
 	}
 	return campaigns, nil
 }
+
+func (r *CampaignRepository) Create(ctx context.Context, c *models.Campaign) error {
+	return r.db.QueryRowContext(ctx, `
+              INSERT INTO campaigns (name, system, description)
+              VALUES (?, ?, ?)
+              RETURNING id, name, system, description, status, created_at, updated_at`,
+		c.Name, c.System, c.Description,
+	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.CreatedAt, &c.UpdatedAt)
+}

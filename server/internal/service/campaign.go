@@ -24,3 +24,7 @@ func (s *CampaignService) List(ctx context.Context) ([]models.Campaign, error) {
 
 	return campaign, nil
 }
+
+func (s *CampaignService) Create(ctx context.Context, campaign *models.Campaign) error {
+	return s.repo.Create(ctx, campaign)
+}
