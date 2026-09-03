@@ -3,9 +3,12 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 )
+
+var ErrNotFound = errors.New("campaign not found")
 
 type CampaignRepository struct {
 	db *sql.DB
@@ -45,4 +48,22 @@ func (r *CampaignRepository) Create(ctx context.Context, c *models.Campaign) err
               RETURNING id, name, system, description, status, created_at, updated_at`,
 		c.Name, c.System, c.Description,
 	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.CreatedAt, &c.UpdatedAt)
+}
+
+func (r *CampaignRepository) GetByID(ctx context.Context, id int64) (*models.Campaign, error) {
+	c := models.Campaign{}
+	err := r.db.QueryRowContext(ctx, `
+	SELECT id, name, system, description, status, created_at, updated_at FROM campaigns
+		WHERE id = ? 
+		AND deleted_at IS NULL`,
+		id,
+	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.CreatedAt, &c.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return &c, nil
 }

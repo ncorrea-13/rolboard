@@ -9,6 +9,6 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.HandleFunc("GET /api/health", h.Health)
 	mux.Handle("GET /api/campaigns", http.HandlerFunc(h.ListCampaigns))
 	mux.HandleFunc("POST /api/campaigns", h.CreateCampaign)
-
+	mux.Handle("GET /api/campaigns/{id}", http.HandlerFunc(h.GetCampaign))
 	return mux
 }

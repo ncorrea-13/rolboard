@@ -28,3 +28,7 @@ func (s *CampaignService) List(ctx context.Context) ([]models.Campaign, error) {
 func (s *CampaignService) Create(ctx context.Context, campaign *models.Campaign) error {
 	return s.repo.Create(ctx, campaign)
 }
+
+func (s *CampaignService) GetByID(ctx context.Context, id int64) (*models.Campaign, error) {
+	return s.repo.GetByID(ctx, id)
+}
