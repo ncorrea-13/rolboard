@@ -14,34 +14,22 @@
 
 ---
 
-Structured, queryable view of a tabletop RPG campaign's state — NPCs, locations, quests, sessions — meant to sit next to an Obsidian vault, not replace it. The vault stays the source of truth for long-form prose and lore; this dashboard indexes its YAML frontmatter for fast lookup during a live session ("what did I promise this NPC?", "who's in this city right now?", "which quests are active?").
+View of a tabletop RPG campaign's state. It is built to seat next to an Obsidian Vault, not to replace it. It works more as a Dashboard while the vault works more as the original database for long-form prose and lore. This app indexes the YAML frontmatter as metadata for fast lookup during a live session. 
 
-Single-user tool for the DM/GM, not something players see. Runs on a homelab node, reachable only over Tailscale — no public exposure. See [`docs/DECISIONS.md`](docs/DECISIONS.md) for the reasoning behind every scope call.
+This is a personal project and tool for the DM/GM. Runs on a homelab to learn Go, infraestructure and ci/cd. It is though to scale to be used as an emulated cloud service.. See [`docs/DECISIONS.md`](docs/DECISIONS.md) for the reasoning behind every scope call.
 
 ## Stack
 
-| Layer | Tech |
-| --- | --- |
-| Backend | Go 1.27, `net/http` stdlib (no router framework) |
-| Database | SQLite (`modernc.org/sqlite`, no cgo) |
-| Migrations | Versioned SQL files, embedded with `go:embed` |
-| Frontend | React + TypeScript + Vite — not started yet |
+| Layer      | Tech                                             |
+| ---------- | ------------------------------------------------ |
+| Backend    | Go 1.27, `net/http` stdlib (no router framework) |
+| Database   | SQLite (`modernc.org/sqlite`, no cgo)            |
+| Migrations | Versioned SQL files, embedded with `go:embed`    |
+| Frontend   | React + TypeScript + Vite                        |
 
 Full rationale for each choice: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## Quick Start
-
-Only the backend exists so far — no container setup yet.
-
-```bash
-git clone git@github.com:ncorrea-13/rolboard.git
-cd rolboard/server
-go mod download
-go run ./cmd/server
-# → http://localhost:8080/api/health
-```
-
-SQLite migrations run automatically on startup. Database file lands at `server/data/campaign.db` (gitignored).
+SQLite migrations run automatically on startup. Database file lands at `server/data/campaign.db`.
 
 ## Configuration
 
@@ -51,10 +39,10 @@ No environment variables yet — the database path (`./data/campaign.db`) and po
 
 Implemented so far:
 
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/api/health` | Health check |
-| `GET` | `/api/campaigns` | List campaigns |
+| Method | Path             | Description    |
+| ------ | ---------------- | -------------- |
+| `GET`  | `/api/health`    | Health check   |
+| `GET`  | `/api/campaigns` | List campaigns |
 
 Full planned surface (Arcs, NPCs, Locations, Groups, Player Characters, Quests, Sessions, vault indexing): [`docs/API.md`](docs/API.md).
 
