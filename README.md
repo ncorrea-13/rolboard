@@ -33,7 +33,34 @@ SQLite migrations run automatically on startup. Database file lands at `server/d
 
 ## Configuration
 
-No environment variables yet — the database path (`./data/campaign.db`) and port (`:8080`) are hardcoded in [`cmd/server/main.go`](server/cmd/server/main.go).
+Environment variables (via `.env`):
+
+| Variable | Description                                    |
+| -------- |  ---------------------------------------------- |
+| `PORT`   |  Host port to expose server (container:8080)    |
+| `DB_PATH`|  Database path inside container (read-only) |
+
+## Docker / Podman
+
+Run with **Docker** or **Podman** (no differences in commands):
+
+```bash
+# Copy environment template
+cp .env.example .env
+
+# Build and run
+docker-compose up --build
+
+# Or with Podman
+podman-compose up --build
+```
+
+The container includes:
+- SQLite 
+- Automatic schema migrations on startup
+- Persistent data volume (`campaign_data`)
+
+Adjust `PORT` in `.env` to expose on a different host port:
 
 ## API
 
@@ -50,28 +77,28 @@ Full planned surface (Arcs, NPCs, Locations, Groups, Player Characters, Quests, 
 
 ```
 rolboard/
-├── docs/                          # architecture, data model, API, decisions (ADR-style)
-├── server/                        # backend (Go)
-│   ├── cmd/server/main.go         # entrypoint
+├── docs/ 
+├── server/
+│   ├── cmd/server/main.go 
 │   ├── internal/
-│   │   ├── handlers/              # HTTP handlers + router
+│   │   ├── handlers/      
 │   │   │   ├── campaigns.go
 │   │   │   ├── health.go
 │   │   │   └── router.go
 │   │   ├── service/campaign.go
-│   │   ├── repository/            # SQLite access + migrations
+│   │   ├── repository/    
 │   │   │   ├── campaign.go
 │   │   │   ├── db.go
 │   │   │   └── migrations/0001_initial_schema.sql
 │   │   └── models/campaign.go
 │   ├── go.mod
 │   └── go.sum
-├── AGENTS.md                      # working agreement for AI-assisted development
+├── AGENTS.md              
 └── README.md
 ```
 
 ## About
 
-Personal project, built as a deliberate Go-learning exercise — no shortcuts, no code-generation of the backend logic. See [`AGENTS.md`](AGENTS.md) for how AI assistance is scoped on this repo.
+Personal project, built as a deliberate Go-learning exercise no shortcuts, no code-generation of the backend logic. See [`AGENTS.md`](AGENTS.md) for how AI assistance is scoped on this repo.
 
 **Nicolás Correa** — [github.com/ncorrea-13](https://github.com/ncorrea-13)
