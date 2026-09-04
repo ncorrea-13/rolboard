@@ -17,13 +17,20 @@ import (
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
+	dbPath := os.Getenv("DB_PATH")
+	port := os.Getenv("PORT")
+
 	defer stop()
 
-	db, err := repository.Open("./data/campaign.db")
+	db, err := repository.Open(dbPath)
 	if err != nil {
 		log.Fatalf("error abriendo la base de datos: %v", err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("error cerrando DB: %v", err)
+		}
+	}()
 
 	if err := repository.Migrate(db); err != nil {
 		log.Fatalf("error al realizar migraciones: %v", err)
@@ -35,11 +42,11 @@ func main() {
 	mux := handlers.NewRouter(h)
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + port,
 		Handler: mux,
 	}
 	go func() {
-		log.Println("Listening on :8080")
+		log.Println("Listening on :" + port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
 		}

@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  server:
+    build: .
+    ports:
+      - "${PORT}:8080"
+    volumes:
+      - campaign_data:/data
+    environment:
+      DB_PATH: /data/campaign.db
+    restart: unless-stopped
+
+volumes:
+  campaign_data:
+    driver: local
