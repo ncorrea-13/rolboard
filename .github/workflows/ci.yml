@@ -18,9 +18,9 @@ jobs:
       - name: Build
         run: cd server && go build ./...
       - name: Lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v7
         with:
-          version: latest
+          version: v2.13
           working-directory: server
       - name: Vet
         run: cd server && go vet ./...
