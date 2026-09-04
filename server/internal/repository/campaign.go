@@ -24,7 +24,11 @@ func (r *CampaignRepository) List(ctx context.Context) ([]models.Campaign, error
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			return
+		}
+	}()
 
 	var campaigns []models.Campaign
 	for rows.Next() {

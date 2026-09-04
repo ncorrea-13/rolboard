@@ -47,7 +47,9 @@ func (h *Handlers) ListCampaigns(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(campaigns)
+	if err := json.NewEncoder(w).Encode(campaigns); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
 }
 
 func (h *Handlers) CreateCampaign(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +75,9 @@ func (h *Handlers) CreateCampaign(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(campaign)
+	if err := json.NewEncoder(w).Encode(campaign); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
 }
 
 func (h *Handlers) GetCampaign(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +98,9 @@ func (h *Handlers) GetCampaign(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(campaign)
+	if err := json.NewEncoder(w).Encode(campaign); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
 }
 
 func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +142,9 @@ func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(campaign)
+	if err := json.NewEncoder(w).Encode(campaign); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
 }
 
 func (h *Handlers) DeleteCampaign(w http.ResponseWriter, r *http.Request) {
