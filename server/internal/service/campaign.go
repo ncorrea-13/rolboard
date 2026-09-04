@@ -24,3 +24,19 @@ func (s *CampaignService) List(ctx context.Context) ([]models.Campaign, error) {
 
 	return campaign, nil
 }
+
+func (s *CampaignService) Create(ctx context.Context, campaign *models.Campaign) error {
+	return s.repo.Create(ctx, campaign)
+}
+
+func (s *CampaignService) GetByID(ctx context.Context, id int64) (*models.Campaign, error) {
+	return s.repo.GetByID(ctx, id)
+}
+
+func (s *CampaignService) Update(ctx context.Context, id int64, campaign *models.Campaign) error {
+	return s.repo.Update(ctx, id, campaign)
+}
+
+func (s *CampaignService) Delete(ctx context.Context, id int64) error {
+	return s.repo.Delete(ctx, id)
+}
