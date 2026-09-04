@@ -23,7 +23,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("error abriendo la base de datos: %v", err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Printf("error cerrando DB: %v", err)
+		}
+	}()
 
 	if err := repository.Migrate(db); err != nil {
 		log.Fatalf("error al realizar migraciones: %v", err)
