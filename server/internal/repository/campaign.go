@@ -81,3 +81,16 @@ func (r *CampaignRepository) Update(ctx context.Context, id int64, c *models.Cam
 	}
 	return err
 }
+
+func (r *CampaignRepository) Delete(ctx context.Context, id int64) error {
+	err := r.db.QueryRowContext(ctx, `
+              UPDATE campaigns
+              SET deleted_at = datetime('now')
+              WHERE id = ? AND deleted_at IS NULL
+              RETURNING id`,
+		id).Scan(&id)
+	if err == sql.ErrNoRows {
+		return ErrNotFound
+	}
+	return err
+}
