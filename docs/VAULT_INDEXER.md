@@ -14,7 +14,7 @@ Un audit de frontmatter (ver `DECISIONS.md`) sobre 166 archivos con contenido in
 - **0 inconsistencias críticas** de keys o valores.
 - Tras dos fases de trabajo con Claude Code (normalización de keys + completado de campos deducibles desde prosa/nombre de archivo): **115 archivos modificados**, quedando **41 pendientes** de resolución manual (casos genuinamente ambiguos: NPCs sin ubicación clara por estar muertos/desaparecidos/infiltrados, sesiones sin fecha documentada).
 
-Esto significa que el indexador puede confiar en el frontmatter como fuente primaria de datos estructurados, sin depender de parseo pesado de prosa.
+Esto significa que el indexador puede confiar en el frontmatter como fuente primaria de datos estructurados, sin depender de parseo pesado de prosa — con una excepción puntual: `session_npcs`/`session_pcs` sí escanean el body de las sesiones en busca de wikilinks sueltos (ver sección "Sessions" más abajo), porque ahí no hay campo de frontmatter que los reemplace.
 
 ## Ubicación del código
 
@@ -134,16 +134,23 @@ titulo: string, opcional
 pov: string, opcional
 ```
 
+> `session_npcs`/`session_pcs` **no vienen de un campo de frontmatter** — NPCs y PJs se mencionan como wikilinks sueltos en el **cuerpo** de la nota (`[[Yashin]] negocia con [[Threnn]]`), confirmado contra Ses. 12-14 del vault real. El indexer escanea el body completo con `ExtractWikilinks`, resuelve cada nombre contra el `NameIndex` y filtra por `Type` (`npc`/`player_character`) — cualquier otro wikilink en el body (locations, facciones, arcos, otras sesiones) se ignora a propósito. `quest_npcs`/`session_quests` no se resuelven así: Quests no tiene nota propia en el vault (ver más abajo), así que esas dos tablas puente se manejan solo por API/dashboard.
+
 ### Jugadores (Player Characters)
 
 ```yaml
 tipo: jugador
 jugador: string                   -- nombre real del jugador IRL
-personaje: [[Wikilink]]           -- a la ficha del PJ
 spren: [[Wikilink]], opcional     -- renombrado desde "spren_futuro"
 origen: [[Wikilink]], opcional
 estado: string, opcional
 ```
+
+> El nombre del PJ (`character_name`) **no** viene de un campo `personaje` — no existe en ninguna nota real del vault (confirmado contra las 5 fichas actuales de `Jugadores/`). Es directamente el nombre del archivo: `Jugadores/<Jugador>/<Personaje>.md` → `<Personaje>`, que además es como se lo linkea desde la prosa de las sesiones (`[[Yashin]]`, nunca `[[Ficha de Yashin]]`).
+
+### Quests
+
+No existe como nota de Obsidian — no hay carpeta `Quests/` ni ninguna nota con `tipo: quest`/`mision` en el vault real (confirmado). `quests` vive solo en la DB vía API/dashboard, por eso no tiene columna `obsidian_path` en el schema (ver `DATA_MODEL.md`) ni pasa por el indexer.
 
 ## Resolución de wikilinks
 

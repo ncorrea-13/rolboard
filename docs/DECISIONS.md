@@ -169,3 +169,37 @@ Discutido a fondo antes de escribir la primera migración SQL — ver `DATA_MODE
 **Índices sobre FKs, diferidos**: SQLite no indexa automático las foreign keys comunes (solo PK y `UNIQUE`). Se documentó la falta pero se decidió no bloquear el MVP por esto — con ~166 entidades un table scan es instantáneo; se agregan cuando el volumen lo justifique.
 
 **Comparación con `homelab-status-api`**: se confirmó mismo enfoque de fondo (SQL crudo, `database/sql` + `modernc.org/sqlite`, sin ORM, sin atajos) pero no mismo nivel de aparataje — ese proyecto tiene 2 tablas sin relación FK real entre sí (apto para un poller de eventos append-only), mientras que `campaign-dashboard` tiene un grafo relacional de 7 entidades con jerarquía y many-to-many, que sí justifica migraciones versionadas, `CHECK`, y PK compuesta. El patrón de baja lógica (columna `active`) ya estaba validado en `homelab-status-api` (`internal/store/sqlite.go`, `RemoveService`), reforzando que no es sobre-ingeniería nueva sino un patrón que el usuario ya usa.
+
+---
+
+## Frontend: styling en CSS plano + design tokens, no Tailwind ni CSS-in-JS
+
+**Decisión**: variables CSS (`custom properties`) centralizadas en `client/src/styles/tokens.css` para paleta y tipografía, más un `.css` por componente/pantalla (import directo, sin CSS Modules).
+
+**Por qué**: el mockup no tiene requisitos de theming dinámico ni de aislamiento estricto de estilos que justifiquen Tailwind (setup de PostCSS + purga) o CSS-in-JS (runtime, bundle extra). Con `client/` recién arrancado, la opción más chica que resuelve el problema es CSS nativo + variables — se reevalúa si el árbol de componentes crece mucho o aparece theming real (claro/oscuro intercambiable en vivo).
+
+---
+
+## Frontend: paleta "Obsidiana" (Shadesmar) + tipografía EB Garamond / Alegreya Sans / IBM Plex Mono
+
+**Decisión**: de las direcciones visuales exploradas en `screens/Cosmere DM Dashboard - Direcciones visuales.dc.html`, se tomó la paleta oscura "Obsidiana" (turno 2, opción 2a — negro neutro-verdoso `#07080A`/`#0E1114`/`#161A1D`, acento único cálido `#D08A3C`, colores de "cristal" por tipo de entidad NPC/spren/locación/facción-quest, semáforo de estado apagado con punto+palabra) aplicada al set completo de 6 pantallas (turno 3, opción 3a), combinando el tratamiento de resaltado 4a (sigilo teñido: el color vive en el tile de inicial) + 4d (subrayado del nombre) en simultáneo, y la tipografía 4e (EB Garamond para display, Alegreya Sans para texto de cuerpo, IBM Plex Mono para labels/datos).
+
+**Por qué**: decisión explícita del usuario tras revisar las alternativas exploradas en el documento de direcciones visuales — 4a+4d combinados dan más peso al color de tipo de entidad que cualquiera de las dos opciones por separado, sin tocar el fondo de la fila (que queda reservado para el estado). Tokens exactos en `client/src/styles/tokens.css`.
+
+**Nota**: el color de "cristal" (tipo de entidad) y el de "estado" son escalas separadas y no se combinan en el mismo elemento — regla ya establecida en el documento de direcciones visuales, ver sección "Reglas de uso del color" de 2a.
+
+---
+
+## Quests: solo DB/API, nunca nota de Obsidian — `quest_npcs`/`session_quests` se manejan por el dashboard
+
+**Decisión**: Quests no tiene ni va a tener nota propia en el vault. `quest_npcs` y `session_quests` se pueblan exclusivamente vía API/formularios del dashboard, nunca desde el indexer.
+
+**Por qué**: se confirmó contra el vault real que no existe carpeta `Quests/` ni ninguna nota `tipo: quest` — las quests viven solo en la cabeza del DM y en la prosa de las sesiones, nunca como entidad propia de Obsidian. Meter quests al vault implicaría diseñar un schema de frontmatter nuevo y retrofitear plot threads que hoy no son notas, para algo que el dashboard ya resuelve gratis con un form (multi-select de NPCs/quests). Coincide con que `quests` no tenga columna `obsidian_path` en `DATA_MODEL.md`.
+
+---
+
+## `session_npcs`/`session_pcs`: wikilinks del body de la sesión, no un campo de frontmatter
+
+**Decisión**: el indexer escanea el cuerpo completo de cada nota de sesión con `ExtractWikilinks`, resuelve cada nombre contra el `NameIndex` y filtra por `Type` (`npc`/`player_character`) para poblar `session_npcs`/`session_pcs`. Cualquier otro wikilink del body (locations, facciones, arcos, otras sesiones) se ignora a propósito, no se reporta como roto.
+
+**Por qué**: confirmado contra Ses. 12-14 del vault real — NPCs y PJs se mencionan como wikilinks sueltos en la prosa de la sesión, no hay (ni tiene sentido agregar) un campo `npcs:`/`pjs:` en el frontmatter para algo que ya se escribe naturalmente al narrar. De paso se corrigió un bug real: `player_character.CharacterName` dependía de un campo `personaje:` que no existe en ninguna de las 5 fichas reales de `Jugadores/` — el indexer las descartaba todas con error. Ahora usa directamente el nombre del archivo, que es además como se linkea al PJ desde la prosa.
