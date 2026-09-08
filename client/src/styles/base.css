@@ -55,8 +55,12 @@ body {
 }
 
 .btn-primary {
-  background: var(--accent-flame);
+  background: var(--accent-obsidian);
   color: var(--bg-canvas);
+}
+
+.btn-primary:hover {
+  background: var(--accent-obsidian-deep);
 }
 
 .btn-secondary {
@@ -72,7 +76,6 @@ body {
   border-radius: var(--radius-lg);
 }
 
-/* 4d — subrayado teñido bajo un título, para filas sin tile de identidad (4a) */
 .title-underline {
   display: inline-flex;
   flex-direction: column;

@@ -5,11 +5,17 @@
   position: relative;
 }
 
-.app-shell__toggle {
+.app-shell__toggle-zone {
   position: fixed;
-  top: 14px;
-  left: 14px;
+  top: 0;
+  left: 0;
   z-index: 50;
+  width: 52px;
+  height: 52px;
+  padding: 12px;
+}
+
+.app-shell__toggle {
   width: 30px;
   height: 30px;
   display: flex;
@@ -21,6 +27,13 @@
   color: var(--text-secondary);
   font-size: 13px;
   cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.app-shell__toggle-zone:hover .app-shell__toggle,
+.app-shell__toggle:focus-visible {
+  opacity: 1;
 }
 
 .app-shell__toggle:hover {

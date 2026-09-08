@@ -163,7 +163,7 @@
 
 .npc-detail__appearance-chip--active {
   color: var(--bg-canvas);
-  background: var(--accent-flame);
+  background: var(--accent-obsidian);
   border: none;
 }
 

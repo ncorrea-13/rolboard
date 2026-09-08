@@ -68,7 +68,7 @@
 
 .sessions-timeline__item-code {
   font: 500 14px var(--font-mono);
-  color: var(--accent-flame);
+  color: var(--accent-sky);
 }
 
 .sessions-timeline__item-date {

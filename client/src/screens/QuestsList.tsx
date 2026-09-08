@@ -3,6 +3,8 @@ import { quests, crystalColor } from "../data/mock";
 import { QuestStatusPill } from "../components/StatusPill";
 
 const priorityLabel = { 1: "P1", 2: "P2", 3: "P3" } as const;
+// Prioridad alta = roja (urgente), media = ámbar, baja = neutra — variación con sentido, no decorativa.
+const priorityColor = { 1: "var(--status-dead)", 2: "var(--accent-flame)", 3: "var(--text-secondary)" } as const;
 
 export function QuestsList({ onSelect }: { onSelect: (id: string) => void }) {
   return (
@@ -21,7 +23,9 @@ export function QuestsList({ onSelect }: { onSelect: (id: string) => void }) {
               </span>
               <div className="list-page__row-sub" style={{ marginTop: 6 }}>{q.hook}</div>
             </div>
-            <span className="list-page__badge">{priorityLabel[q.priority]}</span>
+            <span className="list-page__badge" style={{ color: priorityColor[q.priority], borderColor: priorityColor[q.priority] }}>
+              {priorityLabel[q.priority]}
+            </span>
             <QuestStatusPill status={q.status} />
           </div>
         ))}

@@ -15,13 +15,21 @@
   --accent-flame: #d08a3c;
   --accent-crystalline: #a87c9b;
 
-  /* cristal — tipo de entidad, nunca estado */
+  /* violeta — identidad principal (CTA, links, foco, marca), con variación tonal */
+  --accent-obsidian: #9b7bea;
+  --accent-obsidian-deep: #7457c9;
+  --accent-obsidian-soft: rgba(155, 123, 234, 0.16);
+
+  /* celeste — acento secundario (progreso, datos, no-CTA) */
+  --accent-sky: #5fa8d3;
+  /* teal — variedad extra para nav (Quests), sin superponerse con el resto */
+  --accent-teal: #4fb5a3;
+
   --crystal-npc: #c79a55;
   --crystal-spren: #6fa98c;
   --crystal-location: #6289a8;
   --crystal-faction-quest: #9a8fc0;
 
-  /* estado — semáforo apagado, siempre punto + palabra */
   --status-alive: #7fb58c;
   --status-missing: #c79a55;
   --status-dead: #c2665c;
@@ -30,8 +38,8 @@
   --status-paused-text: #8a9391;
 
   /* tipografía 4e */
-  --font-display: "EB Garamond", serif;
-  --font-body: "Alegreya Sans", sans-serif;
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
   --radius-md: 7px;

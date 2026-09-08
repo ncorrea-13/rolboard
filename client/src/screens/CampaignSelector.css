@@ -20,8 +20,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--accent-flame);
-  box-shadow: 0 0 7px rgba(208, 138, 60, 0.7);
+  background: var(--accent-obsidian);
+  box-shadow: 0 0 7px rgba(155, 123, 234, 0.7);
 }
 
 .campaign-selector__subtitle {

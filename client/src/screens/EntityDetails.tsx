@@ -31,7 +31,7 @@ export function ArcDetail({ arc, onBack }: { arc: Arc; onBack: () => void }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {arc.sessions.map((s) => (
                 <div key={s.n} style={{ display: "flex", gap: 12 }}>
-                  <span style={{ font: "500 13px var(--font-mono)", color: "var(--accent-flame)", width: 40 }}>{s.n}</span>
+                  <span style={{ font: "500 13px var(--font-mono)", color: "var(--accent-sky)", width: 40 }}>{s.n}</span>
                   <span style={{ flex: 1 }}>{s.text}</span>
                   <span style={{ font: "400 12px var(--font-mono)", color: "var(--text-secondary)" }}>{s.date}</span>
                 </div>

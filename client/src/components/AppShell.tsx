@@ -18,14 +18,16 @@ export function AppShell({ activeNav, onNavigate, onBackToCampaigns, children }:
 
   return (
     <div className="app-shell">
-      <button
-        className="app-shell__toggle"
-        onClick={() => setSidebarOpen((v) => !v)}
-        aria-label={sidebarOpen ? "Ocultar barra lateral" : "Mostrar barra lateral"}
-        aria-expanded={sidebarOpen}
-      >
-        ☰
-      </button>
+      <div className="app-shell__toggle-zone">
+        <button
+          className="app-shell__toggle"
+          onClick={() => setSidebarOpen((v) => !v)}
+          aria-label={sidebarOpen ? "Ocultar barra lateral" : "Mostrar barra lateral"}
+          aria-expanded={sidebarOpen}
+        >
+          ☰
+        </button>
+      </div>
       <div className={`app-shell__sidebar${sidebarOpen ? "" : " app-shell__sidebar--closed"}`}>
         <Sidebar campaignName="Shadesmar" active={activeNav} onNavigate={onNavigate} onBack={onBackToCampaigns} />
       </div>
