@@ -1,0 +1,177 @@
+.npc-detail {
+  overflow: hidden;
+}
+
+.npc-detail__header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.npc-detail__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font: 500 10px var(--font-mono);
+  letter-spacing: 0.11em;
+  color: var(--text-secondary);
+}
+
+.npc-detail__breadcrumb-type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.npc-detail__breadcrumb-link {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.npc-detail__breadcrumb-link:hover {
+  color: var(--text-body-strong);
+}
+
+.npc-detail__identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 11px;
+}
+
+.npc-detail__identity > :first-child {
+  flex: 1;
+}
+
+.npc-detail__header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.npc-detail__body {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+}
+
+.npc-detail__col--main {
+  padding: 19px 24px;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.npc-detail__col--side {
+  padding: 19px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.npc-detail__desc {
+  font: 400 14px/1.75 var(--font-body);
+  color: var(--text-body);
+  margin-top: 8px;
+}
+
+.npc-detail__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 19px;
+}
+
+.npc-detail__stat {
+  padding: 12px 14px;
+  border-radius: 6px;
+}
+
+.npc-detail__stat-value {
+  font: 500 13.5px var(--font-body);
+  color: var(--text-body-strong);
+  margin-top: 6px;
+}
+
+.npc-detail__links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.npc-detail__link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-radius: 6px;
+  padding: 11px 13px;
+}
+
+.npc-detail__link-role {
+  font: 500 11.5px var(--font-mono);
+  color: var(--text-secondary);
+  width: 78px;
+}
+
+.npc-detail__link-name {
+  flex: 1;
+  font: 500 13.5px var(--font-body);
+  color: var(--text-body-strong);
+}
+
+.npc-detail__link-note {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.npc-detail__location {
+  font: 400 13px/1.9 var(--font-mono);
+  color: var(--text-secondary);
+  margin-top: 7px;
+}
+
+.npc-detail__faction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: 6px;
+  padding: 11px 13px;
+  margin-top: 7px;
+}
+
+.npc-detail__faction-role {
+  font: 400 11.5px var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.npc-detail__appearances {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 7px;
+}
+
+.npc-detail__appearance-chip {
+  font: 500 12px var(--font-mono);
+  color: var(--text-body-strong);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  padding: 4px 9px;
+  border-radius: 4px;
+}
+
+.npc-detail__appearance-chip--active {
+  color: var(--bg-canvas);
+  background: var(--accent-flame);
+  border: none;
+}
+
+.npc-detail__quest {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-top: 7px;
+}

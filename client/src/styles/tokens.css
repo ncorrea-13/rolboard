@@ -1,0 +1,39 @@
+:root {
+  /* base — obsidiana, negro neutro-verdoso, no azul */
+  --bg-canvas: #07080a;
+  --bg-surface: #0e1114;
+  --bg-elevated: #161a1d;
+  --border: #23282c;
+  --border-subtle: #1b1f22;
+  --border-hairline: #131719;
+
+  /* luz */
+  --text-primary: #f2f4f3;
+  --text-secondary: #8a9391;
+  --text-body: #c6cdcb;
+  --text-body-strong: #e8eae9;
+  --accent-flame: #d08a3c;
+  --accent-crystalline: #a87c9b;
+
+  /* cristal — tipo de entidad, nunca estado */
+  --crystal-npc: #c79a55;
+  --crystal-spren: #6fa98c;
+  --crystal-location: #6289a8;
+  --crystal-faction-quest: #9a8fc0;
+
+  /* estado — semáforo apagado, siempre punto + palabra */
+  --status-alive: #7fb58c;
+  --status-missing: #c79a55;
+  --status-dead: #c2665c;
+  --status-dead-border: #2e2422;
+  --status-paused-dot: #727b79;
+  --status-paused-text: #8a9391;
+
+  /* tipografía 4e */
+  --font-display: "EB Garamond", serif;
+  --font-body: "Alegreya Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --radius-md: 7px;
+  --radius-lg: 9px;
+}
