@@ -35,7 +35,7 @@ Toda la documentación vive en `docs/`. Antes de proponer cambios de arquitectur
 
 - Backend (`server/`) en Go: `server/cmd/server/main.go` con servidor HTTP, graceful shutdown (`signal.NotifyContext`) y conexión a SQLite funcionando. Wiring por capas (repo → service → handler → router, sin DI framework, mismo patrón que `homelab-status-api`).
 - Primera migración SQL aplicada (`server/internal/repository/migrations/0001_initial_schema.sql`, embebida con `go:embed`, tracking en `schema_migrations`) — ver `docs/DATA_MODEL.md` para el detalle del esquema.
-- Endpoints implementados: `GET /api/health`, `GET /api/campaigns` (listado). Resto de `campaigns` (Create/Get/Update/Delete) y el resto de las entidades siguen pendientes — ver `docs/API.md`.
+- Endpoints implementados: `GET /api/health`, CRUD completo de `campaigns` (`GET /api/campaigns`, `POST /api/campaigns`, `GET/PUT/DELETE /api/campaigns/{id}`). Resto de las entidades (`arcs`, `npcs`, `locations`, `groups`, `player-characters`, `quests`, `sessions`) siguen pendientes — ver `docs/API.md`.
 - Vault de Obsidian ya auditado y normalizado (ver `docs/DECISIONS.md`, sección "Audit y normalización del frontmatter del vault") — 115 archivos con frontmatter YAML consistente, listos para ser leídos por el futuro indexador.
 - Frontend (`client/`) — no iniciado aún.
 
