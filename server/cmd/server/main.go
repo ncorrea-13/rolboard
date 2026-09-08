@@ -9,9 +9,12 @@ import (
 	"syscall"
 	"time"
 
+	"strconv"
+
 	"github.com/ncorrea-13/rolboard/server/internal/handlers"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 	"github.com/ncorrea-13/rolboard/server/internal/service"
+	"github.com/ncorrea-13/rolboard/server/internal/vault"
 )
 
 func main() {
@@ -19,6 +22,11 @@ func main() {
 
 	dbPath := os.Getenv("DB_PATH")
 	port := os.Getenv("PORT")
+	vaultPath := os.Getenv("VAULT_PATH")
+	campaignID, err := strconv.ParseInt(os.Getenv("CAMPAIGN_ID"), 10, 64)
+	if err != nil {
+		log.Fatalf("CAMPAIGN_ID inválido o faltante: %v", err)
+	}
 
 	defer stop()
 
@@ -36,9 +44,35 @@ func main() {
 		log.Fatalf("error al realizar migraciones: %v", err)
 	}
 
-	repo := repository.NewCampaignRepository(db)
-	svc := service.NewCampaignService(repo)
-	h := handlers.NewHandlers(svc)
+	campaignRepo := repository.NewCampaignRepository(db)
+	campaignSvc := service.NewCampaignService(campaignRepo)
+
+	arcRepo := repository.NewArcRepository(db)
+	arcSvc := service.NewArcService(arcRepo)
+
+	locationRepo := repository.NewLocationRepository(db)
+	locationSvc := service.NewLocationService(locationRepo)
+
+	npcRepo := repository.NewNPCRepository(db)
+	npcSvc := service.NewNPCService(npcRepo)
+
+	pcRepo := repository.NewPlayerCharacterRepository(db)
+	pcSvc := service.NewPlayerCharacterService(pcRepo)
+
+	questRepo := repository.NewQuestRepository(db)
+	questSvc := service.NewQuestService(questRepo)
+
+	sessionRepo := repository.NewSessionRepository(db)
+	sessionSvc := service.NewSessionService(sessionRepo)
+
+	groupRepo := repository.NewGroupRepository(db)
+	groupSvc := service.NewGroupService(groupRepo)
+
+	indexer := vault.NewIndexer(vaultPath, campaignID, db)
+	adminSvc := service.NewAdminService(indexer)
+
+	h := handlers.NewHandlers(campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc)
+
 	mux := handlers.NewRouter(h)
 
 	srv := &http.Server{

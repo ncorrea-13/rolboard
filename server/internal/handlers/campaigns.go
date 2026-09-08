@@ -9,12 +9,7 @@ import (
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
-	"github.com/ncorrea-13/rolboard/server/internal/service"
 )
-
-type Handlers struct {
-	campaigns *service.CampaignService
-}
 
 type CreateCampaignPayload struct {
 	Name        string `json:"name"`
@@ -33,10 +28,6 @@ var validCampaignStatuses = map[string]bool{
 	"active":   true,
 	"paused":   true,
 	"finished": true,
-}
-
-func NewHandlers(campaigns *service.CampaignService) *Handlers {
-	return &Handlers{campaigns: campaigns}
 }
 
 func (h *Handlers) ListCampaigns(w http.ResponseWriter, r *http.Request) {

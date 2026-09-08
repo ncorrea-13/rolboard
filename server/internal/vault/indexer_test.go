@@ -1,0 +1,230 @@
+package vault
+
+import (
+	"context"
+	"database/sql"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/ncorrea-13/rolboard/server/internal/models"
+	"github.com/ncorrea-13/rolboard/server/internal/repository"
+	_ "modernc.org/sqlite"
+)
+
+func setupIndexerTestDB(t *testing.T) *sql.DB {
+	db, err := sql.Open("sqlite", "file::memory:?cache=shared")
+	if err != nil {
+		t.Fatalf("Failed to open test DB: %v", err)
+	}
+	if err := repository.Migrate(db); err != nil {
+		t.Fatalf("Failed to migrate test DB: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Logf("error closing test DB: %v", err)
+		}
+	})
+	return db
+}
+
+func writeVaultFile(t *testing.T, root, relPath, content string) {
+	t.Helper()
+	full := filepath.Join(root, relPath)
+	if err := os.MkdirAll(filepath.Dir(full), 0755); err != nil {
+		t.Fatalf("MkdirAll failed: %v", err)
+	}
+	if err := os.WriteFile(full, []byte(content), 0644); err != nil {
+		t.Fatalf("WriteFile failed: %v", err)
+	}
+}
+
+func TestReindexCreatesEntitiesAndResolvesRelations(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "Locaciones/Roshar.md", "---\ntipo: planeta\nrelevancia: alta\n---\nEl mundo principal.")
+	writeVaultFile(t, root, "Locaciones/Ciudades/Kharbranth.md", "---\ntipo: ciudad\nrelevancia: media\nparent: \"[[Roshar]]\"\n---\nCiudad puerto.")
+	writeVaultFile(t, root, "Grupos/Bridge Four.md", "---\ntipo: faccion\nalineacion: neutral\n---\nEscuadrón de puentes.")
+	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\ncurrent_location: \"[[Kharbranth]]\"\nfaccion: \"[[Bridge Four]]\"\n---\nCapitán de Bridge Four.")
+	writeVaultFile(t, root, "Arcos/Arco 1.md", "---\ntipo: arco\narco: 1\ntitulo: Arco Uno\nstatus: en curso\n---\nPrimer arco.")
+	writeVaultFile(t, root, "Sesiones/Sesion 1.md", "---\ntipo: sesion\nnumero: 1\narco: \"[[Arco 1]]\"\ndate: 2026-01-01\nestado: jugada\n---\nPrimera sesión.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+
+	if len(result.Errors) != 0 {
+		t.Errorf("Expected no errors, got %v", result.Errors)
+	}
+	if len(result.UnresolvedWikilinks) != 0 {
+		t.Errorf("Expected no unresolved wikilinks, got %v", result.UnresolvedWikilinks)
+	}
+	if result.Processed != 6 {
+		t.Errorf("Expected 6 processed entities, got %d", result.Processed)
+	}
+
+	locRepo := repository.NewLocationRepository(db)
+	locations, err := locRepo.List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List locations failed: %v", err)
+	}
+	var roshar, kharbranth *models.Location
+	for i := range locations {
+		switch locations[i].Name {
+		case "Roshar":
+			roshar = &locations[i]
+		case "Kharbranth":
+			kharbranth = &locations[i]
+		}
+	}
+	if roshar == nil || kharbranth == nil {
+		t.Fatalf("Expected both locations to exist, got %+v", locations)
+	}
+	if kharbranth.ParentLocationID == nil || *kharbranth.ParentLocationID != roshar.ID {
+		t.Errorf("Expected Kharbranth.ParentLocationID = %d, got %v", roshar.ID, kharbranth.ParentLocationID)
+	}
+
+	npcRepo := repository.NewNPCRepository(db)
+	npcs, err := npcRepo.List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List npcs failed: %v", err)
+	}
+	if len(npcs) != 1 {
+		t.Fatalf("Expected 1 npc, got %d", len(npcs))
+	}
+	kaladin := npcs[0]
+	if kaladin.LocationID == nil || *kaladin.LocationID != kharbranth.ID {
+		t.Errorf("Expected Kaladin.LocationID = %d, got %v", kharbranth.ID, kaladin.LocationID)
+	}
+
+	groupRepo := repository.NewGroupRepository(db)
+	groups, err := groupRepo.List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List groups failed: %v", err)
+	}
+	if len(groups) != 1 {
+		t.Fatalf("Expected 1 group, got %d", len(groups))
+	}
+
+	members, err := groupRepo.GetMembers(ctx, groups[0].ID)
+	if err != nil {
+		t.Fatalf("GetMembers failed: %v", err)
+	}
+	if len(members) != 1 || members[0].NPCID != kaladin.ID {
+		t.Errorf("Expected Kaladin as sole group member, got %+v", members)
+	}
+
+	sessionRepo := repository.NewSessionRepository(db)
+	sessions, err := sessionRepo.List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List sessions failed: %v", err)
+	}
+	if len(sessions) != 1 {
+		t.Fatalf("Expected 1 session, got %d", len(sessions))
+	}
+
+	arcRepo := repository.NewArcRepository(db)
+	arcs, err := arcRepo.List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List arcs failed: %v", err)
+	}
+	if len(arcs) != 1 {
+		t.Fatalf("Expected 1 arc, got %d", len(arcs))
+	}
+	if sessions[0].ArcID == nil || *sessions[0].ArcID != arcs[0].ID {
+		t.Errorf("Expected session.ArcID = %d, got %v", arcs[0].ID, sessions[0].ArcID)
+	}
+}
+
+func TestReindexUnresolvedWikilink(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\ncurrent_location: \"[[Ciudad Inexistente]]\"\n---\nSin ubicación real.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+
+	if result.Processed != 1 {
+		t.Errorf("Expected 1 processed (npc still created), got %d", result.Processed)
+	}
+	if len(result.UnresolvedWikilinks) != 1 || result.UnresolvedWikilinks[0] != "Ciudad Inexistente" {
+		t.Errorf("Expected 1 unresolved wikilink 'Ciudad Inexistente', got %v", result.UnresolvedWikilinks)
+	}
+
+	npcRepo := repository.NewNPCRepository(db)
+	npcs, err := npcRepo.List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List npcs failed: %v", err)
+	}
+	if len(npcs) != 1 || npcs[0].LocationID != nil {
+		t.Errorf("Expected npc created with nil LocationID, got %+v", npcs)
+	}
+}
+
+func TestReindexSkipsUnmappedLocationType(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "Locaciones/Rara.md", "---\ntipo: dimension-desconocida\nrelevancia: baja\n---\nAlgo raro.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+
+	if result.Processed != 0 {
+		t.Errorf("Expected 0 processed, got %d", result.Processed)
+	}
+	if len(result.Errors) != 1 {
+		t.Errorf("Expected 1 error for unmapped location type, got %v", result.Errors)
+	}
+}
+
+func TestReindexIgnoresFilesWithoutFrontmatter(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "Jugadores/Nico/Historia.md", "Prosa narrativa sin frontmatter.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+
+	if result.Processed != 0 || len(result.Errors) != 0 {
+		t.Errorf("Expected file without frontmatter to be silently skipped, got %+v", result)
+	}
+}

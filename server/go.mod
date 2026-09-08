@@ -2,7 +2,10 @@ module github.com/ncorrea-13/rolboard/server
 
 go 1.27.0
 
-require modernc.org/sqlite v1.57.0
+require (
+	gopkg.in/yaml.v3 v3.0.1
+	modernc.org/sqlite v1.57.0
+)
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
