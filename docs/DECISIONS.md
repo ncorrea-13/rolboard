@@ -188,6 +188,13 @@ Discutido a fondo antes de escribir la primera migración SQL — ver `DATA_MODE
 
 **Nota**: el color de "cristal" (tipo de entidad) y el de "estado" son escalas separadas y no se combinan en el mismo elemento — regla ya establecida en el documento de direcciones visuales, ver sección "Reglas de uso del color" de 2a.
 
+**Actualizado en sesión posterior** (el documento de direcciones visuales ya no existe, se usó y se borró — ver `AGENTS.md`):
+- **Tipografía**: EB Garamond + Alegreya Sans reemplazadas por **Fraunces** (display) + **Inter** (cuerpo) — la combo original leía como "mockup fantasy genérico" para una herramienta que se usa en vivo durante la sesión (legibilidad en tablas/listas a 11-13px pesa más que tono literario). IBM Plex Mono se mantiene para datos/labels.
+- **Filete vertical de color eliminado en todos lados**, incluida la sidebar (el ítem activo tenía `inset 2px 0 0 var(--accent-flame)`, la misma línea vertical ya descartada en 4a-4d) — reemplazado por subrayado (mismo patrón 4d) bajo el label del ítem activo.
+- **Paleta de acentos ampliada**, ya no un único ámbar de CTA: `--accent-obsidian` (violeta, identidad principal — CTA/links/marca/glow), `--accent-obsidian-deep` (hover), `--accent-sky` (celeste — barras de progreso y códigos de sesión, dato no-CTA), `--accent-teal` (variedad extra en nav). El ámbar (`--accent-flame`) y el rojo (`--status-dead`) se mantienen pero acotados a usos con significado real (ej. prioridad de quest P1=rojo/P2=ámbar/P3=neutro, barra "editando sin guardar" en NpcEdit) — no decorativos sueltos.
+- **Cada ítem del sidebar tiene un color distinto y notorio** (ícono + marcador + subrayado activo comparten el mismo color por ítem) para que se distingan a simple vista, no solo los que tienen "cristal" semántico (NPCs/Locaciones/Facciones/Quests) — Resumen/Arcos/Sesiones/Jugadores también llevan color propio aunque no tengan tipo-cristal asociado.
+- **Íconos de sidebar**: `lucide-react` (íconos de línea reales, no emoji a color ni glyphs Unicode sueltos) — se probaron ambas alternativas antes y no daban el tono correcto para una herramienta de DM seria.
+
 ---
 
 ## Quests: solo DB/API, nunca nota de Obsidian — `quest_npcs`/`session_quests` se manejan por el dashboard
