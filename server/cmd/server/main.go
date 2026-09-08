@@ -9,9 +9,12 @@ import (
 	"syscall"
 	"time"
 
+	"strconv"
+
 	"github.com/ncorrea-13/rolboard/server/internal/handlers"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 	"github.com/ncorrea-13/rolboard/server/internal/service"
+	"github.com/ncorrea-13/rolboard/server/internal/vault"
 )
 
 func main() {
@@ -19,6 +22,11 @@ func main() {
 
 	dbPath := os.Getenv("DB_PATH")
 	port := os.Getenv("PORT")
+	vaultPath := os.Getenv("VAULT_PATH")
+	campaignID, err := strconv.ParseInt(os.Getenv("CAMPAIGN_ID"), 10, 64)
+	if err != nil {
+		log.Fatalf("CAMPAIGN_ID inválido o faltante: %v", err)
+	}
 
 	defer stop()
 
@@ -60,7 +68,10 @@ func main() {
 	groupRepo := repository.NewGroupRepository(db)
 	groupSvc := service.NewGroupService(groupRepo)
 
-	h := handlers.NewHandlers(campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc)
+	indexer := vault.NewIndexer(vaultPath, campaignID, db)
+	adminSvc := service.NewAdminService(indexer)
+
+	h := handlers.NewHandlers(campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc)
 
 	mux := handlers.NewRouter(h)
 

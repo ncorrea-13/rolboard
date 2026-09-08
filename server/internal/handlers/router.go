@@ -55,5 +55,7 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("PUT /api/groups/{id}", http.HandlerFunc(h.UpdateGroup))
 	mux.Handle("DELETE /api/groups/{id}", http.HandlerFunc(h.DeleteGroup))
 
+	mux.HandleFunc("POST /api/admin/reindex", h.Reindex)
+
 	return mux
 }
