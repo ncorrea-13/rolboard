@@ -36,9 +36,14 @@ func main() {
 		log.Fatalf("error al realizar migraciones: %v", err)
 	}
 
-	repo := repository.NewCampaignRepository(db)
-	svc := service.NewCampaignService(repo)
-	h := handlers.NewHandlers(svc)
+	campaignRepo := repository.NewCampaignRepository(db)
+	campaignSvc := service.NewCampaignService(campaignRepo)
+
+	arcRepo := repository.NewArcRepository(db)
+	arcSvc := service.NewArcService(arcRepo)
+
+	h := handlers.NewHandlers(campaignSvc, arcSvc)
+
 	mux := handlers.NewRouter(h)
 
 	srv := &http.Server{
