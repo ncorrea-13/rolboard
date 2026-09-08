@@ -12,7 +12,6 @@ import (
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
-// Result resume lo que hizo un Reindex — ver POST /api/admin/reindex en API.md.
 type Result struct {
 	Processed           int
 	UnresolvedWikilinks []string
@@ -20,8 +19,6 @@ type Result struct {
 	Errors              []string
 }
 
-// Indexer orquesta el indexado completo de un vault para una única campaña.
-// Un vault = una campaña fija (decisión explícita del usuario, ver AGENTS.md).
 type Indexer struct {
 	root             string
 	campaignID       int64
@@ -48,10 +45,6 @@ func NewIndexer(root string, campaignID int64, db *sql.DB) *Indexer {
 	}
 }
 
-// locationTypeMap traduce el "tipo" del frontmatter del vault al enum real
-// de la columna location_type (CHECK constraint en 0001_initial_schema.sql).
-// estructura->site y shadesmar->plane son mapeos aproximados, confirmados
-// con el usuario (no hay un tipo 1:1 en el schema actual).
 var locationTypeMap = map[string]string{
 	"ciudad":     "city",
 	"región":     "region",
@@ -60,8 +53,6 @@ var locationTypeMap = map[string]string{
 	"shadesmar":  "plane",
 }
 
-// firstWikilinkTarget devuelve el nombre real dentro de un campo frontmatter
-// tipo "[[Nombre]]" ("" si el campo está vacío o no tiene wikilink).
 func firstWikilinkTarget(raw string) string {
 	links := ExtractWikilinks(raw)
 	if len(links) == 0 {
@@ -85,12 +76,9 @@ type stagedNPC struct {
 type stagedSession struct {
 	id   int64
 	arco string
+	body string
 }
 
-// Reindex hace las dos pasadas descritas en VAULT_INDEXER.md: primero crea
-// cada entidad (sin resolver relaciones todavía) y las registra en el
-// índice de nombres; después resuelve los wikilinks a IDs reales y
-// actualiza las FKs / tablas puente.
 func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	result := &Result{}
 
@@ -117,10 +105,8 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 			continue
 		}
 
-		raw, _, err := Split(content)
+		raw, body, err := Split(content)
 		if err != nil {
-			// Sin frontmatter -> contenido narrativo asociado (ej. Historia.md
-			// de un jugador), no es una entidad propia. Se ignora, no es error.
 			continue
 		}
 
@@ -231,7 +217,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				continue
 			}
 			idx.Add(IndexEntry{ID: session.ID, Name: name, Type: "session", RawPath: relPath})
-			stagedSessions = append(stagedSessions, stagedSession{id: session.ID, arco: firstWikilinkTarget(fm.Arco)})
+			stagedSessions = append(stagedSessions, stagedSession{id: session.ID, arco: firstWikilinkTarget(fm.Arco), body: string(body)})
 			result.Processed++
 
 		case "arc":
@@ -256,22 +242,12 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 		case "player_character":
 			fm, err := ParseJugador(raw)
 			if err != nil {
-				// Historia.md / Avances.md / la ficha del personaje en sí no
-				// tienen "tipo: jugador" -> no son la nota jugador. Se ignoran.
-				continue
-			}
-			// ponytail: CharacterName queda como el nombre crudo del wikilink de
-			// "personaje", no se resuelve contra la ficha real todavía (matching
-			// de Jugadores/<Nombre>/ descrito en VAULT_INDEXER.md queda pendiente).
-			characterName := firstWikilinkTarget(fm.Personaje)
-			if characterName == "" {
-				result.Errors = append(result.Errors, fmt.Sprintf("%s: sin campo 'personaje'", relPath))
 				continue
 			}
 			pc := &models.PlayerCharacter{
 				CampaignID:    ix.campaignID,
 				PlayerName:    fm.Jugador,
-				CharacterName: characterName,
+				CharacterName: name,
 				ObsidianPath:  &obsidianPath,
 			}
 			if err := ix.playerCharacters.Create(ctx, pc); err != nil {
@@ -361,22 +337,48 @@ func (ix *Indexer) resolveNPCs(ctx context.Context, idx *NameIndex, staged []sta
 
 func (ix *Indexer) resolveSessions(ctx context.Context, idx *NameIndex, staged []stagedSession, result *Result) {
 	for _, ss := range staged {
-		if ss.arco == "" {
+		if ss.arco != "" {
+			arcID, err := Resolve(idx, ss.arco, "arc")
+			if err != nil {
+				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, ss.arco)
+			} else {
+				session, err := ix.sessions.GetByID(ctx, ss.id)
+				if err != nil {
+					result.Errors = append(result.Errors, err.Error())
+				} else {
+					session.ArcID = &arcID
+					if err := ix.sessions.Update(ctx, ss.id, session); err != nil {
+						result.Errors = append(result.Errors, err.Error())
+					}
+				}
+			}
+		}
+
+		ix.linkSessionEntities(ctx, idx, ss, result)
+	}
+}
+
+func (ix *Indexer) linkSessionEntities(ctx context.Context, idx *NameIndex, ss stagedSession, result *Result) {
+	seen := make(map[string]bool)
+	for _, link := range ExtractWikilinks(ss.body) {
+		if seen[link] {
 			continue
 		}
-		arcID, err := Resolve(idx, ss.arco, "arc")
-		if err != nil {
-			result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, ss.arco)
-			continue
-		}
-		session, err := ix.sessions.GetByID(ctx, ss.id)
-		if err != nil {
-			result.Errors = append(result.Errors, err.Error())
-			continue
-		}
-		session.ArcID = &arcID
-		if err := ix.sessions.Update(ctx, ss.id, session); err != nil {
-			result.Errors = append(result.Errors, err.Error())
+		seen[link] = true
+
+		for _, entry := range idx.Lookup(link) {
+			var query string
+			switch entry.Type {
+			case "npc":
+				query = `INSERT OR IGNORE INTO session_npcs (session_id, npc_id) VALUES (?, ?)`
+			case "player_character":
+				query = `INSERT OR IGNORE INTO session_pcs (session_id, pc_id) VALUES (?, ?)`
+			default:
+				continue
+			}
+			if _, err := ix.db.ExecContext(ctx, query, ss.id, entry.ID); err != nil {
+				result.Errors = append(result.Errors, err.Error())
+			}
 		}
 	}
 }

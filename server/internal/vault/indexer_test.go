@@ -228,3 +228,67 @@ func TestReindexIgnoresFilesWithoutFrontmatter(t *testing.T) {
 		t.Errorf("Expected file without frontmatter to be silently skipped, got %+v", result)
 	}
 }
+
+func TestReindexPopulatesSessionNpcsAndPcs(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "Locaciones/Kholinar.md", "---\ntipo: ciudad\nrelevancia: alta\n---\nCapital de Alethkar.")
+	writeVaultFile(t, root, "NPC/Threnn.md", "---\ntipo: npc\nstatus: vivo\n---\nContable de la Casa Corvain.")
+	writeVaultFile(t, root, "Jugadores/Lucas/Yashin.md", "---\ntipo: jugador\njugador: Lucas\nstatus: activo\n---\nFicha de Yashin.")
+	writeVaultFile(t, root, "Arcos/Arco 1.md", "---\ntipo: arco\narco: 1\ntitulo: Arco Uno\nstatus: en curso\n---\nPrimer arco.")
+	writeVaultFile(t, root, "Sesiones/Sesion 1.md",
+		"---\ntipo: sesion\nnumero: 1\narco: \"[[Arco 1]]\"\ndate: 2026-01-01\nestado: jugada\n---\n"+
+			"El grupo llega a [[Kholinar]]. [[Yashin]] negocia con [[Threnn]]. Más tarde, [[Yashin]] se retira solo.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+	if len(result.Errors) != 0 {
+		t.Fatalf("Expected no errors, got %v", result.Errors)
+	}
+
+	pcRepo := repository.NewPlayerCharacterRepository(db)
+	pcs, err := pcRepo.List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List player characters failed: %v", err)
+	}
+	if len(pcs) != 1 || pcs[0].CharacterName != "Yashin" {
+		t.Fatalf("Expected 1 player character named Yashin, got %+v", pcs)
+	}
+
+	npcRepo := repository.NewNPCRepository(db)
+	npcs, err := npcRepo.List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List npcs failed: %v", err)
+	}
+	if len(npcs) != 1 || npcs[0].Name != "Threnn" {
+		t.Fatalf("Expected 1 npc named Threnn, got %+v", npcs)
+	}
+
+	var sessionNpcCount, sessionPcCount int
+	if err := db.QueryRowContext(ctx, `SELECT COUNT(*) FROM session_npcs`).Scan(&sessionNpcCount); err != nil {
+		t.Fatalf("count session_npcs: %v", err)
+	}
+	if err := db.QueryRowContext(ctx, `SELECT COUNT(*) FROM session_pcs`).Scan(&sessionPcCount); err != nil {
+		t.Fatalf("count session_pcs: %v", err)
+	}
+	if sessionNpcCount != 1 {
+		t.Errorf("Expected 1 session_npcs row, got %d", sessionNpcCount)
+	}
+	if sessionPcCount != 1 {
+		t.Errorf("Expected 1 session_pcs row (deduplicado), got %d", sessionPcCount)
+	}
+
+	if len(result.UnresolvedWikilinks) != 0 {
+		t.Errorf("Expected no unresolved wikilinks (location links in body are ignored on purpose), got %v", result.UnresolvedWikilinks)
+	}
+}
