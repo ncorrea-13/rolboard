@@ -42,7 +42,25 @@ func main() {
 	arcRepo := repository.NewArcRepository(db)
 	arcSvc := service.NewArcService(arcRepo)
 
-	h := handlers.NewHandlers(campaignSvc, arcSvc)
+	locationRepo := repository.NewLocationRepository(db)
+	locationSvc := service.NewLocationService(locationRepo)
+
+	npcRepo := repository.NewNPCRepository(db)
+	npcSvc := service.NewNPCService(npcRepo)
+
+	pcRepo := repository.NewPlayerCharacterRepository(db)
+	pcSvc := service.NewPlayerCharacterService(pcRepo)
+
+	questRepo := repository.NewQuestRepository(db)
+	questSvc := service.NewQuestService(questRepo)
+
+	sessionRepo := repository.NewSessionRepository(db)
+	sessionSvc := service.NewSessionService(sessionRepo)
+
+	groupRepo := repository.NewGroupRepository(db)
+	groupSvc := service.NewGroupService(groupRepo)
+
+	h := handlers.NewHandlers(campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc)
 
 	mux := handlers.NewRouter(h)
 
