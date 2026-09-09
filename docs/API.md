@@ -99,10 +99,10 @@ Devuelve en una sola respuesta lo necesario para pintar la vista principal sin q
 ## Notas del vault (render)
 
 ```
-GET /api/notes/render?path=<ruta-relativa-dentro-del-vault>
+GET /api/campaigns/:id/notes/render?path=<ruta-relativa-dentro-del-vault-de-esa-campaña>
 ```
 
-Lee el `.md` correspondiente del volumen montado, separa el frontmatter, convierte el cuerpo a HTML (goldmark) y lo devuelve. Ver `vault-indexador.md` para el manejo de wikilinks/embeds.
+Lee el `.md` correspondiente del vault de esa campaña (resuelto contra su `vault_path`), separa el frontmatter, resuelve `[[wikilinks]]` del cuerpo contra las entidades ya indexadas (match único → `<a data-entity-type="..." data-entity-id="...">`, ambiguo o sin match → texto plano) y convierte el resultado a HTML (`goldmark`). Devuelve `{"html": "..."}`.
 
 ## Admin / Reindexado del vault
 
