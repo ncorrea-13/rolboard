@@ -21,11 +21,6 @@ const typeFilters: {
     crystal: "spren",
     matches: (n) => n.crystal === "spren",
   },
-  {
-    label: "Referencia",
-    crystal: "location",
-    matches: (n) => n.crystal === "location",
-  },
 ];
 
 const statusFilters: StatusKind[] = ["alive", "dead", "missing", "paused"];

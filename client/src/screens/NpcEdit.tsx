@@ -16,7 +16,6 @@ import {
 const typeOptions: { label: string; crystal: CrystalType }[] = [
   { label: "NPC", crystal: "npc" },
   { label: "Spren / cognitiva", crystal: "spren" },
-  { label: "Referencia", crystal: "location" },
 ];
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
@@ -45,6 +44,8 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
   const [linkNpcId, setLinkNpcId] = useState(npc.links?.[0]?.npcId ?? "");
   const [location, setLocation] = useState(npc.location);
   const [faction, setFaction] = useState(npc.faction);
+  const [etnia, setEtnia] = useState(npc.etnia ?? "");
+  const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
 
   const dirty =
     name !== npc.name ||
@@ -53,13 +54,15 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
     crystal !== npc.crystal ||
     location !== npc.location ||
     faction !== npc.faction ||
+    etnia !== (npc.etnia ?? "") ||
+    tipoSpren !== (npc.tipoSpren ?? "") ||
     linkRole !== (npc.links?.[0]?.role ?? "") ||
     linkNpcId !== (npc.links?.[0]?.npcId ?? "");
 
   function handleSave() {
     const crystalLabel = typeOptions.find((t) => t.crystal === crystal)?.label ?? npc.crystalLabel;
     const links: NpcLink[] = linkNpcId ? [{ role: linkRole || "VINCULADO", npcId: linkNpcId }, ...(npc.links ?? []).slice(1)] : [];
-    onSave({ name, description, status, crystal, crystalLabel, location, faction, links });
+    onSave({ name, description, status, crystal, crystalLabel, location, faction, etnia, tipoSpren, links });
   }
 
   const linkTarget = npcs.find((n) => n.id === linkNpcId);
@@ -123,6 +126,30 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="npc-edit__grid-2">
+            {crystal === "spren" ? (
+              <div>
+                <span className="label">Tipo de spren</span>
+                <input
+                  className="npc-edit__input"
+                  value={tipoSpren}
+                  onChange={(e) => setTipoSpren(e.target.value)}
+                  placeholder="ej. Honorspren"
+                />
+              </div>
+            ) : (
+              <div>
+                <span className="label">Etnia</span>
+                <input
+                  className="npc-edit__input"
+                  value={etnia}
+                  onChange={(e) => setEtnia(e.target.value)}
+                  placeholder="ej. Alethi"
+                />
+              </div>
+            )}
           </div>
 
           <div>

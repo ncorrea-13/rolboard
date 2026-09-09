@@ -1,4 +1,9 @@
-export type CrystalType = "npc" | "spren" | "location" | "faction-quest";
+export type CrystalType =
+  | "npc"
+  | "spren"
+  | "location"
+  | "faction-quest"
+  | "entidad-cognitiva";
 export type StatusKind = "alive" | "missing" | "dead" | "paused";
 
 export const crystalColor: Record<CrystalType, string> = {
@@ -6,6 +11,15 @@ export const crystalColor: Record<CrystalType, string> = {
   spren: "var(--crystal-spren)",
   location: "var(--crystal-location)",
   "faction-quest": "var(--crystal-faction-quest)",
+  "entidad-cognitiva": "var(--crystal-entidad-cognitiva)",
+};
+
+export const crystalLabel: Record<CrystalType, string> = {
+  npc: "Humano",
+  spren: "Spren",
+  location: "Locación",
+  "faction-quest": "Facción",
+  "entidad-cognitiva": "Ent. cognitiva",
 };
 
 export const statusColor: Record<StatusKind, string> = {
@@ -281,6 +295,8 @@ export interface Npc {
   campaignId: string;
   name: string;
   role: string;
+  etnia?: string;
+  tipoSpren?: string;
   description: string;
   crystal: CrystalType;
   crystalLabel: string;

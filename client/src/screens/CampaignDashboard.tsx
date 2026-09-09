@@ -29,6 +29,8 @@ interface CampaignDashboardProps {
   onNavigate: (section: DashboardSection) => void;
   onSelectNpc: (npcId: string) => void;
   onStartSession: () => void;
+  onReindex: () => void;
+  reindexing: boolean;
 }
 
 export function CampaignDashboard({
@@ -39,6 +41,8 @@ export function CampaignDashboard({
   onNavigate,
   onSelectNpc,
   onStartSession,
+  onReindex,
+  reindexing,
 }: CampaignDashboardProps) {
   const recentNpcs = npcs.slice(0, 4);
   const activeQuests = quests.filter((q) => q.status === "active");
@@ -76,6 +80,13 @@ export function CampaignDashboard({
               Abrir en Obsidian
             </button>
           )}
+          <button
+            className="btn btn-secondary"
+            onClick={onReindex}
+            disabled={reindexing}
+          >
+            {reindexing ? "Reindexando…" : "Reindexar vault"}
+          </button>
           <button className="btn btn-primary" onClick={onStartSession}>
             Jugar sesión {totalSessions + 1}
           </button>

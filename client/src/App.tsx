@@ -47,6 +47,9 @@ import {
   type Quest,
   type PlayerCharacter,
   type SessionEntry,
+  type CrystalType,
+  type StatusKind,
+  crystalLabel,
 } from "./data/mock";
 
 interface ApiCampaign {
@@ -64,6 +67,88 @@ function mapCampaign(c: ApiCampaign): Campaign {
     status: c.status,
     meta: "",
     last: "",
+  };
+}
+
+interface ApiNpc {
+  id: number;
+  campaign_id: number;
+  name: string;
+  npc_kind: string;
+  status: string;
+  rol?: string;
+  etnia?: string;
+  tipo_spren?: string;
+  description: string;
+  obsidian_path?: string;
+}
+
+function initialsFromName(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
+const apiStatusToStatusKind: Record<string, StatusKind> = {
+  vivo: "alive",
+  activo: "alive",
+  muerto: "dead",
+  consolidado: "dead",
+  desaparecido: "missing",
+};
+const canonicalApiStatus = new Set(["vivo", "muerto", "desaparecido"]);
+
+function mapNpc(n: ApiNpc): Npc {
+  const crystal = n.npc_kind as CrystalType;
+  return {
+    id: String(n.id),
+    campaignId: String(n.campaign_id),
+    name: n.name,
+    role: n.rol ?? "",
+    etnia: n.etnia,
+    tipoSpren: n.tipo_spren,
+    description: n.description,
+    crystal,
+    crystalLabel: crystalLabel[crystal],
+    status: apiStatusToStatusKind[n.status] ?? "alive",
+    statusNote: canonicalApiStatus.has(n.status) ? undefined : n.status,
+    location: "—",
+    faction: "—",
+    initials: initialsFromName(n.name),
+    obsidianPath: n.obsidian_path ?? "",
+  };
+}
+
+const statusKindToApiStatus: Record<Exclude<StatusKind, "paused">, string> = {
+  alive: "vivo",
+  missing: "desaparecido",
+  dead: "muerto",
+};
+
+function npcStatusToApi(npc: Npc): string {
+  if (npc.statusNote && apiStatusToStatusKind[npc.statusNote] === npc.status) {
+    return npc.statusNote;
+  }
+  // ponytail: "paused" no existe en validNPCStatuses del backend (server/internal/handlers/npcs.go).
+  // Se manda igual para que el backend lo rechace (400) en vez de mapearlo a un status inventado.
+  if (npc.status === "paused") return npc.status;
+  return statusKindToApiStatus[npc.status];
+}
+
+function npcToApiPayload(npc: Npc) {
+  return {
+    name: npc.name,
+    npc_kind: npc.crystal,
+    detail_level: "full", // ponytail: NpcEdit no tiene control para "minor" todavía
+    status: npcStatusToApi(npc),
+    description: npc.description,
+    rol: npc.role || undefined,
+    etnia: npc.etnia || undefined,
+    tipo_spren: npc.tipoSpren || undefined,
+    obsidian_path: npc.obsidianPath || undefined,
   };
 }
 
@@ -223,6 +308,18 @@ export default function App() {
   }, []);
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
   const [npcs, setNpcs] = useState<Npc[]>(initialNpcs);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiNpc[]>(`/campaigns/${activeCampaignId}/npcs`)
+      .then((data) =>
+        setNpcs(
+          (data ?? []).filter((n) => n.npc_kind !== "referencia").map(mapNpc),
+        ),
+      )
+      .catch((err) => console.error("Error cargando NPCs:", err));
+  }, [activeCampaignId]);
+
   const [arcs, setArcs] = useState<Arc[]>(initialArcs);
   const [groups, setGroups] = useState<Group[]>(initialGroups);
   const [locations, setLocations] = useState<Location[]>(initialLocations);
@@ -230,6 +327,7 @@ export default function App() {
   const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
     initialPlayerCharacters,
   );
+  const [reindexing, setReindexing] = useState(false);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
   const [entityForm, setEntityForm] = useState<{
@@ -273,30 +371,46 @@ export default function App() {
       .catch((err) => console.error("Error creando campaña:", err));
   }
 
+  function handleReindex() {
+    if (!activeCampaign || reindexing) return;
+    setReindexing(true);
+    apiFetch(`/campaigns/${activeCampaign.id}/reindex`, { method: "POST" })
+      .then((result) => console.log("Reindexado:", result))
+      .catch((err) => console.error("Error reindexando:", err))
+      .finally(() => setReindexing(false));
+  }
+
   function saveNpc(id: string, patch: Partial<Npc>) {
-    setNpcs((prev) => prev.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+    const current = npcs.find((n) => n.id === id);
+    if (!current) return;
+    const merged = { ...current, ...patch };
+    apiFetch(`/npcs/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(npcToApiPayload(merged)),
+    })
+      .then(() => setNpcs((prev) => prev.map((n) => (n.id === id ? merged : n))))
+      .catch((err) => console.error("Error guardando NPC:", err));
   }
 
   function createNpc(patch: Partial<Npc>) {
-    const id = `n${npcs.length + 1}`;
     const name = patch.name ?? "";
-    const initials =
-      name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((w) => w[0]?.toUpperCase())
-        .join("") || "??";
-    const npc: Npc = {
+    const draft: Npc = {
       ...blankNpcDraft,
       ...patch,
-      id,
       campaignId: activeCampaign!.id,
-      initials,
       obsidianPath: `NPCs/${name}.md`,
     };
-    setNpcs((prev) => [...prev, npc]);
-    setRoute({ name: "npc-detail", npcId: id });
+    apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
+      method: "POST",
+      body: JSON.stringify(npcToApiPayload(draft)),
+    })
+      .then((created) => {
+        // mapNpc no trae location/faction/links (no vienen del backend todavía) — se conservan del draft.
+        const npc: Npc = { ...mapNpc(created), location: draft.location, faction: draft.faction, links: draft.links };
+        setNpcs((prev) => [...prev, npc]);
+        setRoute({ name: "npc-detail", npcId: npc.id });
+      })
+      .catch((err) => console.error("Error creando NPC:", err));
   }
 
   function savePlayer(id: string, patch: Partial<PlayerCharacter>) {
@@ -519,8 +633,12 @@ export default function App() {
 
   function deleteNpc(id: string) {
     if (!window.confirm("¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.")) return;
-    setNpcs((prev) => prev.map((n) => (n.id === id ? { ...n, deletedAt: new Date().toISOString() } : n)));
-    setRoute({ name: "section", section: "npcs" });
+    apiFetch(`/npcs/${id}`, { method: "DELETE" })
+      .then(() => {
+        setNpcs((prev) => prev.filter((n) => n.id !== id));
+        setRoute({ name: "section", section: "npcs" });
+      })
+      .catch((err) => console.error("Error borrando NPC:", err));
   }
 
   function deletePlayer(id: string) {
@@ -675,6 +793,8 @@ export default function App() {
               onNavigate={(section) => setRoute({ name: "section", section })}
               onSelectNpc={(npcId) => setRoute({ name: "npc-detail", npcId })}
               onStartSession={startPlaySession}
+              onReindex={handleReindex}
+              reindexing={reindexing}
             />
           )}
           {route.name === "section" && route.section === "npcs" && (
