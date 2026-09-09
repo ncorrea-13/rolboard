@@ -1,6 +1,17 @@
 import { useState } from "react";
 import "./NpcEdit.css";
-import { crystalColor, statusLabel, statusColor, statusDotColor, type CrystalType, type Npc, type StatusKind } from "../data/mock";
+import {
+  crystalColor,
+  statusLabel,
+  statusColor,
+  statusDotColor,
+  type CrystalType,
+  type Npc,
+  type NpcLink,
+  type StatusKind,
+  type Location,
+  type Group,
+} from "../data/mock";
 
 const typeOptions: { label: string; crystal: CrystalType }[] = [
   { label: "NPC", crystal: "npc" },
@@ -10,24 +21,49 @@ const typeOptions: { label: string; crystal: CrystalType }[] = [
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
+function locationBreadcrumb(loc: Location, all: Location[]): string {
+  const parent = loc.parentId ? all.find((l) => l.id === loc.parentId) : undefined;
+  if (!parent || parent.locationType === "planet" || parent.locationType === "region") return loc.name;
+  return `${parent.name} · ${loc.name}`;
+}
+
 interface NpcEditProps {
   npc: Npc;
+  npcs: Npc[];
+  groups: Group[];
+  locations: Location[];
   onSave: (patch: Partial<Npc>) => void;
   onDiscard: () => void;
 }
 
-export function NpcEdit({ npc, onSave, onDiscard }: NpcEditProps) {
+export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: NpcEditProps) {
   const [name, setName] = useState(npc.name);
   const [description, setDescription] = useState(npc.description);
   const [status, setStatus] = useState<StatusKind>(npc.status);
   const [crystal, setCrystal] = useState<CrystalType>(npc.crystal);
+  const [linkRole, setLinkRole] = useState(npc.links?.[0]?.role ?? "");
+  const [linkNpcId, setLinkNpcId] = useState(npc.links?.[0]?.npcId ?? "");
+  const [location, setLocation] = useState(npc.location);
+  const [faction, setFaction] = useState(npc.faction);
 
-  const dirty = name !== npc.name || description !== npc.description || status !== npc.status || crystal !== npc.crystal;
+  const dirty =
+    name !== npc.name ||
+    description !== npc.description ||
+    status !== npc.status ||
+    crystal !== npc.crystal ||
+    location !== npc.location ||
+    faction !== npc.faction ||
+    linkRole !== (npc.links?.[0]?.role ?? "") ||
+    linkNpcId !== (npc.links?.[0]?.npcId ?? "");
 
   function handleSave() {
     const crystalLabel = typeOptions.find((t) => t.crystal === crystal)?.label ?? npc.crystalLabel;
-    onSave({ name, description, status, crystal, crystalLabel });
+    const links: NpcLink[] = linkNpcId ? [{ role: linkRole || "VINCULADO", npcId: linkNpcId }, ...(npc.links ?? []).slice(1)] : [];
+    onSave({ name, description, status, crystal, crystalLabel, location, faction, links });
   }
+
+  const linkTarget = npcs.find((n) => n.id === linkNpcId);
+  const missingOrigin = location.trim() === "";
 
   return (
     <div className="card npc-edit">
@@ -95,12 +131,23 @@ export function NpcEdit({ npc, onSave, onDiscard }: NpcEditProps) {
           <div>
             <span className="label">Vínculo con otro NPC</span>
             <div className="npc-edit__grid-2">
-              <div className="npc-edit__select">
-                Vinculado<span className="npc-edit__chevron">⌄</span>
-              </div>
-              <div className="npc-edit__select" style={{ borderBottom: "2px solid var(--crystal-spren)" }}>
-                Ishara-nal<span className="npc-edit__chevron">⌄</span>
-              </div>
+              <input
+                className="npc-edit__select npc-edit__select--native"
+                placeholder="Rol (ej. VINCULADO)"
+                value={linkRole}
+                onChange={(e) => setLinkRole(e.target.value)}
+              />
+              <select
+                className="npc-edit__select npc-edit__select--native"
+                value={linkNpcId}
+                onChange={(e) => setLinkNpcId(e.target.value)}
+                style={linkTarget ? { borderBottom: `2px solid ${crystalColor[linkTarget.crystal]}` } : undefined}
+              >
+                <option value="">— sin vínculo —</option>
+                {npcs.filter((n) => n.id !== npc.id).map((n) => (
+                  <option key={n.id} value={n.id}>{n.name}</option>
+                ))}
+              </select>
             </div>
             <div className="npc-edit__hint">
               El selector hereda el color de cristal del tipo elegido — se ve que el vínculo es con un spren sin leer
@@ -112,17 +159,32 @@ export function NpcEdit({ npc, onSave, onDiscard }: NpcEditProps) {
         <div className="npc-edit__col">
           <div>
             <span className="label">Ubicación actual</span>
-            <div className="npc-edit__select" style={{ borderBottom: "2px solid var(--crystal-location)" }}>
-              {npc.location}
-              <span className="npc-edit__chevron">⌄</span>
-            </div>
+            <select
+              className="npc-edit__select npc-edit__select--native"
+              style={{ borderBottom: "2px solid var(--crystal-location)" }}
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            >
+              <option value="">— sin ubicación —</option>
+              {locations.map((l) => {
+                const breadcrumb = locationBreadcrumb(l, locations);
+                return <option key={l.id} value={breadcrumb}>{breadcrumb}</option>;
+              })}
+            </select>
           </div>
           <div>
             <span className="label">Facción</span>
-            <div className="npc-edit__select" style={{ borderBottom: "2px solid var(--crystal-faction-quest)" }}>
-              {npc.faction}
-              <span className="npc-edit__chevron">⌄</span>
-            </div>
+            <select
+              className="npc-edit__select npc-edit__select--native"
+              style={{ borderBottom: "2px solid var(--crystal-faction-quest)" }}
+              value={faction}
+              onChange={(e) => setFaction(e.target.value)}
+            >
+              <option value="—">— sin facción —</option>
+              {groups.map((g) => (
+                <option key={g.id} value={g.name}>{g.name}</option>
+              ))}
+            </select>
           </div>
           <div>
             <span className="label">Nota de Obsidian</span>
@@ -130,13 +192,15 @@ export function NpcEdit({ npc, onSave, onDiscard }: NpcEditProps) {
               {npc.obsidianPath}
             </div>
           </div>
-          <div className="card npc-edit__warning" style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}>
-            <div className="npc-edit__warning-title">
-              <span className="status-dot" style={{ background: statusDotColor[status] }} />
-              {status === "dead" ? "NPC marcado como muerto" : "Falta la ubicación de origen"}
+          {(status === "dead" || missingOrigin) && (
+            <div className="card npc-edit__warning" style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}>
+              <div className="npc-edit__warning-title">
+                <span className="status-dot" style={{ background: statusDotColor[status] }} />
+                {status === "dead" ? "NPC marcado como muerto" : "Falta la ubicación de origen"}
+              </div>
+              <div className="npc-edit__warning-body">Podés guardar igual; el campo queda marcado como incompleto en la ficha.</div>
             </div>
-            <div className="npc-edit__warning-body">Podés guardar igual; el campo queda marcado como incompleto en la ficha.</div>
-          </div>
+          )}
           <div className="npc-edit__note">
             Decisión: edición en la misma vista, no modal. Un modal taparía la ficha justo cuando estás copiando datos
             de ella en vivo, y los vínculos necesitan el ancho completo.

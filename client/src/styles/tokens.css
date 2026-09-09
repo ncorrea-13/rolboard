@@ -1,5 +1,4 @@
 :root {
-  /* base — obsidiana, negro neutro-verdoso, no azul */
   --bg-canvas: #07080a;
   --bg-surface: #0e1114;
   --bg-elevated: #161a1d;
@@ -7,7 +6,6 @@
   --border-subtle: #1b1f22;
   --border-hairline: #131719;
 
-  /* luz */
   --text-primary: #f2f4f3;
   --text-secondary: #8a9391;
   --text-body: #c6cdcb;
@@ -15,14 +13,11 @@
   --accent-flame: #d08a3c;
   --accent-crystalline: #a87c9b;
 
-  /* violeta — identidad principal (CTA, links, foco, marca), con variación tonal */
   --accent-obsidian: #9b7bea;
   --accent-obsidian-deep: #7457c9;
   --accent-obsidian-soft: rgba(155, 123, 234, 0.16);
 
-  /* celeste — acento secundario (progreso, datos, no-CTA) */
   --accent-sky: #5fa8d3;
-  /* teal — variedad extra para nav (Quests), sin superponerse con el resto */
   --accent-teal: #4fb5a3;
 
   --crystal-npc: #c79a55;

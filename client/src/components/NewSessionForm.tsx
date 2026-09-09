@@ -7,7 +7,11 @@ interface NewSessionFormProps {
   onCancel: () => void;
 }
 
-export function NewSessionForm({ nextNumber, onConfirm, onCancel }: NewSessionFormProps) {
+export function NewSessionForm({
+  nextNumber,
+  onConfirm,
+  onCancel,
+}: NewSessionFormProps) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [text, setText] = useState("");
 
@@ -24,14 +28,24 @@ export function NewSessionForm({ nextNumber, onConfirm, onCancel }: NewSessionFo
     <>
       <div>
         <span className="label">Sesión</span>
-        <div className="npc-edit__input" style={{ marginTop: 6 }}>{`S${String(nextNumber).padStart(2, "0")}`}</div>
+        <div
+          className="npc-edit__input"
+          style={{ marginTop: 6 }}
+        >{`S${String(nextNumber).padStart(2, "0")}`}</div>
       </div>
       <div>
         <span className="label">Fecha</span>
-        <input type="date" className="npc-edit__input" value={date} onChange={(e) => setDate(e.target.value)} />
+        <input
+          type="date"
+          className="npc-edit__input"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
       </div>
       <div>
-        <span className="label">Resumen (opcional, se completa después de jugar)</span>
+        <span className="label">
+          Resumen (opcional, se completa después de jugar)
+        </span>
         <textarea
           className="npc-edit__textarea"
           placeholder="Qué pasó en la sesión…"
@@ -39,9 +53,20 @@ export function NewSessionForm({ nextNumber, onConfirm, onCancel }: NewSessionFo
           onChange={(e) => setText(e.target.value)}
         />
       </div>
-      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
-        <button className="btn btn-secondary" onClick={onCancel}>Cancelar</button>
-        <button className="btn btn-primary" onClick={handleConfirm}>Iniciar sesión</button>
+      <div
+        style={{
+          display: "flex",
+          gap: 8,
+          justifyContent: "flex-end",
+          marginTop: 4,
+        }}
+      >
+        <button className="btn btn-secondary" onClick={onCancel}>
+          Cancelar
+        </button>
+        <button className="btn btn-primary" onClick={handleConfirm}>
+          Iniciar sesión
+        </button>
       </div>
     </>
   );

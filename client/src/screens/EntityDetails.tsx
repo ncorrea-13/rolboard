@@ -13,15 +13,32 @@ import {
   type Npc,
 } from "../data/mock";
 
-export function ArcDetail({ arc, onBack }: { arc: Arc; onBack: () => void }) {
+interface EditableProps {
+  onEdit: () => void;
+  onDelete: () => void;
+}
+
+export function ArcDetail({
+  arc,
+  onBack,
+  onEdit,
+  onDelete,
+}: { arc: Arc; onBack: () => void } & EditableProps) {
   return (
     <EntityDetail
       eyebrow="ARCOS"
       backLabel="ARCOS"
       onBack={onBack}
       title={arc.label}
-      status={<StatusPill status={arc.status} label={arc.status === "alive" ? "En curso" : "Cerrado"} />}
+      status={
+        <StatusPill
+          status={arc.status}
+          label={arc.status === "alive" ? "En curso" : "Cerrado"}
+        />
+      }
       obsidianPath={arc.obsidianPath}
+      onEdit={onEdit}
+      onDelete={onDelete}
       fields={[
         { label: "Resumen", value: arc.summary },
         { label: "Progreso", value: arc.meta },
@@ -31,9 +48,24 @@ export function ArcDetail({ arc, onBack }: { arc: Arc; onBack: () => void }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {arc.sessions.map((s) => (
                 <div key={s.n} style={{ display: "flex", gap: 12 }}>
-                  <span style={{ font: "500 13px var(--font-mono)", color: "var(--accent-sky)", width: 40 }}>{s.n}</span>
+                  <span
+                    style={{
+                      font: "500 13px var(--font-mono)",
+                      color: "var(--accent-sky)",
+                      width: 40,
+                    }}
+                  >
+                    {s.n}
+                  </span>
                   <span style={{ flex: 1 }}>{s.text}</span>
-                  <span style={{ font: "400 12px var(--font-mono)", color: "var(--text-secondary)" }}>{s.date}</span>
+                  <span
+                    style={{
+                      font: "400 12px var(--font-mono)",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    {s.date}
+                  </span>
                 </div>
               ))}
             </div>
@@ -44,7 +76,19 @@ export function ArcDetail({ arc, onBack }: { arc: Arc; onBack: () => void }) {
   );
 }
 
-export function FactionDetail({ group, npcs, onBack, onSelectNpc }: { group: Group; npcs: Npc[]; onBack: () => void; onSelectNpc: (id: string) => void }) {
+export function FactionDetail({
+  group,
+  npcs,
+  onBack,
+  onSelectNpc,
+  onEdit,
+  onDelete,
+}: {
+  group: Group;
+  npcs: Npc[];
+  onBack: () => void;
+  onSelectNpc: (id: string) => void;
+} & EditableProps) {
   const members = npcs.filter((n) => n.faction === group.name);
   return (
     <EntityDetail
@@ -54,6 +98,8 @@ export function FactionDetail({ group, npcs, onBack, onSelectNpc }: { group: Gro
       title={group.name}
       accentColor="var(--crystal-faction-quest)"
       obsidianPath={group.obsidianPath}
+      onEdit={onEdit}
+      onDelete={onDelete}
       fields={[
         { label: "Descripción", value: group.description },
         {
@@ -68,13 +114,20 @@ export function FactionDetail({ group, npcs, onBack, onSelectNpc }: { group: Gro
                     style={{ cursor: "pointer" }}
                     onClick={() => onSelectNpc(n.id)}
                   >
-                    <EntityIdentity initials={n.initials} name={n.name} role={n.role} color={crystalColor[n.crystal]} />
+                    <EntityIdentity
+                      initials={n.initials}
+                      name={n.name}
+                      role={n.role}
+                      color={crystalColor[n.crystal]}
+                    />
                     <StatusPill status={n.status} />
                   </div>
                 ))}
               </div>
             ) : (
-              <span style={{ color: "var(--text-secondary)" }}>Sin NPCs indexados con esta facción todavía.</span>
+              <span style={{ color: "var(--text-secondary)" }}>
+                Sin NPCs indexados con esta facción todavía.
+              </span>
             ),
         },
       ]}
@@ -82,7 +135,17 @@ export function FactionDetail({ group, npcs, onBack, onSelectNpc }: { group: Gro
   );
 }
 
-export function LocationDetail({ location, allLocations, onBack }: { location: Location; allLocations: Location[]; onBack: () => void }) {
+export function LocationDetail({
+  location,
+  allLocations,
+  onBack,
+  onEdit,
+  onDelete,
+}: {
+  location: Location;
+  allLocations: Location[];
+  onBack: () => void;
+} & EditableProps) {
   const breadcrumb: Location[] = [];
   let current: Location | undefined = location;
   while (current) {
@@ -100,6 +163,8 @@ export function LocationDetail({ location, allLocations, onBack }: { location: L
       accentColor="var(--crystal-location)"
       subtitle={locationTypeLabel[location.locationType]}
       obsidianPath={location.obsidianPath}
+      onEdit={onEdit}
+      onDelete={onDelete}
       fields={[
         {
           label: "Jerarquía",
@@ -113,12 +178,17 @@ export function LocationDetail({ location, allLocations, onBack }: { location: L
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {children.map((c) => (
                   <div key={c.id}>
-                    {c.name} <span style={{ color: "var(--text-secondary)" }}>· {locationTypeLabel[c.locationType]}</span>
+                    {c.name}{" "}
+                    <span style={{ color: "var(--text-secondary)" }}>
+                      · {locationTypeLabel[c.locationType]}
+                    </span>
                   </div>
                 ))}
               </div>
             ) : (
-              <span style={{ color: "var(--text-secondary)" }}>Sin sub-locaciones registradas.</span>
+              <span style={{ color: "var(--text-secondary)" }}>
+                Sin sub-locaciones registradas.
+              </span>
             ),
         },
       ]}
@@ -126,7 +196,12 @@ export function LocationDetail({ location, allLocations, onBack }: { location: L
   );
 }
 
-export function QuestDetail({ quest, onBack }: { quest: Quest; onBack: () => void }) {
+export function QuestDetail({
+  quest,
+  onBack,
+  onEdit,
+  onDelete,
+}: { quest: Quest; onBack: () => void } & EditableProps) {
   const priorityLabel = { 1: "Alta", 2: "Media", 3: "Baja" } as const;
   return (
     <EntityDetail
@@ -136,6 +211,8 @@ export function QuestDetail({ quest, onBack }: { quest: Quest; onBack: () => voi
       title={quest.name}
       accentColor={crystalColor[quest.crystal]}
       status={<QuestStatusPill status={quest.status} />}
+      onEdit={onEdit}
+      onDelete={onDelete}
       fields={[
         { label: "Gancho", value: quest.hook },
         { label: "Prioridad", value: priorityLabel[quest.priority] },
@@ -144,7 +221,12 @@ export function QuestDetail({ quest, onBack }: { quest: Quest; onBack: () => voi
   );
 }
 
-export function PlayerDetail({ player, onBack }: { player: PlayerCharacter; onBack: () => void }) {
+export function PlayerDetail({
+  player,
+  onBack,
+  onEdit,
+  onDelete,
+}: { player: PlayerCharacter; onBack: () => void } & EditableProps) {
   return (
     <EntityDetail
       eyebrow="JUGADORES"
@@ -153,6 +235,8 @@ export function PlayerDetail({ player, onBack }: { player: PlayerCharacter; onBa
       title={player.characterName}
       subtitle={`Jugado por ${player.playerName}`}
       obsidianPath={player.obsidianPath}
+      onEdit={onEdit}
+      onDelete={onDelete}
       fields={[
         { label: "Trasfondo", value: player.backstory },
         { label: "Notas de progresión", value: player.progressionNotes },

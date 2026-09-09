@@ -1,8 +1,14 @@
 import "./CampaignSelector.css";
-import { campaigns } from "../data/mock";
+import type { Campaign } from "../data/mock";
 import { StatusPill } from "../components/StatusPill";
 
-export function CampaignSelector({ onSelect }: { onSelect: (id: string) => void }) {
+interface CampaignSelectorProps {
+  campaigns: Campaign[];
+  onSelect: (id: string) => void;
+  onCreate: () => void;
+}
+
+export function CampaignSelector({ campaigns, onSelect, onCreate }: CampaignSelectorProps) {
   return (
     <div className="card campaign-selector">
       <header className="campaign-selector__header">
@@ -11,9 +17,11 @@ export function CampaignSelector({ onSelect }: { onSelect: (id: string) => void 
             <span className="sidebar__glow-standalone" />
             <span className="display" style={{ fontSize: 26 }}>Tus campañas</span>
           </div>
-          <div className="campaign-selector__subtitle">4 campañas · última actividad hace 13 días</div>
+          <div className="campaign-selector__subtitle">
+            {campaigns.length} {campaigns.length === 1 ? "campaña" : "campañas"}
+          </div>
         </div>
-        <button className="btn btn-primary">Nueva campaña</button>
+        <button className="btn btn-primary" onClick={onCreate}>Nueva campaña</button>
       </header>
       <div className="campaign-selector__grid">
         {campaigns.map((c) => (
@@ -31,7 +39,7 @@ export function CampaignSelector({ onSelect }: { onSelect: (id: string) => void 
             </div>
           </div>
         ))}
-        <div className="campaign-card campaign-card--new">+ Crear campaña</div>
+        <div className="campaign-card campaign-card--new" onClick={onCreate}>+ Crear campaña</div>
       </div>
     </div>
   );

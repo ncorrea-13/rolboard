@@ -1,16 +1,31 @@
-import { statusColor, statusDotColor, statusLabel, questStatusColor, questStatusLabel, type StatusKind, type QuestStatus } from "../data/mock";
+import {
+  statusColor,
+  statusDotColor,
+  statusLabel,
+  questStatusColor,
+  questStatusLabel,
+  type StatusKind,
+  type QuestStatus,
+} from "../data/mock";
 
-export function StatusPill({ status, label }: { status: StatusKind; label?: string }) {
+export function StatusPill({
+  status,
+  label,
+}: {
+  status: StatusKind;
+  label?: string;
+}) {
   return (
     <span className="status-pill" style={{ color: statusColor[status] }}>
-      <span className="status-dot" style={{ background: statusDotColor[status] }} />
+      <span
+        className="status-dot"
+        style={{ background: statusDotColor[status] }}
+      />
       {label ?? statusLabel[status]}
     </span>
   );
 }
 
-/** Estado de campaña (`active`/`completed`/`failed`/`on_hold`) — vocabulario distinto
- * al semáforo de NPC/status de personaje, no lo comparte. */
 export function QuestStatusPill({ status }: { status: QuestStatus }) {
   const color = questStatusColor[status];
   return (

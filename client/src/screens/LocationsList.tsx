@@ -1,5 +1,5 @@
 import "../styles/list.css";
-import { locations, locationTypeLabel, type Location } from "../data/mock";
+import { locationTypeLabel, type Location } from "../data/mock";
 
 function depthOf(loc: Location, all: Location[]): number {
   let depth = 0;
@@ -11,12 +11,31 @@ function depthOf(loc: Location, all: Location[]): number {
   return depth;
 }
 
-export function LocationsList({ onSelect }: { onSelect: (id: string) => void }) {
+interface LocationsListProps {
+  locations: Location[];
+  onSelect: (id: string) => void;
+  onCreate: () => void;
+}
+
+export function LocationsList({
+  locations,
+  onSelect,
+  onCreate,
+}: LocationsListProps) {
   return (
     <div className="card list-page">
       <div className="list-page__header">
-        <div className="display" style={{ fontSize: 21 }}>Locaciones</div>
-        <span className="list-page__count">{locations.length} locaciones</span>
+        <div>
+          <div className="display" style={{ fontSize: 21 }}>
+            Locaciones
+          </div>
+          <span className="list-page__count">
+            {locations.length} locaciones
+          </span>
+        </div>
+        <button className="btn btn-primary" onClick={onCreate}>
+          Nueva locación
+        </button>
       </div>
       <div className="list-page__rows">
         {locations.map((l) => (
@@ -29,11 +48,18 @@ export function LocationsList({ onSelect }: { onSelect: (id: string) => void }) 
             <div className="list-page__row-main">
               <span className="title-underline">
                 <span className="list-page__row-title">{l.name}</span>
-                <span className="title-underline__bar" style={{ background: "var(--crystal-location)" }} />
+                <span
+                  className="title-underline__bar"
+                  style={{ background: "var(--crystal-location)" }}
+                />
               </span>
-              <div className="list-page__row-sub" style={{ marginTop: 6 }}>{l.description}</div>
+              <div className="list-page__row-sub" style={{ marginTop: 6 }}>
+                {l.description}
+              </div>
             </div>
-            <span className="list-page__badge">{locationTypeLabel[l.locationType]}</span>
+            <span className="list-page__badge">
+              {locationTypeLabel[l.locationType]}
+            </span>
           </div>
         ))}
       </div>
