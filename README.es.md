@@ -25,57 +25,56 @@ Herramienta de uso exclusivo para el DM/GM, no algo que ven los jugadores. Corre
 | Backend | Go 1.27, `net/http` stdlib (sin router de terceros) |
 | Base de datos | SQLite (`modernc.org/sqlite`, sin cgo) |
 | Migraciones | Archivos SQL versionados, embebidos con `go:embed` |
-| Frontend | React + TypeScript + Vite — todavía no iniciado |
+| Frontend | React + TypeScript + Vite (scaffold armado, todavía con datos mockeados — sin conectar a la API) |
 
 Razonamiento completo de cada elección: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## Quick Start
+Un solo backend sirve varias campañas — cada fila de `campaigns` guarda su propio `vault_path`, una subcarpeta dentro de un mount compartido (`VAULTS_ROOT`). Ver [`vault-template/`](vault-template/) para una estructura de vault lista para copiar que el indexador reconoce sin tocar código.
 
-Por ahora solo existe el backend — sin setup de contenedor todavía.
+## Quick Start
 
 ```bash
 git clone git@github.com:ncorrea-13/rolboard.git
-cd rolboard/server
-go mod download
-go run ./cmd/server
+cd rolboard
+cp .env.example .env
+# completar VAULTS_ROOT_HOST en .env con la carpeta que contiene tus vaults de Obsidian
+docker-compose up --build
 # → http://localhost:8080/api/health
 ```
 
-Las migraciones de SQLite corren automáticamente al arrancar. El archivo de base de datos queda en `server/data/campaign.db` (gitignored).
+Las migraciones de SQLite corren automáticamente al arrancar.
 
 ## Configuración
 
-Todavía no hay variables de entorno — el path de la base (`./data/campaign.db`) y el puerto (`:8080`) están hardcodeados en [`cmd/server/main.go`](server/cmd/server/main.go).
+Variables de entorno (vía `.env`, ver `.env.example`):
+
+| Variable | Descripción |
+| --- | --- |
+| `PORT` | Puerto del host donde exponer el server (el container escucha en `:8080`) |
+| `DB_PATH` | Path de la base de datos dentro del container |
+| `VAULTS_ROOT_HOST` | Carpeta en el host que contiene el vault de cada campaña como subcarpeta |
 
 ## API
 
-Implementado hasta ahora:
+CRUD completo (`GET`/`POST`/`PUT`/`DELETE`) para `campaigns`, `arcs`, `locations`, `npcs`, `player-characters`, `quests`, `sessions` y `groups`, más `GET /api/health` y `POST /api/campaigns/{id}/reindex`. El reindex es un upsert real contra el vault de esa campaña — crear, editar, mover o borrar una nota se refleja solo la próxima vez que lo llamás, sin limpieza manual de la base.
 
-| Método | Ruta | Descripción |
-| --- | --- | --- |
-| `GET` | `/api/health` | Health check |
-| `GET` | `/api/campaigns` | Listado de campañas |
-
-Superficie completa planeada (Arcs, NPCs, Locations, Groups, Player Characters, Quests, Sessions, indexado del vault): [`docs/API.md`](docs/API.md).
+Superficie completa, incluyendo lo que falta (vistas de dashboard, render de markdown): [`docs/API.md`](docs/API.md).
 
 ## Estructura del Proyecto
 
 ```
 rolboard/
 ├── docs/                          # arquitectura, modelo de datos, API, decisiones (estilo ADR)
+├── vault-template/                # estructura de vault lista para copiar en campaña nueva
+├── client/                        # frontend React + TS (datos mockeados, sin conectar aún)
 ├── server/                        # backend (Go)
 │   ├── cmd/server/main.go         # entrypoint
 │   ├── internal/
 │   │   ├── handlers/              # HTTP handlers + router
-│   │   │   ├── campaigns.go
-│   │   │   ├── health.go
-│   │   │   └── router.go
-│   │   ├── service/campaign.go
-│   │   ├── repository/            # acceso a SQLite + migraciones
-│   │   │   ├── campaign.go
-│   │   │   ├── db.go
-│   │   │   └── migrations/0001_initial_schema.sql
-│   │   └── models/campaign.go
+│   │   ├── service/                # un archivo por entidad
+│   │   ├── repository/             # acceso a SQLite + migraciones versionadas
+│   │   ├── vault/                  # indexador del vault de Obsidian (walker, mapper, resolver)
+│   │   └── models/
 │   ├── go.mod
 │   └── go.sum
 ├── AGENTS.md                      # acuerdo de trabajo para desarrollo asistido por IA
