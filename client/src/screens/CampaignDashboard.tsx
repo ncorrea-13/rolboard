@@ -8,6 +8,7 @@ import {
 } from "../data/mock";
 import { StatusPill, QuestStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
+import { MarkdownText } from "../components/MarkdownText";
 import { openInObsidian } from "../lib/obsidian";
 
 export type DashboardSection =
@@ -76,7 +77,7 @@ export function CampaignDashboard({
             </button>
           )}
           <button className="btn btn-primary" onClick={onStartSession}>
-            Iniciar sesión {totalSessions + 1}
+            Jugar sesión {totalSessions + 1}
           </button>
         </div>
       </header>
@@ -119,7 +120,7 @@ export function CampaignDashboard({
                   {lastSession.date}
                 </span>
               </div>
-              <p className="campaign-dashboard__desc">{lastSession.text}</p>
+              <MarkdownText className="campaign-dashboard__desc" text={lastSession.text} />
               {lastSession.tags && (
                 <div className="campaign-dashboard__chips">
                   {lastSession.tags

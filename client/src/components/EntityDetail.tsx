@@ -70,7 +70,7 @@ export function EntityDetail({
               )}
               {onDelete && (
                 <button className="btn btn-secondary" onClick={onDelete}>
-                  Borrar
+                  Dar de baja
                 </button>
               )}
             </div>

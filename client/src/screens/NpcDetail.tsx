@@ -12,6 +12,7 @@ interface NpcDetailProps {
   quests: Quest[];
   onEdit: () => void;
   onBack: () => void;
+  onDelete: () => void;
 }
 
 export function NpcDetail({
@@ -20,6 +21,7 @@ export function NpcDetail({
   quests,
   onEdit,
   onBack,
+  onDelete,
 }: NpcDetailProps) {
   const color = crystalColor[npc.crystal];
   const [noteOpen, setNoteOpen] = useState(false);
@@ -75,6 +77,9 @@ export function NpcDetail({
               onClick={() => setNoteOpen(true)}
             >
               Ver nota renderizada
+            </button>
+            <button className="btn btn-secondary" onClick={onDelete}>
+              Dar de baja
             </button>
             <button className="btn btn-primary" onClick={onEdit}>
               Editar

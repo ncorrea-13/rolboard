@@ -89,6 +89,7 @@ export const questStatusLabel: Record<QuestStatus, string> = {
 
 export interface Quest {
   id: string;
+  deletedAt?: string;
   campaignId: string;
   name: string;
   hook: string;
@@ -138,6 +139,7 @@ export const quests: Quest[] = [
 
 export interface Group {
   id: string;
+  deletedAt?: string;
   campaignId: string;
   name: string;
   description: string;
@@ -177,6 +179,7 @@ export const groups: Group[] = [
 
 export interface Location {
   id: string;
+  deletedAt?: string;
   campaignId: string;
   name: string;
   locationType: "planet" | "region" | "city" | "site" | "plane";
@@ -255,6 +258,7 @@ export interface NpcLink {
 
 export interface Npc {
   id: string;
+  deletedAt?: string;
   campaignId: string;
   name: string;
   role: string;
@@ -370,6 +374,7 @@ export const npcs: Npc[] = [
 
 export interface PlayerCharacter {
   id: string;
+  deletedAt?: string;
   campaignId: string;
   playerName: string;
   characterName: string;
@@ -437,10 +442,15 @@ export interface SessionEntry {
   date: string;
   text: string;
   tags: string;
+  played: boolean;
+  prepNotes?: string;
+  expectedNpcIds?: string[];
+  expectedQuestIds?: string[];
 }
 
 export interface Arc {
   id: string;
+  deletedAt?: string;
   campaignId: string;
   label: string;
   summary: string;
@@ -466,18 +476,21 @@ export const arcs: Arc[] = [
         date: "10 may",
         text: "Los PJ llegan a Kholinar tras el naufragio del Wanderjar.",
         tags: "#llegada #kholinar",
+        played: true,
       },
       {
         n: "S02",
         date: "24 may",
         text: "Primer contacto con los Vigías de la Grieta.",
         tags: "#vigias #alianza",
+        played: true,
       },
       {
         n: "S03",
         date: "07 jun",
         text: "Velen Tormentaluz se une como aliado condicional.",
         tags: "#velen #npc-nuevo",
+        played: true,
       },
     ],
   },
@@ -496,18 +509,21 @@ export const arcs: Arc[] = [
         date: "13 jul",
         text: "La Voz Sin Rostro desaparece sin dejar rastro.",
         tags: "#misterio",
+        played: true,
       },
       {
         n: "S06",
         date: "10 ago",
         text: "Los PJ exploran la grieta cognitiva del Mercado de Esferas.",
         tags: "#grieta #exploracion",
+        played: true,
       },
       {
         n: "S07",
         date: "24 ago",
         text: "Los PJ negociaron con Threnn. Maestro Corvain murió en la refriega del muelle.",
         tags: "#threnn #muerte",
+        played: true,
       },
     ],
   },

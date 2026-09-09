@@ -21,6 +21,7 @@ export function NewSessionForm({
       date,
       text: text.trim() || "Sesión sin resumen todavía.",
       tags: "",
+      played: true,
     });
   }
 
@@ -44,7 +45,7 @@ export function NewSessionForm({
       </div>
       <div>
         <span className="label">
-          Resumen (opcional, se completa después de jugar)
+          Resumen (opcional, se completa después de jugar — admite Markdown)
         </span>
         <textarea
           className="npc-edit__textarea"
@@ -65,7 +66,7 @@ export function NewSessionForm({
           Cancelar
         </button>
         <button className="btn btn-primary" onClick={handleConfirm}>
-          Iniciar sesión
+          Jugar sesión
         </button>
       </div>
     </>

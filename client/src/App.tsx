@@ -3,6 +3,8 @@ import "./App.css";
 import { AppShell } from "./components/AppShell";
 import { Modal } from "./components/Modal";
 import { NewSessionForm } from "./components/NewSessionForm";
+import { PlanSession } from "./screens/PlanSession";
+import { SessionEdit } from "./screens/SessionEdit";
 import { NewCampaignForm } from "./components/NewCampaignForm";
 import { EntityForm, type FormField } from "./components/EntityForm";
 import { CampaignSelector } from "./screens/CampaignSelector";
@@ -158,6 +160,8 @@ type Route =
   | { name: "player-detail"; playerId: string }
   | { name: "player-edit"; playerId: string }
   | { name: "player-create" }
+  | { name: "session-plan" }
+  | { name: "session-edit"; arcId: string; sessionN: string; autoConfirm?: boolean }
   | { name: "entity-detail"; kind: EntityKind; id: string };
 
 const blankNpcDraft: Npc = {
@@ -210,19 +214,19 @@ export default function App() {
 
   const activeCampaign = campaigns.find((c) => c.id === activeCampaignId);
 
-  const campaignNpcs = npcs.filter((n) => n.campaignId === activeCampaignId);
-  const campaignArcs = arcs.filter((a) => a.campaignId === activeCampaignId);
+  const campaignNpcs = npcs.filter((n) => n.campaignId === activeCampaignId && !n.deletedAt);
+  const campaignArcs = arcs.filter((a) => a.campaignId === activeCampaignId && !a.deletedAt);
   const campaignGroups = groups.filter(
-    (g) => g.campaignId === activeCampaignId,
+    (g) => g.campaignId === activeCampaignId && !g.deletedAt,
   );
   const campaignLocations = locations.filter(
-    (l) => l.campaignId === activeCampaignId,
+    (l) => l.campaignId === activeCampaignId && !l.deletedAt,
   );
   const campaignQuests = quests.filter(
-    (q) => q.campaignId === activeCampaignId,
+    (q) => q.campaignId === activeCampaignId && !q.deletedAt,
   );
   const campaignPlayerCharacters = playerCharacters.filter(
-    (p) => p.campaignId === activeCampaignId,
+    (p) => p.campaignId === activeCampaignId && !p.deletedAt,
   );
 
   function selectCampaign(id: string) {
@@ -301,7 +305,7 @@ export default function App() {
     );
   }
 
-  function addSession(entry: SessionEntry) {
+  function addSessionEntry(entry: SessionEntry) {
     const currentArc =
       campaignArcs.find((a) => a.status === "alive") ??
       campaignArcs[campaignArcs.length - 1];
@@ -311,8 +315,12 @@ export default function App() {
         a.id === currentArc.id ? { ...a, sessions: [...a.sessions, entry] } : a,
       ),
     );
-    setNewSessionOpen(false);
     setRoute({ name: "section", section: "sesiones" });
+  }
+
+  function playSession(entry: SessionEntry) {
+    addSessionEntry(entry);
+    setNewSessionOpen(false);
   }
 
   function nextId(prefix: string, items: { id: string }[]) {
@@ -458,27 +466,35 @@ export default function App() {
   }
 
   function deleteEntity(kind: EntityKind, id: string) {
-    if (
-      !window.confirm(
-        `¿Borrar este ${entityKindLabel[kind]}? No se puede deshacer.`,
-      )
-    )
-      return;
+    if (!window.confirm(`¿Dar de baja este ${entityKindLabel[kind]}? Deja de verse en la campaña, no se borra.`)) return;
+    const deletedAt = new Date().toISOString();
     switch (kind) {
       case "arc":
-        setArcs((prev) => prev.filter((a) => a.id !== id));
+        setArcs((prev) => prev.map((a) => (a.id === id ? { ...a, deletedAt } : a)));
         break;
       case "faction":
-        setGroups((prev) => prev.filter((g) => g.id !== id));
+        setGroups((prev) => prev.map((g) => (g.id === id ? { ...g, deletedAt } : g)));
         break;
       case "location":
-        setLocations((prev) => prev.filter((l) => l.id !== id));
+        setLocations((prev) => prev.map((l) => (l.id === id ? { ...l, deletedAt } : l)));
         break;
       case "quest":
-        setQuests((prev) => prev.filter((q) => q.id !== id));
+        setQuests((prev) => prev.map((q) => (q.id === id ? { ...q, deletedAt } : q)));
         break;
     }
     goToEntitySection(kind);
+  }
+
+  function deleteNpc(id: string) {
+    if (!window.confirm("¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.")) return;
+    setNpcs((prev) => prev.map((n) => (n.id === id ? { ...n, deletedAt: new Date().toISOString() } : n)));
+    setRoute({ name: "section", section: "npcs" });
+  }
+
+  function deletePlayer(id: string) {
+    if (!window.confirm("¿Dar de baja este personaje? Deja de verse en la campaña, no se borra.")) return;
+    setPlayerCharacters((prev) => prev.map((p) => (p.id === id ? { ...p, deletedAt: new Date().toISOString() } : p)));
+    setRoute({ name: "section", section: "jugadores" });
   }
 
   function entityFormFields(kind: EntityKind): FormField[] {
@@ -562,14 +578,40 @@ export default function App() {
             route.name === "player-edit" ||
             route.name === "player-create"
           ? "jugadores"
-          : route.name === "entity-detail"
-            ? entityKindSection[route.kind]
-            : "resumen";
+          : route.name === "session-plan" || route.name === "session-edit"
+            ? "sesiones"
+            : route.name === "entity-detail"
+              ? entityKindSection[route.kind]
+              : "resumen";
 
-  const totalSessions = campaignArcs.reduce(
-    (acc, a) => acc + a.sessions.length,
-    0,
-  );
+  // Los números de sesión no son necesariamente contiguos (ej. S03 -> S05,
+  // salteando un interludio/planificación descartada) — el próximo número
+  // tiene que salir del máximo real usado, no de la cantidad de sesiones.
+  const highestSessionNumber = campaignArcs.reduce((max, a) => {
+    const arcMax = a.sessions.reduce((m, s) => Math.max(m, Number(s.n.replace(/\D/g, "")) || 0), 0);
+    return Math.max(max, arcMax);
+  }, 0);
+  const nextSessionNumber = highestSessionNumber + 1;
+
+  // "Jugar sesión" no debería crear una entrada suelta si ya hay una
+  // planificada sin jugar — toma la más reciente (mayor número) y la abre
+  // directo en modo "confirmar como jugada" en vez de loguear una nueva.
+  const pendingPlannedSession = campaignArcs.reduce<{ arcId: string; sessionN: string; num: number } | undefined>((best, a) => {
+    for (const s of a.sessions) {
+      if (s.played) continue;
+      const num = Number(s.n.replace(/\D/g, "")) || 0;
+      if (!best || num > best.num) best = { arcId: a.id, sessionN: s.n, num };
+    }
+    return best;
+  }, undefined);
+
+  function startPlaySession() {
+    if (pendingPlannedSession) {
+      setRoute({ name: "session-edit", arcId: pendingPlannedSession.arcId, sessionN: pendingPlannedSession.sessionN, autoConfirm: true });
+    } else {
+      setNewSessionOpen(true);
+    }
+  }
 
   function goToEntitySection(kind: EntityKind) {
     setRoute({ name: "section", section: entityKindSection[kind] });
@@ -600,7 +642,7 @@ export default function App() {
               quests={campaignQuests}
               onNavigate={(section) => setRoute({ name: "section", section })}
               onSelectNpc={(npcId) => setRoute({ name: "npc-detail", npcId })}
-              onStartSession={() => setNewSessionOpen(true)}
+              onStartSession={startPlaySession}
             />
           )}
           {route.name === "section" && route.section === "npcs" && (
@@ -613,8 +655,9 @@ export default function App() {
           {route.name === "section" && route.section === "sesiones" && (
             <SessionsTimeline
               arcs={campaignArcs}
-              onRegisterSession={() => setNewSessionOpen(true)}
-              onEditSession={editSession}
+              onPlaySession={startPlaySession}
+              onPlanSession={() => setRoute({ name: "session-plan" })}
+              onOpenSession={(arcId, sessionN) => setRoute({ name: "session-edit", arcId, sessionN })}
             />
           )}
           {route.name === "section" && route.section === "arcos" && (
@@ -717,6 +760,7 @@ export default function App() {
                 setRoute({ name: "npc-edit", npcId: selectedNpc.id })
               }
               onBack={() => setRoute({ name: "section", section: "npcs" })}
+              onDelete={() => deleteNpc(selectedNpc.id)}
             />
           )}
 
@@ -753,6 +797,7 @@ export default function App() {
               npcs={campaignNpcs}
               onEdit={() => setRoute({ name: "player-edit", playerId: selectedPlayer.id })}
               onBack={() => setRoute({ name: "section", section: "jugadores" })}
+              onDelete={() => deletePlayer(selectedPlayer.id)}
             />
           )}
 
@@ -778,17 +823,45 @@ export default function App() {
               onDiscard={() => setRoute({ name: "section", section: "jugadores" })}
             />
           )}
+
+          {route.name === "session-plan" && (
+            <PlanSession
+              nextNumber={nextSessionNumber}
+              currentArc={campaignArcs.find((a) => a.status === "alive") ?? campaignArcs[campaignArcs.length - 1]}
+              npcs={campaignNpcs}
+              quests={campaignQuests}
+              onConfirm={addSessionEntry}
+              onCancel={() => setRoute({ name: "section", section: "sesiones" })}
+            />
+          )}
+
+          {route.name === "session-edit" && (() => {
+            const arc = campaignArcs.find((a) => a.id === route.arcId);
+            const session = arc?.sessions.find((s) => s.n === route.sessionN);
+            if (!arc || !session) return null;
+            return (
+              <SessionEdit
+                arc={arc}
+                session={session}
+                npcs={campaignNpcs}
+                quests={campaignQuests}
+                autoConfirm={route.autoConfirm}
+                onSave={(patch) => {
+                  editSession(arc.id, session.n, patch);
+                  setRoute({ name: "section", section: "sesiones" });
+                }}
+                onBack={() => setRoute({ name: "section", section: "sesiones" })}
+              />
+            );
+          })()}
         </AppShell>
       )}
 
       {newSessionOpen && (
-        <Modal
-          title="Nueva sesión de juego"
-          onClose={() => setNewSessionOpen(false)}
-        >
+        <Modal title="Jugar sesión" onClose={() => setNewSessionOpen(false)}>
           <NewSessionForm
-            nextNumber={totalSessions + 1}
-            onConfirm={addSession}
+            nextNumber={nextSessionNumber}
+            onConfirm={playSession}
             onCancel={() => setNewSessionOpen(false)}
           />
         </Modal>

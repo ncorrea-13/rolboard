@@ -11,9 +11,10 @@ interface PlayerDetailProps {
   npcs: Npc[];
   onEdit: () => void;
   onBack: () => void;
+  onDelete: () => void;
 }
 
-export function PlayerDetail({ player, npcs, onEdit, onBack }: PlayerDetailProps) {
+export function PlayerDetail({ player, npcs, onEdit, onBack, onDelete }: PlayerDetailProps) {
   const [noteOpen, setNoteOpen] = useState(false);
 
   const links = (player.links ?? [])
@@ -40,6 +41,7 @@ export function PlayerDetail({ player, npcs, onEdit, onBack }: PlayerDetailProps
           <div className="npc-detail__header-actions">
             <button className="btn btn-secondary" onClick={() => openInObsidian(player.obsidianPath)}>Abrir en Obsidian</button>
             <button className="btn btn-secondary" onClick={() => setNoteOpen(true)}>Ver nota renderizada</button>
+            <button className="btn btn-secondary" onClick={onDelete}>Dar de baja</button>
             <button className="btn btn-primary" onClick={onEdit}>Editar</button>
           </div>
         </div>
