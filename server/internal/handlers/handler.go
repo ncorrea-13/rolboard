@@ -12,6 +12,7 @@ type Handlers struct {
 	sessions         *service.SessionService
 	groups           *service.GroupService
 	admin            *service.AdminService
+	dashboard        *service.DashboardService
 }
 
 func NewHandlers(
@@ -24,6 +25,7 @@ func NewHandlers(
 	sessions *service.SessionService,
 	groups *service.GroupService,
 	admin *service.AdminService,
+	dashboard *service.DashboardService,
 ) *Handlers {
 	return &Handlers{
 		campaigns:        campaigns,
@@ -35,5 +37,6 @@ func NewHandlers(
 		sessions:         sessions,
 		groups:           groups,
 		admin:            admin,
+		dashboard:        dashboard,
 	}
 }

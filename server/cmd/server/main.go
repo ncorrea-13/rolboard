@@ -62,8 +62,9 @@ func main() {
 	groupSvc := service.NewGroupService(groupRepo)
 
 	adminSvc := service.NewAdminService(db, campaignRepo, vaultsRoot)
+	dashboardSvc := service.NewDashboardService(questSvc, npcSvc, sessionSvc)
 
-	h := handlers.NewHandlers(campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc)
+	h := handlers.NewHandlers(campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc)
 
 	mux := handlers.NewRouter(h)
 
