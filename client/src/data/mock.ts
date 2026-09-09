@@ -27,11 +27,30 @@ export const statusLabel: Record<StatusKind, string> = {
   paused: "En pausa",
 };
 
+export type CampaignStatus = "active" | "paused" | "finished";
+
+export const campaignStatusColor: Record<CampaignStatus, string> = {
+  active: "var(--status-alive)",
+  paused: "var(--status-paused-text)",
+  finished: "var(--text-secondary)",
+};
+
+export const campaignStatusDotColor: Record<CampaignStatus, string> = {
+  ...campaignStatusColor,
+  paused: "var(--status-paused-dot)",
+};
+
+export const campaignStatusLabel: Record<CampaignStatus, string> = {
+  active: "Activa",
+  paused: "En pausa",
+  finished: "Finalizada",
+};
+
 export interface Campaign {
   id: string;
   name: string;
   system: string;
-  status: StatusKind;
+  status: CampaignStatus;
   meta: string;
   last: string;
 }
@@ -41,8 +60,8 @@ export const campaigns: Campaign[] = [
     id: "c1",
     name: "Shadesmar",
     system: "Cosmere RPG",
-    status: "alive",
-    meta: "Arco II · 4/7 sesiones",
+    status: "active",
+    meta: "Arco II · 4 sesiones",
     last: "hace 13 días",
   },
   {
@@ -50,22 +69,22 @@ export const campaigns: Campaign[] = [
     name: "El Precipicio de Hierro",
     system: "Cosmere RPG",
     status: "paused",
-    meta: "Arco I · 2/6 sesiones",
+    meta: "Arco I · 2 sesiones",
     last: "hace 2 meses",
   },
   {
     id: "c3",
     name: "Los Herederos de Roshar",
     system: "Cosmere RPG",
-    status: "alive",
-    meta: "Arco III · 6/8 sesiones",
+    status: "active",
+    meta: "Arco III · 6 sesiones",
     last: "hace 4 días",
   },
   {
     id: "c4",
     name: "La Última Tormenta",
     system: "Cosmere RPG",
-    status: "dead",
+    status: "finished",
     meta: "Arco I · cerrada",
     last: "hace 8 meses",
   },

@@ -4,8 +4,12 @@ import {
   statusLabel,
   questStatusColor,
   questStatusLabel,
+  campaignStatusColor,
+  campaignStatusDotColor,
+  campaignStatusLabel,
   type StatusKind,
   type QuestStatus,
+  type CampaignStatus,
 } from "../data/mock";
 
 export function StatusPill({
@@ -32,6 +36,18 @@ export function QuestStatusPill({ status }: { status: QuestStatus }) {
     <span className="status-pill" style={{ color }}>
       <span className="status-dot" style={{ background: color }} />
       {questStatusLabel[status]}
+    </span>
+  );
+}
+
+export function CampaignStatusPill({ status }: { status: CampaignStatus }) {
+  return (
+    <span className="status-pill" style={{ color: campaignStatusColor[status] }}>
+      <span
+        className="status-dot"
+        style={{ background: campaignStatusDotColor[status] }}
+      />
+      {campaignStatusLabel[status]}
     </span>
   );
 }

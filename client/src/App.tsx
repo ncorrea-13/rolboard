@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import { apiFetch } from "./lib/api";
 import { AppShell } from "./components/AppShell";
 import { Modal } from "./components/Modal";
 import { NewSessionForm } from "./components/NewSessionForm";
@@ -30,7 +31,6 @@ import {
   QuestDetail,
 } from "./screens/EntityDetails";
 import {
-  campaigns as initialCampaigns,
   npcs as initialNpcs,
   arcs as initialArcs,
   groups as initialGroups,
@@ -39,6 +39,7 @@ import {
   playerCharacters as initialPlayerCharacters,
   locationTypeLabel,
   type Campaign,
+  type CampaignStatus,
   type Npc,
   type Arc,
   type Group,
@@ -47,6 +48,24 @@ import {
   type PlayerCharacter,
   type SessionEntry,
 } from "./data/mock";
+
+interface ApiCampaign {
+  id: number;
+  name: string;
+  system: string;
+  status: CampaignStatus;
+}
+
+function mapCampaign(c: ApiCampaign): Campaign {
+  return {
+    id: String(c.id),
+    name: c.name,
+    system: c.system,
+    status: c.status,
+    meta: "",
+    last: "",
+  };
+}
 
 type EntityKind = "arc" | "faction" | "location" | "quest";
 
@@ -195,7 +214,13 @@ const blankPlayerDraft: PlayerCharacter = {
 
 export default function App() {
   const [route, setRoute] = useState<Route>({ name: "campaigns" });
-  const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+
+  useEffect(() => {
+    apiFetch<ApiCampaign[]>("/campaigns")
+      .then((data) => setCampaigns((data ?? []).map(mapCampaign)))
+      .catch((err) => console.error("Error cargando campañas:", err));
+  }, []);
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
   const [npcs, setNpcs] = useState<Npc[]>(initialNpcs);
   const [arcs, setArcs] = useState<Arc[]>(initialArcs);
@@ -234,11 +259,18 @@ export default function App() {
     setRoute({ name: "section", section: "resumen" });
   }
 
-  function createCampaign(campaign: Omit<Campaign, "id">) {
-    const id = `c${campaigns.length + 1}`;
-    setCampaigns((prev) => [...prev, { ...campaign, id }]);
-    setNewCampaignOpen(false);
-    selectCampaign(id);
+  function createCampaign(campaign: Omit<Campaign, "id">, vaultPath: string) {
+    apiFetch<ApiCampaign>("/campaigns", {
+      method: "POST",
+      body: JSON.stringify({ name: campaign.name, system: campaign.system, description: "", vault_path: vaultPath }),
+    })
+      .then((created) => {
+        const mapped = mapCampaign(created);
+        setCampaigns((prev) => [...prev, mapped]);
+        setNewCampaignOpen(false);
+        selectCampaign(mapped.id);
+      })
+      .catch((err) => console.error("Error creando campaña:", err));
   }
 
   function saveNpc(id: string, patch: Partial<Npc>) {
