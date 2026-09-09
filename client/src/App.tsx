@@ -34,7 +34,6 @@ import {
   npcs as initialNpcs,
   arcs as initialArcs,
   groups as initialGroups,
-  locations as initialLocations,
   quests as initialQuests,
   playerCharacters as initialPlayerCharacters,
   locationTypeLabel,
@@ -149,6 +148,38 @@ function npcToApiPayload(npc: Npc) {
     etnia: npc.etnia || undefined,
     tipo_spren: npc.tipoSpren || undefined,
     obsidian_path: npc.obsidianPath || undefined,
+  };
+}
+
+interface ApiLocation {
+  id: number;
+  campaign_id: number;
+  name: string;
+  location_type: string;
+  parent_location_id?: number;
+  description: string;
+  obsidian_path?: string;
+}
+
+function mapLocation(l: ApiLocation): Location {
+  return {
+    id: String(l.id),
+    campaignId: String(l.campaign_id),
+    name: l.name,
+    locationType: l.location_type as Location["locationType"],
+    parentId: l.parent_location_id ? String(l.parent_location_id) : undefined,
+    description: l.description,
+    obsidianPath: l.obsidian_path ?? "",
+  };
+}
+
+function locationToApiPayload(l: Location) {
+  return {
+    name: l.name,
+    location_type: l.locationType,
+    parent_location_id: l.parentId ? Number(l.parentId) : undefined,
+    description: l.description,
+    obsidian_path: l.obsidianPath || undefined,
   };
 }
 
@@ -322,7 +353,15 @@ export default function App() {
 
   const [arcs, setArcs] = useState<Arc[]>(initialArcs);
   const [groups, setGroups] = useState<Group[]>(initialGroups);
-  const [locations, setLocations] = useState<Location[]>(initialLocations);
+  const [locations, setLocations] = useState<Location[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiLocation[]>(`/campaigns/${activeCampaignId}/locations`)
+      .then((data) => setLocations((data ?? []).map(mapLocation)))
+      .catch((err) => console.error("Error cargando locaciones:", err));
+  }, [activeCampaignId]);
+
   const [quests, setQuests] = useState<Quest[]>(initialQuests);
   const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
     initialPlayerCharacters,
@@ -541,36 +580,35 @@ export default function App() {
         break;
       }
       case "location": {
-        if (id) {
-          setLocations((prev) =>
-            prev.map((l) =>
-              l.id === id
-                ? {
-                    ...l,
-                    name: values.name,
-                    locationType:
-                      values.locationType as Location["locationType"],
-                    parentId: values.parentId || undefined,
-                    description: values.description,
-                  }
-                : l,
-            ),
-          );
-        } else {
-          const newId = nextId("l", locations);
-          setLocations((prev) => [
-            ...prev,
-            {
-              id: newId,
+        const draft: Location = id
+          ? {
+              ...locations.find((l) => l.id === id)!,
+              name: values.name,
+              locationType: values.locationType as Location["locationType"],
+              parentId: values.parentId || undefined,
+              description: values.description,
+            }
+          : {
+              id: "",
               campaignId: activeCampaign!.id,
               name: values.name,
               locationType: values.locationType as Location["locationType"],
               parentId: values.parentId || undefined,
               description: values.description,
               obsidianPath: `Locaciones/${values.name}.md`,
-            },
-          ]);
-        }
+            };
+        const payload = JSON.stringify(locationToApiPayload(draft));
+        const request = id
+          ? apiFetch<ApiLocation>(`/locations/${id}`, { method: "PUT", body: payload })
+          : apiFetch<ApiLocation>(`/campaigns/${activeCampaign!.id}/locations`, { method: "POST", body: payload });
+        request
+          .then((saved) => {
+            const location = mapLocation(saved);
+            setLocations((prev) =>
+              id ? prev.map((l) => (l.id === id ? location : l)) : [...prev, location],
+            );
+          })
+          .catch((err) => console.error("Error guardando locación:", err));
         break;
       }
       case "quest": {
@@ -613,6 +651,13 @@ export default function App() {
 
   function deleteEntity(kind: EntityKind, id: string) {
     if (!window.confirm(`¿Dar de baja este ${entityKindLabel[kind]}? Deja de verse en la campaña, no se borra.`)) return;
+    if (kind === "location") {
+      apiFetch(`/locations/${id}`, { method: "DELETE" })
+        .then(() => setLocations((prev) => prev.filter((l) => l.id !== id)))
+        .catch((err) => console.error("Error borrando locación:", err));
+      goToEntitySection(kind);
+      return;
+    }
     const deletedAt = new Date().toISOString();
     switch (kind) {
       case "arc":
@@ -620,9 +665,6 @@ export default function App() {
         break;
       case "faction":
         setGroups((prev) => prev.map((g) => (g.id === id ? { ...g, deletedAt } : g)));
-        break;
-      case "location":
-        setLocations((prev) => prev.map((l) => (l.id === id ? { ...l, deletedAt } : l)));
         break;
       case "quest":
         setQuests((prev) => prev.map((q) => (q.id === id ? { ...q, deletedAt } : q)));
