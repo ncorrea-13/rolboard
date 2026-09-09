@@ -94,7 +94,7 @@ DELETE /api/sessions/:id
 GET /api/campaigns/:id/dashboard
 ```
 
-Devuelve en una sola respuesta lo necesario para pintar la vista principal sin que el frontend tenga que hacer múltiples requests al cargar: quests activas, NPCs recientes/relevantes, última sesión, pendientes.
+Devuelve en una sola respuesta lo necesario para pintar la vista principal sin que el frontend tenga que hacer múltiples requests al cargar: `active_quests`, `on_hold_quests`, `recent_npcs` (5 más recientes por `updated_at`), `last_session` (mayor `session_number`/`sub_number`).
 
 ## Notas del vault (render)
 
