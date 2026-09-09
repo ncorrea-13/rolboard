@@ -3,10 +3,14 @@ version: "3.8"
 services:
   server:
     build: ./server
+    env_file:
+      - .env
     volumes:
       - campaign_data:/data
+      - ${VAULTS_ROOT_HOST}:/vaults:ro
     environment:
       DB_PATH: /data/campaign.db
+      VAULTS_ROOT: /vaults
     restart: unless-stopped
 
   client:

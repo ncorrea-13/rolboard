@@ -15,6 +15,7 @@ type CreateCampaignPayload struct {
 	Name        string `json:"name"`
 	System      string `json:"system"`
 	Description string `json:"description"`
+	VaultPath   string `json:"vault_path"`
 }
 
 type UpdateCampaignPayload struct {
@@ -22,6 +23,7 @@ type UpdateCampaignPayload struct {
 	System      string `json:"system"`
 	Description string `json:"description"`
 	Status      string `json:"status"`
+	VaultPath   string `json:"vault_path"`
 }
 
 var validCampaignStatuses = map[string]bool{
@@ -57,6 +59,7 @@ func (h *Handlers) CreateCampaign(w http.ResponseWriter, r *http.Request) {
 		Name:        payload.Name,
 		System:      payload.System,
 		Description: payload.Description,
+		VaultPath:   payload.VaultPath,
 	}
 
 	err := h.campaigns.Create(r.Context(), &campaign)
@@ -120,6 +123,7 @@ func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 		System:      payload.System,
 		Description: payload.Description,
 		Status:      payload.Status,
+		VaultPath:   payload.VaultPath,
 	}
 	err = h.campaigns.Update(r.Context(), id, &campaign)
 

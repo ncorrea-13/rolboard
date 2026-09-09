@@ -6,7 +6,7 @@ import (
 )
 
 func TestParseNPC(t *testing.T) {
-	raw := []byte("tipo: npc\nstatus: vivo\netnia: Alethi\nrol: soldado\nfaccion: Bridge Four\ncurrent_location: \"[[Urithiru]]\"\ntags:\n  - protagonista\n  - spren-bond")
+	raw := []byte("tipo: npc\nstatus: vivo\netnia: Alethi\nrol: soldado\nfaccion:\n  - Bridge Four\ncurrent_location: \"[[Urithiru]]\"\ntags:\n  - protagonista\n  - spren-bond")
 
 	fm, err := ParseNPC(raw)
 	if err != nil {
@@ -16,7 +16,7 @@ func TestParseNPC(t *testing.T) {
 	if fm.Tipo != "npc" || fm.Status != "vivo" {
 		t.Errorf("Unexpected tipo/status: %+v", fm)
 	}
-	if fm.Etnia != "Alethi" || fm.Rol != "soldado" || fm.Faccion != "Bridge Four" {
+	if fm.Etnia != "Alethi" || fm.Rol != "soldado" || !slices.Equal(fm.Faccion, []string{"Bridge Four"}) {
 		t.Errorf("Unexpected optional fields: %+v", fm)
 	}
 	if fm.CurrentLocation != "[[Urithiru]]" {
@@ -73,7 +73,7 @@ func TestParseGroup(t *testing.T) {
 }
 
 func TestParseSession(t *testing.T) {
-	raw := []byte("tipo: sesion\nnumero: 12\narco: \"[[Arco-2]]\"\ndate: 2026-01-15\nestado: jugada")
+	raw := []byte("tipo: sesion\nnumero: 12\narco: \"[[Arco-2]]\"\nfecha: 2026-01-15\nestado: jugada")
 
 	fm, err := ParseSession(raw)
 	if err != nil {
@@ -91,14 +91,14 @@ func TestParseSession(t *testing.T) {
 }
 
 func TestParseSessionZeroNumber(t *testing.T) {
-	raw := []byte("tipo: sesion\nnumero: 0\ndate: 2025-12-01\nestado: planificacion")
+	raw := []byte("tipo: sesion\nnumero: 0\nfecha: 2025-12-01\nestado: planificacion")
 
 	fm, err := ParseSession(raw)
 	if err != nil {
 		t.Fatalf("ParseSession failed: %v", err)
 	}
 	if fm.Numero != 0 {
-		t.Errorf("Expected numero 0 (sesion introductoria), got %d", fm.Numero)
+		t.Errorf("Expected numero 0 (sesion introductoria), got %v", fm.Numero)
 	}
 }
 

@@ -53,6 +53,10 @@ func (r *SessionRepository) Create(ctx context.Context, s *models.Session) error
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO sessions (campaign_id, arc_id, session_number, sub_number, session_type, date, summary, obsidian_path)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
+			arc_id = excluded.arc_id, session_number = excluded.session_number, sub_number = excluded.sub_number,
+			session_type = excluded.session_type, date = excluded.date, summary = excluded.summary,
+			deleted_at = NULL, updated_at = datetime('now')
 		RETURNING id, campaign_id, arc_id, session_number, sub_number, session_type, date, summary, obsidian_path, created_at, updated_at`,
 		s.CampaignID, toNullInt64(s.ArcID), s.SessionNumber, s.SubNumber, s.SessionType, s.Date, s.Summary, toNullString(s.ObsidianPath),
 	).Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Date, &s.Summary, &obsidianPath, &s.CreatedAt, &s.UpdatedAt)

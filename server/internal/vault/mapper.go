@@ -32,7 +32,7 @@ type NPCFrontmatter struct {
 	Status          string   `yaml:"status"`
 	Etnia           string   `yaml:"etnia,omitempty"`
 	Rol             string   `yaml:"rol,omitempty"`
-	Faccion         string   `yaml:"faccion,omitempty"`
+	Faccion         []string `yaml:"faccion,omitempty"`
 	VinculoCon      string   `yaml:"vinculo_con,omitempty"`
 	TipoSpren       string   `yaml:"tipo_spren,omitempty"`
 	CurrentLocation string   `yaml:"current_location,omitempty"`
@@ -59,13 +59,15 @@ type GroupFrontmatter struct {
 }
 
 type SessionFrontmatter struct {
-	Tipo   string `yaml:"tipo"`
-	Numero int    `yaml:"numero"`
-	Arco   string `yaml:"arco,omitempty"`
-	Date   string `yaml:"date"`
-	Estado string `yaml:"estado"`
-	Titulo string `yaml:"titulo,omitempty"`
-	Pov    string `yaml:"pov,omitempty"`
+	Tipo   string   `yaml:"tipo"`
+	Numero float64  `yaml:"numero"`
+	Arco   string   `yaml:"arco,omitempty"`
+	Date   string   `yaml:"fecha"`
+	Status string   `yaml:"status,omitempty"`
+	Estado string   `yaml:"estado"`
+	Titulo string   `yaml:"titulo,omitempty"`
+	Pov    string   `yaml:"pov,omitempty"`
+	Tags   []string `yaml:"tags,omitempty"`
 }
 
 type JugadorFrontmatter struct {

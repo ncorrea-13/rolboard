@@ -52,9 +52,9 @@ func TestReindexCreatesEntitiesAndResolvesRelations(t *testing.T) {
 	writeVaultFile(t, root, "Locaciones/Roshar.md", "---\ntipo: planeta\nrelevancia: alta\n---\nEl mundo principal.")
 	writeVaultFile(t, root, "Locaciones/Ciudades/Kharbranth.md", "---\ntipo: ciudad\nrelevancia: media\nparent: \"[[Roshar]]\"\n---\nCiudad puerto.")
 	writeVaultFile(t, root, "Grupos/Bridge Four.md", "---\ntipo: faccion\nalineacion: neutral\n---\nEscuadrón de puentes.")
-	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\ncurrent_location: \"[[Kharbranth]]\"\nfaccion: \"[[Bridge Four]]\"\n---\nCapitán de Bridge Four.")
+	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\ncurrent_location: \"[[Kharbranth]]\"\nfaccion:\n  - \"[[Bridge Four]]\"\n---\nCapitán de Bridge Four.")
 	writeVaultFile(t, root, "Arcos/Arco 1.md", "---\ntipo: arco\narco: 1\ntitulo: Arco Uno\nstatus: en curso\n---\nPrimer arco.")
-	writeVaultFile(t, root, "Sesiones/Sesion 1.md", "---\ntipo: sesion\nnumero: 1\narco: \"[[Arco 1]]\"\ndate: 2026-01-01\nestado: jugada\n---\nPrimera sesión.")
+	writeVaultFile(t, root, "Sesiones/Sesion 1.md", "---\ntipo: sesion\nnumero: 1\narco: \"[[Arco 1]]\"\nfecha: 2026-01-01\nestado: jugada\n---\nPrimera sesión.")
 
 	indexer := NewIndexer(root, campaign.ID, db)
 	result, err := indexer.Reindex(ctx)
@@ -244,7 +244,7 @@ func TestReindexPopulatesSessionNpcsAndPcs(t *testing.T) {
 	writeVaultFile(t, root, "Jugadores/Lucas/Yashin.md", "---\ntipo: jugador\njugador: Lucas\nstatus: activo\n---\nFicha de Yashin.")
 	writeVaultFile(t, root, "Arcos/Arco 1.md", "---\ntipo: arco\narco: 1\ntitulo: Arco Uno\nstatus: en curso\n---\nPrimer arco.")
 	writeVaultFile(t, root, "Sesiones/Sesion 1.md",
-		"---\ntipo: sesion\nnumero: 1\narco: \"[[Arco 1]]\"\ndate: 2026-01-01\nestado: jugada\n---\n"+
+		"---\ntipo: sesion\nnumero: 1\narco: \"[[Arco 1]]\"\nfecha: 2026-01-01\nestado: jugada\n---\n"+
 			"El grupo llega a [[Kholinar]]. [[Yashin]] negocia con [[Threnn]]. Más tarde, [[Yashin]] se retira solo.")
 
 	indexer := NewIndexer(root, campaign.ID, db)

@@ -1,0 +1,1 @@
+ALTER TABLE campaigns ADD COLUMN vault_path TEXT NOT NULL DEFAULT '';

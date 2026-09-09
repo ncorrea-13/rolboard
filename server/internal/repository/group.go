@@ -50,6 +50,8 @@ func (r *GroupRepository) Create(ctx context.Context, g *models.Group) error {
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO groups (campaign_id, name, description, notes, obsidian_path)
 		VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
+			name = excluded.name, description = excluded.description, notes = excluded.notes, deleted_at = NULL, updated_at = datetime('now')
 		RETURNING id, campaign_id, name, description, notes, obsidian_path, created_at, updated_at`,
 		g.CampaignID, g.Name, g.Description, g.Notes, toNullString(g.ObsidianPath),
 	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &obsidianPath, &g.CreatedAt, &g.UpdatedAt)

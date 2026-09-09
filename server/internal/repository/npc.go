@@ -57,6 +57,11 @@ func (r *NPCRepository) Create(ctx context.Context, n *models.NPC) error {
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO npcs (campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, vinculo_con, tipo_spren, description, notes, obsidian_path)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
+			name = excluded.name, npc_kind = excluded.npc_kind, detail_level = excluded.detail_level,
+			status = excluded.status, location_id = excluded.location_id, etnia = excluded.etnia,
+			rol = excluded.rol, vinculo_con = excluded.vinculo_con, tipo_spren = excluded.tipo_spren,
+			description = excluded.description, notes = excluded.notes, deleted_at = NULL, updated_at = datetime('now')
 		RETURNING id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, vinculo_con, tipo_spren, description, notes, obsidian_path, created_at, updated_at`,
 		n.CampaignID, n.Name, n.NPCKind, n.DetailLevel, n.Status, toNullInt64(n.LocationID), toNullString(n.Etnia), toNullString(n.Rol), toNullInt64(n.VinculoCon), toNullString(n.TipoSpren), n.Description, n.Notes, toNullString(n.ObsidianPath),
 	).Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &vinculoCon, &tipoSpren, &n.Description, &n.Notes, &obsidianPath, &n.CreatedAt, &n.UpdatedAt)

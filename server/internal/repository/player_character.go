@@ -50,6 +50,9 @@ func (r *PlayerCharacterRepository) Create(ctx context.Context, p *models.Player
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO player_characters (campaign_id, player_name, character_name, backstory, progression_notes, obsidian_path)
 		VALUES (?, ?, ?, ?, ?, ?)
+		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
+			player_name = excluded.player_name, character_name = excluded.character_name,
+			backstory = excluded.backstory, progression_notes = excluded.progression_notes, deleted_at = NULL, updated_at = datetime('now')
 		RETURNING id, campaign_id, player_name, character_name, backstory, progression_notes, obsidian_path, created_at, updated_at`,
 		p.CampaignID, p.PlayerName, p.CharacterName, p.Backstory, p.ProgressionNotes, toNullString(p.ObsidianPath),
 	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Backstory, &p.ProgressionNotes, &obsidianPath, &p.CreatedAt, &p.UpdatedAt)
