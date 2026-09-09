@@ -61,6 +61,7 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("DELETE /api/groups/{id}", http.HandlerFunc(h.DeleteGroup))
 
 	mux.HandleFunc("POST /api/campaigns/{id}/reindex", h.Reindex)
+	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.ListVaultDirs))
 
 	return mux
 }
