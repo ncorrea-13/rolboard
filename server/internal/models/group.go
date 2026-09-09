@@ -7,6 +7,7 @@ type Group struct {
 	Description  string  `json:"description"`
 	Notes        string  `json:"notes"`
 	ObsidianPath *string `json:"obsidian_path,omitempty"`
+	MemberCount  int64   `json:"member_count"`
 	CreatedAt    string  `json:"created_at"`
 	UpdatedAt    string  `json:"updated_at"`
 }

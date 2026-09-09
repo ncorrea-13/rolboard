@@ -463,17 +463,23 @@ func (ix *Indexer) resolveNPCs(ctx context.Context, idx *NameIndex, staged []sta
 				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, sn.location)
 			}
 		}
-		if sn.vinculoCon != "" {
-			if vinculoID, err := Resolve(idx, sn.vinculoCon, "npc"); err == nil {
-				npc.VinculoCon = &vinculoID
-				changed = true
-			} else {
-				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, sn.vinculoCon)
-			}
-		}
 		if changed {
 			if err := ix.npcs.Update(ctx, sn.id, npc); err != nil {
 				result.Errors = append(result.Errors, err.Error())
+			}
+		}
+
+		if _, err := ix.db.ExecContext(ctx, `DELETE FROM npc_relations WHERE from_npc_id = ? AND role = 'vinculado_a'`, sn.id); err != nil {
+			result.Errors = append(result.Errors, err.Error())
+			continue
+		}
+		if sn.vinculoCon != "" {
+			if vinculoID, err := Resolve(idx, sn.vinculoCon, "npc"); err == nil {
+				if err := ix.npcs.CreateRelation(ctx, &models.NPCRelation{FromNPCID: sn.id, ToNPCID: vinculoID, Role: "vinculado_a"}); err != nil {
+					result.Errors = append(result.Errors, err.Error())
+				}
+			} else {
+				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, sn.vinculoCon)
 			}
 		}
 
