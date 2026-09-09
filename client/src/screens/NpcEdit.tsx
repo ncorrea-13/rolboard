@@ -70,7 +70,9 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
       <div className="npc-edit__bar" style={{ boxShadow: "inset 4px 0 0 var(--accent-flame)" }}>
         <div className="npc-edit__bar-left">
           <span className="status-dot" style={{ background: "var(--accent-flame)" }} />
-          <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>Editando · {npc.name}</span>
+          <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
+            {npc.id ? `Editando · ${npc.name}` : "Nuevo NPC"}
+          </span>
           {dirty && (
             <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>cambios sin guardar</span>
           )}

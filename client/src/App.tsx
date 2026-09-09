@@ -13,6 +13,8 @@ import {
 import { NpcList } from "./screens/NpcList";
 import { NpcDetail } from "./screens/NpcDetail";
 import { NpcEdit } from "./screens/NpcEdit";
+import { PlayerDetail } from "./screens/PlayerDetail";
+import { PlayerEdit } from "./screens/PlayerEdit";
 import { SessionsTimeline } from "./screens/SessionsTimeline";
 import { ArcsList } from "./screens/ArcsList";
 import { FactionsList } from "./screens/FactionsList";
@@ -24,7 +26,6 @@ import {
   FactionDetail,
   LocationDetail,
   QuestDetail,
-  PlayerDetail,
 } from "./screens/EntityDetails";
 import {
   campaigns as initialCampaigns,
@@ -45,14 +46,13 @@ import {
   type SessionEntry,
 } from "./data/mock";
 
-type EntityKind = "arc" | "faction" | "location" | "quest" | "player";
+type EntityKind = "arc" | "faction" | "location" | "quest";
 
 const entityKindLabel: Record<EntityKind, string> = {
   arc: "arco",
   faction: "facción",
   location: "locación",
   quest: "quest",
-  player: "personaje",
 };
 
 function arcFields(): FormField[] {
@@ -142,21 +142,11 @@ function questFields(): FormField[] {
   ];
 }
 
-function playerFields(): FormField[] {
-  return [
-    { key: "playerName", label: "Jugador", type: "text" },
-    { key: "characterName", label: "Nombre del personaje", type: "text" },
-    { key: "backstory", label: "Trasfondo", type: "textarea" },
-    { key: "progressionNotes", label: "Notas de progresión", type: "textarea" },
-  ];
-}
-
 const entityKindSection: Record<EntityKind, DashboardSection> = {
   arc: "arcos",
   faction: "facciones",
   location: "locaciones",
   quest: "quests",
-  player: "jugadores",
 };
 
 type Route =
@@ -165,6 +155,9 @@ type Route =
   | { name: "npc-detail"; npcId: string }
   | { name: "npc-edit"; npcId: string }
   | { name: "npc-create" }
+  | { name: "player-detail"; playerId: string }
+  | { name: "player-edit"; playerId: string }
+  | { name: "player-create" }
   | { name: "entity-detail"; kind: EntityKind; id: string };
 
 const blankNpcDraft: Npc = {
@@ -179,6 +172,20 @@ const blankNpcDraft: Npc = {
   location: "",
   faction: "—",
   initials: "",
+  obsidianPath: "",
+};
+
+const blankPlayerDraft: PlayerCharacter = {
+  id: "",
+  campaignId: "",
+  playerName: "",
+  characterName: "",
+  race: "",
+  class: "",
+  status: "alive",
+  faction: "—",
+  backstory: "",
+  progressionNotes: "",
   obsidianPath: "",
 };
 
@@ -254,6 +261,25 @@ export default function App() {
     };
     setNpcs((prev) => [...prev, npc]);
     setRoute({ name: "npc-detail", npcId: id });
+  }
+
+  function savePlayer(id: string, patch: Partial<PlayerCharacter>) {
+    setPlayerCharacters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  }
+
+  function createPlayer(patch: Partial<PlayerCharacter>) {
+    const id = `p${playerCharacters.length + 1}`;
+    const playerName = patch.playerName ?? "";
+    const characterName = patch.characterName ?? "";
+    const player: PlayerCharacter = {
+      ...blankPlayerDraft,
+      ...patch,
+      id,
+      campaignId: activeCampaign!.id,
+      obsidianPath: `Jugadores/${playerName}/${characterName}.md`,
+    };
+    setPlayerCharacters((prev) => [...prev, player]);
+    setRoute({ name: "player-detail", playerId: id });
   }
 
   function editSession(
@@ -426,38 +452,6 @@ export default function App() {
         }
         break;
       }
-      case "player": {
-        if (id) {
-          setPlayerCharacters((prev) =>
-            prev.map((p) =>
-              p.id === id
-                ? {
-                    ...p,
-                    playerName: values.playerName,
-                    characterName: values.characterName,
-                    backstory: values.backstory,
-                    progressionNotes: values.progressionNotes,
-                  }
-                : p,
-            ),
-          );
-        } else {
-          const newId = nextId("p", playerCharacters);
-          setPlayerCharacters((prev) => [
-            ...prev,
-            {
-              id: newId,
-              campaignId: activeCampaign!.id,
-              playerName: values.playerName,
-              characterName: values.characterName,
-              backstory: values.backstory,
-              progressionNotes: values.progressionNotes,
-              obsidianPath: `Jugadores/${values.playerName}/${values.characterName}.md`,
-            },
-          ]);
-        }
-        break;
-      }
     }
 
     setEntityForm(null);
@@ -483,9 +477,6 @@ export default function App() {
       case "quest":
         setQuests((prev) => prev.filter((q) => q.id !== id));
         break;
-      case "player":
-        setPlayerCharacters((prev) => prev.filter((p) => p.id !== id));
-        break;
     }
     goToEntitySection(kind);
   }
@@ -500,8 +491,6 @@ export default function App() {
         return locationFields(campaignLocations, entityForm?.id);
       case "quest":
         return questFields();
-      case "player":
-        return playerFields();
     }
   }
 
@@ -549,23 +538,17 @@ export default function App() {
             }
           : undefined;
       }
-      case "player": {
-        const p = playerCharacters.find((x) => x.id === id);
-        return p
-          ? {
-              playerName: p.playerName,
-              characterName: p.characterName,
-              backstory: p.backstory,
-              progressionNotes: p.progressionNotes,
-            }
-          : undefined;
-      }
     }
   }
 
   const selectedNpc =
     route.name === "npc-detail" || route.name === "npc-edit"
       ? npcs.find((n) => n.id === route.npcId)
+      : undefined;
+
+  const selectedPlayer =
+    route.name === "player-detail" || route.name === "player-edit"
+      ? playerCharacters.find((p) => p.id === route.playerId)
       : undefined;
 
   const activeNav: DashboardSection =
@@ -575,9 +558,13 @@ export default function App() {
           route.name === "npc-edit" ||
           route.name === "npc-create"
         ? "npcs"
-        : route.name === "entity-detail"
-          ? entityKindSection[route.kind]
-          : "resumen";
+        : route.name === "player-detail" ||
+            route.name === "player-edit" ||
+            route.name === "player-create"
+          ? "jugadores"
+          : route.name === "entity-detail"
+            ? entityKindSection[route.kind]
+            : "resumen";
 
   const totalSessions = campaignArcs.reduce(
     (acc, a) => acc + a.sessions.length,
@@ -669,10 +656,8 @@ export default function App() {
           {route.name === "section" && route.section === "jugadores" && (
             <PlayersList
               playerCharacters={campaignPlayerCharacters}
-              onSelect={(id) =>
-                setRoute({ name: "entity-detail", kind: "player", id })
-              }
-              onCreate={() => setEntityForm({ kind: "player" })}
+              onSelect={(playerId) => setRoute({ name: "player-detail", playerId })}
+              onCreate={() => setRoute({ name: "player-create" })}
             />
           )}
 
@@ -722,17 +707,6 @@ export default function App() {
               onDelete={() => deleteEntity("quest", route.id)}
             />
           )}
-          {route.name === "entity-detail" && route.kind === "player" && (
-            <PlayerDetail
-              player={
-                campaignPlayerCharacters.find((p) => p.id === route.id) ??
-                campaignPlayerCharacters[0]
-              }
-              onBack={() => goToEntitySection("player")}
-              onEdit={() => setEntityForm({ kind: "player", id: route.id })}
-              onDelete={() => deleteEntity("player", route.id)}
-            />
-          )}
 
           {route.name === "npc-detail" && selectedNpc && (
             <NpcDetail
@@ -770,6 +744,38 @@ export default function App() {
               locations={campaignLocations}
               onSave={createNpc}
               onDiscard={() => setRoute({ name: "section", section: "npcs" })}
+            />
+          )}
+
+          {route.name === "player-detail" && selectedPlayer && (
+            <PlayerDetail
+              player={selectedPlayer}
+              npcs={campaignNpcs}
+              onEdit={() => setRoute({ name: "player-edit", playerId: selectedPlayer.id })}
+              onBack={() => setRoute({ name: "section", section: "jugadores" })}
+            />
+          )}
+
+          {route.name === "player-edit" && selectedPlayer && (
+            <PlayerEdit
+              player={selectedPlayer}
+              npcs={campaignNpcs}
+              groups={campaignGroups}
+              onSave={(patch) => {
+                savePlayer(selectedPlayer.id, patch);
+                setRoute({ name: "player-detail", playerId: selectedPlayer.id });
+              }}
+              onDiscard={() => setRoute({ name: "player-detail", playerId: selectedPlayer.id })}
+            />
+          )}
+
+          {route.name === "player-create" && (
+            <PlayerEdit
+              player={blankPlayerDraft}
+              npcs={campaignNpcs}
+              groups={campaignGroups}
+              onSave={createPlayer}
+              onDiscard={() => setRoute({ name: "section", section: "jugadores" })}
             />
           )}
         </AppShell>

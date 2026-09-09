@@ -9,7 +9,6 @@ import {
   type Group,
   type Location,
   type Quest,
-  type PlayerCharacter,
   type Npc,
 } from "../data/mock";
 
@@ -221,26 +220,3 @@ export function QuestDetail({
   );
 }
 
-export function PlayerDetail({
-  player,
-  onBack,
-  onEdit,
-  onDelete,
-}: { player: PlayerCharacter; onBack: () => void } & EditableProps) {
-  return (
-    <EntityDetail
-      eyebrow="JUGADORES"
-      backLabel="JUGADORES"
-      onBack={onBack}
-      title={player.characterName}
-      subtitle={`Jugado por ${player.playerName}`}
-      obsidianPath={player.obsidianPath}
-      onEdit={onEdit}
-      onDelete={onDelete}
-      fields={[
-        { label: "Trasfondo", value: player.backstory },
-        { label: "Notas de progresión", value: player.progressionNotes },
-      ]}
-    />
-  );
-}

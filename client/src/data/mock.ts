@@ -373,6 +373,11 @@ export interface PlayerCharacter {
   campaignId: string;
   playerName: string;
   characterName: string;
+  race: string;
+  class: string;
+  status: StatusKind;
+  faction: string;
+  links?: NpcLink[];
   backstory: string;
   progressionNotes: string;
   obsidianPath: string;
@@ -384,6 +389,10 @@ export const playerCharacters: PlayerCharacter[] = [
     campaignId: "c1",
     playerName: "Marina",
     characterName: "Tovash Encendehojas",
+    race: "Alethi",
+    class: "Radiante (Ideal Segundo pendiente)",
+    status: "alive",
+    faction: "—",
     backstory:
       "Ojos claros venida a menos, huyó de su casa antes de que la comprometieran en matrimonio. Guarda un cuchillo de su padre que no explica.",
     progressionNotes:
@@ -395,6 +404,11 @@ export const playerCharacters: PlayerCharacter[] = [
     campaignId: "c1",
     playerName: "Facu",
     characterName: "Brannt del Muelle",
+    race: "Alethi",
+    class: "Guerrero",
+    status: "alive",
+    faction: "—",
+    links: [{ role: "ALIADO DE", npcId: "n1" }],
     backstory:
       "Estibador ojos oscuros, perdió a su hermano en un colapso de esferas años atrás. Desconfía de la nobleza por principio.",
     progressionNotes:
@@ -406,6 +420,10 @@ export const playerCharacters: PlayerCharacter[] = [
     campaignId: "c1",
     playerName: "Ro",
     characterName: "Cifra",
+    race: "Spren de conocimiento",
+    class: "—",
+    status: "alive",
+    faction: "—",
     backstory:
       "Spren de conocimiento con forma casi humana, no recuerda quién fue su vínculo original.",
     progressionNotes:
