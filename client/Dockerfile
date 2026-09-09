@@ -3,7 +3,7 @@ FROM node:26-alpine AS builder
 
 WORKDIR /build
 COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN npm install -g pnpm@12 && pnpm install --frozen-lockfile
 
 COPY . ./
 RUN pnpm build
