@@ -13,6 +13,7 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("PUT /api/campaigns/{id}", http.HandlerFunc(h.UpdateCampaign))
 	mux.Handle("DELETE /api/campaigns/{id}", http.HandlerFunc(h.DeleteCampaign))
 	mux.Handle("GET /api/campaigns/{id}/dashboard", http.HandlerFunc(h.GetDashboard))
+	mux.Handle("GET /api/campaigns/{id}/notes/render", http.HandlerFunc(h.RenderNote))
 	mux.Handle("GET /api/campaigns/{id}/arcs", http.HandlerFunc(h.ListArcs))
 	mux.HandleFunc("POST /api/campaigns/{id}/arcs", h.CreateArc)
 	mux.Handle("GET /api/arcs/{id}", http.HandlerFunc(h.GetArc))
