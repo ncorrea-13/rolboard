@@ -3,12 +3,18 @@ version: "3.8"
 services:
   server:
     build: ./server
-    ports:
-      - "${PORT}:8080"
     volumes:
       - campaign_data:/data
     environment:
       DB_PATH: /data/campaign.db
+    restart: unless-stopped
+
+  client:
+    build: ./client
+    ports:
+      - "${PORT}:80"
+    depends_on:
+      - server
     restart: unless-stopped
 
 volumes:
