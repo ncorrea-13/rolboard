@@ -34,3 +34,15 @@ func (s *NPCService) Update(ctx context.Context, id int64, n *models.NPC) error 
 func (s *NPCService) Delete(ctx context.Context, id int64) error {
 	return s.repo.Delete(ctx, id)
 }
+
+func (s *NPCService) ListRelations(ctx context.Context, npcID int64) ([]models.NPCRelation, error) {
+	return s.repo.ListRelations(ctx, npcID)
+}
+
+func (s *NPCService) CreateRelation(ctx context.Context, rel *models.NPCRelation) error {
+	return s.repo.CreateRelation(ctx, rel)
+}
+
+func (s *NPCService) DeleteRelation(ctx context.Context, fromNPCID, toNPCID int64, role string) error {
+	return s.repo.DeleteRelation(ctx, fromNPCID, toNPCID, role)
+}

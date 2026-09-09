@@ -31,6 +31,9 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("GET /api/npcs/{id}", http.HandlerFunc(h.GetNPC))
 	mux.Handle("PUT /api/npcs/{id}", http.HandlerFunc(h.UpdateNPC))
 	mux.Handle("DELETE /api/npcs/{id}", http.HandlerFunc(h.DeleteNPC))
+	mux.Handle("GET /api/npcs/{id}/relations", http.HandlerFunc(h.ListNPCRelations))
+	mux.Handle("POST /api/npcs/{id}/relations", http.HandlerFunc(h.CreateNPCRelation))
+	mux.Handle("DELETE /api/npcs/{id}/relations/{toId}/{role}", http.HandlerFunc(h.DeleteNPCRelation))
 
 	mux.Handle("GET /api/campaigns/{id}/player-characters", http.HandlerFunc(h.ListPlayerCharacters))
 	mux.HandleFunc("POST /api/campaigns/{id}/player-characters", h.CreatePlayerCharacter)
