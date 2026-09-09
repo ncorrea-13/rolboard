@@ -35,7 +35,12 @@ POST   /api/campaigns/:id/npcs
 GET    /api/npcs/:id
 PUT    /api/npcs/:id
 DELETE /api/npcs/:id
+GET    /api/npcs/:id/relations                    -- relaciones donde el NPC es from_npc_id o to_npc_id
+POST   /api/npcs/:id/relations                     -- body: {"to_npc_id": <id>, "role": "ACREEDOR"}, :id es from_npc_id
+DELETE /api/npcs/:id/relations/:toId/:role         -- :id es from_npc_id
 ```
+
+`role` es texto libre (sin `CHECK` en DB, sin enum en Go) — a diferencia de `status`/`npc_kind`, estos roles nacen de prosa de sesión ("ACREEDOR", "LE DEBE A", "VINCULADO A"), no de un vocabulario cerrado.
 
 ## Locations
 
@@ -57,6 +62,8 @@ PUT    /api/groups/:id
 DELETE /api/groups/:id
 GET    /api/groups/:id/members       -- calculado desde npc_groups, no almacenado
 ```
+
+`GET /api/campaigns/:id/groups` y `GET /api/groups/:id` incluyen `member_count` (calculado desde `npc_groups`, mismo caso que `members`, no es columna).
 
 ## Player Characters
 
