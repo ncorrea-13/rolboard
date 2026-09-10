@@ -33,6 +33,7 @@ import {
 import {
   npcs as initialNpcs,
   playerCharacters as initialPlayerCharacters,
+  locationBreadcrumb,
   type Campaign,
   type Npc,
   type Arc,
@@ -189,9 +190,6 @@ export default function App() {
 
   const activeCampaign = campaigns.find((c) => c.id === activeCampaignId);
 
-  const campaignNpcs = npcs.filter(
-    (n) => n.campaignId === activeCampaignId && !n.deletedAt,
-  );
   const campaignArcs = arcs.filter(
     (a) => a.campaignId === activeCampaignId && !a.deletedAt,
   );
@@ -201,6 +199,12 @@ export default function App() {
   const campaignLocations = locations.filter(
     (l) => l.campaignId === activeCampaignId && !l.deletedAt,
   );
+  const campaignNpcs = npcs
+    .filter((n) => n.campaignId === activeCampaignId && !n.deletedAt)
+    .map((n) => {
+      const loc = n.locationId ? campaignLocations.find((l) => l.id === n.locationId) : undefined;
+      return loc ? { ...n, location: locationBreadcrumb(loc, campaignLocations) } : n;
+    });
   const campaignQuests = quests.filter(
     (q) => q.campaignId === activeCampaignId && !q.deletedAt,
   );
@@ -268,10 +272,10 @@ export default function App() {
       body: JSON.stringify(npcToApiPayload(draft)),
     })
       .then((created) => {
-        // mapNpc no trae location/faction/links (no vienen del backend todavía) — se conservan del draft.
+        // mapNpc ya trae locationId real del backend. faction/links no tienen
+        // backing todavía (npc_groups/npc_relations son indexer-only) — se conservan del draft.
         const npc: Npc = {
           ...mapNpc(created),
-          location: draft.location,
           faction: draft.faction,
           links: draft.links,
         };

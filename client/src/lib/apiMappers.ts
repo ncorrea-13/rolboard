@@ -40,6 +40,7 @@ export interface ApiNpc {
   rol?: string;
   etnia?: string;
   tipo_spren?: string;
+  location_id?: number;
   description: string;
   obsidian_path?: string;
 }
@@ -77,6 +78,7 @@ export function mapNpc(n: ApiNpc): Npc {
     status: apiStatusToStatusKind[n.status] ?? "alive",
     statusNote: canonicalApiStatus.has(n.status) ? undefined : n.status,
     location: "—",
+    locationId: n.location_id ? String(n.location_id) : undefined,
     faction: "—",
     initials: initialsFromName(n.name),
     obsidianPath: n.obsidian_path ?? "",
@@ -109,6 +111,7 @@ export function npcToApiPayload(npc: Npc) {
     rol: npc.role || undefined,
     etnia: npc.etnia || undefined,
     tipo_spren: npc.tipoSpren || undefined,
+    location_id: npc.locationId ? Number(npc.locationId) : undefined,
     obsidian_path: npc.obsidianPath || undefined,
   };
 }

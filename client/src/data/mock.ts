@@ -235,6 +235,12 @@ export interface Location {
   obsidianPath: string;
 }
 
+export function locationBreadcrumb(loc: Location, all: Location[]): string {
+  const parent = loc.parentId ? all.find((l) => l.id === loc.parentId) : undefined;
+  if (!parent || parent.locationType === "planet" || parent.locationType === "region") return loc.name;
+  return `${parent.name} · ${loc.name}`;
+}
+
 export const locations: Location[] = [
   {
     id: "l1",
@@ -317,6 +323,7 @@ export interface Npc {
   status: StatusKind;
   statusNote?: string;
   location: string;
+  locationId?: string;
   faction: string;
   initials: string;
   obsidianPath: string;

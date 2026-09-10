@@ -5,6 +5,7 @@ import {
   statusLabel,
   statusColor,
   statusDotColor,
+  locationBreadcrumb,
   type CrystalType,
   type Npc,
   type NpcLink,
@@ -19,12 +20,6 @@ const typeOptions: { label: string; crystal: CrystalType }[] = [
 ];
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
-
-function locationBreadcrumb(loc: Location, all: Location[]): string {
-  const parent = loc.parentId ? all.find((l) => l.id === loc.parentId) : undefined;
-  if (!parent || parent.locationType === "planet" || parent.locationType === "region") return loc.name;
-  return `${parent.name} · ${loc.name}`;
-}
 
 interface NpcEditProps {
   npc: Npc;
@@ -42,7 +37,7 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
   const [crystal, setCrystal] = useState<CrystalType>(npc.crystal);
   const [linkRole, setLinkRole] = useState(npc.links?.[0]?.role ?? "");
   const [linkNpcId, setLinkNpcId] = useState(npc.links?.[0]?.npcId ?? "");
-  const [location, setLocation] = useState(npc.location);
+  const [locationId, setLocationId] = useState(npc.locationId ?? "");
   const [faction, setFaction] = useState(npc.faction);
   const [etnia, setEtnia] = useState(npc.etnia ?? "");
   const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
@@ -52,7 +47,7 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
     description !== npc.description ||
     status !== npc.status ||
     crystal !== npc.crystal ||
-    location !== npc.location ||
+    locationId !== (npc.locationId ?? "") ||
     faction !== npc.faction ||
     etnia !== (npc.etnia ?? "") ||
     tipoSpren !== (npc.tipoSpren ?? "") ||
@@ -62,11 +57,11 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
   function handleSave() {
     const crystalLabel = typeOptions.find((t) => t.crystal === crystal)?.label ?? npc.crystalLabel;
     const links: NpcLink[] = linkNpcId ? [{ role: linkRole || "VINCULADO", npcId: linkNpcId }, ...(npc.links ?? []).slice(1)] : [];
-    onSave({ name, description, status, crystal, crystalLabel, location, faction, etnia, tipoSpren, links });
+    onSave({ name, description, status, crystal, crystalLabel, locationId: locationId || undefined, faction, etnia, tipoSpren, links });
   }
 
   const linkTarget = npcs.find((n) => n.id === linkNpcId);
-  const missingOrigin = location.trim() === "";
+  const missingOrigin = locationId.trim() === "";
 
   return (
     <div className="card npc-edit">
@@ -191,14 +186,13 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
             <select
               className="npc-edit__select npc-edit__select--native"
               style={{ borderBottom: "2px solid var(--crystal-location)" }}
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              value={locationId}
+              onChange={(e) => setLocationId(e.target.value)}
             >
               <option value="">— sin ubicación —</option>
-              {locations.map((l) => {
-                const breadcrumb = locationBreadcrumb(l, locations);
-                return <option key={l.id} value={breadcrumb}>{breadcrumb}</option>;
-              })}
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>{locationBreadcrumb(l, locations)}</option>
+              ))}
             </select>
           </div>
           <div>
