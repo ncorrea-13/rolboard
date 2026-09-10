@@ -1,6 +1,6 @@
 # API
 
-REST + JSON. Router: `net/http` stdlib (Go 1.22+, `ServeMux` con path params nativos). Sin autenticación — la seguridad es perimetral (acceso solo vía Tailscale).
+REST + JSON. Router: `net/http` stdlib (Go 1.27+, `ServeMux` con path params nativos). Sin autenticación — la seguridad es perimetral (acceso solo vía Tailscale).
 
 ## Convenciones
 
@@ -61,6 +61,8 @@ GET    /api/groups/:id
 PUT    /api/groups/:id
 DELETE /api/groups/:id
 GET    /api/groups/:id/members       -- calculado desde npc_groups, no almacenado
+POST   /api/groups/:id/members       {"npc_id": N}
+DELETE /api/groups/:id/members/:npcId
 ```
 
 `GET /api/campaigns/:id/groups` y `GET /api/groups/:id` incluyen `member_count` (calculado desde `npc_groups`, mismo caso que `members`, no es columna).
@@ -135,5 +137,5 @@ Ya implementado. Devuelve `{"status":"ok"}`.
 
 ## Pendiente de definir
 
-- Endpoint específico para relaciones many-to-many sueltas: resuelto para `session_npcs`/`session_quests` (`GET/POST/DELETE /api/sessions/:id/npcs`, `/quests`, mismo patrón que `npc_relations`). Sigue pendiente para `quest_npcs` y `npc_groups` (agregar/sacar un NPC de una facción o quest sin reemplazar la entidad completa).
+- Endpoint específico para relaciones many-to-many sueltas: resuelto para `session_npcs`/`session_quests` (`GET/POST/DELETE /api/sessions/:id/npcs`, `/quests`, mismo patrón que `npc_relations`) y para `npc_groups` (`GET/POST/DELETE /api/groups/:id/members`). Sigue pendiente para `quest_npcs` (ver `docs/DECISIONS.md` para el porqué).
 - Paginación — no evaluada aún; con el volumen actual del vault (~166 entidades) probablemente no haga falta para el MVP.
