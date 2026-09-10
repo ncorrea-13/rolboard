@@ -1,7 +1,7 @@
 ---
 tipo: jugador
 jugador: Nombre del jugador real
-estado: Vivo
+status: activo
 tags:
   - campaña/jugador
 ---
