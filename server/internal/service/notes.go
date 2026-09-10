@@ -43,8 +43,6 @@ func NewNotesService(
 	}
 }
 
-// safeVaultRelPath rejects absolute paths, "..", and non-.md paths before they
-// reach filepath.Join, so a request can't read files outside the vault.
 func safeVaultRelPath(relPath string) (clean string, ok bool) {
 	clean = filepath.Clean(relPath)
 	if filepath.IsAbs(clean) || clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) || filepath.Ext(clean) != ".md" {

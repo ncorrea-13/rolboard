@@ -82,13 +82,19 @@
   color: var(--text-body);
 }
 
+.sessions-timeline__item-text--clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .sessions-timeline__item-tags {
   font: 400 11.5px var(--font-mono);
   color: var(--text-secondary);
   margin-top: 7px;
 }
 
-.sessions-timeline__item-open {
-  font: 500 12px var(--font-body);
-  color: var(--text-secondary);
+.sessions-timeline__item:hover {
+  background: var(--bg-elevated);
 }

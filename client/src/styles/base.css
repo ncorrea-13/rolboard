@@ -70,6 +70,24 @@ body {
   border: 1px solid var(--border);
 }
 
+.btn-success {
+  background: var(--status-alive);
+  color: var(--bg-canvas);
+}
+
+.btn-success:hover {
+  filter: brightness(1.1);
+}
+
+.btn-danger {
+  background: var(--status-dead);
+  color: var(--bg-canvas);
+}
+
+.btn-danger:hover {
+  filter: brightness(1.1);
+}
+
 .card {
   background: var(--bg-surface);
   border: 1px solid var(--border);

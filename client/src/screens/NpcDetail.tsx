@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./NpcDetail.css";
 import { crystalColor, type Npc, type Quest } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
 import { openInObsidian } from "../lib/obsidian";
+import { apiFetch } from "../lib/api";
 
 interface NpcDetailProps {
   npc: Npc;
   npcs: Npc[];
   quests: Quest[];
+  campaignId: string;
+  vaultName: string;
   onEdit: () => void;
   onBack: () => void;
   onDelete: () => void;
@@ -19,14 +22,37 @@ export function NpcDetail({
   npc,
   npcs,
   quests,
+  campaignId,
+  vaultName,
   onEdit,
   onBack,
   onDelete,
 }: NpcDetailProps) {
   const color = crystalColor[npc.crystal];
   const [noteOpen, setNoteOpen] = useState(false);
+  const [noteHtml, setNoteHtml] = useState<string | null>(null);
 
-  const links = (npc.links ?? [])
+  function openNote() {
+    setNoteOpen(true);
+    if (!npc.obsidianPath) return;
+    apiFetch<{ html: string }>(
+      `/campaigns/${campaignId}/notes/render?path=${encodeURIComponent(npc.obsidianPath)}`,
+    )
+      .then((res) => setNoteHtml(res.html))
+      .catch(() => setNoteHtml(null));
+  }
+
+  const [relations, setRelations] = useState<{ role: string; npcId: string }[]>([]);
+
+  useEffect(() => {
+    apiFetch<{ to_npc_id: number; role: string }[]>(`/npcs/${npc.id}/relations`)
+      .then((data) =>
+        setRelations((data ?? []).map((r) => ({ role: r.role, npcId: String(r.to_npc_id) }))),
+      )
+      .catch((err) => console.error("Error cargando vínculos:", err));
+  }, [npc.id]);
+
+  const links = relations
     .map((l) => ({ ...l, target: npcs.find((n) => n.id === l.npcId) }))
     .filter((l): l is typeof l & { target: Npc } => Boolean(l.target));
   const appearances = npc.appearances ?? [];
@@ -68,13 +94,13 @@ export function NpcDetail({
           <div className="npc-detail__header-actions">
             <button
               className="btn btn-secondary"
-              onClick={() => openInObsidian(npc.obsidianPath)}
+              onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
             >
               Abrir en Obsidian
             </button>
             <button
               className="btn btn-secondary"
-              onClick={() => setNoteOpen(true)}
+              onClick={openNote}
             >
               Ver nota renderizada
             </button>
@@ -231,7 +257,7 @@ export function NpcDetail({
               </span>
               <button
                 className="btn btn-secondary"
-                onClick={() => openInObsidian(npc.obsidianPath)}
+                onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
               >
                 Abrir en Obsidian
               </button>
@@ -241,19 +267,15 @@ export function NpcDetail({
       </div>
 
       {noteOpen && (
-        <Modal title={npc.name} onClose={() => setNoteOpen(false)}>
-          <p
-            style={{
-              color: "var(--text-secondary)",
-              fontSize: 13,
-              marginBottom: 12,
-            }}
-          >
-            Vista previa mockeada — el render real de la nota de Obsidian llega
-            con el wiring a la API (endpoint
-            <code> notes/render</code> ya implementado en el backend).
-          </p>
-          <p className="npc-detail__desc">{npc.description}</p>
+        <Modal title={npc.name} onClose={() => setNoteOpen(false)} size="large">
+          {noteHtml ? (
+            <div
+              className="npc-detail__desc"
+              dangerouslySetInnerHTML={{ __html: noteHtml }}
+            />
+          ) : (
+            <p className="npc-detail__desc">{npc.description}</p>
+          )}
         </Modal>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./NpcEdit.css";
 import {
   crystalColor,
@@ -8,11 +8,11 @@ import {
   locationBreadcrumb,
   type CrystalType,
   type Npc,
-  type NpcLink,
   type StatusKind,
   type Location,
   type Group,
 } from "../data/domain";
+import { apiFetch } from "../lib/api";
 
 const typeOptions: { label: string; crystal: CrystalType }[] = [
   { label: "NPC", crystal: "npc" },
@@ -34,30 +34,61 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
   const [name, setName] = useState(npc.name);
   const [description, setDescription] = useState(npc.description);
   const [status, setStatus] = useState<StatusKind>(npc.status);
+  const [detailLevel, setDetailLevel] = useState<"full" | "minor">(npc.detailLevel);
   const [crystal, setCrystal] = useState<CrystalType>(npc.crystal);
-  const [linkRole, setLinkRole] = useState(npc.links?.[0]?.role ?? "");
-  const [linkNpcId, setLinkNpcId] = useState(npc.links?.[0]?.npcId ?? "");
+  const [linkRole, setLinkRole] = useState("");
+  const [linkNpcId, setLinkNpcId] = useState("");
+  const [existingLink, setExistingLink] = useState<{ role: string; npcId: string } | null>(null);
   const [locationId, setLocationId] = useState(npc.locationId ?? "");
   const [faction, setFaction] = useState(npc.faction);
   const [etnia, setEtnia] = useState(npc.etnia ?? "");
   const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
 
+  useEffect(() => {
+    if (!npc.id) return;
+    apiFetch<{ to_npc_id: number; role: string }[]>(`/npcs/${npc.id}/relations`)
+      .then((data) => {
+        const first = (data ?? [])[0];
+        if (!first) return;
+        const link = { role: first.role, npcId: String(first.to_npc_id) };
+        setExistingLink(link);
+        setLinkRole(link.role);
+        setLinkNpcId(link.npcId);
+      })
+      .catch((err) => console.error("Error cargando vínculo:", err));
+  }, [npc.id]);
+
   const dirty =
     name !== npc.name ||
     description !== npc.description ||
     status !== npc.status ||
+    detailLevel !== npc.detailLevel ||
     crystal !== npc.crystal ||
     locationId !== (npc.locationId ?? "") ||
     faction !== npc.faction ||
     etnia !== (npc.etnia ?? "") ||
     tipoSpren !== (npc.tipoSpren ?? "") ||
-    linkRole !== (npc.links?.[0]?.role ?? "") ||
-    linkNpcId !== (npc.links?.[0]?.npcId ?? "");
+    linkRole !== (existingLink?.role ?? "") ||
+    linkNpcId !== (existingLink?.npcId ?? "");
+
+  function syncLink(savedNpcId: string) {
+    if (existingLink) {
+      apiFetch(`/npcs/${savedNpcId}/relations/${existingLink.npcId}/${existingLink.role}`, {
+        method: "DELETE",
+      }).catch((err) => console.error("Error borrando vínculo:", err));
+    }
+    if (linkNpcId) {
+      apiFetch(`/npcs/${savedNpcId}/relations`, {
+        method: "POST",
+        body: JSON.stringify({ to_npc_id: Number(linkNpcId), role: linkRole || "VINCULADO" }),
+      }).catch((err) => console.error("Error guardando vínculo:", err));
+    }
+  }
 
   function handleSave() {
     const crystalLabel = typeOptions.find((t) => t.crystal === crystal)?.label ?? npc.crystalLabel;
-    const links: NpcLink[] = linkNpcId ? [{ role: linkRole || "VINCULADO", npcId: linkNpcId }, ...(npc.links ?? []).slice(1)] : [];
-    onSave({ name, description, status, crystal, crystalLabel, locationId: locationId || undefined, faction, etnia, tipoSpren, links });
+    onSave({ name, description, status, detailLevel, crystal, crystalLabel, locationId: locationId || undefined, faction, etnia, tipoSpren });
+    if (npc.id) syncLink(npc.id);
   }
 
   const linkTarget = npcs.find((n) => n.id === linkNpcId);
@@ -102,6 +133,17 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
                     {statusLabel[s]}
                   </option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <span className="label">Nivel de detalle</span>
+              <select
+                className="npc-edit__select npc-edit__select--native"
+                value={detailLevel}
+                onChange={(e) => setDetailLevel(e.target.value as "full" | "minor")}
+              >
+                <option value="full">Completo</option>
+                <option value="minor">Menor</option>
               </select>
             </div>
           </div>

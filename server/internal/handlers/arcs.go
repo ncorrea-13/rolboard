@@ -11,20 +11,22 @@ import (
 )
 
 type CreateArcPayload struct {
-	Title       string `json:"name"`
-	Order       int64  `json:"order"`
-	Status      string `json:"status"`
-	SubarcOrder *int64 `json:"subarc_order"`
-	Summary     string `json:"summary"`
-	CampaignID  int64  `json:"campaign_id"`
+	Title        string  `json:"name"`
+	Order        int64   `json:"order"`
+	Status       string  `json:"status"`
+	SubarcOrder  *int64  `json:"subarc_order"`
+	Summary      string  `json:"summary"`
+	ObsidianPath *string `json:"obsidian_path"`
+	CampaignID   int64   `json:"campaign_id"`
 }
 
 type UpdateArcPayload struct {
-	Title       string `json:"name"`
-	Order       int64  `json:"order"`
-	Status      string `json:"status"`
-	SubarcOrder *int64 `json:"subarc_order"`
-	Summary     string `json:"summary"`
+	Title        string  `json:"name"`
+	Order        int64   `json:"order"`
+	Status       string  `json:"status"`
+	SubarcOrder  *int64  `json:"subarc_order"`
+	Summary      string  `json:"summary"`
+	ObsidianPath *string `json:"obsidian_path"`
 }
 
 var validArcStatuses = map[string]bool{
@@ -62,17 +64,18 @@ func (h *Handlers) CreateArc(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.Summary == "" || payload.Title == "" || payload.Order == 0 || !validArcStatuses[payload.Status] {
-		http.Error(w, "Name, Order, Summary and a valid Status are required fields", http.StatusBadRequest)
+	if payload.Title == "" || payload.Order == 0 || !validArcStatuses[payload.Status] {
+		http.Error(w, "Name, Order and a valid Status are required fields", http.StatusBadRequest)
 		return
 	}
 	arc := models.Arc{
-		Title:       payload.Title,
-		Order:       payload.Order,
-		Status:      payload.Status,
-		SubarcOrder: payload.SubarcOrder,
-		Summary:     payload.Summary,
-		CampaignID:  campaignId,
+		Title:        payload.Title,
+		Order:        payload.Order,
+		Status:       payload.Status,
+		SubarcOrder:  payload.SubarcOrder,
+		Summary:      payload.Summary,
+		ObsidianPath: payload.ObsidianPath,
+		CampaignID:   campaignId,
 	}
 
 	err = h.arcs.Create(r.Context(), &arc)
@@ -122,17 +125,18 @@ func (h *Handlers) UpdateArc(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.Summary == "" || payload.Title == "" || payload.Order == 0 || !validArcStatuses[payload.Status] {
-		http.Error(w, "Name, Order, Summary and a valid Status are required fields", http.StatusBadRequest)
+	if payload.Title == "" || payload.Order == 0 || !validArcStatuses[payload.Status] {
+		http.Error(w, "Name, Order and a valid Status are required fields", http.StatusBadRequest)
 		return
 	}
 
 	arc := models.Arc{
-		Title:       payload.Title,
-		Order:       payload.Order,
-		Status:      payload.Status,
-		SubarcOrder: payload.SubarcOrder,
-		Summary:     payload.Summary,
+		Title:        payload.Title,
+		Order:        payload.Order,
+		Status:       payload.Status,
+		SubarcOrder:  payload.SubarcOrder,
+		Summary:      payload.Summary,
+		ObsidianPath: payload.ObsidianPath,
 	}
 	err = h.arcs.Update(r.Context(), id, &arc)
 

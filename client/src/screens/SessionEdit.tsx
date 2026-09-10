@@ -2,26 +2,45 @@ import { useEffect, useState } from "react";
 import "./NpcEdit.css";
 import { sessionCode, type Arc, type Session } from "../data/domain";
 import { MarkdownText } from "../components/MarkdownText";
+import { Modal } from "../components/Modal";
 import { apiFetch } from "../lib/api";
 
 interface SessionEditProps {
   arc?: Arc;
+  arcs: Arc[];
   session: Session;
+  campaignId: string;
   onSave: (patch: Partial<Session>) => void;
   onBack: () => void;
+  onDelete: () => void;
   autoConfirm?: boolean;
 }
 
-export function SessionEdit({ arc, session, onSave, onBack, autoConfirm }: SessionEditProps) {
+export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, onDelete, autoConfirm }: SessionEditProps) {
   const played = session.sessionType !== "planning";
   const [date, setDate] = useState(session.date);
   const [text, setText] = useState(session.summary);
+  const [arcId, setArcId] = useState(session.arcId ?? "");
   const [confirmingPlay, setConfirmingPlay] = useState(!played && Boolean(autoConfirm));
   const [playDate, setPlayDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [recap, setRecap] = useState("");
 
   const [expectedNpcs, setExpectedNpcs] = useState<{ npc_id: number; name: string }[]>([]);
   const [expectedQuests, setExpectedQuests] = useState<{ quest_id: number; title: string }[]>([]);
+
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteHtml, setNoteHtml] = useState<string | null>(null);
+
+  function openNote() {
+    setNoteOpen(true);
+    setNoteHtml(null);
+    if (!session.obsidianPath) return;
+    apiFetch<{ html: string }>(
+      `/campaigns/${campaignId}/notes/render?path=${encodeURIComponent(session.obsidianPath)}`,
+    )
+      .then((res) => setNoteHtml(res.html))
+      .catch(() => setNoteHtml(null));
+  }
 
   useEffect(() => {
     apiFetch<{ npc_id: number; name: string }[]>(`/sessions/${session.id}/npcs`)
@@ -33,7 +52,7 @@ export function SessionEdit({ arc, session, onSave, onBack, autoConfirm }: Sessi
   }, [session.id]);
 
   function handleSave() {
-    onSave({ date, summary: text });
+    onSave({ date, summary: text, arcId: arcId || undefined });
   }
 
   function handleConfirmPlayed() {
@@ -44,6 +63,16 @@ export function SessionEdit({ arc, session, onSave, onBack, autoConfirm }: Sessi
       sessionType: "session",
     });
   }
+
+  const noteModal = noteOpen && (
+    <Modal title={`Sesión ${sessionCode(session)}`} onClose={() => setNoteOpen(false)} size="large">
+      {noteHtml ? (
+        <div className="npc-detail__desc" dangerouslySetInnerHTML={{ __html: noteHtml }} />
+      ) : (
+        <p className="npc-detail__desc">{session.summary}</p>
+      )}
+    </Modal>
+  );
 
   if (confirmingPlay) {
     return (
@@ -59,6 +88,9 @@ export function SessionEdit({ arc, session, onSave, onBack, autoConfirm }: Sessi
             <button className="btn btn-secondary" onClick={() => (autoConfirm ? onBack() : setConfirmingPlay(false))}>
               Cancelar
             </button>
+            {session.obsidianPath && (
+              <button className="btn btn-secondary" onClick={openNote}>Ver nota renderizada</button>
+            )}
             <button className="btn btn-primary" onClick={handleConfirmPlayed}>Confirmar como jugada</button>
           </div>
         </div>
@@ -126,6 +158,7 @@ export function SessionEdit({ arc, session, onSave, onBack, autoConfirm }: Sessi
             <div className="npc-edit__note">Las notas de preparación quedan guardadas aparte, no se pisan.</div>
           </div>
         </div>
+        {noteModal}
       </div>
     );
   }
@@ -141,6 +174,10 @@ export function SessionEdit({ arc, session, onSave, onBack, autoConfirm }: Sessi
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button className="btn btn-secondary" onClick={onBack}>Volver</button>
+          {session.obsidianPath && (
+            <button className="btn btn-secondary" onClick={openNote}>Ver nota renderizada</button>
+          )}
+          <button className="btn btn-secondary" onClick={onDelete}>Borrar sesión</button>
           <button className="btn btn-primary" onClick={handleSave}>Guardar</button>
         </div>
       </div>
@@ -156,6 +193,22 @@ export function SessionEdit({ arc, session, onSave, onBack, autoConfirm }: Sessi
               <span className="label">Fecha</span>
               <input className="npc-edit__input" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
+          </div>
+
+          <div>
+            <span className="label">Arco</span>
+            <select
+              className="npc-edit__select npc-edit__select--native"
+              value={arcId}
+              onChange={(e) => setArcId(e.target.value)}
+            >
+              <option value="">Sin arco</option>
+              {arcs.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -199,6 +252,7 @@ export function SessionEdit({ arc, session, onSave, onBack, autoConfirm }: Sessi
           )}
         </div>
       </div>
+      {noteModal}
     </div>
   );
 }

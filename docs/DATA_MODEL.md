@@ -64,7 +64,10 @@ Agrupa sesiones en tramos narrativos (ej. "Arco 2 - Shadesmar").
 | status       | TEXT           | NOT NULL DEFAULT 'planificado', `CHECK IN ('planificado','en_curso','cerrado')` |
 | subarc_order | INTEGER        | nullable — `NULL` en el arco principal, 1/2/3... en sus subarcos (comparten el mismo `order` que el arco principal, ver `docs/DECISIONS.md`) |
 | summary      | TEXT           | NOT NULL DEFAULT ''                |
+| obsidian_path | TEXT, nullable | ver sección `obsidian_path` |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
+
+`UNIQUE(campaign_id, obsidian_path) WHERE obsidian_path IS NOT NULL` (índice parcial, no constraint de tabla como en npcs/locations/groups — deja crear arcos manuales desde el dashboard sin `obsidian_path` sin que choquen entre sí).
 
 ### sessions
 
@@ -98,12 +101,16 @@ Facciones/organizaciones — entidad completa desde el MVP (no un campo de texto
 | name        | TEXT           | NOT NULL                        |
 | description | TEXT           | NOT NULL DEFAULT ''             |
 | notes       | TEXT           | NOT NULL DEFAULT ''             |
+| alineacion  | TEXT           | NOT NULL DEFAULT '' — texto libre, no enum (el vault real tiene valores como "Neutral — no intervención externa", no calzan en 3-4 categorías fijas) |
+| lider_npc_id | FK → npcs, nullable | `ON DELETE SET NULL` — resuelto por el indexer desde el wikilink `lider` del frontmatter |
 | obsidian_path | TEXT, nullable | ver sección `obsidian_path`   |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
 `UNIQUE(campaign_id, obsidian_path)`.
 
 > Nota de implementación: `miembros_conocidos` (grupo → NPCs) **no se guarda como campo propio** — se calcula con una query sobre `npc_groups`, poblada desde el campo `groups`/`faccion` del **NPC**. Evita duplicar la misma relación en dos lugares (ver `VAULT_INDEXER.md`). Lo mismo aplica a `member_count`: no es columna, es `COUNT(*)` sobre `npc_groups` calculado en el `SELECT` de `List`/`GetByID`, expuesto en el JSON de respuesta pero no persistido.
+>
+> `astilla`/`investidura` del frontmatter siguen sin columna — decisión explícita, no agregar sin que haga falta de verdad.
 
 ### locations
 
@@ -132,7 +139,7 @@ Jerárquica (planeta → región → ciudad → sitio puntual), vía self-join.
 | name           | TEXT                      | NOT NULL                                                                                     |
 | npc_kind       | TEXT                      | NOT NULL, `CHECK IN ('npc','spren','entidad-cognitiva','referencia')` (valores reales del vault) |
 | detail_level   | TEXT                      | NOT NULL, `CHECK IN ('full','minor')` — para NPCs sin ficha completa                        |
-| status         | TEXT                      | NOT NULL, `CHECK IN ('vivo','muerto','desaparecido','activo','consolidado')`                |
+| status         | TEXT                      | NOT NULL, `CHECK IN ('vivo','muerto','desaparecido','activo','consolidado','paused')`        |
 | location_id    | FK → locations, nullable  | `ON DELETE RESTRICT` — ubicación actual                                                     |
 | etnia          | TEXT, nullable            |                                                                                              |
 | rol            | TEXT, nullable            |                                                                                              |
@@ -156,12 +163,18 @@ Distinto de `npcs` — representa al personaje jugado por una persona real.
 | campaign_id        | FK → campaigns | NOT NULL, `ON DELETE RESTRICT` |
 | player_name        | TEXT           | NOT NULL — nombre del jugador IRL |
 | character_name     | TEXT           | NOT NULL — nombre del PJ |
+| race               | TEXT           | NOT NULL DEFAULT ''     |
+| class              | TEXT           | NOT NULL DEFAULT '' — dashboard-only, sin backing en el vault, texto libre sin enum |
+| status             | TEXT           | NOT NULL DEFAULT 'activo', `CHECK IN ('vivo','muerto','desaparecido','activo')` |
+| spren_npc_id       | FK → npcs, nullable | `ON DELETE RESTRICT` — indexer-only, no viaja por PUT del dashboard |
 | backstory          | TEXT           | NOT NULL DEFAULT ''     |
 | progression_notes  | TEXT           | NOT NULL DEFAULT ''     |
 | obsidian_path      | TEXT, nullable | ver sección `obsidian_path` |
+| historia_path      | TEXT, nullable | ruta a la nota `Historia.md` de la carpeta del jugador — resuelta por el indexer vía el campo `personaje` de esa nota, indexer-only |
+| avances_path       | TEXT, nullable | ruta a la nota `Avances.md`, mismo mecanismo que `historia_path` |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
-`UNIQUE(campaign_id, obsidian_path)`.
+`UNIQUE(campaign_id, obsidian_path)`. Tabla `pc_groups` (pc_id, group_id, role_in_group) — facción del personaje, mismo patrón que `npc_groups`.
 
 ### quests
 
@@ -178,21 +191,13 @@ Distinto de `npcs` — representa al personaje jugado por una persona real.
 
 ## Campo transversal: `obsidian_path`
 
-Tablas con esta columna: `npcs`, `locations`, `groups`, `sessions` (si aplica), `player_characters`, `arcs` (si aplican notas propias). `campaigns` no lo tiene — es la raíz, no una nota individual del vault.
+Tablas con esta columna: `npcs`, `locations`, `groups`, `sessions`, `player_characters`, `arcs`. `campaigns` no lo tiene — es la raíz, no una nota individual del vault. `quests` tampoco — no tiene nota propia en Obsidian (ver `DECISIONS.md`).
 
 ```
 obsidian_path   -- ruta relativa DENTRO del vault, ej. "NPC/Humanos/Adolin.md"
 ```
 
-- **Alcance de unicidad**: `UNIQUE(campaign_id, obsidian_path)`, no único global — la ruta tiene sentido dentro del scope de su campaña/vault, no entre campañas distintas.
-- **Root del vault**: NO se guarda en la base — es config del servidor (env var, ej. `VAULT_PATH`), porque cambia según la máquina (en esta laptop `/home/ncorrea/Documents/Obsidian/Cosmere`, en el ThinkCentre el punto donde Syncthing sincroniza el vault). El código nunca hardcodea esa ruta.
-
-A partir de `obsidian_path`, el backend arma en tiempo de respuesta:
-
-- **Link de apertura en Obsidian**: `obsidian://open?vault=<nombre>&file=<ruta>` (el nombre del vault también es config del servidor).
-- **Link de render server-side**: `GET /api/notes/render?path=<ruta>`.
-
-Ver `VAULT_INDEXER.md` y `API.md` para el detalle de cada uno.
+`UNIQUE(campaign_id, obsidian_path)` — no único global, la ruta tiene sentido dentro del scope de su campaña/vault. Root del vault y armado de links: ver `VAULT_INDEXER.md`.
 
 ## Tablas puente (many-to-many)
 

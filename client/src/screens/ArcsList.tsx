@@ -31,7 +31,7 @@ export function ArcsList({ arcs, onSelect, onCreate }: ArcsListProps) {
           >
             <div className="list-page__row-main">
               <div className="list-page__row-title">{a.label}</div>
-              <div className="list-page__row-sub">{a.summary}</div>
+              <div className="list-page__row-sub list-page__row-sub--clamp-3">{a.summary}</div>
             </div>
             <span className="list-page__badge">{a.meta}</span>
             <ArcStatusPill status={a.status} />

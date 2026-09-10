@@ -16,7 +16,7 @@ func NewGroupRepository(db *sql.DB) *GroupRepository {
 }
 
 func (r *GroupRepository) List(ctx context.Context, campaignID int64) ([]models.Group, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, name, description, notes, obsidian_path,
+	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path,
 			(SELECT COUNT(*) FROM npc_groups WHERE npc_groups.group_id = groups.id) AS member_count,
 			created_at, updated_at
 		FROM groups WHERE campaign_id = ? AND deleted_at IS NULL ORDER BY name`,
@@ -35,10 +35,12 @@ func (r *GroupRepository) List(ctx context.Context, campaignID int64) ([]models.
 	for rows.Next() {
 		g := models.Group{}
 		var obsidianPath sql.NullString
-		if err := rows.Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &obsidianPath, &g.MemberCount, &g.CreatedAt, &g.UpdatedAt); err != nil {
+		var liderNPCID sql.NullInt64
+		if err := rows.Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &g.Alineacion, &liderNPCID, &obsidianPath, &g.MemberCount, &g.CreatedAt, &g.UpdatedAt); err != nil {
 			return nil, err
 		}
 		g.ObsidianPath = fromNullString(obsidianPath)
+		g.LiderNPCID = fromNullInt64(liderNPCID)
 		groups = append(groups, g)
 	}
 	if err := rows.Err(); err != nil {
@@ -49,29 +51,33 @@ func (r *GroupRepository) List(ctx context.Context, campaignID int64) ([]models.
 
 func (r *GroupRepository) Create(ctx context.Context, g *models.Group) error {
 	var obsidianPath sql.NullString
+	var liderNPCID sql.NullInt64
 	err := r.db.QueryRowContext(ctx, `
-		INSERT INTO groups (campaign_id, name, description, notes, obsidian_path)
-		VALUES (?, ?, ?, ?, ?)
+		INSERT INTO groups (campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
-			name = excluded.name, description = excluded.description, notes = excluded.notes, deleted_at = NULL, updated_at = datetime('now')
-		RETURNING id, campaign_id, name, description, notes, obsidian_path, created_at, updated_at`,
-		g.CampaignID, g.Name, g.Description, g.Notes, toNullString(g.ObsidianPath),
-	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &obsidianPath, &g.CreatedAt, &g.UpdatedAt)
+			name = excluded.name, description = excluded.description, notes = excluded.notes,
+			alineacion = excluded.alineacion, lider_npc_id = excluded.lider_npc_id, deleted_at = NULL, updated_at = datetime('now')
+		RETURNING id, campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path, created_at, updated_at`,
+		g.CampaignID, g.Name, g.Description, g.Notes, g.Alineacion, toNullInt64(g.LiderNPCID), toNullString(g.ObsidianPath),
+	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &g.Alineacion, &liderNPCID, &obsidianPath, &g.CreatedAt, &g.UpdatedAt)
 	if err != nil {
 		return err
 	}
 	g.ObsidianPath = fromNullString(obsidianPath)
+	g.LiderNPCID = fromNullInt64(liderNPCID)
 	return nil
 }
 
 func (r *GroupRepository) GetByID(ctx context.Context, id int64) (*models.Group, error) {
 	g := models.Group{}
 	var obsidianPath sql.NullString
+	var liderNPCID sql.NullInt64
 	err := r.db.QueryRowContext(ctx, `
-		SELECT id, campaign_id, name, description, notes, obsidian_path, created_at, updated_at
+		SELECT id, campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path, created_at, updated_at
 		FROM groups WHERE id = ? AND deleted_at IS NULL`,
 		id,
-	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &obsidianPath, &g.CreatedAt, &g.UpdatedAt)
+	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &g.Alineacion, &liderNPCID, &obsidianPath, &g.CreatedAt, &g.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -79,6 +85,7 @@ func (r *GroupRepository) GetByID(ctx context.Context, id int64) (*models.Group,
 		return nil, err
 	}
 	g.ObsidianPath = fromNullString(obsidianPath)
+	g.LiderNPCID = fromNullInt64(liderNPCID)
 	return &g, nil
 }
 
@@ -115,15 +122,33 @@ func (r *GroupRepository) GetMembers(ctx context.Context, groupID int64) ([]mode
 	return members, nil
 }
 
+func (r *GroupRepository) AddMember(ctx context.Context, groupID, npcID int64) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO npc_groups (group_id, npc_id) VALUES (?, ?)
+		ON CONFLICT (npc_id, group_id) DO NOTHING`,
+		groupID, npcID,
+	)
+	return err
+}
+
+func (r *GroupRepository) RemoveMember(ctx context.Context, groupID, npcID int64) error {
+	_, err := r.db.ExecContext(ctx, `
+		DELETE FROM npc_groups WHERE group_id = ? AND npc_id = ?`,
+		groupID, npcID,
+	)
+	return err
+}
+
 func (r *GroupRepository) Update(ctx context.Context, id int64, g *models.Group) error {
 	var obsidianPath sql.NullString
+	var liderNPCID sql.NullInt64
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE groups
-		SET name = ?, description = ?, notes = ?, obsidian_path = ?, updated_at = datetime('now')
+		SET name = ?, description = ?, notes = ?, alineacion = ?, lider_npc_id = ?, obsidian_path = ?, updated_at = datetime('now')
 		WHERE id = ? AND deleted_at IS NULL
-		RETURNING id, campaign_id, name, description, notes, obsidian_path, created_at, updated_at`,
-		g.Name, g.Description, g.Notes, toNullString(g.ObsidianPath), id,
-	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &obsidianPath, &g.CreatedAt, &g.UpdatedAt)
+		RETURNING id, campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path, created_at, updated_at`,
+		g.Name, g.Description, g.Notes, g.Alineacion, toNullInt64(g.LiderNPCID), toNullString(g.ObsidianPath), id,
+	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &g.Alineacion, &liderNPCID, &obsidianPath, &g.CreatedAt, &g.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}
@@ -131,6 +156,7 @@ func (r *GroupRepository) Update(ctx context.Context, id int64, g *models.Group)
 		return err
 	}
 	g.ObsidianPath = fromNullString(obsidianPath)
+	g.LiderNPCID = fromNullInt64(liderNPCID)
 	return nil
 }
 

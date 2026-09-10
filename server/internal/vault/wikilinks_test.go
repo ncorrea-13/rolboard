@@ -45,7 +45,6 @@ func TestExtractWikilinksDuplicatesPreserved(t *testing.T) {
 }
 
 func TestExtractWikilinksEmbed(t *testing.T) {
-	// ![[embed]] igual matchea el wikilink interno, el manejo de "!" queda fuera del MVP (ver VAULT_INDEXER.md)
 	links := ExtractWikilinks("![[Kaladin]]")
 	want := []string{"Kaladin"}
 	if !slices.Equal(links, want) {
