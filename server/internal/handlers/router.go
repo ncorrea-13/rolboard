@@ -52,6 +52,12 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("GET /api/sessions/{id}", http.HandlerFunc(h.GetSession))
 	mux.Handle("PUT /api/sessions/{id}", http.HandlerFunc(h.UpdateSession))
 	mux.Handle("DELETE /api/sessions/{id}", http.HandlerFunc(h.DeleteSession))
+	mux.Handle("GET /api/sessions/{id}/npcs", http.HandlerFunc(h.ListSessionNpcs))
+	mux.Handle("POST /api/sessions/{id}/npcs", http.HandlerFunc(h.AddSessionNpc))
+	mux.Handle("DELETE /api/sessions/{id}/npcs/{npcId}", http.HandlerFunc(h.RemoveSessionNpc))
+	mux.Handle("GET /api/sessions/{id}/quests", http.HandlerFunc(h.ListSessionQuests))
+	mux.Handle("POST /api/sessions/{id}/quests", http.HandlerFunc(h.AddSessionQuest))
+	mux.Handle("DELETE /api/sessions/{id}/quests/{questId}", http.HandlerFunc(h.RemoveSessionQuest))
 
 	mux.Handle("GET /api/campaigns/{id}/groups", http.HandlerFunc(h.ListGroups))
 	mux.HandleFunc("POST /api/campaigns/{id}/groups", h.CreateGroup)

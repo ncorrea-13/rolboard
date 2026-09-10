@@ -1,0 +1,1 @@
+ALTER TABLE sessions ADD COLUMN prep_notes TEXT NOT NULL DEFAULT '';
