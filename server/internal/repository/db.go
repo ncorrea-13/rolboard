@@ -7,6 +7,7 @@ import (
 	"embed"
 	"errors"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,7 +19,7 @@ import (
 var migrationsFS embed.FS
 
 func Open(path string) (*sql.DB, error) {
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return nil, err
 	}
 
@@ -93,17 +94,31 @@ func runMigrationWithoutForeignKeys(db *sql.DB, migrationSQL, version string) er
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer func() {
+		if cerr := conn.Close(); cerr != nil {
+			log.Printf("runMigrationWithoutForeignKeys: conn.Close: %v", cerr)
+		}
+	}()
 
 	if _, err := conn.ExecContext(ctx, `PRAGMA foreign_keys=OFF`); err != nil {
 		return err
 	}
-	defer conn.ExecContext(ctx, `PRAGMA foreign_keys=ON`)
+	defer func() {
+		if _, err := conn.ExecContext(ctx, `PRAGMA foreign_keys=ON`); err != nil {
+			log.Printf("runMigrationWithoutForeignKeys: restore PRAGMA foreign_keys=ON: %v", err)
+		}
+	}()
 
 	tx, err := conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
+	defer func() {
+		if rerr := tx.Rollback(); rerr != nil && !errors.Is(rerr, sql.ErrTxDone) {
+			log.Printf("runMigrationWithoutForeignKeys: tx.Rollback: %v", rerr)
+		}
+	}()
+
 	if _, err := tx.ExecContext(ctx, migrationSQL); err != nil {
 		return err
 	}
