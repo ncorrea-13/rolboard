@@ -3,16 +3,17 @@ package vault
 import (
 	"bytes"
 	"fmt"
+	"html"
 	"regexp"
 	"strings"
 
 	"github.com/yuin/goldmark"
-	"github.com/yuin/goldmark/renderer/html"
+	goldmarkhtml "github.com/yuin/goldmark/renderer/html"
 )
 
 var wikilinkFullRe = regexp.MustCompile(`!?\[\[([^\]|]+)(?:\|([^\]]+))?\]\]`)
 
-var markdown = goldmark.New(goldmark.WithRendererOptions(html.WithUnsafe()))
+var markdown = goldmark.New(goldmark.WithRendererOptions(goldmarkhtml.WithUnsafe()))
 
 // RenderNote strips the frontmatter from a note's raw content, resolves any
 // [[wikilinks]] in the body against idx (single unambiguous match only —
@@ -32,9 +33,12 @@ func RenderNote(content []byte, idx *NameIndex) (string, error) {
 		}
 		entries := idx.Lookup(target)
 		if len(entries) != 1 {
-			return label
+			return html.EscapeString(label)
 		}
-		return fmt.Sprintf(`<a href="#" data-entity-type="%s" data-entity-id="%d">%s</a>`, entries[0].Type, entries[0].ID, label)
+		return fmt.Sprintf(
+			`<a href="#" data-entity-type="%s" data-entity-id="%d">%s</a>`,
+			html.EscapeString(entries[0].Type), entries[0].ID, html.EscapeString(label),
+		)
 	})
 
 	var buf bytes.Buffer
