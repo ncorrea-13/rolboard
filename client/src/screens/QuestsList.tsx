@@ -44,7 +44,7 @@ export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
                   style={{ background: crystalColor[q.crystal] }}
                 />
               </span>
-              <div className="list-page__row-sub" style={{ marginTop: 6 }}>
+              <div className="list-page__row-sub list-page__row-sub--clamp-1" style={{ marginTop: 6 }}>
                 {q.hook}
               </div>
             </div>

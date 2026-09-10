@@ -22,6 +22,36 @@ export const crystalLabel: Record<CrystalType, string> = {
   "entidad-cognitiva": "Ent. cognitiva",
 };
 
+const fallbackPalette = [
+  "var(--crystal-fallback-1)",
+  "var(--crystal-fallback-2)",
+  "var(--crystal-fallback-3)",
+  "var(--crystal-fallback-4)",
+  "var(--crystal-fallback-5)",
+];
+
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+/** Color para cualquier crystal type, incluso uno sin token propio (npc_kind
+ * nuevo del backend que domain.ts todavía no mapeó) — cae a una de 5 variantes
+ * de paleta, asignada de forma estable por hash del nombre. */
+export function crystalColorFor(crystal: string): string {
+  return (
+    crystalColor[crystal as CrystalType] ??
+    fallbackPalette[hashString(crystal) % fallbackPalette.length]
+  );
+}
+
+/** Label legible para cualquier crystal type — si no está en crystalLabel,
+ * capitaliza el string crudo tal cual viene del backend. */
+export function crystalLabelFor(crystal: string): string {
+  return crystalLabel[crystal as CrystalType] ?? crystal.charAt(0).toUpperCase() + crystal.slice(1);
+}
+
 export const statusColor: Record<StatusKind, string> = {
   alive: "var(--status-alive)",
   missing: "var(--status-missing)",
@@ -79,6 +109,7 @@ export interface Campaign {
   name: string;
   system: string;
   status: CampaignStatus;
+  vaultPath: string;
   meta: string;
   last: string;
 }
@@ -108,6 +139,7 @@ export interface Quest {
   crystal: CrystalType;
   status: QuestStatus;
   priority: 1 | 2 | 3;
+  notes: string;
 }
 
 export interface Group {
@@ -116,6 +148,8 @@ export interface Group {
   campaignId: string;
   name: string;
   description: string;
+  alineacion: string;
+  liderNpcId?: string;
   memberCount: number;
   obsidianPath: string;
 }
@@ -145,11 +179,6 @@ export const locationTypeLabel: Record<Location["locationType"], string> = {
   plane: "Plano",
 };
 
-export interface NpcLink {
-  role: string;
-  npcId: string;
-}
-
 export interface Npc {
   id: string;
   deletedAt?: string;
@@ -163,12 +192,12 @@ export interface Npc {
   crystalLabel: string;
   status: StatusKind;
   statusNote?: string;
+  detailLevel: "full" | "minor";
   location: string;
   locationId?: string;
   faction: string;
   initials: string;
   obsidianPath: string;
-  links?: NpcLink[];
   appearances?: string[];
   relatedQuestIds?: string[];
 }
@@ -183,10 +212,11 @@ export interface PlayerCharacter {
   class: string;
   status: StatusKind;
   faction: string;
-  links?: NpcLink[];
   backstory: string;
   progressionNotes: string;
   obsidianPath: string;
+  historiaPath?: string;
+  avancesPath?: string;
 }
 
 export type SessionType = "session" | "interlude" | "planning";
@@ -208,6 +238,17 @@ export interface Session {
 export function sessionCode(s: Pick<Session, "sessionNumber" | "subNumber">): string {
   const base = `S${String(s.sessionNumber).padStart(2, "0")}`;
   return s.subNumber ? `${base}.${s.subNumber}` : base;
+}
+
+const isoDateRe = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/** Normaliza a DD/MM/YYYY. El vault mezcla ISO con DD/MM/YYYY a mano y hasta
+ * texto libre ("Previo al inicio") — lo que no matchea ISO se deja intacto. */
+export function formatDate(raw: string): string {
+  const match = raw.match(isoDateRe);
+  if (!match) return raw;
+  const [, year, month, day] = match;
+  return `${day}/${month}/${year}`;
 }
 
 export interface Arc {

@@ -1,12 +1,9 @@
 import { useState } from "react";
 import "./NpcEdit.css";
 import {
-  crystalColor,
   statusLabel,
   statusColor,
   statusDotColor,
-  type Npc,
-  type NpcLink,
   type PlayerCharacter,
   type StatusKind,
   type Group,
@@ -16,13 +13,12 @@ const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
 interface PlayerEditProps {
   player: PlayerCharacter;
-  npcs: Npc[];
   groups: Group[];
   onSave: (patch: Partial<PlayerCharacter>) => void;
   onDiscard: () => void;
 }
 
-export function PlayerEdit({ player, npcs, groups, onSave, onDiscard }: PlayerEditProps) {
+export function PlayerEdit({ player, groups, onSave, onDiscard }: PlayerEditProps) {
   const [playerName, setPlayerName] = useState(player.playerName);
   const [characterName, setCharacterName] = useState(player.characterName);
   const [race, setRace] = useState(player.race);
@@ -31,8 +27,6 @@ export function PlayerEdit({ player, npcs, groups, onSave, onDiscard }: PlayerEd
   const [faction, setFaction] = useState(player.faction);
   const [backstory, setBackstory] = useState(player.backstory);
   const [progressionNotes, setProgressionNotes] = useState(player.progressionNotes);
-  const [linkRole, setLinkRole] = useState(player.links?.[0]?.role ?? "");
-  const [linkNpcId, setLinkNpcId] = useState(player.links?.[0]?.npcId ?? "");
 
   const dirty =
     playerName !== player.playerName ||
@@ -42,16 +36,12 @@ export function PlayerEdit({ player, npcs, groups, onSave, onDiscard }: PlayerEd
     status !== player.status ||
     faction !== player.faction ||
     backstory !== player.backstory ||
-    progressionNotes !== player.progressionNotes ||
-    linkRole !== (player.links?.[0]?.role ?? "") ||
-    linkNpcId !== (player.links?.[0]?.npcId ?? "");
+    progressionNotes !== player.progressionNotes;
 
   function handleSave() {
-    const links: NpcLink[] = linkNpcId ? [{ role: linkRole || "VINCULADO", npcId: linkNpcId }, ...(player.links ?? []).slice(1)] : [];
-    onSave({ playerName, characterName, race, class: charClass, status, faction, backstory, progressionNotes, links });
+    onSave({ playerName, characterName, race, class: charClass, status, faction, backstory, progressionNotes });
   }
 
-  const linkTarget = npcs.find((n) => n.id === linkNpcId);
   const missingRace = race.trim() === "";
 
   return (
@@ -126,28 +116,6 @@ export function PlayerEdit({ player, npcs, groups, onSave, onDiscard }: PlayerEd
             <textarea className="npc-edit__textarea" value={progressionNotes} onChange={(e) => setProgressionNotes(e.target.value)} />
           </div>
 
-          <div>
-            <span className="label">Vínculo con un NPC</span>
-            <div className="npc-edit__grid-2">
-              <input
-                className="npc-edit__select npc-edit__select--native"
-                placeholder="Rol (ej. ALIADO DE)"
-                value={linkRole}
-                onChange={(e) => setLinkRole(e.target.value)}
-              />
-              <select
-                className="npc-edit__select npc-edit__select--native"
-                value={linkNpcId}
-                onChange={(e) => setLinkNpcId(e.target.value)}
-                style={linkTarget ? { borderBottom: `2px solid ${crystalColor[linkTarget.crystal]}` } : undefined}
-              >
-                <option value="">— sin vínculo —</option>
-                {npcs.map((n) => (
-                  <option key={n.id} value={n.id}>{n.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
         </div>
 
         <div className="npc-edit__col">

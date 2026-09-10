@@ -26,6 +26,7 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
         name: name.trim(),
         system: system.trim() || "Sin sistema definido",
         status: "active",
+        vaultPath,
         meta: "Sin arcos todavía",
         last: "recién creada",
       },

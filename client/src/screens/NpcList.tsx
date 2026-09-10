@@ -1,29 +1,17 @@
 import { useMemo, useState } from "react";
 import "./NpcList.css";
 import {
-  crystalColor,
+  crystalColorFor,
   statusLabel,
-  type CrystalType,
   type Npc,
   type StatusKind,
 } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 
-const typeFilters: {
-  label: string;
-  crystal: CrystalType;
-  matches: (n: Npc) => boolean;
-}[] = [
-  { label: "NPC", crystal: "npc", matches: (n) => n.crystal === "npc" },
-  {
-    label: "Spren / cognitiva",
-    crystal: "spren",
-    matches: (n) => n.crystal === "spren",
-  },
-];
-
 const statusFilters: StatusKind[] = ["alive", "dead", "missing", "paused"];
+
+const PAGE_SIZE = 25;
 
 export function NpcList({
   npcs,
@@ -39,14 +27,24 @@ export function NpcList({
   const [activeStatuses, setActiveStatuses] = useState<Set<StatusKind>>(
     new Set(),
   );
+  const [page, setPage] = useState(1);
 
-  function toggleType(label: string) {
+  const typeFilters = useMemo(() => {
+    const seen = new Map<string, string>();
+    for (const n of npcs) {
+      if (!seen.has(n.crystal)) seen.set(n.crystal, n.crystalLabel);
+    }
+    return [...seen.entries()].map(([crystal, label]) => ({ crystal, label }));
+  }, [npcs]);
+
+  function toggleType(crystal: string) {
     setActiveTypes((prev) => {
       const next = new Set(prev);
-      if (next.has(label)) next.delete(label);
-      else next.add(label);
+      if (next.has(crystal)) next.delete(crystal);
+      else next.add(crystal);
       return next;
     });
+    setPage(1);
   }
 
   function toggleStatus(status: StatusKind) {
@@ -56,6 +54,7 @@ export function NpcList({
       else next.add(status);
       return next;
     });
+    setPage(1);
   }
 
   const filtered = useMemo(() => {
@@ -69,11 +68,8 @@ export function NpcList({
       ) {
         return false;
       }
-      if (activeTypes.size > 0) {
-        const matchesType = typeFilters.some(
-          (f) => activeTypes.has(f.label) && f.matches(n),
-        );
-        if (!matchesType) return false;
+      if (activeTypes.size > 0 && !activeTypes.has(n.crystal)) {
+        return false;
       }
       if (activeStatuses.size > 0 && !activeStatuses.has(n.status)) {
         return false;
@@ -81,6 +77,13 @@ export function NpcList({
       return true;
     });
   }, [npcs, search, activeTypes, activeStatuses]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const paged = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   return (
     <div className="card npc-list">
@@ -96,7 +99,10 @@ export function NpcList({
             className="npc-list__search"
             placeholder="Buscar nombre, facción, locación…"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
           <button className="btn btn-primary" onClick={onCreate}>
             Nuevo NPC
@@ -108,13 +114,13 @@ export function NpcList({
         <span className="npc-list__filter-label">TIPO</span>
         {typeFilters.map((f) => (
           <button
-            key={f.label}
-            className={`npc-list__filter-chip${activeTypes.has(f.label) ? " npc-list__filter-chip--active" : ""}`}
-            onClick={() => toggleType(f.label)}
+            key={f.crystal}
+            className={`npc-list__filter-chip${activeTypes.has(f.crystal) ? " npc-list__filter-chip--active" : ""}`}
+            onClick={() => toggleType(f.crystal)}
           >
             <span
               className="npc-list__filter-mark"
-              style={{ background: crystalColor[f.crystal] }}
+              style={{ background: crystalColorFor(f.crystal) }}
             />
             {f.label}
           </button>
@@ -155,7 +161,7 @@ export function NpcList({
         </div>
       )}
 
-      {filtered.map((n) => (
+      {paged.map((n) => (
         <div
           key={n.id}
           className="npc-list__row npc-list__row--data"
@@ -165,12 +171,12 @@ export function NpcList({
             initials={n.initials}
             name={n.name}
             role={n.role}
-            color={crystalColor[n.crystal]}
+            color={crystalColorFor(n.crystal)}
           />
           <span className="npc-list__type">
             <span
               className="npc-list__type-mark"
-              style={{ background: crystalColor[n.crystal] }}
+              style={{ background: crystalColorFor(n.crystal) }}
             />
             {n.crystalLabel}
           </span>
@@ -179,6 +185,28 @@ export function NpcList({
           <StatusPill status={n.status} />
         </div>
       ))}
+
+      {pageCount > 1 && (
+        <div className="npc-list__pagination">
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage <= 1}
+            onClick={() => setPage(currentPage - 1)}
+          >
+            Anterior
+          </button>
+          <span className="npc-list__pagination-label">
+            Página {currentPage} de {pageCount}
+          </span>
+          <button
+            className="btn btn-secondary"
+            disabled={currentPage >= pageCount}
+            onClick={() => setPage(currentPage + 1)}
+          >
+            Siguiente
+          </button>
+        </div>
+      )}
     </div>
   );
 }

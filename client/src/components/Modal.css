@@ -14,6 +14,18 @@
   padding: 20px 22px;
 }
 
+.modal-panel--large {
+  width: min(1000px, calc(100vw - 64px));
+  height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-panel--large .modal-panel__body {
+  flex: 1;
+  overflow-y: auto;
+}
+
 .modal-panel__header {
   display: flex;
   align-items: center;

@@ -29,6 +29,24 @@
   box-shadow: inset 0 1px 0 rgba(242, 244, 243, 0.06);
 }
 
+.campaign-dashboard__panel--clickable {
+  cursor: pointer;
+}
+
+.campaign-dashboard__panel--clickable:hover {
+  background: var(--bg-elevated);
+}
+
+.campaign-dashboard__panel--relative {
+  position: relative;
+}
+
+.campaign-dashboard__panel-corner {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+}
+
 .campaign-dashboard__panel-top {
   display: flex;
   align-items: center;
@@ -39,6 +57,13 @@
   font: 400 13.5px/1.7 var(--font-body);
   color: var(--text-secondary);
   margin-top: 7px;
+}
+
+.campaign-dashboard__desc--clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .campaign-dashboard__progress {

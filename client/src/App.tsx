@@ -3,21 +3,22 @@ import "./App.css";
 import { apiFetch } from "./lib/api";
 import { AppShell } from "./components/AppShell";
 import { Modal } from "./components/Modal";
+import { Toast } from "./components/Toast";
 import { NewSessionForm } from "./components/NewSessionForm";
 import { PlanSession } from "./screens/PlanSession";
 import { SessionEdit } from "./screens/SessionEdit";
 import { NewCampaignForm } from "./components/NewCampaignForm";
-import { EntityForm, type FormField } from "./components/EntityForm";
 import { CampaignSelector } from "./screens/CampaignSelector";
-import {
-  CampaignDashboard,
-  type DashboardSection,
-} from "./screens/CampaignDashboard";
+import { CampaignDashboard, type DashboardSection } from "./screens/CampaignDashboard";
 import { NpcList } from "./screens/NpcList";
 import { NpcDetail } from "./screens/NpcDetail";
 import { NpcEdit } from "./screens/NpcEdit";
 import { PlayerDetail } from "./screens/PlayerDetail";
 import { PlayerEdit } from "./screens/PlayerEdit";
+import { ArcEdit } from "./screens/ArcEdit";
+import { QuestEdit } from "./screens/QuestEdit";
+import { FactionEdit } from "./screens/FactionEdit";
+import { LocationEdit } from "./screens/LocationEdit";
 import { SessionsTimeline } from "./screens/SessionsTimeline";
 import { ArcsList } from "./screens/ArcsList";
 import { FactionsList } from "./screens/FactionsList";
@@ -30,99 +31,17 @@ import {
   LocationDetail,
   QuestDetail,
 } from "./screens/EntityDetails";
-import {
-  locationBreadcrumb,
-  type Campaign,
-  type Npc,
-  type Arc,
-  type ArcStatus,
-  type Group,
-  type Location,
-  type Quest,
-  type PlayerCharacter,
-  type Session,
-} from "./data/domain";
-import {
-  type EntityKind,
-  entityKindLabel,
-  entityKindSection,
-  arcFields,
-  factionFields,
-  locationFields,
-  questFields,
-} from "./data/entityForms";
+import type { Campaign } from "./data/domain";
+import { entityKindSection } from "./data/entityForms";
 import {
   mapCampaign,
   mapNpc,
-  npcToApiPayload,
-  mapLocation,
-  locationToApiPayload,
-  mapGroup,
-  groupToApiPayload,
-  mapArc,
-  arcToApiPayload,
   mapQuest,
-  questToApiPayload,
-  mapPlayerCharacter,
-  playerCharacterToApiPayload,
   mapSession,
-  sessionToApiPayload,
   type ApiCampaign,
-  type ApiNpc,
-  type ApiLocation,
-  type ApiGroup,
-  type ApiArc,
-  type ApiQuest,
-  type ApiPlayerCharacter,
-  type ApiSession,
-  type ApiDashboardSummary,
 } from "./lib/apiMappers";
-
-type Route =
-  | { name: "campaigns" }
-  | { name: "section"; section: DashboardSection }
-  | { name: "npc-detail"; npcId: string }
-  | { name: "npc-edit"; npcId: string }
-  | { name: "npc-create" }
-  | { name: "player-detail"; playerId: string }
-  | { name: "player-edit"; playerId: string }
-  | { name: "player-create" }
-  | { name: "session-plan" }
-  | {
-      name: "session-edit";
-      sessionId: string;
-      autoConfirm?: boolean;
-    }
-  | { name: "entity-detail"; kind: EntityKind; id: string };
-
-const blankNpcDraft: Npc = {
-  id: "",
-  campaignId: "",
-  name: "",
-  role: "",
-  description: "",
-  crystal: "npc",
-  crystalLabel: "NPC",
-  status: "alive",
-  location: "",
-  faction: "—",
-  initials: "",
-  obsidianPath: "",
-};
-
-const blankPlayerDraft: PlayerCharacter = {
-  id: "",
-  campaignId: "",
-  playerName: "",
-  characterName: "",
-  race: "",
-  class: "",
-  status: "alive",
-  faction: "—",
-  backstory: "",
-  progressionNotes: "",
-  obsidianPath: "",
-};
+import type { Route } from "./types";
+import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 export default function App() {
   const [route, setRoute] = useState<Route>({ name: "campaigns" });
@@ -133,121 +52,63 @@ export default function App() {
       .then((data) => setCampaigns((data ?? []).map(mapCampaign)))
       .catch((err) => console.error("Error cargando campañas:", err));
   }, []);
+
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
-  const [npcs, setNpcs] = useState<Npc[]>([]);
-
-  useEffect(() => {
-    if (!activeCampaignId) return;
-    apiFetch<ApiNpc[]>(`/campaigns/${activeCampaignId}/npcs`)
-      .then((data) =>
-        setNpcs(
-          (data ?? []).filter((n) => n.npc_kind !== "referencia").map(mapNpc),
-        ),
-      )
-      .catch((err) => console.error("Error cargando NPCs:", err));
-  }, [activeCampaignId]);
-
-  const [arcs, setArcs] = useState<Arc[]>([]);
-
-  useEffect(() => {
-    if (!activeCampaignId) return;
-    apiFetch<ApiArc[]>(`/campaigns/${activeCampaignId}/arcs`)
-      .then((data) => setArcs((data ?? []).map(mapArc)))
-      .catch((err) => console.error("Error cargando arcos:", err));
-  }, [activeCampaignId]);
-  const [groups, setGroups] = useState<Group[]>([]);
-
-  useEffect(() => {
-    if (!activeCampaignId) return;
-    apiFetch<ApiGroup[]>(`/campaigns/${activeCampaignId}/groups`)
-      .then((data) => setGroups((data ?? []).map(mapGroup)))
-      .catch((err) => console.error("Error cargando facciones:", err));
-  }, [activeCampaignId]);
-
-  const [locations, setLocations] = useState<Location[]>([]);
-
-  useEffect(() => {
-    if (!activeCampaignId) return;
-    apiFetch<ApiLocation[]>(`/campaigns/${activeCampaignId}/locations`)
-      .then((data) => setLocations((data ?? []).map(mapLocation)))
-      .catch((err) => console.error("Error cargando locaciones:", err));
-  }, [activeCampaignId]);
-
-  const [quests, setQuests] = useState<Quest[]>([]);
-
-  useEffect(() => {
-    if (!activeCampaignId) return;
-    apiFetch<ApiQuest[]>(`/campaigns/${activeCampaignId}/quests`)
-      .then((data) => setQuests((data ?? []).map(mapQuest)))
-      .catch((err) => console.error("Error cargando quests:", err));
-  }, [activeCampaignId]);
-  const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>([]);
-
-  useEffect(() => {
-    if (!activeCampaignId) return;
-    apiFetch<ApiPlayerCharacter[]>(`/campaigns/${activeCampaignId}/player-characters`)
-      .then((data) => setPlayerCharacters((data ?? []).map(mapPlayerCharacter)))
-      .catch((err) => console.error("Error cargando personajes:", err));
-  }, [activeCampaignId]);
-
-  const [sessions, setSessions] = useState<Session[]>([]);
-
-  useEffect(() => {
-    if (!activeCampaignId) return;
-    apiFetch<ApiSession[]>(`/campaigns/${activeCampaignId}/sessions`)
-      .then((data) => setSessions((data ?? []).map(mapSession)))
-      .catch((err) => console.error("Error cargando sesiones:", err));
-  }, [activeCampaignId]);
-
-  const [dashboardSummary, setDashboardSummary] = useState<ApiDashboardSummary | null>(null);
-
-  useEffect(() => {
-    if (!activeCampaignId) return;
-    apiFetch<ApiDashboardSummary>(`/campaigns/${activeCampaignId}/dashboard`)
-      .then(setDashboardSummary)
-      .catch((err) => console.error("Error cargando dashboard:", err));
-  }, [activeCampaignId]);
-
-  const [reindexing, setReindexing] = useState(false);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
-  const [entityForm, setEntityForm] = useState<{
-    kind: EntityKind;
-    id?: string;
+  const [toast, setToast] = useState<{
+    id: number;
+    message: string;
+    type: "success" | "error";
   } | null>(null);
+
+  function notify(message: string, type: "success" | "error" = "success") {
+    setToast({ id: Date.now(), message, type });
+  }
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), toast.type === "error" ? 3000 : 2000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const activeCampaign = campaigns.find((c) => c.id === activeCampaignId);
 
-  const campaignArcs = arcs.filter(
-    (a) => a.campaignId === activeCampaignId && !a.deletedAt,
-  );
-  const campaignGroups = groups.filter(
-    (g) => g.campaignId === activeCampaignId && !g.deletedAt,
-  );
-  const campaignLocations = locations.filter(
-    (l) => l.campaignId === activeCampaignId && !l.deletedAt,
-  );
-  const campaignNpcs = npcs
-    .filter((n) => n.campaignId === activeCampaignId && !n.deletedAt)
-    .map((n) => {
-      const loc = n.locationId ? campaignLocations.find((l) => l.id === n.locationId) : undefined;
-      return loc ? { ...n, location: locationBreadcrumb(loc, campaignLocations) } : n;
-    });
-  const campaignQuests = quests.filter(
-    (q) => q.campaignId === activeCampaignId && !q.deletedAt,
-  );
-  const campaignPlayerCharacters = playerCharacters.filter(
-    (p) => p.campaignId === activeCampaignId && !p.deletedAt,
-  );
-  const campaignSessions = sessions
-    .filter((s) => s.campaignId === activeCampaignId && !s.deletedAt)
-    .sort((a, b) => a.sessionNumber - b.sessionNumber || a.subNumber - b.subNumber);
-
-  const nextSessionNumber =
-    campaignSessions.reduce((max, s) => Math.max(max, s.sessionNumber), 0) + 1;
-
-  const plannedSessions = campaignSessions.filter((s) => s.sessionType === "planning");
-  const pendingPlannedSession = plannedSessions[plannedSessions.length - 1];
+  const {
+    campaignArcs,
+    campaignGroups,
+    campaignLocations,
+    campaignNpcs,
+    campaignQuests,
+    campaignPlayerCharacters,
+    campaignSessions,
+    dashboardSummary,
+    reindexing,
+    handleReindex,
+    nextSessionNumber,
+    defaultSessionArc,
+    saveNpc,
+    createNpc,
+    deleteNpc,
+    savePlayer,
+    createPlayer,
+    deletePlayer,
+    saveArc,
+    createArc,
+    saveQuest,
+    createQuest,
+    saveFaction,
+    createFaction,
+    saveLocation,
+    createLocation,
+    deleteEntity,
+    saveSession,
+    deleteSession,
+    planSession,
+    playSession,
+    startPlaySession,
+    goToEntitySection,
+  } = useCampaignData(activeCampaignId, activeCampaign, setRoute, setNewSessionOpen, notify);
 
   function selectCampaign(id: string) {
     setActiveCampaignId(id);
@@ -273,459 +134,14 @@ export default function App() {
       .catch((err) => console.error("Error creando campaña:", err));
   }
 
-  function handleReindex() {
-    if (!activeCampaign || reindexing) return;
-    setReindexing(true);
-    apiFetch(`/campaigns/${activeCampaign.id}/reindex`, { method: "POST" })
-      .then((result) => console.log("Reindexado:", result))
-      .catch((err) => console.error("Error reindexando:", err))
-      .finally(() => setReindexing(false));
-  }
-
-  function saveNpc(id: string, patch: Partial<Npc>) {
-    const current = npcs.find((n) => n.id === id);
-    if (!current) return;
-    const merged = { ...current, ...patch };
-    apiFetch(`/npcs/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(npcToApiPayload(merged)),
-    })
-      .then(() =>
-        setNpcs((prev) => prev.map((n) => (n.id === id ? merged : n))),
-      )
-      .catch((err) => console.error("Error guardando NPC:", err));
-  }
-
-  function createNpc(patch: Partial<Npc>) {
-    const name = patch.name ?? "";
-    const draft: Npc = {
-      ...blankNpcDraft,
-      ...patch,
-      campaignId: activeCampaign!.id,
-      obsidianPath: `NPCs/${name}.md`,
-    };
-    apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
-      method: "POST",
-      body: JSON.stringify(npcToApiPayload(draft)),
-    })
-      .then((created) => {
-        // mapNpc ya trae locationId real del backend. faction/links no tienen
-        // backing todavía (npc_groups/npc_relations son indexer-only) — se conservan del draft.
-        const npc: Npc = {
-          ...mapNpc(created),
-          faction: draft.faction,
-          links: draft.links,
-        };
-        setNpcs((prev) => [...prev, npc]);
-        setRoute({ name: "npc-detail", npcId: npc.id });
-      })
-      .catch((err) => console.error("Error creando NPC:", err));
-  }
-
-  function savePlayer(id: string, patch: Partial<PlayerCharacter>) {
-    const current = playerCharacters.find((p) => p.id === id);
-    if (!current) return;
-    const merged = { ...current, ...patch };
-    apiFetch(`/player-characters/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(playerCharacterToApiPayload(merged)),
-    })
-      .then(() =>
-        setPlayerCharacters((prev) => prev.map((p) => (p.id === id ? merged : p))),
-      )
-      .catch((err) => console.error("Error guardando personaje:", err));
-  }
-
-  function createPlayer(patch: Partial<PlayerCharacter>) {
-    const playerName = patch.playerName ?? "";
-    const characterName = patch.characterName ?? "";
-    const draft: PlayerCharacter = {
-      ...blankPlayerDraft,
-      ...patch,
-      campaignId: activeCampaign!.id,
-      obsidianPath: `Jugadores/${playerName}/${characterName}.md`,
-    };
-    apiFetch<ApiPlayerCharacter>(`/campaigns/${activeCampaign!.id}/player-characters`, {
-      method: "POST",
-      body: JSON.stringify(playerCharacterToApiPayload(draft)),
-    })
-      .then((created) => {
-        // faction/links no tienen backing todavía (pc_groups es indexer-only) — se conservan del draft.
-        const player: PlayerCharacter = {
-          ...mapPlayerCharacter(created),
-          faction: draft.faction,
-          links: draft.links,
-        };
-        setPlayerCharacters((prev) => [...prev, player]);
-        setRoute({ name: "player-detail", playerId: player.id });
-      })
-      .catch((err) => console.error("Error creando personaje:", err));
-  }
-
-  function saveSession(id: string, patch: Partial<Session>) {
-    const current = sessions.find((s) => s.id === id);
-    if (!current) return;
-    const draft: Session = { ...current, ...patch };
-    apiFetch<ApiSession>(`/sessions/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(sessionToApiPayload(draft)),
-    })
-      .then((saved) => {
-        const session = mapSession(saved);
-        setSessions((prev) => prev.map((s) => (s.id === id ? session : s)));
-        setRoute({ name: "section", section: "sesiones" });
-      })
-      .catch((err) => console.error("Error guardando sesión:", err));
-  }
-
-  const defaultSessionArc =
-    campaignArcs.find((a) => a.status === "en_curso") ??
-    campaignArcs[campaignArcs.length - 1];
-
-  function createSession(
-    values: { sessionType: Session["sessionType"]; date: string; summary: string },
-    expectedNpcIds: string[] = [],
-    expectedQuestIds: string[] = [],
-  ) {
-    const draft: Session = {
-      id: "",
-      campaignId: activeCampaign!.id,
-      arcId: defaultSessionArc?.id,
-      sessionNumber: nextSessionNumber,
-      subNumber: 0,
-      sessionType: values.sessionType,
-      date: values.date,
-      summary: values.summary,
-      prepNotes: "",
-    };
-    apiFetch<ApiSession>(`/campaigns/${activeCampaign!.id}/sessions`, {
-      method: "POST",
-      body: JSON.stringify(sessionToApiPayload(draft)),
-    })
-      .then((saved) => {
-        const session = mapSession(saved);
-        setSessions((prev) => [...prev, session]);
-        Promise.all([
-          ...expectedNpcIds.map((npcId) =>
-            apiFetch(`/sessions/${session.id}/npcs`, {
-              method: "POST",
-              body: JSON.stringify({ npc_id: Number(npcId) }),
-            }),
-          ),
-          ...expectedQuestIds.map((questId) =>
-            apiFetch(`/sessions/${session.id}/quests`, {
-              method: "POST",
-              body: JSON.stringify({ quest_id: Number(questId) }),
-            }),
-          ),
-        ]).catch((err) => console.error("Error asociando sesión:", err));
-        setRoute({ name: "section", section: "sesiones" });
-      })
-      .catch((err) => console.error("Error creando sesión:", err));
-  }
-
-  function planSession(values: {
-    date: string;
-    summary: string;
-    expectedNpcIds: string[];
-    expectedQuestIds: string[];
-  }) {
-    createSession(
-      { sessionType: "planning", date: values.date, summary: values.summary },
-      values.expectedNpcIds,
-      values.expectedQuestIds,
-    );
-  }
-
-  function playSession(values: { date: string; summary: string }) {
-    createSession({ sessionType: "session", date: values.date, summary: values.summary });
-    setNewSessionOpen(false);
-  }
-
-  function submitEntityForm(values: Record<string, string>) {
-    if (!entityForm) return;
-    const { kind, id } = entityForm;
-
-    switch (kind) {
-      case "arc": {
-        const current = id ? arcs.find((a) => a.id === id) : undefined;
-        const draft: Arc = current
-          ? {
-              ...current,
-              label: values.label,
-              summary: values.summary,
-              order: Number(values.order) || current.order,
-              status: values.status as ArcStatus,
-            }
-          : {
-              id: "",
-              campaignId: activeCampaign!.id,
-              label: values.label,
-              summary: values.summary,
-              meta: "",
-              order: Number(values.order) || 0,
-              status: values.status as ArcStatus,
-              obsidianPath: `Arcos/${values.label}.md`,
-            };
-        const payload = JSON.stringify(arcToApiPayload(draft));
-        const request = id
-          ? apiFetch<ApiArc>(`/arcs/${id}`, { method: "PUT", body: payload })
-          : apiFetch<ApiArc>(`/campaigns/${activeCampaign!.id}/arcs`, {
-              method: "POST",
-              body: payload,
-            });
-        request
-          .then((saved) => {
-            // mapArc no trae meta — se conserva del draft/actual.
-            const arc = {
-              ...mapArc(saved),
-              meta: current?.meta ?? "",
-            };
-            setArcs((prev) =>
-              id ? prev.map((a) => (a.id === id ? arc : a)) : [...prev, arc],
-            );
-          })
-          .catch((err) => console.error("Error guardando arco:", err));
-        break;
-      }
-      case "faction": {
-        const current = id ? groups.find((g) => g.id === id) : undefined;
-        const draft: Group = current
-          ? { ...current, name: values.name, description: values.description }
-          : {
-              id: "",
-              campaignId: activeCampaign!.id,
-              name: values.name,
-              description: values.description,
-              memberCount: 0,
-              obsidianPath: `Facciones/${values.name}.md`,
-            };
-        const payload = JSON.stringify(groupToApiPayload(draft));
-        const request = id
-          ? apiFetch<ApiGroup>(`/groups/${id}`, {
-              method: "PUT",
-              body: payload,
-            })
-          : apiFetch<ApiGroup>(`/campaigns/${activeCampaign!.id}/groups`, {
-              method: "POST",
-              body: payload,
-            });
-        request
-          .then((saved) => {
-            // GetByID/Update no calculan member_count (siempre 0) — se conserva el real ya cargado por List.
-            const group = {
-              ...mapGroup(saved),
-              memberCount: current?.memberCount ?? 0,
-            };
-            setGroups((prev) =>
-              id
-                ? prev.map((g) => (g.id === id ? group : g))
-                : [...prev, group],
-            );
-          })
-          .catch((err) => console.error("Error guardando facción:", err));
-        break;
-      }
-      case "location": {
-        const draft: Location = id
-          ? {
-              ...locations.find((l) => l.id === id)!,
-              name: values.name,
-              locationType: values.locationType as Location["locationType"],
-              parentId: values.parentId || undefined,
-              description: values.description,
-            }
-          : {
-              id: "",
-              campaignId: activeCampaign!.id,
-              name: values.name,
-              locationType: values.locationType as Location["locationType"],
-              parentId: values.parentId || undefined,
-              description: values.description,
-              obsidianPath: `Locaciones/${values.name}.md`,
-            };
-        const payload = JSON.stringify(locationToApiPayload(draft));
-        const request = id
-          ? apiFetch<ApiLocation>(`/locations/${id}`, {
-              method: "PUT",
-              body: payload,
-            })
-          : apiFetch<ApiLocation>(
-              `/campaigns/${activeCampaign!.id}/locations`,
-              { method: "POST", body: payload },
-            );
-        request
-          .then((saved) => {
-            const location = mapLocation(saved);
-            setLocations((prev) =>
-              id
-                ? prev.map((l) => (l.id === id ? location : l))
-                : [...prev, location],
-            );
-          })
-          .catch((err) => console.error("Error guardando locación:", err));
-        break;
-      }
-      case "quest": {
-        const priority = (Number(values.priority) || 3) as Quest["priority"];
-        const current = id ? quests.find((q) => q.id === id) : undefined;
-        const draft: Quest = current
-          ? { ...current, name: values.name, hook: values.hook, status: values.status as Quest["status"], priority }
-          : {
-              id: "",
-              campaignId: activeCampaign!.id,
-              name: values.name,
-              hook: values.hook,
-              crystal: "faction-quest",
-              status: values.status as Quest["status"],
-              priority,
-            };
-        const payload = JSON.stringify(questToApiPayload(draft));
-        const request = id
-          ? apiFetch<ApiQuest>(`/quests/${id}`, { method: "PUT", body: payload })
-          : apiFetch<ApiQuest>(`/campaigns/${activeCampaign!.id}/quests`, { method: "POST", body: payload });
-        request
-          .then((saved) => {
-            const quest = mapQuest(saved);
-            setQuests((prev) => (id ? prev.map((q) => (q.id === id ? quest : q)) : [...prev, quest]));
-          })
-          .catch((err) => console.error("Error guardando quest:", err));
-        break;
-      }
-    }
-
-    setEntityForm(null);
-  }
-
-  function deleteEntity(kind: EntityKind, id: string) {
-    if (
-      !window.confirm(
-        `¿Dar de baja este ${entityKindLabel[kind]}? Deja de verse en la campaña, no se borra.`,
-      )
-    )
-      return;
-    if (kind === "location") {
-      apiFetch(`/locations/${id}`, { method: "DELETE" })
-        .then(() => setLocations((prev) => prev.filter((l) => l.id !== id)))
-        .catch((err) => console.error("Error borrando locación:", err));
-      goToEntitySection(kind);
-      return;
-    }
-    if (kind === "faction") {
-      apiFetch(`/groups/${id}`, { method: "DELETE" })
-        .then(() => setGroups((prev) => prev.filter((g) => g.id !== id)))
-        .catch((err) => console.error("Error borrando facción:", err));
-      goToEntitySection(kind);
-      return;
-    }
-    if (kind === "arc") {
-      apiFetch(`/arcs/${id}`, { method: "DELETE" })
-        .then(() => setArcs((prev) => prev.filter((a) => a.id !== id)))
-        .catch((err) => console.error("Error borrando arco:", err));
-      goToEntitySection(kind);
-      return;
-    }
-    apiFetch(`/quests/${id}`, { method: "DELETE" })
-      .then(() => setQuests((prev) => prev.filter((q) => q.id !== id)))
-      .catch((err) => console.error("Error borrando quest:", err));
-    goToEntitySection(kind);
-  }
-
-  function deleteNpc(id: string) {
-    if (
-      !window.confirm(
-        "¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.",
-      )
-    )
-      return;
-    apiFetch(`/npcs/${id}`, { method: "DELETE" })
-      .then(() => {
-        setNpcs((prev) => prev.filter((n) => n.id !== id));
-        setRoute({ name: "section", section: "npcs" });
-      })
-      .catch((err) => console.error("Error borrando NPC:", err));
-  }
-
-  function deletePlayer(id: string) {
-    if (
-      !window.confirm(
-        "¿Dar de baja este personaje? Deja de verse en la campaña, no se borra.",
-      )
-    )
-      return;
-    apiFetch(`/player-characters/${id}`, { method: "DELETE" })
-      .then(() => setPlayerCharacters((prev) => prev.filter((p) => p.id !== id)))
-      .catch((err) => console.error("Error borrando personaje:", err));
-    setRoute({ name: "section", section: "jugadores" });
-  }
-
-  function entityFormFields(kind: EntityKind): FormField[] {
-    switch (kind) {
-      case "arc":
-        return arcFields();
-      case "faction":
-        return factionFields();
-      case "location":
-        return locationFields(campaignLocations, entityForm?.id);
-      case "quest":
-        return questFields();
-    }
-  }
-
-  function entityFormInitialValues(
-    kind: EntityKind,
-    id?: string,
-  ): Record<string, string> | undefined {
-    if (!id) return undefined;
-    switch (kind) {
-      case "arc": {
-        const a = arcs.find((x) => x.id === id);
-        return a
-          ? {
-              label: a.label,
-              summary: a.summary,
-              order: String(a.order),
-              status: a.status,
-            }
-          : undefined;
-      }
-      case "faction": {
-        const g = groups.find((x) => x.id === id);
-        return g ? { name: g.name, description: g.description } : undefined;
-      }
-      case "location": {
-        const l = locations.find((x) => x.id === id);
-        return l
-          ? {
-              name: l.name,
-              locationType: l.locationType,
-              parentId: l.parentId ?? "",
-              description: l.description,
-            }
-          : undefined;
-      }
-      case "quest": {
-        const q = quests.find((x) => x.id === id);
-        return q
-          ? {
-              name: q.name,
-              hook: q.hook,
-              status: q.status,
-              priority: String(q.priority),
-            }
-          : undefined;
-      }
-    }
-  }
-
   const selectedNpc =
     route.name === "npc-detail" || route.name === "npc-edit"
-      ? npcs.find((n) => n.id === route.npcId)
+      ? campaignNpcs.find((n) => n.id === route.npcId)
       : undefined;
 
   const selectedPlayer =
     route.name === "player-detail" || route.name === "player-edit"
-      ? playerCharacters.find((p) => p.id === route.playerId)
+      ? campaignPlayerCharacters.find((p) => p.id === route.playerId)
       : undefined;
 
   const activeNav: DashboardSection =
@@ -743,23 +159,15 @@ export default function App() {
             ? "sesiones"
             : route.name === "entity-detail"
               ? entityKindSection[route.kind]
-              : "resumen";
-
-  function startPlaySession() {
-    if (pendingPlannedSession) {
-      setRoute({
-        name: "session-edit",
-        sessionId: pendingPlannedSession.id,
-        autoConfirm: true,
-      });
-    } else {
-      setNewSessionOpen(true);
-    }
-  }
-
-  function goToEntitySection(kind: EntityKind) {
-    setRoute({ name: "section", section: entityKindSection[kind] });
-  }
+              : route.name === "arc-edit" || route.name === "arc-create"
+                ? "arcos"
+                : route.name === "quest-edit" || route.name === "quest-create"
+                  ? "quests"
+                  : route.name === "faction-edit" || route.name === "faction-create"
+                    ? "facciones"
+                    : route.name === "location-edit" || route.name === "location-create"
+                      ? "locaciones"
+                      : "resumen";
 
   return (
     <div className="app">
@@ -784,12 +192,12 @@ export default function App() {
               arcs={campaignArcs}
               npcs={campaignNpcs}
               quests={campaignQuests}
-              sessions={campaignSessions}
+              nextSessionNumber={nextSessionNumber}
               summary={
                 dashboardSummary
                   ? {
-                      activeQuests: dashboardSummary.active_quests.map(mapQuest),
-                      recentNpcs: dashboardSummary.recent_npcs.map(mapNpc),
+                      activeQuests: (dashboardSummary.active_quests ?? []).map(mapQuest),
+                      recentNpcs: (dashboardSummary.recent_npcs ?? []).map(mapNpc),
                       lastSession: dashboardSummary.last_session
                         ? mapSession(dashboardSummary.last_session)
                         : undefined,
@@ -798,7 +206,22 @@ export default function App() {
               }
               onNavigate={(section) => setRoute({ name: "section", section })}
               onSelectNpc={(npcId) => setRoute({ name: "npc-detail", npcId })}
+              onSelectQuest={(id) =>
+                setRoute({ name: "entity-detail", kind: "quest", id })
+              }
+              onSelectArc={(id) =>
+                setRoute({ name: "entity-detail", kind: "arc", id })
+              }
+              onOpenSession={(sessionId) => {
+                const session = campaignSessions.find((s) => s.id === sessionId);
+                setRoute({
+                  name: "session-edit",
+                  sessionId,
+                  autoConfirm: session?.sessionType === "planning",
+                });
+              }}
               onStartSession={startPlaySession}
+              onPlanSession={() => setRoute({ name: "session-plan" })}
               onReindex={handleReindex}
               reindexing={reindexing}
             />
@@ -814,6 +237,7 @@ export default function App() {
             <SessionsTimeline
               arcs={campaignArcs}
               sessions={campaignSessions}
+              nextSessionNumber={nextSessionNumber}
               onPlaySession={startPlaySession}
               onPlanSession={() => setRoute({ name: "session-plan" })}
               onOpenSession={(sessionId) =>
@@ -827,7 +251,7 @@ export default function App() {
               onSelect={(id) =>
                 setRoute({ name: "entity-detail", kind: "arc", id })
               }
-              onCreate={() => setEntityForm({ kind: "arc" })}
+              onCreate={() => setRoute({ name: "arc-create" })}
             />
           )}
           {route.name === "section" && route.section === "locaciones" && (
@@ -836,7 +260,7 @@ export default function App() {
               onSelect={(id) =>
                 setRoute({ name: "entity-detail", kind: "location", id })
               }
-              onCreate={() => setEntityForm({ kind: "location" })}
+              onCreate={() => setRoute({ name: "location-create" })}
             />
           )}
           {route.name === "section" && route.section === "facciones" && (
@@ -845,7 +269,7 @@ export default function App() {
               onSelect={(id) =>
                 setRoute({ name: "entity-detail", kind: "faction", id })
               }
-              onCreate={() => setEntityForm({ kind: "faction" })}
+              onCreate={() => setRoute({ name: "faction-create" })}
             />
           )}
           {route.name === "section" && route.section === "quests" && (
@@ -854,7 +278,7 @@ export default function App() {
               onSelect={(id) =>
                 setRoute({ name: "entity-detail", kind: "quest", id })
               }
-              onCreate={() => setEntityForm({ kind: "quest" })}
+              onCreate={() => setRoute({ name: "quest-create" })}
             />
           )}
           {route.name === "section" && route.section === "jugadores" && (
@@ -873,9 +297,13 @@ export default function App() {
                 campaignArcs.find((a) => a.id === route.id) ?? campaignArcs[0]
               }
               sessions={campaignSessions.filter((s) => s.arcId === route.id)}
+              vaultName={activeCampaign!.vaultPath}
+              campaignId={activeCampaignId!}
               onBack={() => goToEntitySection("arc")}
-              onEdit={() => setEntityForm({ kind: "arc", id: route.id })}
+              onEdit={() => setRoute({ name: "arc-edit", arcId: route.id })}
               onDelete={() => deleteEntity("arc", route.id)}
+              onStart={() => saveArc(route.id, { status: "en_curso" })}
+              onClose={() => saveArc(route.id, { status: "cerrado" })}
             />
           )}
           {route.name === "entity-detail" && route.kind === "faction" && (
@@ -885,9 +313,13 @@ export default function App() {
                 campaignGroups[0]
               }
               npcs={campaignNpcs}
+              vaultName={activeCampaign!.vaultPath}
+              campaignId={activeCampaignId!}
               onBack={() => goToEntitySection("faction")}
               onSelectNpc={(npcId) => setRoute({ name: "npc-detail", npcId })}
-              onEdit={() => setEntityForm({ kind: "faction", id: route.id })}
+              onEdit={() =>
+                setRoute({ name: "faction-edit", factionId: route.id })
+              }
               onDelete={() => deleteEntity("faction", route.id)}
             />
           )}
@@ -898,8 +330,12 @@ export default function App() {
                 campaignLocations[0]
               }
               allLocations={campaignLocations}
+              vaultName={activeCampaign!.vaultPath}
+              campaignId={activeCampaignId!}
               onBack={() => goToEntitySection("location")}
-              onEdit={() => setEntityForm({ kind: "location", id: route.id })}
+              onEdit={() =>
+                setRoute({ name: "location-edit", locationId: route.id })
+              }
               onDelete={() => deleteEntity("location", route.id)}
             />
           )}
@@ -910,7 +346,7 @@ export default function App() {
                 campaignQuests[0]
               }
               onBack={() => goToEntitySection("quest")}
-              onEdit={() => setEntityForm({ kind: "quest", id: route.id })}
+              onEdit={() => setRoute({ name: "quest-edit", questId: route.id })}
               onDelete={() => deleteEntity("quest", route.id)}
             />
           )}
@@ -921,6 +357,7 @@ export default function App() {
               npcs={campaignNpcs}
               quests={campaignQuests}
               campaignId={activeCampaignId!}
+              vaultName={activeCampaign!.vaultPath}
               onEdit={() =>
                 setRoute({ name: "npc-edit", npcId: selectedNpc.id })
               }
@@ -929,8 +366,121 @@ export default function App() {
             />
           )}
 
+          {route.name === "faction-edit" &&
+            (() => {
+              const group = campaignGroups.find((g) => g.id === route.factionId);
+              if (!group) return null;
+              return (
+                <FactionEdit
+                  key={group.id}
+                  group={group}
+                  npcs={campaignNpcs}
+                  onSave={(patch) => {
+                    saveFaction(group.id, patch);
+                    setRoute({ name: "entity-detail", kind: "faction", id: group.id });
+                  }}
+                  onDiscard={() =>
+                    setRoute({ name: "entity-detail", kind: "faction", id: group.id })
+                  }
+                />
+              );
+            })()}
+
+          {route.name === "faction-create" && (
+            <FactionEdit
+              group={blankDrafts.faction}
+              npcs={campaignNpcs}
+              onSave={createFaction}
+              onDiscard={() => goToEntitySection("faction")}
+            />
+          )}
+
+          {route.name === "location-edit" &&
+            (() => {
+              const location = campaignLocations.find((l) => l.id === route.locationId);
+              if (!location) return null;
+              return (
+                <LocationEdit
+                  key={location.id}
+                  location={location}
+                  locations={campaignLocations}
+                  onSave={(patch) => {
+                    saveLocation(location.id, patch);
+                    setRoute({ name: "entity-detail", kind: "location", id: location.id });
+                  }}
+                  onDiscard={() =>
+                    setRoute({ name: "entity-detail", kind: "location", id: location.id })
+                  }
+                />
+              );
+            })()}
+
+          {route.name === "location-create" && (
+            <LocationEdit
+              location={blankDrafts.location}
+              locations={campaignLocations}
+              onSave={createLocation}
+              onDiscard={() => goToEntitySection("location")}
+            />
+          )}
+
+          {route.name === "arc-edit" &&
+            (() => {
+              const arc = campaignArcs.find((a) => a.id === route.arcId);
+              if (!arc) return null;
+              return (
+                <ArcEdit
+                  key={arc.id}
+                  arc={arc}
+                  onSave={(patch) => {
+                    saveArc(arc.id, patch);
+                    setRoute({ name: "entity-detail", kind: "arc", id: arc.id });
+                  }}
+                  onDiscard={() =>
+                    setRoute({ name: "entity-detail", kind: "arc", id: arc.id })
+                  }
+                />
+              );
+            })()}
+
+          {route.name === "arc-create" && (
+            <ArcEdit
+              arc={blankDrafts.arc}
+              onSave={createArc}
+              onDiscard={() => goToEntitySection("arc")}
+            />
+          )}
+
+          {route.name === "quest-edit" &&
+            (() => {
+              const quest = campaignQuests.find((q) => q.id === route.questId);
+              if (!quest) return null;
+              return (
+                <QuestEdit
+                  key={quest.id}
+                  quest={quest}
+                  onSave={(patch) => {
+                    saveQuest(quest.id, patch);
+                    setRoute({ name: "entity-detail", kind: "quest", id: quest.id });
+                  }}
+                  onDiscard={() =>
+                    setRoute({ name: "entity-detail", kind: "quest", id: quest.id })
+                  }
+                />
+              );
+            })()}
+
+          {route.name === "quest-create" && (
+            <QuestEdit
+              quest={blankDrafts.quest}
+              onSave={createQuest}
+              onDiscard={() => goToEntitySection("quest")}
+            />
+          )}
+
           {route.name === "npc-edit" && selectedNpc && (
             <NpcEdit
+              key={selectedNpc.id}
               npc={selectedNpc}
               npcs={campaignNpcs}
               groups={campaignGroups}
@@ -947,7 +497,7 @@ export default function App() {
 
           {route.name === "npc-create" && (
             <NpcEdit
-              npc={blankNpcDraft}
+              npc={blankDrafts.npc}
               npcs={campaignNpcs}
               groups={campaignGroups}
               locations={campaignLocations}
@@ -959,8 +509,8 @@ export default function App() {
           {route.name === "player-detail" && selectedPlayer && (
             <PlayerDetail
               player={selectedPlayer}
-              npcs={campaignNpcs}
               campaignId={activeCampaignId!}
+              vaultName={activeCampaign!.vaultPath}
               onEdit={() =>
                 setRoute({ name: "player-edit", playerId: selectedPlayer.id })
               }
@@ -971,8 +521,8 @@ export default function App() {
 
           {route.name === "player-edit" && selectedPlayer && (
             <PlayerEdit
+              key={selectedPlayer.id}
               player={selectedPlayer}
-              npcs={campaignNpcs}
               groups={campaignGroups}
               onSave={(patch) => {
                 savePlayer(selectedPlayer.id, patch);
@@ -989,8 +539,7 @@ export default function App() {
 
           {route.name === "player-create" && (
             <PlayerEdit
-              player={blankPlayerDraft}
-              npcs={campaignNpcs}
+              player={blankDrafts.player}
               groups={campaignGroups}
               onSave={createPlayer}
               onDiscard={() =>
@@ -1014,15 +563,21 @@ export default function App() {
 
           {route.name === "session-edit" &&
             (() => {
-              const session = campaignSessions.find((s) => s.id === route.sessionId);
+              const session = campaignSessions.find(
+                (s) => s.id === route.sessionId,
+              );
               if (!session) return null;
               const arc = campaignArcs.find((a) => a.id === session.arcId);
               return (
                 <SessionEdit
+                  key={session.id}
                   arc={arc}
+                  arcs={campaignArcs}
                   session={session}
+                  campaignId={activeCampaignId!}
                   autoConfirm={route.autoConfirm}
                   onSave={(patch) => saveSession(session.id, patch)}
+                  onDelete={() => deleteSession(session.id)}
                   onBack={() =>
                     setRoute({ name: "section", section: "sesiones" })
                   }
@@ -1051,22 +606,13 @@ export default function App() {
         </Modal>
       )}
 
-      {entityForm && (
-        <Modal
-          title={`${entityForm.id ? "Editar" : "Nueva"} ${entityKindLabel[entityForm.kind]}`}
-          onClose={() => setEntityForm(null)}
-        >
-          <EntityForm
-            fields={entityFormFields(entityForm.kind)}
-            initialValues={entityFormInitialValues(
-              entityForm.kind,
-              entityForm.id,
-            )}
-            submitLabel={entityForm.id ? "Guardar" : "Crear"}
-            onConfirm={submitEntityForm}
-            onCancel={() => setEntityForm(null)}
-          />
-        </Modal>
+      {toast && (
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          durationMs={toast.type === "error" ? 3000 : 2000}
+        />
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 import "./CampaignDashboard.css";
 import {
   crystalColor,
+  formatDate,
   sessionCode,
   type Npc,
   type Campaign,
@@ -34,11 +35,15 @@ interface CampaignDashboardProps {
   arcs: Arc[];
   npcs: Npc[];
   quests: Quest[];
-  sessions: Session[];
   summary: DashboardSummaryData | null;
+  nextSessionNumber: number;
   onNavigate: (section: DashboardSection) => void;
   onSelectNpc: (npcId: string) => void;
+  onSelectQuest: (questId: string) => void;
+  onSelectArc: (arcId: string) => void;
+  onOpenSession: (sessionId: string) => void;
   onStartSession: () => void;
+  onPlanSession: () => void;
   onReindex: () => void;
   reindexing: boolean;
 }
@@ -48,11 +53,15 @@ export function CampaignDashboard({
   arcs,
   npcs,
   quests,
-  sessions,
   summary,
+  nextSessionNumber,
   onNavigate,
   onSelectNpc,
+  onSelectQuest,
+  onSelectArc,
+  onOpenSession,
   onStartSession,
+  onPlanSession,
   onReindex,
   reindexing,
 }: CampaignDashboardProps) {
@@ -60,7 +69,6 @@ export function CampaignDashboard({
   const activeQuests = summary?.activeQuests ?? quests.filter((q) => q.status === "active");
   const currentArc =
     arcs.find((a) => a.status === "en_curso") ?? arcs[arcs.length - 1];
-  const totalSessions = sessions.length;
   const lastSession = summary?.lastSession;
   const arcProgressMatch = currentArc?.meta.match(/(\d+)\s*(?:de|\/)\s*(\d+)/);
   const arcProgressPct = arcProgressMatch
@@ -87,7 +95,7 @@ export function CampaignDashboard({
           {currentArc?.obsidianPath && (
             <button
               className="btn btn-secondary"
-              onClick={() => openInObsidian(currentArc.obsidianPath)}
+              onClick={() => openInObsidian(campaign.vaultPath, currentArc.obsidianPath)}
             >
               Abrir en Obsidian
             </button>
@@ -99,15 +107,24 @@ export function CampaignDashboard({
           >
             {reindexing ? "Reindexando…" : "Reindexar vault"}
           </button>
-          <button className="btn btn-primary" onClick={onStartSession}>
-            Jugar sesión {totalSessions + 1}
-          </button>
+          {lastSession && lastSession.sessionType !== "planning" ? (
+            <button className="btn btn-primary" onClick={onPlanSession}>
+              Planificar sesión
+            </button>
+          ) : (
+            <button className="btn btn-primary" onClick={onStartSession}>
+              Jugar sesión {nextSessionNumber}
+            </button>
+          )}
         </div>
       </header>
 
       {currentArc && (
         <div className="campaign-dashboard__row">
-          <div className="card campaign-dashboard__panel">
+          <div
+            className="card campaign-dashboard__panel campaign-dashboard__panel--clickable"
+            onClick={() => onSelectArc(currentArc.id)}
+          >
             <div className="campaign-dashboard__panel-top">
               <span className="label">Arco actual</span>
               <ArcStatusPill status={currentArc.status} />
@@ -115,7 +132,7 @@ export function CampaignDashboard({
             <div className="display" style={{ fontSize: 21, marginTop: 9 }}>
               {currentArc.label}
             </div>
-            <p className="campaign-dashboard__desc">{currentArc.summary}</p>
+            <p className="campaign-dashboard__desc campaign-dashboard__desc--clamp">{currentArc.summary}</p>
             <div className="campaign-dashboard__progress">
               <div className="campaign-dashboard__progress-track">
                 <div
@@ -130,17 +147,31 @@ export function CampaignDashboard({
           </div>
 
           {lastSession && (
-            <div className="card campaign-dashboard__panel">
+            <div
+              className="card campaign-dashboard__panel campaign-dashboard__panel--clickable campaign-dashboard__panel--relative"
+              onClick={() => onOpenSession(lastSession.id)}
+            >
+              {lastSession.sessionType !== "planning" && (
+                <button
+                  className="btn btn-primary campaign-dashboard__panel-corner"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPlanSession();
+                  }}
+                >
+                  Planificar sesión
+                </button>
+              )}
               <span className="label">Última sesión</span>
               <div className="campaign-dashboard__session-title">
                 <span className="campaign-dashboard__session-n">
                   {sessionCode(lastSession)}
                 </span>
                 <span className="campaign-dashboard__session-date">
-                  {lastSession.date}
+                  {formatDate(lastSession.date)}
                 </span>
               </div>
-              <MarkdownText className="campaign-dashboard__desc" text={lastSession.summary} />
+              <MarkdownText className="campaign-dashboard__desc campaign-dashboard__desc--clamp" text={lastSession.summary} />
             </div>
           )}
         </div>
@@ -166,8 +197,12 @@ export function CampaignDashboard({
             </button>
           </div>
           {activeQuests.map((q) => (
-            <div key={q.id} className="campaign-dashboard__list-row">
-              <div style={{ flex: 1 }}>
+            <div
+              key={q.id}
+              className="campaign-dashboard__list-row campaign-dashboard__list-row--clickable"
+              onClick={() => onSelectQuest(q.id)}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <span className="title-underline">
                   <span
                     style={{
@@ -188,6 +223,9 @@ export function CampaignDashboard({
                     fontSize: 13,
                     color: "var(--text-secondary)",
                     marginTop: 5,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
                   {q.hook}

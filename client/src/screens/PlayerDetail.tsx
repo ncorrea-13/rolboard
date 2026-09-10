@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./NpcDetail.css";
-import { crystalColor, type Npc, type PlayerCharacter } from "../data/domain";
+import { type PlayerCharacter } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
@@ -9,30 +9,27 @@ import { apiFetch } from "../lib/api";
 
 interface PlayerDetailProps {
   player: PlayerCharacter;
-  npcs: Npc[];
   campaignId: string;
+  vaultName: string;
   onEdit: () => void;
   onBack: () => void;
   onDelete: () => void;
 }
 
-export function PlayerDetail({ player, npcs, campaignId, onEdit, onBack, onDelete }: PlayerDetailProps) {
-  const [noteOpen, setNoteOpen] = useState(false);
+export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, onDelete }: PlayerDetailProps) {
+  const [noteOpen, setNoteOpen] = useState<{ title: string; fallback: string } | null>(null);
   const [noteHtml, setNoteHtml] = useState<string | null>(null);
 
-  function openNote() {
-    setNoteOpen(true);
-    if (!player.obsidianPath) return;
+  function openNote(path: string | undefined, title: string, fallback: string) {
+    setNoteOpen({ title, fallback });
+    setNoteHtml(null);
+    if (!path) return;
     apiFetch<{ html: string }>(
-      `/campaigns/${campaignId}/notes/render?path=${encodeURIComponent(player.obsidianPath)}`,
+      `/campaigns/${campaignId}/notes/render?path=${encodeURIComponent(path)}`,
     )
       .then((res) => setNoteHtml(res.html))
       .catch(() => setNoteHtml(null));
   }
-
-  const links = (player.links ?? [])
-    .map((l) => ({ ...l, target: npcs.find((n) => n.id === l.npcId) }))
-    .filter((l): l is typeof l & { target: Npc } => Boolean(l.target));
 
   return (
     <div className="card npc-detail">
@@ -52,8 +49,8 @@ export function PlayerDetail({ player, npcs, campaignId, onEdit, onBack, onDelet
           />
           <StatusPill status={player.status} />
           <div className="npc-detail__header-actions">
-            <button className="btn btn-secondary" onClick={() => openInObsidian(player.obsidianPath)}>Abrir en Obsidian</button>
-            <button className="btn btn-secondary" onClick={openNote}>Ver nota renderizada</button>
+            <button className="btn btn-secondary" onClick={() => openInObsidian(vaultName, player.obsidianPath)}>Abrir en Obsidian</button>
+            <button className="btn btn-secondary" onClick={() => openNote(player.obsidianPath, player.characterName, "")}>Ver ficha</button>
             <button className="btn btn-secondary" onClick={onDelete}>Dar de baja</button>
             <button className="btn btn-primary" onClick={onEdit}>Editar</button>
           </div>
@@ -62,31 +59,31 @@ export function PlayerDetail({ player, npcs, campaignId, onEdit, onBack, onDelet
 
       <div className="npc-detail__body">
         <div className="npc-detail__col npc-detail__col--main">
-          <span className="label">Trasfondo</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span className="label">Trasfondo</span>
+            {player.historiaPath && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => openNote(player.historiaPath, `Historia — ${player.characterName}`, player.backstory)}
+              >
+                Ver historia completa
+              </button>
+            )}
+          </div>
           <p className="npc-detail__desc">{player.backstory}</p>
 
-          <span className="label" style={{ marginTop: 21, display: "block" }}>Notas de progresión</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 21 }}>
+            <span className="label">Notas de progresión</span>
+            {player.avancesPath && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => openNote(player.avancesPath, `Avances — ${player.characterName}`, player.progressionNotes)}
+              >
+                Ver avances
+              </button>
+            )}
+          </div>
           <p className="npc-detail__desc">{player.progressionNotes}</p>
-
-          {links.length > 0 && (
-            <>
-              <span className="label" style={{ marginTop: 21, display: "block" }}>Vínculos</span>
-              <div className="npc-detail__links">
-                {links.map((l) => (
-                  <div key={l.role} className="card npc-detail__link">
-                    <span className="npc-detail__link-role">{l.role}</span>
-                    <span className="title-underline" style={{ flex: 1 }}>
-                      <span className="npc-detail__link-name">
-                        {l.target.name} <span className="npc-detail__link-note">· {l.target.role}</span>
-                      </span>
-                      <span className="title-underline__bar" style={{ background: crystalColor[l.target.crystal] }} />
-                    </span>
-                    <StatusPill status={l.target.status} />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
         </div>
 
         <div className="npc-detail__col npc-detail__col--side">
@@ -106,21 +103,21 @@ export function PlayerDetail({ player, npcs, campaignId, onEdit, onBack, onDelet
             <span className="label">Nota de Obsidian</span>
             <div className="entity-detail__obsidian">
               <span className="entity-detail__obsidian-path">{player.obsidianPath}</span>
-              <button className="btn btn-secondary" onClick={() => openInObsidian(player.obsidianPath)}>Abrir en Obsidian</button>
+              <button className="btn btn-secondary" onClick={() => openInObsidian(vaultName, player.obsidianPath)}>Abrir en Obsidian</button>
             </div>
           </div>
         </div>
       </div>
 
       {noteOpen && (
-        <Modal title={player.characterName} onClose={() => setNoteOpen(false)}>
+        <Modal title={noteOpen.title} onClose={() => setNoteOpen(null)} size="large">
           {noteHtml ? (
             <div
               className="npc-detail__desc"
               dangerouslySetInnerHTML={{ __html: noteHtml }}
             />
           ) : (
-            <p className="npc-detail__desc">{player.backstory}</p>
+            <p className="npc-detail__desc">{noteOpen.fallback}</p>
           )}
         </Modal>
       )}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./NpcDetail.css";
 import { crystalColor, type Npc, type Quest } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
@@ -12,6 +12,7 @@ interface NpcDetailProps {
   npcs: Npc[];
   quests: Quest[];
   campaignId: string;
+  vaultName: string;
   onEdit: () => void;
   onBack: () => void;
   onDelete: () => void;
@@ -22,6 +23,7 @@ export function NpcDetail({
   npcs,
   quests,
   campaignId,
+  vaultName,
   onEdit,
   onBack,
   onDelete,
@@ -40,7 +42,17 @@ export function NpcDetail({
       .catch(() => setNoteHtml(null));
   }
 
-  const links = (npc.links ?? [])
+  const [relations, setRelations] = useState<{ role: string; npcId: string }[]>([]);
+
+  useEffect(() => {
+    apiFetch<{ to_npc_id: number; role: string }[]>(`/npcs/${npc.id}/relations`)
+      .then((data) =>
+        setRelations((data ?? []).map((r) => ({ role: r.role, npcId: String(r.to_npc_id) }))),
+      )
+      .catch((err) => console.error("Error cargando vínculos:", err));
+  }, [npc.id]);
+
+  const links = relations
     .map((l) => ({ ...l, target: npcs.find((n) => n.id === l.npcId) }))
     .filter((l): l is typeof l & { target: Npc } => Boolean(l.target));
   const appearances = npc.appearances ?? [];
@@ -82,7 +94,7 @@ export function NpcDetail({
           <div className="npc-detail__header-actions">
             <button
               className="btn btn-secondary"
-              onClick={() => openInObsidian(npc.obsidianPath)}
+              onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
             >
               Abrir en Obsidian
             </button>
@@ -245,7 +257,7 @@ export function NpcDetail({
               </span>
               <button
                 className="btn btn-secondary"
-                onClick={() => openInObsidian(npc.obsidianPath)}
+                onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
               >
                 Abrir en Obsidian
               </button>
@@ -255,7 +267,7 @@ export function NpcDetail({
       </div>
 
       {noteOpen && (
-        <Modal title={npc.name} onClose={() => setNoteOpen(false)}>
+        <Modal title={npc.name} onClose={() => setNoteOpen(false)} size="large">
           {noteHtml ? (
             <div
               className="npc-detail__desc"
