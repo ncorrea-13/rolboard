@@ -71,12 +71,16 @@ type SessionFrontmatter struct {
 }
 
 type JugadorFrontmatter struct {
-	Tipo      string `yaml:"tipo"`
-	Jugador   string `yaml:"jugador"`
-	Personaje string `yaml:"personaje"`
-	Spren     string `yaml:"spren,omitempty"`
-	Origen    string `yaml:"origen,omitempty"`
-	Estado    string `yaml:"estado,omitempty"`
+	Tipo      string   `yaml:"tipo"`
+	Jugador   string   `yaml:"jugador"`
+	Personaje string   `yaml:"personaje"`
+	Spren     string   `yaml:"spren,omitempty"`
+	Origen    string   `yaml:"origen,omitempty"`
+	Raza      string   `yaml:"raza,omitempty"`
+	Facciones []string `yaml:"facciones,omitempty"`
+	// ponytail: el campo real en las notas del vault es "status", no "estado"
+	// (bug: nunca matcheaba nada). Ver docs/DECISIONS.md.
+	Status string `yaml:"status,omitempty"`
 }
 
 func ParseArc(raw []byte) (ArcFrontmatter, error) {
