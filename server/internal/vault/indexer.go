@@ -2,7 +2,9 @@ package vault
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"os"
@@ -12,6 +14,11 @@ import (
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
+
+func contentHash(content []byte) string {
+	sum := sha256.Sum256(content)
+	return hex.EncodeToString(sum[:])
+}
 
 type Result struct {
 	Processed           int
@@ -30,6 +37,7 @@ type Indexer struct {
 	sessions         *repository.SessionRepository
 	arcs             *repository.ArcRepository
 	playerCharacters *repository.PlayerCharacterRepository
+	fileState        *repository.VaultFileStateRepository
 }
 
 func NewIndexer(root string, campaignID int64, db *sql.DB) *Indexer {
@@ -43,7 +51,18 @@ func NewIndexer(root string, campaignID int64, db *sql.DB) *Indexer {
 		sessions:         repository.NewSessionRepository(db),
 		arcs:             repository.NewArcRepository(db),
 		playerCharacters: repository.NewPlayerCharacterRepository(db),
+		fileState:        repository.NewVaultFileStateRepository(db),
 	}
+}
+
+func (ix *Indexer) skipUnchanged(ctx context.Context, idx *NameIndex, relPath, name, entityType string, content []byte) bool {
+	hash := contentHash(content)
+	state, err := ix.fileState.Get(ctx, ix.campaignID, relPath)
+	if err != nil || state.ContentHash != hash {
+		return false
+	}
+	idx.Add(IndexEntry{ID: state.EntityID, Name: name, Type: entityType, RawPath: relPath})
+	return true
 }
 
 var locationTypeMap = map[string]string{
@@ -153,6 +172,10 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 
 		switch entityType {
 		case "location":
+			if ix.skipUnchanged(ctx, idx, relPath, name, "location", content) {
+				result.Processed++
+				continue
+			}
 			fm, err := ParseLocation(raw)
 			if err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
@@ -174,10 +197,17 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				continue
 			}
 			idx.Add(IndexEntry{ID: loc.ID, Name: name, Type: "location", RawPath: relPath})
+			if err := ix.fileState.Set(ctx, ix.campaignID, relPath, contentHash(content), "location", loc.ID); err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+			}
 			stagedLocations = append(stagedLocations, stagedLocation{id: loc.ID, parent: firstWikilinkTarget(fm.Parent)})
 			result.Processed++
 
 		case "npc":
+			if ix.skipUnchanged(ctx, idx, relPath, name, "npc", content) {
+				result.Processed++
+				continue
+			}
 			fm, err := ParseNPC(raw)
 			if err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
@@ -205,6 +235,9 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				continue
 			}
 			idx.Add(IndexEntry{ID: npc.ID, Name: name, Type: "npc", RawPath: relPath})
+			if err := ix.fileState.Set(ctx, ix.campaignID, relPath, contentHash(content), "npc", npc.ID); err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+			}
 			var facciones []string
 			for _, raw := range fm.Faccion {
 				if target := firstWikilinkTarget(raw); target != "" {
@@ -220,6 +253,10 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 			result.Processed++
 
 		case "group":
+			if ix.skipUnchanged(ctx, idx, relPath, name, "group", content) {
+				result.Processed++
+				continue
+			}
 			// ponytail: los campos propios de Group (alineacion, astilla,
 			// investidura, lider) no tienen columna en la tabla groups (solo
 			// name/description/notes) — no se persisten, agregar columnas si
@@ -238,6 +275,9 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				continue
 			}
 			idx.Add(IndexEntry{ID: group.ID, Name: name, Type: "group", RawPath: relPath})
+			if err := ix.fileState.Set(ctx, ix.campaignID, relPath, contentHash(content), "group", group.ID); err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+			}
 			result.Processed++
 
 		case "session":
@@ -308,6 +348,10 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 			result.Processed++
 
 		case "player_character":
+			if ix.skipUnchanged(ctx, idx, relPath, name, "player_character", content) {
+				result.Processed++
+				continue
+			}
 			fm, err := ParseJugador(raw)
 			if err != nil {
 				continue
@@ -323,6 +367,9 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				continue
 			}
 			idx.Add(IndexEntry{ID: pc.ID, Name: name, Type: "player_character", RawPath: relPath})
+			if err := ix.fileState.Set(ctx, ix.campaignID, relPath, contentHash(content), "player_character", pc.ID); err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+			}
 			result.Processed++
 		}
 	}

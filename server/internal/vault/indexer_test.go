@@ -151,6 +151,69 @@ func TestReindexCreatesEntitiesAndResolvesRelations(t *testing.T) {
 	}
 }
 
+func TestReindexPreservesDashboardEditWhenNoteUnchanged(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\n---\nCapitán de Bridge Four.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	if _, err := indexer.Reindex(ctx); err != nil {
+		t.Fatalf("First reindex failed: %v", err)
+	}
+
+	npcRepo := repository.NewNPCRepository(db)
+	npcs, err := npcRepo.List(ctx, campaign.ID)
+	if err != nil || len(npcs) != 1 {
+		t.Fatalf("Expected 1 npc after first reindex, err=%v npcs=%+v", err, npcs)
+	}
+	kaladin := npcs[0]
+
+	// Simula una edición hecha desde el dashboard (PUT /npcs/{id}), sin tocar el archivo del vault.
+	kaladin.Status = "muerto"
+	if err := npcRepo.Update(ctx, kaladin.ID, &kaladin); err != nil {
+		t.Fatalf("Simulated dashboard edit failed: %v", err)
+	}
+
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Second reindex failed: %v", err)
+	}
+	if len(result.Errors) != 0 {
+		t.Errorf("Expected no errors on second reindex, got %v", result.Errors)
+	}
+	if result.Processed != 1 {
+		t.Errorf("Expected 1 processed (skipped-unchanged still counts), got %d", result.Processed)
+	}
+
+	after, err := npcRepo.GetByID(ctx, kaladin.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if after.Status != "muerto" {
+		t.Errorf("Expected dashboard edit 'muerto' to survive an unchanged-note reindex, got %q", after.Status)
+	}
+
+	// Si la nota SÍ cambia, el vault vuelve a mandar.
+	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\n---\nCapitán de Bridge Four, ascendido a Alto Príncipe.")
+	if _, err := indexer.Reindex(ctx); err != nil {
+		t.Fatalf("Third reindex failed: %v", err)
+	}
+	after, err = npcRepo.GetByID(ctx, kaladin.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if after.Status != "vivo" {
+		t.Errorf("Expected vault edit to win once the note actually changed, got %q", after.Status)
+	}
+}
+
 func TestReindexParsesArcSubarcoAndUnknownStatus(t *testing.T) {
 	db := setupIndexerTestDB(t)
 	ctx := context.Background()
