@@ -55,13 +55,15 @@ Aplican a **todas** las tablas de entidad (no a las tablas puente, ver más abaj
 
 Agrupa sesiones en tramos narrativos (ej. "Arco 2 - Shadesmar").
 
-| Campo       | Tipo           | Notas                              |
-| ----------- | -------------- | ----------------------------------- |
-| id          | PK             |                                     |
-| campaign_id | FK → campaigns | NOT NULL, `ON DELETE RESTRICT`      |
-| title       | TEXT           | NOT NULL                           |
-| order       | INTEGER        | NOT NULL — para ordenarlos         |
-| summary     | TEXT           | NOT NULL DEFAULT ''                |
+| Campo        | Tipo           | Notas                              |
+| ------------ | -------------- | ----------------------------------- |
+| id           | PK             |                                     |
+| campaign_id  | FK → campaigns | NOT NULL, `ON DELETE RESTRICT`      |
+| title        | TEXT           | NOT NULL                           |
+| order        | INTEGER        | NOT NULL — número de arco (1, 2, 3...) |
+| status       | TEXT           | NOT NULL DEFAULT 'planificado', `CHECK IN ('planificado','en_curso','cerrado')` |
+| subarc_order | INTEGER        | nullable — `NULL` en el arco principal, 1/2/3... en sus subarcos (comparten el mismo `order` que el arco principal, ver `docs/DECISIONS.md`) |
+| summary      | TEXT           | NOT NULL DEFAULT ''                |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
 ### sessions
@@ -76,9 +78,12 @@ Agrupa sesiones en tramos narrativos (ej. "Arco 2 - Shadesmar").
 | session_type   | TEXT                    | NOT NULL, `CHECK IN ('session','interlude','planning')`         |
 | date           | TEXT                    | ISO 8601 (`YYYY-MM-DD`), NOT NULL                                |
 | summary        | TEXT                    | NOT NULL DEFAULT ''                                              |
+| prep_notes     | TEXT                    | NOT NULL DEFAULT '' — notas de preparación, dashboard-only (migración `0008_sessions_prep_notes.sql`) |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
 `UNIQUE(campaign_id, session_number, sub_number)`.
+
+`session_npcs`/`session_quests` tienen endpoints de escritura propios (mismo patrón que `npc_relations`): `GET/POST /api/sessions/:id/npcs`, `DELETE /api/sessions/:id/npcs/:npcId`, y análogo para `/quests`. `session_npcs` lo puede escribir tanto el dashboard (preparación, antes de jugar) como el indexer (wikilinks reales del body, que pisan lo anterior en cada reindex — ver `docs/DECISIONS.md`); `session_quests` es 100% dashboard, el indexer nunca lo toca.
 
 > **Nota**: `sub_number` se define `NOT NULL DEFAULT 0` en vez de `NULL` a propósito — SQLite trata cada `NULL` como distinto dentro de un `UNIQUE`, así que dos sesiones normales con `sub_number NULL` no chocarían entre sí y el constraint no protegería nada. Con `0` como valor "no aplica", el `UNIQUE` compuesto funciona de verdad.
 

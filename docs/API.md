@@ -93,6 +93,12 @@ POST   /api/campaigns/:id/sessions
 GET    /api/sessions/:id
 PUT    /api/sessions/:id
 DELETE /api/sessions/:id
+GET    /api/sessions/:id/npcs
+POST   /api/sessions/:id/npcs      {"npc_id": N}
+DELETE /api/sessions/:id/npcs/:npcId
+GET    /api/sessions/:id/quests
+POST   /api/sessions/:id/quests    {"quest_id": N}
+DELETE /api/sessions/:id/quests/:questId
 ```
 
 ## Dashboard (agregado)
@@ -129,5 +135,5 @@ Ya implementado. Devuelve `{"status":"ok"}`.
 
 ## Pendiente de definir
 
-- Endpoint específico para relaciones many-to-many sueltas (ej. agregar un NPC a una quest sin reemplazar toda la quest) — a resolver cuando se implementen los handlers de `quest_npcs`, `session_npcs`, etc.
+- Endpoint específico para relaciones many-to-many sueltas: resuelto para `session_npcs`/`session_quests` (`GET/POST/DELETE /api/sessions/:id/npcs`, `/quests`, mismo patrón que `npc_relations`). Sigue pendiente para `quest_npcs` y `npc_groups` (agregar/sacar un NPC de una facción o quest sin reemplazar la entidad completa).
 - Paginación — no evaluada aún; con el volumen actual del vault (~166 entidades) probablemente no haga falta para el MVP.
