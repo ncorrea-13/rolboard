@@ -75,6 +75,7 @@ import {
   type ApiQuest,
   type ApiPlayerCharacter,
   type ApiSession,
+  type ApiDashboardSummary,
 } from "./lib/apiMappers";
 
 type Route =
@@ -196,6 +197,15 @@ export default function App() {
     apiFetch<ApiSession[]>(`/campaigns/${activeCampaignId}/sessions`)
       .then((data) => setSessions((data ?? []).map(mapSession)))
       .catch((err) => console.error("Error cargando sesiones:", err));
+  }, [activeCampaignId]);
+
+  const [dashboardSummary, setDashboardSummary] = useState<ApiDashboardSummary | null>(null);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiDashboardSummary>(`/campaigns/${activeCampaignId}/dashboard`)
+      .then(setDashboardSummary)
+      .catch((err) => console.error("Error cargando dashboard:", err));
   }, [activeCampaignId]);
 
   const [reindexing, setReindexing] = useState(false);
@@ -775,6 +785,17 @@ export default function App() {
               npcs={campaignNpcs}
               quests={campaignQuests}
               sessions={campaignSessions}
+              summary={
+                dashboardSummary
+                  ? {
+                      activeQuests: dashboardSummary.active_quests.map(mapQuest),
+                      recentNpcs: dashboardSummary.recent_npcs.map(mapNpc),
+                      lastSession: dashboardSummary.last_session
+                        ? mapSession(dashboardSummary.last_session)
+                        : undefined,
+                    }
+                  : null
+              }
               onNavigate={(section) => setRoute({ name: "section", section })}
               onSelectNpc={(npcId) => setRoute({ name: "npc-detail", npcId })}
               onStartSession={startPlaySession}

@@ -325,6 +325,13 @@ export function mapSession(s: ApiSession): Session {
   };
 }
 
+export interface ApiDashboardSummary {
+  active_quests: ApiQuest[];
+  on_hold_quests: ApiQuest[];
+  recent_npcs: ApiNpc[];
+  last_session?: ApiSession;
+}
+
 export function sessionToApiPayload(s: Session) {
   return {
     arc_id: s.arcId ? Number(s.arcId) : undefined,

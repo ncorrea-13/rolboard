@@ -23,12 +23,19 @@ export type DashboardSection =
   | "quests"
   | "jugadores";
 
+interface DashboardSummaryData {
+  activeQuests: Quest[];
+  recentNpcs: Npc[];
+  lastSession?: Session;
+}
+
 interface CampaignDashboardProps {
   campaign: Campaign;
   arcs: Arc[];
   npcs: Npc[];
   quests: Quest[];
   sessions: Session[];
+  summary: DashboardSummaryData | null;
   onNavigate: (section: DashboardSection) => void;
   onSelectNpc: (npcId: string) => void;
   onStartSession: () => void;
@@ -42,26 +49,19 @@ export function CampaignDashboard({
   npcs,
   quests,
   sessions,
+  summary,
   onNavigate,
   onSelectNpc,
   onStartSession,
   onReindex,
   reindexing,
 }: CampaignDashboardProps) {
-  const recentNpcs = npcs.slice(0, 4);
-  const activeQuests = quests.filter((q) => q.status === "active");
+  const recentNpcs = summary?.recentNpcs ?? npcs.slice(0, 4);
+  const activeQuests = summary?.activeQuests ?? quests.filter((q) => q.status === "active");
   const currentArc =
     arcs.find((a) => a.status === "en_curso") ?? arcs[arcs.length - 1];
   const totalSessions = sessions.length;
-  const lastSession = sessions
-    .filter((s) => s.arcId === currentArc?.id)
-    .reduce<Session | undefined>(
-      (best, s) =>
-        !best || s.sessionNumber > best.sessionNumber || (s.sessionNumber === best.sessionNumber && s.subNumber > best.subNumber)
-          ? s
-          : best,
-      undefined,
-    );
+  const lastSession = summary?.lastSession;
   const arcProgressMatch = currentArc?.meta.match(/(\d+)\s*(?:de|\/)\s*(\d+)/);
   const arcProgressPct = arcProgressMatch
     ? Math.round(
