@@ -385,8 +385,9 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				continue
 			}
 
-			switch fm.Tipo {
-			case "jugador":
+			switch {
+			case fm.Tipo == "jugador" && fm.Personaje != "":
+			case fm.Tipo == "jugador":
 				if ix.skipUnchanged(ctx, idx, relPath, name, "player_character", content) {
 					result.Processed++
 					continue
@@ -415,7 +416,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				}
 				stagedPCs = append(stagedPCs, stagedPC{id: pc.ID, spren: firstWikilinkTarget(fm.Spren), facciones: pcFacciones})
 				result.Processed++
-			case "historia-jugador", "avances":
+			case fm.Tipo == "historia-jugador" || fm.Tipo == "avances":
 				personaje := firstWikilinkTarget(fm.Personaje)
 				if personaje == "" {
 					continue
@@ -427,8 +428,6 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				stagedPlayerNotes = append(stagedPlayerNotes, stagedPlayerNote{personaje: personaje, path: obsidianPath, kind: kind})
 				result.Processed++
 			default:
-				// ponytail: fichas extra bajo Jugadores/ sin tipo:jugador/historia-jugador/avances
-				// (ej. hojas de clase) no se indexan, no hay caso de uso todavía.
 			}
 		}
 	}
