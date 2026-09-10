@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"os"
 	"strconv"
 )
 
@@ -20,6 +22,14 @@ func (h *Handlers) RenderNote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	html, err := h.notes.Render(r.Context(), campaignID, path)
+	if errors.Is(err, os.ErrInvalid) {
+		http.Error(w, "Invalid path", http.StatusBadRequest)
+		return
+	}
+	if os.IsNotExist(err) {
+		http.Error(w, "Note not found", http.StatusNotFound)
+		return
+	}
 	if err != nil {
 		http.Error(w, "Error rendering note", http.StatusInternalServerError)
 		return

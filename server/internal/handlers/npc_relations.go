@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
+	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
 type CreateNPCRelationPayload struct {
@@ -46,6 +48,29 @@ func (h *Handlers) CreateNPCRelation(w http.ResponseWriter, r *http.Request) {
 	}
 	if payload.ToNPCID == 0 || payload.Role == "" {
 		http.Error(w, "to_npc_id and role are required fields", http.StatusBadRequest)
+		return
+	}
+
+	from, err := h.npcs.GetByID(r.Context(), npcID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "NPC not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving npc", http.StatusInternalServerError)
+		return
+	}
+	to, err := h.npcs.GetByID(r.Context(), payload.ToNPCID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "NPC not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving npc", http.StatusInternalServerError)
+		return
+	}
+	if from.CampaignID != to.CampaignID {
+		http.Error(w, "NPCs must belong to the same campaign", http.StatusBadRequest)
 		return
 	}
 
