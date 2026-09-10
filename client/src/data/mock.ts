@@ -43,6 +43,20 @@ export const statusLabel: Record<StatusKind, string> = {
 
 export type CampaignStatus = "active" | "paused" | "finished";
 
+export type ArcStatus = "planificado" | "en_curso" | "cerrado";
+
+export const arcStatusColor: Record<ArcStatus, string> = {
+  planificado: "var(--text-secondary)",
+  en_curso: "var(--status-alive)",
+  cerrado: "var(--status-dead)",
+};
+
+export const arcStatusLabel: Record<ArcStatus, string> = {
+  planificado: "Planificado",
+  en_curso: "En curso",
+  cerrado: "Cerrado",
+};
+
 export const campaignStatusColor: Record<CampaignStatus, string> = {
   active: "var(--status-alive)",
   paused: "var(--status-paused-text)",
@@ -490,7 +504,9 @@ export interface Arc {
   label: string;
   summary: string;
   meta: string;
-  status: StatusKind;
+  order: number;
+  status: ArcStatus;
+  subarcOrder?: number;
   obsidianPath: string;
   sessions: SessionEntry[];
 }
@@ -503,7 +519,8 @@ export const arcs: Arc[] = [
     summary:
       "Llegada a Kholinar y primer contacto con los Vigías de la Grieta.",
     meta: "3 sesiones",
-    status: "dead",
+    order: 1,
+    status: "cerrado",
     obsidianPath: "Arcos/Arco 1 - El Naufragio.md",
     sessions: [
       {
@@ -536,7 +553,8 @@ export const arcs: Arc[] = [
     summary:
       "La grieta cognitiva bajo el Mercado de Esferas se ensancha con cada alta tormenta.",
     meta: "4 de 7 sesiones",
-    status: "alive",
+    order: 2,
+    status: "en_curso",
     obsidianPath: "Arcos/Arco 2 - Las Tormentas Menores.md",
     sessions: [
       {

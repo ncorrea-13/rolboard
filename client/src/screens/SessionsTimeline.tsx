@@ -1,5 +1,5 @@
 import "./SessionsTimeline.css";
-import type { Arc } from "../data/mock";
+import { arcStatusColor, type Arc } from "../data/mock";
 import { MarkdownText } from "../components/MarkdownText";
 
 interface SessionsTimelineProps {
@@ -29,7 +29,7 @@ export function SessionsTimeline({ arcs, onPlanSession, onPlaySession, onOpenSes
         {arcs.map((arc) => (
           <div key={arc.id}>
             <div className="sessions-timeline__arc-head">
-              <span className="status-dot" style={{ background: `var(--status-${arc.status === "paused" ? "paused-dot" : arc.status})` }} />
+              <span className="status-dot" style={{ background: arcStatusColor[arc.status] }} />
               <span className="display" style={{ fontSize: 17.5 }}>{arc.label}</span>
               <span className="sessions-timeline__arc-meta">{arc.meta}</span>
               <span className="sessions-timeline__arc-rule" />

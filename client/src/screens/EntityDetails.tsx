@@ -1,6 +1,7 @@
 import { EntityDetail } from "../components/EntityDetail";
 import { StatusPill } from "../components/StatusPill";
 import { QuestStatusPill } from "../components/StatusPill";
+import { ArcStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import {
   crystalColor,
@@ -29,12 +30,7 @@ export function ArcDetail({
       backLabel="ARCOS"
       onBack={onBack}
       title={arc.label}
-      status={
-        <StatusPill
-          status={arc.status}
-          label={arc.status === "alive" ? "En curso" : "Cerrado"}
-        />
-      }
+      status={<ArcStatusPill status={arc.status} />}
       obsidianPath={arc.obsidianPath}
       onEdit={onEdit}
       onDelete={onDelete}

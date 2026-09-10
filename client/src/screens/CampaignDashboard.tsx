@@ -6,7 +6,7 @@ import {
   type Arc,
   type Quest,
 } from "../data/mock";
-import { StatusPill, QuestStatusPill } from "../components/StatusPill";
+import { StatusPill, ArcStatusPill, QuestStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
 import { openInObsidian } from "../lib/obsidian";
@@ -47,7 +47,7 @@ export function CampaignDashboard({
   const recentNpcs = npcs.slice(0, 4);
   const activeQuests = quests.filter((q) => q.status === "active");
   const currentArc =
-    arcs.find((a) => a.status === "alive") ?? arcs[arcs.length - 1];
+    arcs.find((a) => a.status === "en_curso") ?? arcs[arcs.length - 1];
   const totalSessions = arcs.reduce((acc, a) => acc + a.sessions.length, 0);
   const lastSession = currentArc?.sessions[currentArc.sessions.length - 1];
   const arcProgressMatch = currentArc?.meta.match(/(\d+)\s*(?:de|\/)\s*(\d+)/);
@@ -55,7 +55,7 @@ export function CampaignDashboard({
     ? Math.round(
         (Number(arcProgressMatch[1]) / Number(arcProgressMatch[2])) * 100,
       )
-    : currentArc?.status === "alive"
+    : currentArc?.status === "en_curso"
       ? 0
       : 100;
 
@@ -98,10 +98,7 @@ export function CampaignDashboard({
           <div className="card campaign-dashboard__panel">
             <div className="campaign-dashboard__panel-top">
               <span className="label">Arco actual</span>
-              <StatusPill
-                status={currentArc.status}
-                label={currentArc.status === "alive" ? "En curso" : "Cerrado"}
-              />
+              <ArcStatusPill status={currentArc.status} />
             </div>
             <div className="display" style={{ fontSize: 21, marginTop: 9 }}>
               {currentArc.label}

@@ -32,7 +32,6 @@ import {
 } from "./screens/EntityDetails";
 import {
   npcs as initialNpcs,
-  arcs as initialArcs,
   quests as initialQuests,
   playerCharacters as initialPlayerCharacters,
   locationTypeLabel,
@@ -47,6 +46,7 @@ import {
   type SessionEntry,
   type CrystalType,
   type StatusKind,
+  type ArcStatus,
   crystalLabel,
 } from "./data/mock";
 
@@ -210,6 +210,41 @@ function groupToApiPayload(g: Group) {
   };
 }
 
+interface ApiArc {
+  id: number;
+  campaign_id: number;
+  title: string;
+  order: number;
+  status: string;
+  subarc_order?: number;
+  summary: string;
+}
+
+function mapArc(a: ApiArc): Arc {
+  return {
+    id: String(a.id),
+    campaignId: String(a.campaign_id),
+    label: a.title,
+    summary: a.summary,
+    meta: "",
+    order: a.order,
+    status: a.status as ArcStatus,
+    subarcOrder: a.subarc_order,
+    obsidianPath: "",
+    sessions: [],
+  };
+}
+
+function arcToApiPayload(a: Arc) {
+  return {
+    name: a.label,
+    order: a.order,
+    status: a.status,
+    subarc_order: a.subarcOrder ?? undefined,
+    summary: a.summary,
+  };
+}
+
 type EntityKind = "arc" | "faction" | "location" | "quest";
 
 const entityKindLabel: Record<EntityKind, string> = {
@@ -228,13 +263,15 @@ function arcFields(): FormField[] {
       placeholder: "ej. Arco III · La Marea Alta",
     },
     { key: "summary", label: "Resumen", type: "textarea" },
+    { key: "order", label: "Número de arco", type: "number" },
     {
       key: "status",
       label: "Estado",
       type: "select",
       options: [
-        { value: "alive", label: "En curso" },
-        { value: "dead", label: "Cerrado" },
+        { value: "planificado", label: "Planificado" },
+        { value: "en_curso", label: "En curso" },
+        { value: "cerrado", label: "Cerrado" },
       ],
     },
   ];
@@ -377,7 +414,14 @@ export default function App() {
       .catch((err) => console.error("Error cargando NPCs:", err));
   }, [activeCampaignId]);
 
-  const [arcs, setArcs] = useState<Arc[]>(initialArcs);
+  const [arcs, setArcs] = useState<Arc[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiArc[]>(`/campaigns/${activeCampaignId}/arcs`)
+      .then((data) => setArcs((data ?? []).map(mapArc)))
+      .catch((err) => console.error("Error cargando arcos:", err));
+  }, [activeCampaignId]);
   const [groups, setGroups] = useState<Group[]>([]);
 
   useEffect(() => {
@@ -526,7 +570,7 @@ export default function App() {
 
   function addSessionEntry(entry: SessionEntry) {
     const currentArc =
-      campaignArcs.find((a) => a.status === "alive") ??
+      campaignArcs.find((a) => a.status === "en_curso") ??
       campaignArcs[campaignArcs.length - 1];
     if (!currentArc) return;
     setArcs((prev) =>
@@ -552,35 +596,37 @@ export default function App() {
 
     switch (kind) {
       case "arc": {
-        if (id) {
-          setArcs((prev) =>
-            prev.map((a) =>
-              a.id === id
-                ? {
-                    ...a,
-                    label: values.label,
-                    summary: values.summary,
-                    status: values.status as Arc["status"],
-                  }
-                : a,
-            ),
-          );
-        } else {
-          const newId = nextId("a", arcs);
-          setArcs((prev) => [
-            ...prev,
-            {
-              id: newId,
+        const current = id ? arcs.find((a) => a.id === id) : undefined;
+        const draft: Arc = current
+          ? {
+              ...current,
+              label: values.label,
+              summary: values.summary,
+              order: Number(values.order) || current.order,
+              status: values.status as ArcStatus,
+            }
+          : {
+              id: "",
               campaignId: activeCampaign!.id,
               label: values.label,
               summary: values.summary,
-              meta: "0 sesiones",
-              status: values.status as Arc["status"],
+              meta: "",
+              order: Number(values.order) || 0,
+              status: values.status as ArcStatus,
               obsidianPath: `Arcos/${values.label}.md`,
               sessions: [],
-            },
-          ]);
-        }
+            };
+        const payload = JSON.stringify(arcToApiPayload(draft));
+        const request = id
+          ? apiFetch<ApiArc>(`/arcs/${id}`, { method: "PUT", body: payload })
+          : apiFetch<ApiArc>(`/campaigns/${activeCampaign!.id}/arcs`, { method: "POST", body: payload });
+        request
+          .then((saved) => {
+            // mapArc no trae meta/sessions (Sessions sin wirear todavía) — se conservan del draft/actual.
+            const arc = { ...mapArc(saved), meta: current?.meta ?? "", sessions: current?.sessions ?? [] };
+            setArcs((prev) => (id ? prev.map((a) => (a.id === id ? arc : a)) : [...prev, arc]));
+          })
+          .catch((err) => console.error("Error guardando arco:", err));
         break;
       }
       case "faction": {
@@ -694,11 +740,15 @@ export default function App() {
       goToEntitySection(kind);
       return;
     }
+    if (kind === "arc") {
+      apiFetch(`/arcs/${id}`, { method: "DELETE" })
+        .then(() => setArcs((prev) => prev.filter((a) => a.id !== id)))
+        .catch((err) => console.error("Error borrando arco:", err));
+      goToEntitySection(kind);
+      return;
+    }
     const deletedAt = new Date().toISOString();
     switch (kind) {
-      case "arc":
-        setArcs((prev) => prev.map((a) => (a.id === id ? { ...a, deletedAt } : a)));
-        break;
       case "quest":
         setQuests((prev) => prev.map((q) => (q.id === id ? { ...q, deletedAt } : q)));
         break;
@@ -744,7 +794,7 @@ export default function App() {
       case "arc": {
         const a = arcs.find((x) => x.id === id);
         return a
-          ? { label: a.label, summary: a.summary, status: a.status }
+          ? { label: a.label, summary: a.summary, order: String(a.order), status: a.status }
           : undefined;
       }
       case "faction": {
@@ -1048,7 +1098,7 @@ export default function App() {
           {route.name === "session-plan" && (
             <PlanSession
               nextNumber={nextSessionNumber}
-              currentArc={campaignArcs.find((a) => a.status === "alive") ?? campaignArcs[campaignArcs.length - 1]}
+              currentArc={campaignArcs.find((a) => a.status === "en_curso") ?? campaignArcs[campaignArcs.length - 1]}
               npcs={campaignNpcs}
               quests={campaignQuests}
               onConfirm={addSessionEntry}
