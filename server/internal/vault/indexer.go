@@ -91,6 +91,20 @@ func arcStatus(raw string) string {
 	return "planificado"
 }
 
+var validPCStatuses = map[string]bool{
+	"vivo":         true,
+	"muerto":       true,
+	"desaparecido": true,
+	"activo":       true,
+}
+
+func pcStatus(raw string) string {
+	if validPCStatuses[strings.ToLower(raw)] {
+		return strings.ToLower(raw)
+	}
+	return "activo"
+}
+
 func sessionType(tags []string, status string) string {
 	for _, tag := range tags {
 		if tag == "campaña/interludio" {
@@ -123,6 +137,12 @@ type stagedNPC struct {
 	facciones  []string
 }
 
+type stagedPC struct {
+	id        int64
+	spren     string
+	facciones []string
+}
+
 type stagedSession struct {
 	id   int64
 	arco string
@@ -146,6 +166,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	idx := NewNameIndex()
 	var stagedLocations []stagedLocation
 	var stagedNPCs []stagedNPC
+	var stagedPCs []stagedPC
 	var stagedSessions []stagedSession
 
 	for _, relPath := range paths {
@@ -360,6 +381,8 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				CampaignID:    ix.campaignID,
 				PlayerName:    fm.Jugador,
 				CharacterName: name,
+				Race:          fm.Raza,
+				Status:        pcStatus(fm.Status),
 				ObsidianPath:  &obsidianPath,
 			}
 			if err := ix.playerCharacters.Create(ctx, pc); err != nil {
@@ -370,12 +393,20 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 			if err := ix.fileState.Set(ctx, ix.campaignID, relPath, contentHash(content), "player_character", pc.ID); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
 			}
+			var pcFacciones []string
+			for _, raw := range fm.Facciones {
+				if target := firstWikilinkTarget(raw); target != "" {
+					pcFacciones = append(pcFacciones, target)
+				}
+			}
+			stagedPCs = append(stagedPCs, stagedPC{id: pc.ID, spren: firstWikilinkTarget(fm.Spren), facciones: pcFacciones})
 			result.Processed++
 		}
 	}
 
 	ix.resolveLocations(ctx, idx, stagedLocations, result)
 	ix.resolveNPCs(ctx, idx, stagedNPCs, result)
+	ix.resolvePCs(ctx, idx, stagedPCs, result)
 	ix.resolveSessions(ctx, idx, stagedSessions, result)
 
 	ix.deleteStalePaths(ctx, stalePaths, seenPaths, result)
@@ -563,6 +594,38 @@ func (ix *Indexer) resolveNPCs(ctx context.Context, idx *NameIndex, staged []sta
 			if _, err := ix.db.ExecContext(ctx,
 				`INSERT OR IGNORE INTO npc_groups (npc_id, group_id) VALUES (?, ?)`,
 				sn.id, groupID,
+			); err != nil {
+				result.Errors = append(result.Errors, err.Error())
+			}
+		}
+	}
+}
+
+func (ix *Indexer) resolvePCs(ctx context.Context, idx *NameIndex, staged []stagedPC, result *Result) {
+	for _, sp := range staged {
+		if sp.spren != "" {
+			if sprenID, err := Resolve(idx, sp.spren, "npc"); err == nil {
+				if _, err := ix.db.ExecContext(ctx, `UPDATE player_characters SET spren_npc_id = ? WHERE id = ?`, sprenID, sp.id); err != nil {
+					result.Errors = append(result.Errors, err.Error())
+				}
+			} else {
+				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, sp.spren)
+			}
+		}
+
+		if _, err := ix.db.ExecContext(ctx, `DELETE FROM pc_groups WHERE pc_id = ?`, sp.id); err != nil {
+			result.Errors = append(result.Errors, err.Error())
+			continue
+		}
+		for _, faccion := range sp.facciones {
+			groupID, err := Resolve(idx, faccion, "group")
+			if err != nil {
+				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, faccion)
+				continue
+			}
+			if _, err := ix.db.ExecContext(ctx,
+				`INSERT OR IGNORE INTO pc_groups (pc_id, group_id) VALUES (?, ?)`,
+				sp.id, groupID,
 			); err != nil {
 				result.Errors = append(result.Errors, err.Error())
 			}

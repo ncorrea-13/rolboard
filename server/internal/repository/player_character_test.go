@@ -17,6 +17,7 @@ func TestPlayerCharacterCreate(t *testing.T) {
 		CampaignID:    campaignID,
 		PlayerName:    "Nico",
 		CharacterName: "Shallan",
+		Status:        "activo",
 	}
 
 	if err := repo.Create(ctx, pc); err != nil {
@@ -35,7 +36,7 @@ func TestPlayerCharacterListByCampaign(t *testing.T) {
 
 	repo := NewPlayerCharacterRepository(db)
 	for i := 0; i < 2; i++ {
-		pc := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Player", CharacterName: "Character"}
+		pc := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Player", CharacterName: "Character", Status: "activo"}
 		if err := repo.Create(ctx, pc); err != nil {
 			t.Fatalf("Create failed: %v", err)
 		}
@@ -66,12 +67,12 @@ func TestPlayerCharacterUpdate(t *testing.T) {
 	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
 
 	repo := NewPlayerCharacterRepository(db)
-	created := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "Shallan"}
+	created := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "Shallan", Status: "activo"}
 	if err := repo.Create(ctx, created); err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
 
-	updated := &models.PlayerCharacter{PlayerName: "Nico", CharacterName: "Veil", Backstory: "New backstory"}
+	updated := &models.PlayerCharacter{PlayerName: "Nico", CharacterName: "Veil", Status: "activo", Backstory: "New backstory"}
 	if err := repo.Update(ctx, created.ID, updated); err != nil {
 		t.Fatalf("Update failed: %v", err)
 	}
@@ -91,7 +92,7 @@ func TestPlayerCharacterDelete(t *testing.T) {
 	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
 
 	repo := NewPlayerCharacterRepository(db)
-	created := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "To Delete"}
+	created := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "To Delete", Status: "activo"}
 	if err := repo.Create(ctx, created); err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}

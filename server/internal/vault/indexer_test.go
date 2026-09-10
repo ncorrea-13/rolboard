@@ -214,6 +214,70 @@ func TestReindexPreservesDashboardEditWhenNoteUnchanged(t *testing.T) {
 	}
 }
 
+func TestReindexResolvesPlayerCharacterSprenAndFaccion(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "NPC/Astillas/Cuarzo.md", "---\ntipo: spren\nstatus: vivo\ntipo_spren: Honorspren\n---\nSpren de Valisha.")
+	writeVaultFile(t, root, "Grupos/Radiantes.md", "---\ntipo: faccion\nalineacion: neutral\n---\nOrden de Radiantes.")
+	writeVaultFile(t, root, "Jugadores/Valisha.md", "---\ntipo: jugador\njugador: Agus Horas\nstatus: activo\nraza: Cognitiva\nspren: \"[[Cuarzo]]\"\nfacciones:\n  - \"[[Radiantes]]\"\n---\nPersonaje jugado por Agus.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+	if len(result.Errors) != 0 {
+		t.Errorf("Expected no errors, got %v", result.Errors)
+	}
+	if len(result.UnresolvedWikilinks) != 0 {
+		t.Errorf("Expected no unresolved wikilinks, got %v", result.UnresolvedWikilinks)
+	}
+
+	npcs, err := repository.NewNPCRepository(db).List(ctx, campaign.ID)
+	if err != nil || len(npcs) != 1 {
+		t.Fatalf("Expected 1 npc (Cuarzo), err=%v npcs=%+v", err, npcs)
+	}
+	cuarzo := npcs[0]
+
+	groups, err := repository.NewGroupRepository(db).List(ctx, campaign.ID)
+	if err != nil || len(groups) != 1 {
+		t.Fatalf("Expected 1 group (Radiantes), err=%v groups=%+v", err, groups)
+	}
+	radiantes := groups[0]
+
+	pcs, err := repository.NewPlayerCharacterRepository(db).List(ctx, campaign.ID)
+	if err != nil || len(pcs) != 1 {
+		t.Fatalf("Expected 1 player character, err=%v pcs=%+v", err, pcs)
+	}
+	valisha := pcs[0]
+
+	if valisha.Race != "Cognitiva" {
+		t.Errorf("Expected race 'Cognitiva', got %q", valisha.Race)
+	}
+	if valisha.Status != "activo" {
+		t.Errorf("Expected status 'activo', got %q", valisha.Status)
+	}
+	if valisha.SprenNPCID == nil || *valisha.SprenNPCID != cuarzo.ID {
+		t.Errorf("Expected SprenNPCID = %d, got %v", cuarzo.ID, valisha.SprenNPCID)
+	}
+
+	var groupID int64
+	err = db.QueryRowContext(ctx, `SELECT group_id FROM pc_groups WHERE pc_id = ?`, valisha.ID).Scan(&groupID)
+	if err != nil {
+		t.Fatalf("Expected pc_groups row for Valisha, got: %v", err)
+	}
+	if groupID != radiantes.ID {
+		t.Errorf("Expected pc_groups.group_id = %d, got %d", radiantes.ID, groupID)
+	}
+}
+
 func TestReindexParsesArcSubarcoAndUnknownStatus(t *testing.T) {
 	db := setupIndexerTestDB(t)
 	ctx := context.Background()
