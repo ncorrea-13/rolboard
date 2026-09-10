@@ -33,7 +33,6 @@ import {
 import {
   npcs as initialNpcs,
   arcs as initialArcs,
-  groups as initialGroups,
   quests as initialQuests,
   playerCharacters as initialPlayerCharacters,
   locationTypeLabel,
@@ -183,6 +182,34 @@ function locationToApiPayload(l: Location) {
   };
 }
 
+interface ApiGroup {
+  id: number;
+  campaign_id: number;
+  name: string;
+  description: string;
+  obsidian_path?: string;
+  member_count: number;
+}
+
+function mapGroup(g: ApiGroup): Group {
+  return {
+    id: String(g.id),
+    campaignId: String(g.campaign_id),
+    name: g.name,
+    description: g.description,
+    memberCount: g.member_count,
+    obsidianPath: g.obsidian_path ?? "",
+  };
+}
+
+function groupToApiPayload(g: Group) {
+  return {
+    name: g.name,
+    description: g.description,
+    obsidian_path: g.obsidianPath || undefined,
+  };
+}
+
 type EntityKind = "arc" | "faction" | "location" | "quest";
 
 const entityKindLabel: Record<EntityKind, string> = {
@@ -217,7 +244,6 @@ function factionFields(): FormField[] {
   return [
     { key: "name", label: "Nombre", type: "text" },
     { key: "description", label: "Descripción", type: "textarea" },
-    { key: "memberCount", label: "Miembros conocidos", type: "number" },
   ];
 }
 
@@ -352,7 +378,15 @@ export default function App() {
   }, [activeCampaignId]);
 
   const [arcs, setArcs] = useState<Arc[]>(initialArcs);
-  const [groups, setGroups] = useState<Group[]>(initialGroups);
+  const [groups, setGroups] = useState<Group[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiGroup[]>(`/campaigns/${activeCampaignId}/groups`)
+      .then((data) => setGroups((data ?? []).map(mapGroup)))
+      .catch((err) => console.error("Error cargando facciones:", err));
+  }, [activeCampaignId]);
+
   const [locations, setLocations] = useState<Location[]>([]);
 
   useEffect(() => {
@@ -550,33 +584,28 @@ export default function App() {
         break;
       }
       case "faction": {
-        if (id) {
-          setGroups((prev) =>
-            prev.map((g) =>
-              g.id === id
-                ? {
-                    ...g,
-                    name: values.name,
-                    description: values.description,
-                    memberCount: Number(values.memberCount) || 0,
-                  }
-                : g,
-            ),
-          );
-        } else {
-          const newId = nextId("g", groups);
-          setGroups((prev) => [
-            ...prev,
-            {
-              id: newId,
+        const current = id ? groups.find((g) => g.id === id) : undefined;
+        const draft: Group = current
+          ? { ...current, name: values.name, description: values.description }
+          : {
+              id: "",
               campaignId: activeCampaign!.id,
               name: values.name,
               description: values.description,
-              memberCount: Number(values.memberCount) || 0,
+              memberCount: 0,
               obsidianPath: `Facciones/${values.name}.md`,
-            },
-          ]);
-        }
+            };
+        const payload = JSON.stringify(groupToApiPayload(draft));
+        const request = id
+          ? apiFetch<ApiGroup>(`/groups/${id}`, { method: "PUT", body: payload })
+          : apiFetch<ApiGroup>(`/campaigns/${activeCampaign!.id}/groups`, { method: "POST", body: payload });
+        request
+          .then((saved) => {
+            // GetByID/Update no calculan member_count (siempre 0) — se conserva el real ya cargado por List.
+            const group = { ...mapGroup(saved), memberCount: current?.memberCount ?? 0 };
+            setGroups((prev) => (id ? prev.map((g) => (g.id === id ? group : g)) : [...prev, group]));
+          })
+          .catch((err) => console.error("Error guardando facción:", err));
         break;
       }
       case "location": {
@@ -658,13 +687,17 @@ export default function App() {
       goToEntitySection(kind);
       return;
     }
+    if (kind === "faction") {
+      apiFetch(`/groups/${id}`, { method: "DELETE" })
+        .then(() => setGroups((prev) => prev.filter((g) => g.id !== id)))
+        .catch((err) => console.error("Error borrando facción:", err));
+      goToEntitySection(kind);
+      return;
+    }
     const deletedAt = new Date().toISOString();
     switch (kind) {
       case "arc":
         setArcs((prev) => prev.map((a) => (a.id === id ? { ...a, deletedAt } : a)));
-        break;
-      case "faction":
-        setGroups((prev) => prev.map((g) => (g.id === id ? { ...g, deletedAt } : g)));
         break;
       case "quest":
         setQuests((prev) => prev.map((q) => (q.id === id ? { ...q, deletedAt } : q)));
@@ -716,13 +749,7 @@ export default function App() {
       }
       case "faction": {
         const g = groups.find((x) => x.id === id);
-        return g
-          ? {
-              name: g.name,
-              description: g.description,
-              memberCount: String(g.memberCount),
-            }
-          : undefined;
+        return g ? { name: g.name, description: g.description } : undefined;
       }
       case "location": {
         const l = locations.find((x) => x.id === id);
