@@ -148,6 +148,12 @@ type stagedPC struct {
 	facciones []string
 }
 
+type stagedPlayerNote struct {
+	personaje string
+	path      string
+	kind      string // "historia" o "avances"
+}
+
 type stagedSession struct {
 	id   int64
 	arco string
@@ -174,6 +180,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	var stagedPCs []stagedPC
 	var stagedSessions []stagedSession
 	var stagedGroups []stagedGroup
+	var stagedPlayerNotes []stagedPlayerNote
 
 	for _, relPath := range paths {
 		full := filepath.Join(ix.root, relPath)
@@ -373,38 +380,56 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 			result.Processed++
 
 		case "player_character":
-			if ix.skipUnchanged(ctx, idx, relPath, name, "player_character", content) {
-				result.Processed++
-				continue
-			}
 			fm, err := ParseJugador(raw)
 			if err != nil {
 				continue
 			}
-			pc := &models.PlayerCharacter{
-				CampaignID:    ix.campaignID,
-				PlayerName:    fm.Jugador,
-				CharacterName: name,
-				Race:          fm.Raza,
-				Status:        pcStatus(fm.Status),
-				ObsidianPath:  &obsidianPath,
-			}
-			if err := ix.playerCharacters.Create(ctx, pc); err != nil {
-				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
-				continue
-			}
-			idx.Add(IndexEntry{ID: pc.ID, Name: name, Type: "player_character", RawPath: relPath})
-			if err := ix.fileState.Set(ctx, ix.campaignID, relPath, contentHash(content), "player_character", pc.ID); err != nil {
-				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
-			}
-			var pcFacciones []string
-			for _, raw := range fm.Facciones {
-				if target := firstWikilinkTarget(raw); target != "" {
-					pcFacciones = append(pcFacciones, target)
+
+			switch fm.Tipo {
+			case "jugador":
+				if ix.skipUnchanged(ctx, idx, relPath, name, "player_character", content) {
+					result.Processed++
+					continue
 				}
+				pc := &models.PlayerCharacter{
+					CampaignID:    ix.campaignID,
+					PlayerName:    fm.Jugador,
+					CharacterName: name,
+					Race:          fm.Raza,
+					Status:        pcStatus(fm.Status),
+					ObsidianPath:  &obsidianPath,
+				}
+				if err := ix.playerCharacters.Create(ctx, pc); err != nil {
+					result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+					continue
+				}
+				idx.Add(IndexEntry{ID: pc.ID, Name: name, Type: "player_character", RawPath: relPath})
+				if err := ix.fileState.Set(ctx, ix.campaignID, relPath, contentHash(content), "player_character", pc.ID); err != nil {
+					result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+				}
+				var pcFacciones []string
+				for _, raw := range fm.Facciones {
+					if target := firstWikilinkTarget(raw); target != "" {
+						pcFacciones = append(pcFacciones, target)
+					}
+				}
+				stagedPCs = append(stagedPCs, stagedPC{id: pc.ID, spren: firstWikilinkTarget(fm.Spren), facciones: pcFacciones})
+				result.Processed++
+			case "historia-jugador", "avances":
+				personaje := firstWikilinkTarget(fm.Personaje)
+				if personaje == "" {
+					continue
+				}
+				kind := "historia"
+				if fm.Tipo == "avances" {
+					kind = "avances"
+				}
+				stagedPlayerNotes = append(stagedPlayerNotes, stagedPlayerNote{personaje: personaje, path: obsidianPath, kind: kind})
+				result.Processed++
+			default:
+				// ponytail: fichas extra bajo Jugadores/ sin tipo:jugador/historia-jugador/avances
+				// (ej. hojas de clase) no se indexan, no hay caso de uso todavía.
 			}
-			stagedPCs = append(stagedPCs, stagedPC{id: pc.ID, spren: firstWikilinkTarget(fm.Spren), facciones: pcFacciones})
-			result.Processed++
 		}
 	}
 
@@ -413,6 +438,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	ix.resolvePCs(ctx, idx, stagedPCs, result)
 	ix.resolveSessions(ctx, idx, stagedSessions, result)
 	ix.resolveGroups(ctx, idx, stagedGroups, result)
+	ix.resolvePlayerNotes(ctx, idx, stagedPlayerNotes, result)
 
 	ix.deleteStalePaths(ctx, stalePaths, seenPaths, result)
 
@@ -623,6 +649,23 @@ func (ix *Indexer) resolveGroups(ctx context.Context, idx *NameIndex, staged []s
 		}
 		group.LiderNPCID = &liderID
 		if err := ix.groups.Update(ctx, sg.id, group); err != nil {
+			result.Errors = append(result.Errors, err.Error())
+		}
+	}
+}
+
+func (ix *Indexer) resolvePlayerNotes(ctx context.Context, idx *NameIndex, staged []stagedPlayerNote, result *Result) {
+	for _, sn := range staged {
+		pcID, err := Resolve(idx, sn.personaje, "player_character")
+		if err != nil {
+			result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, sn.personaje)
+			continue
+		}
+		column := "historia_path"
+		if sn.kind == "avances" {
+			column = "avances_path"
+		}
+		if _, err := ix.db.ExecContext(ctx, `UPDATE player_characters SET `+column+` = ? WHERE id = ?`, sn.path, pcID); err != nil {
 			result.Errors = append(result.Errors, err.Error())
 		}
 	}
