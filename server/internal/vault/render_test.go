@@ -34,3 +34,20 @@ func TestRenderNoteEscapesResolvedWikilinkLabel(t *testing.T) {
 		t.Errorf("Expected resolved link to keep its entity type, got %q", out)
 	}
 }
+
+func TestRenderNoteEscapesRawHTMLOutsideWikilinks(t *testing.T) {
+	idx := NewNameIndex()
+	idx.Add(IndexEntry{ID: 1, Name: "Velen", Type: "npc"})
+	content := []byte("---\ntipo: npc\n---\n<script>alert(1)</script>\n[[Velen|Velen]]")
+
+	out, err := RenderNote(content, idx)
+	if err != nil {
+		t.Fatalf("RenderNote failed: %v", err)
+	}
+	if strings.Contains(out, "<script>") {
+		t.Errorf("Expected raw HTML tags to be escaped, got %q", out)
+	}
+	if !strings.Contains(out, `data-entity-type="npc"`) {
+		t.Errorf("Expected resolved wikilink to still render as entity link, got %q", out)
+	}
+}
