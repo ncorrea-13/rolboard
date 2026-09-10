@@ -2,8 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
+
+	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
 type AddSessionNpcPayload struct {
@@ -47,6 +50,29 @@ func (h *Handlers) AddSessionNpc(w http.ResponseWriter, r *http.Request) {
 	}
 	if payload.NPCID == 0 {
 		http.Error(w, "npc_id is a required field", http.StatusBadRequest)
+		return
+	}
+
+	sess, err := h.sessions.GetByID(r.Context(), sessionID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "Session not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving session", http.StatusInternalServerError)
+		return
+	}
+	npc, err := h.npcs.GetByID(r.Context(), payload.NPCID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "NPC not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving npc", http.StatusInternalServerError)
+		return
+	}
+	if sess.CampaignID != npc.CampaignID {
+		http.Error(w, "NPC does not belong to the same campaign as the session", http.StatusBadRequest)
 		return
 	}
 
@@ -111,6 +137,29 @@ func (h *Handlers) AddSessionQuest(w http.ResponseWriter, r *http.Request) {
 	}
 	if payload.QuestID == 0 {
 		http.Error(w, "quest_id is a required field", http.StatusBadRequest)
+		return
+	}
+
+	sess, err := h.sessions.GetByID(r.Context(), sessionID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "Session not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving session", http.StatusInternalServerError)
+		return
+	}
+	quest, err := h.quests.GetByID(r.Context(), payload.QuestID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "Quest not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving quest", http.StatusInternalServerError)
+		return
+	}
+	if sess.CampaignID != quest.CampaignID {
+		http.Error(w, "Quest does not belong to the same campaign as the session", http.StatusBadRequest)
 		return
 	}
 
