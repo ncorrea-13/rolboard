@@ -5,17 +5,30 @@ import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
 import { openInObsidian } from "../lib/obsidian";
+import { apiFetch } from "../lib/api";
 
 interface PlayerDetailProps {
   player: PlayerCharacter;
   npcs: Npc[];
+  campaignId: string;
   onEdit: () => void;
   onBack: () => void;
   onDelete: () => void;
 }
 
-export function PlayerDetail({ player, npcs, onEdit, onBack, onDelete }: PlayerDetailProps) {
+export function PlayerDetail({ player, npcs, campaignId, onEdit, onBack, onDelete }: PlayerDetailProps) {
   const [noteOpen, setNoteOpen] = useState(false);
+  const [noteHtml, setNoteHtml] = useState<string | null>(null);
+
+  function openNote() {
+    setNoteOpen(true);
+    if (!player.obsidianPath) return;
+    apiFetch<{ html: string }>(
+      `/campaigns/${campaignId}/notes/render?path=${encodeURIComponent(player.obsidianPath)}`,
+    )
+      .then((res) => setNoteHtml(res.html))
+      .catch(() => setNoteHtml(null));
+  }
 
   const links = (player.links ?? [])
     .map((l) => ({ ...l, target: npcs.find((n) => n.id === l.npcId) }))
@@ -40,7 +53,7 @@ export function PlayerDetail({ player, npcs, onEdit, onBack, onDelete }: PlayerD
           <StatusPill status={player.status} />
           <div className="npc-detail__header-actions">
             <button className="btn btn-secondary" onClick={() => openInObsidian(player.obsidianPath)}>Abrir en Obsidian</button>
-            <button className="btn btn-secondary" onClick={() => setNoteOpen(true)}>Ver nota renderizada</button>
+            <button className="btn btn-secondary" onClick={openNote}>Ver nota renderizada</button>
             <button className="btn btn-secondary" onClick={onDelete}>Dar de baja</button>
             <button className="btn btn-primary" onClick={onEdit}>Editar</button>
           </div>
@@ -101,11 +114,14 @@ export function PlayerDetail({ player, npcs, onEdit, onBack, onDelete }: PlayerD
 
       {noteOpen && (
         <Modal title={player.characterName} onClose={() => setNoteOpen(false)}>
-          <p style={{ color: "var(--text-secondary)", fontSize: 13, marginBottom: 12 }}>
-            Vista previa mockeada — el render real de la nota de Obsidian llega con el wiring a la API (endpoint
-            <code> notes/render</code> ya implementado en el backend).
-          </p>
-          <p className="npc-detail__desc">{player.backstory}</p>
+          {noteHtml ? (
+            <div
+              className="npc-detail__desc"
+              dangerouslySetInnerHTML={{ __html: noteHtml }}
+            />
+          ) : (
+            <p className="npc-detail__desc">{player.backstory}</p>
+          )}
         </Modal>
       )}
     </div>

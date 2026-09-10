@@ -899,6 +899,7 @@ export default function App() {
               npc={selectedNpc}
               npcs={campaignNpcs}
               quests={campaignQuests}
+              campaignId={activeCampaignId!}
               onEdit={() =>
                 setRoute({ name: "npc-edit", npcId: selectedNpc.id })
               }
@@ -938,6 +939,7 @@ export default function App() {
             <PlayerDetail
               player={selectedPlayer}
               npcs={campaignNpcs}
+              campaignId={activeCampaignId!}
               onEdit={() =>
                 setRoute({ name: "player-edit", playerId: selectedPlayer.id })
               }
