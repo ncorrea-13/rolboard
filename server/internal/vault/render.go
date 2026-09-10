@@ -8,16 +8,17 @@ import (
 	"strings"
 
 	"github.com/yuin/goldmark"
+	"github.com/yuin/goldmark/extension"
 	goldmarkhtml "github.com/yuin/goldmark/renderer/html"
 )
 
 var wikilinkFullRe = regexp.MustCompile(`!?\[\[([^\]|]+)(?:\|([^\]]+))?\]\]`)
 
-var markdown = goldmark.New(goldmark.WithRendererOptions(goldmarkhtml.WithUnsafe()))
+var markdown = goldmark.New(
+	goldmark.WithExtensions(extension.Table),
+	goldmark.WithRendererOptions(goldmarkhtml.WithUnsafe()),
+)
 
-// RenderNote strips the frontmatter from a note's raw content, resolves any
-// [[wikilinks]] in the body against idx (single unambiguous match only —
-// anything else falls back to plain text), and converts the result to HTML.
 func RenderNote(content []byte, idx *NameIndex) (string, error) {
 	_, body, err := Split(content)
 	if err != nil {

@@ -27,7 +27,6 @@ func TestSessionNpcsAddListRemove(t *testing.T) {
 	if err := sessionRepo.AddNpc(ctx, session.ID, npc.ID); err != nil {
 		t.Fatalf("AddNpc failed: %v", err)
 	}
-	// ON CONFLICT DO NOTHING: agregar dos veces no debe duplicar ni fallar.
 	if err := sessionRepo.AddNpc(ctx, session.ID, npc.ID); err != nil {
 		t.Fatalf("AddNpc (repeat) failed: %v", err)
 	}

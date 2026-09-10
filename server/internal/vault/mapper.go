@@ -78,9 +78,7 @@ type JugadorFrontmatter struct {
 	Origen    string   `yaml:"origen,omitempty"`
 	Raza      string   `yaml:"raza,omitempty"`
 	Facciones []string `yaml:"facciones,omitempty"`
-	// ponytail: el campo real en las notas del vault es "status", no "estado"
-	// (bug: nunca matcheaba nada). Ver docs/DECISIONS.md.
-	Status string `yaml:"status,omitempty"`
+	Status    string   `yaml:"status,omitempty"`
 }
 
 func ParseArc(raw []byte) (ArcFrontmatter, error) {

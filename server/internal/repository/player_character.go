@@ -88,9 +88,6 @@ func (r *PlayerCharacterRepository) GetByID(ctx context.Context, id int64) (*mod
 	return &p, nil
 }
 
-// Update no toca spren_npc_id a propósito: es un dato que solo resuelve el
-// indexer del vault (ver Indexer, tabla pc_groups y columna spren_npc_id) —
-// el form del dashboard no lo edita todavía.
 func (r *PlayerCharacterRepository) Update(ctx context.Context, id int64, p *models.PlayerCharacter) error {
 	var obsidianPath sql.NullString
 	var sprenNPCID sql.NullInt64

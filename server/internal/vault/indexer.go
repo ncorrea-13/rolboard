@@ -130,6 +130,11 @@ type stagedLocation struct {
 	parent string
 }
 
+type stagedGroup struct {
+	id    int64
+	lider string
+}
+
 type stagedNPC struct {
 	id         int64
 	location   string
@@ -168,6 +173,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	var stagedNPCs []stagedNPC
 	var stagedPCs []stagedPC
 	var stagedSessions []stagedSession
+	var stagedGroups []stagedGroup
 
 	for _, relPath := range paths {
 		full := filepath.Join(ix.root, relPath)
@@ -278,17 +284,15 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				result.Processed++
 				continue
 			}
-			// ponytail: los campos propios de Group (alineacion, astilla,
-			// investidura, lider) no tienen columna en la tabla groups (solo
-			// name/description/notes) — no se persisten, agregar columnas si
-			// llegan a hacer falta.
-			if _, err := ParseGroup(raw); err != nil {
+			fm, err := ParseGroup(raw)
+			if err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
 				continue
 			}
 			group := &models.Group{
 				CampaignID:   ix.campaignID,
 				Name:         name,
+				Alineacion:   fm.Alineacion,
 				ObsidianPath: &obsidianPath,
 			}
 			if err := ix.groups.Create(ctx, group); err != nil {
@@ -299,6 +303,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 			if err := ix.fileState.Set(ctx, ix.campaignID, relPath, contentHash(content), "group", group.ID); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
 			}
+			stagedGroups = append(stagedGroups, stagedGroup{id: group.ID, lider: firstWikilinkTarget(fm.Lider)})
 			result.Processed++
 
 		case "session":
@@ -311,8 +316,6 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 			sessionNumber := int64(math.Trunc(fm.Numero))
 			subNumber := int64(math.Round((fm.Numero - math.Trunc(fm.Numero)) * 10))
 			if archived {
-				// ponytail: nota archivada, se da de baja abajo — sub_number 99 solo
-				// evita chocar con la sesión real que reemplazó a esta.
 				subNumber = 99
 			}
 			status := fm.Status
@@ -354,12 +357,13 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				subarcOrder = &s
 			}
 			arc := &models.Arc{
-				CampaignID:  ix.campaignID,
-				Title:       fm.Titulo,
-				Order:       int64(fm.Arco),
-				Status:      arcStatus(fm.Status),
-				SubarcOrder: subarcOrder,
-				Summary:     fm.MisionPrincipal,
+				CampaignID:   ix.campaignID,
+				Title:        fm.Titulo,
+				Order:        int64(fm.Arco),
+				Status:       arcStatus(fm.Status),
+				SubarcOrder:  subarcOrder,
+				Summary:      fm.MisionPrincipal,
+				ObsidianPath: &obsidianPath,
 			}
 			if err := ix.arcs.Create(ctx, arc); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
@@ -408,6 +412,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	ix.resolveNPCs(ctx, idx, stagedNPCs, result)
 	ix.resolvePCs(ctx, idx, stagedPCs, result)
 	ix.resolveSessions(ctx, idx, stagedSessions, result)
+	ix.resolveGroups(ctx, idx, stagedGroups, result)
 
 	ix.deleteStalePaths(ctx, stalePaths, seenPaths, result)
 
@@ -597,6 +602,28 @@ func (ix *Indexer) resolveNPCs(ctx context.Context, idx *NameIndex, staged []sta
 			); err != nil {
 				result.Errors = append(result.Errors, err.Error())
 			}
+		}
+	}
+}
+
+func (ix *Indexer) resolveGroups(ctx context.Context, idx *NameIndex, staged []stagedGroup, result *Result) {
+	for _, sg := range staged {
+		if sg.lider == "" {
+			continue
+		}
+		group, err := ix.groups.GetByID(ctx, sg.id)
+		if err != nil {
+			result.Errors = append(result.Errors, err.Error())
+			continue
+		}
+		liderID, err := Resolve(idx, sg.lider, "npc")
+		if err != nil {
+			result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, sg.lider)
+			continue
+		}
+		group.LiderNPCID = &liderID
+		if err := ix.groups.Update(ctx, sg.id, group); err != nil {
+			result.Errors = append(result.Errors, err.Error())
 		}
 	}
 }

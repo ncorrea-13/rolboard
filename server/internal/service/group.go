@@ -31,6 +31,14 @@ func (s *GroupService) GetMembers(ctx context.Context, groupID int64) ([]models.
 	return s.repo.GetMembers(ctx, groupID)
 }
 
+func (s *GroupService) AddMember(ctx context.Context, groupID, npcID int64) error {
+	return s.repo.AddMember(ctx, groupID, npcID)
+}
+
+func (s *GroupService) RemoveMember(ctx context.Context, groupID, npcID int64) error {
+	return s.repo.RemoveMember(ctx, groupID, npcID)
+}
+
 func (s *GroupService) Update(ctx context.Context, id int64, g *models.Group) error {
 	return s.repo.Update(ctx, id, g)
 }

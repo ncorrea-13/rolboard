@@ -14,6 +14,8 @@ type CreateGroupPayload struct {
 	Name         string  `json:"name"`
 	Description  string  `json:"description"`
 	Notes        string  `json:"notes"`
+	Alineacion   string  `json:"alineacion"`
+	LiderNPCID   *int64  `json:"lider_npc_id"`
 	ObsidianPath *string `json:"obsidian_path"`
 }
 
@@ -21,6 +23,8 @@ type UpdateGroupPayload struct {
 	Name         string  `json:"name"`
 	Description  string  `json:"description"`
 	Notes        string  `json:"notes"`
+	Alineacion   string  `json:"alineacion"`
+	LiderNPCID   *int64  `json:"lider_npc_id"`
 	ObsidianPath *string `json:"obsidian_path"`
 }
 
@@ -65,6 +69,8 @@ func (h *Handlers) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		Name:         payload.Name,
 		Description:  payload.Description,
 		Notes:        payload.Notes,
+		Alineacion:   payload.Alineacion,
+		LiderNPCID:   payload.LiderNPCID,
 		ObsidianPath: payload.ObsidianPath,
 	}
 
@@ -142,6 +148,8 @@ func (h *Handlers) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 		Name:         payload.Name,
 		Description:  payload.Description,
 		Notes:        payload.Notes,
+		Alineacion:   payload.Alineacion,
+		LiderNPCID:   payload.LiderNPCID,
 		ObsidianPath: payload.ObsidianPath,
 	}
 	err = h.groups.Update(r.Context(), id, &group)
