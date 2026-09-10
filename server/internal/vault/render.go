@@ -24,6 +24,7 @@ func RenderNote(content []byte, idx *NameIndex) (string, error) {
 		return "", err
 	}
 
+	var placeholders []string
 	rewritten := wikilinkFullRe.ReplaceAllStringFunc(string(body), func(match string) string {
 		groups := wikilinkFullRe.FindStringSubmatch(match)
 		target := strings.TrimSpace(groups[1])
@@ -35,11 +36,19 @@ func RenderNote(content []byte, idx *NameIndex) (string, error) {
 		if len(entries) != 1 {
 			return html.EscapeString(label)
 		}
-		return fmt.Sprintf(
+
+		anchor := fmt.Sprintf(
 			`<a href="#" data-entity-type="%s" data-entity-id="%d">%s</a>`,
 			html.EscapeString(entries[0].Type), entries[0].ID, html.EscapeString(label),
 		)
+		placeholder := fmt.Sprintf("@@WIKILINK_%d@@", len(placeholders))
+		placeholders = append(placeholders, anchor)
+		return placeholder
 	})
+	rewritten = html.EscapeString(rewritten)
+	for i, anchor := range placeholders {
+		rewritten = strings.ReplaceAll(rewritten, fmt.Sprintf("@@WIKILINK_%d@@", i), anchor)
+	}
 
 	var buf bytes.Buffer
 	if err := markdown.Convert([]byte(rewritten), &buf); err != nil {
