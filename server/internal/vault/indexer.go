@@ -59,6 +59,19 @@ var playedStatuses = map[string]bool{
 	"jugada":     true,
 }
 
+var arcStatuses = map[string]string{
+	"planificado": "planificado",
+	"en curso":    "en_curso",
+	"cerrado":     "cerrado",
+}
+
+func arcStatus(raw string) string {
+	if status, ok := arcStatuses[strings.ToLower(raw)]; ok {
+		return status
+	}
+	return "planificado"
+}
+
 func sessionType(tags []string, status string) string {
 	for _, tag := range tags {
 		if tag == "campaña/interludio" {
@@ -274,11 +287,18 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
 				continue
 			}
+			var subarcOrder *int64
+			if fm.Subarco != 0 {
+				s := int64(fm.Subarco)
+				subarcOrder = &s
+			}
 			arc := &models.Arc{
-				CampaignID: ix.campaignID,
-				Title:      fm.Titulo,
-				Order:      int64(fm.Arco),
-				Summary:    fm.MisionPrincipal,
+				CampaignID:  ix.campaignID,
+				Title:       fm.Titulo,
+				Order:       int64(fm.Arco),
+				Status:      arcStatus(fm.Status),
+				SubarcOrder: subarcOrder,
+				Summary:     fm.MisionPrincipal,
 			}
 			if err := ix.arcs.Create(ctx, arc); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))

@@ -143,6 +143,50 @@ func TestReindexCreatesEntitiesAndResolvesRelations(t *testing.T) {
 	if sessions[0].ArcID == nil || *sessions[0].ArcID != arcs[0].ID {
 		t.Errorf("Expected session.ArcID = %d, got %v", arcs[0].ID, sessions[0].ArcID)
 	}
+	if arcs[0].Status != "en_curso" {
+		t.Errorf("Expected arc status 'en_curso' (from vault 'en curso'), got %q", arcs[0].Status)
+	}
+	if arcs[0].SubarcOrder != nil {
+		t.Errorf("Expected nil SubarcOrder for an arc without subarco, got %v", *arcs[0].SubarcOrder)
+	}
+}
+
+func TestReindexParsesArcSubarcoAndUnknownStatus(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "Arcos/Arco 2.md", "---\ntipo: arco\narco: 2\ntitulo: Arco Dos\nstatus: planificado\n---\nSegundo arco.")
+	writeVaultFile(t, root, "Arcos/Arco 2.1.md", "---\ntipo: arco\narco: 2\nsubarco: 1\ntitulo: Shadesmar - parte 1\nstatus: rota\n---\nSubarco.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	if _, err := indexer.Reindex(ctx); err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+
+	arcs, err := repository.NewArcRepository(db).List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List arcs failed: %v", err)
+	}
+	if len(arcs) != 2 {
+		t.Fatalf("Expected 2 arcs, got %d", len(arcs))
+	}
+	// List ordena por "order", subarc_order — el principal (subarc_order NULL) sale antes que el subarco.
+	main, sub := arcs[0], arcs[1]
+	if main.SubarcOrder != nil {
+		t.Errorf("Expected main arc SubarcOrder nil, got %v", *main.SubarcOrder)
+	}
+	if sub.SubarcOrder == nil || *sub.SubarcOrder != 1 {
+		t.Errorf("Expected subarc SubarcOrder 1, got %v", sub.SubarcOrder)
+	}
+	if sub.Status != "planificado" {
+		t.Errorf("Expected unknown vault status 'rota' to fall back to 'planificado', got %q", sub.Status)
+	}
 }
 
 func TestReindexUnresolvedWikilink(t *testing.T) {
