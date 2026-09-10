@@ -26,6 +26,13 @@
   --crystal-faction-quest: #9a8fc0;
   --crystal-entidad-cognitiva: var(--accent-crystalline);
 
+  /* fallback para crystal types sin token propio (npc_kind nuevo del backend) */
+  --crystal-fallback-1: #c79a55;
+  --crystal-fallback-2: #6fa98c;
+  --crystal-fallback-3: #5fa8d3;
+  --crystal-fallback-4: #9a8fc0;
+  --crystal-fallback-5: #d08a3c;
+
   --status-alive: #7fb58c;
   --status-missing: #c79a55;
   --status-dead: #c2665c;

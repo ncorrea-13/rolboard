@@ -21,8 +21,6 @@ type CreatePlayerCharacterPayload struct {
 	ObsidianPath     *string `json:"obsidian_path"`
 }
 
-// UpdatePlayerCharacterPayload no tiene spren_npc_id a propósito: ese campo
-// solo lo resuelve el indexer del vault, ver PlayerCharacterRepository.Update.
 type UpdatePlayerCharacterPayload struct {
 	PlayerName       string  `json:"player_name"`
 	CharacterName    string  `json:"character_name"`

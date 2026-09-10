@@ -74,6 +74,62 @@
   margin-top: 8px;
 }
 
+.npc-detail__desc table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 13px;
+  display: block;
+  overflow-x: auto;
+}
+
+.npc-detail__desc th,
+.npc-detail__desc td {
+  border: 1px solid var(--border-subtle);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.npc-detail__desc th {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.npc-detail__desc blockquote {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--border-subtle);
+  background: var(--bg-elevated);
+  border-radius: 0 6px 6px 0;
+}
+
+.npc-detail__desc blockquote p:empty {
+  display: none;
+}
+
+.npc-detail__desc .callout-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.npc-detail__desc .callout-note {
+  border-left-color: var(--accent-sky);
+}
+
+.npc-detail__desc .callout-tip {
+  border-left-color: var(--status-alive);
+}
+
+.npc-detail__desc .callout-warning {
+  border-left-color: var(--accent-flame);
+}
+
+.npc-detail__desc .callout-quote {
+  border-left-color: var(--accent-obsidian);
+  font-style: italic;
+}
+
 .npc-detail__stats {
   display: grid;
   grid-template-columns: 1fr 1fr;

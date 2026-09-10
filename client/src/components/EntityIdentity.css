@@ -2,6 +2,11 @@
   display: flex;
   align-items: center;
   gap: 11px;
+  min-width: 0;
+}
+
+.entity-identity__text {
+  min-width: 0;
 }
 
 .entity-identity__tile {
@@ -53,6 +58,9 @@
   font: 400 12px var(--font-body);
   color: var(--text-secondary);
   margin-top: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .entity-identity--header .entity-identity__role {

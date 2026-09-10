@@ -16,7 +16,7 @@
 
 View of a tabletop RPG campaign's state. It is built to seat next to an Obsidian Vault, not to replace it. It works more as a Dashboard while the vault works more as the original database for long-form prose and lore. This app indexes the YAML frontmatter as metadata for fast lookup during a live session. 
 
-This is a personal project and tool for the DM/GM. Runs on a homelab to learn Go, infraestructure and ci/cd. It is though to scale to be used as an emulated cloud service.. See [`docs/DECISIONS.md`](docs/DECISIONS.md) for the reasoning behind every scope call.
+This is a personal project and tool for the DM/GM. Runs on a homelab to learn Go, infrastructure and CI/CD. It is thought to scale to be used as an emulated cloud service. See [`docs/DECISIONS.md`](docs/DECISIONS.md) for the reasoning behind every scope call.
 
 ## Stack
 
@@ -25,7 +25,7 @@ This is a personal project and tool for the DM/GM. Runs on a homelab to learn Go
 | Backend    | Go 1.27, `net/http` stdlib (no router framework) |
 | Database   | SQLite (`modernc.org/sqlite`, no cgo)            |
 | Migrations | Versioned SQL files, embedded with `go:embed`    |
-| Frontend   | React + TypeScript + Vite (scaffolded, still on mock data — not wired to the API yet) |
+| Frontend   | React + TypeScript + Vite                        |
 
 Full rationale for each choice: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -63,34 +63,15 @@ The container includes:
 - Automatic schema migrations on startup
 - Persistent data volume (`campaign_data`)
 
-Adjust `PORT` in `.env` to expose on a different host port:
+Adjust `PORT` in `.env` to expose on a different host port.
 
 ## API
 
-Full CRUD (`GET`/`POST`/`PUT`/`DELETE`) for `campaigns`, `arcs`, `locations`, `npcs`, `player-characters`, `quests`, `sessions` and `groups`, plus `GET /api/health` and `POST /api/campaigns/{id}/reindex`. The reindex endpoint is a real upsert against the campaign's vault — creating, editing, moving or deleting a note is reflected the next time you call it, no manual DB cleanup needed.
-
-Full surface, including still-pending pieces (dashboard views, markdown rendering): [`docs/API.md`](docs/API.md).
+Full CRUD over the core entities, plus dashboard, vault reindex and Markdown note rendering. Full endpoint list: [`docs/API.md`](docs/API.md).
 
 ## Project Structure
 
-```
-rolboard/
-├── docs/
-├── vault-template/                # ready-to-copy vault structure for a new campaign
-├── client/                        # React + TS frontend (mock data, not wired yet)
-├── server/
-│   ├── cmd/server/main.go
-│   ├── internal/
-│   │   ├── handlers/               # HTTP handlers + router
-│   │   ├── service/                 # one file per entity
-│   │   ├── repository/              # SQLite access + versioned migrations
-│   │   ├── vault/                   # Obsidian vault indexer (walker, mapper, resolver)
-│   │   └── models/
-│   ├── go.mod
-│   └── go.sum
-├── AGENTS.md
-└── README.md
-```
+`server/` (Go backend) and `client/` (React/TS frontend), each with its own `internal`/`src` layout. Full tree and layer breakdown: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## About
 

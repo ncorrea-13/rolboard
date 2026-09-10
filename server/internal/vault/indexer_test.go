@@ -175,7 +175,6 @@ func TestReindexPreservesDashboardEditWhenNoteUnchanged(t *testing.T) {
 	}
 	kaladin := npcs[0]
 
-	// Simula una edición hecha desde el dashboard (PUT /npcs/{id}), sin tocar el archivo del vault.
 	kaladin.Status = "muerto"
 	if err := npcRepo.Update(ctx, kaladin.ID, &kaladin); err != nil {
 		t.Fatalf("Simulated dashboard edit failed: %v", err)
@@ -200,7 +199,6 @@ func TestReindexPreservesDashboardEditWhenNoteUnchanged(t *testing.T) {
 		t.Errorf("Expected dashboard edit 'muerto' to survive an unchanged-note reindex, got %q", after.Status)
 	}
 
-	// Si la nota SÍ cambia, el vault vuelve a mandar.
 	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\n---\nCapitán de Bridge Four, ascendido a Alto Príncipe.")
 	if _, err := indexer.Reindex(ctx); err != nil {
 		t.Fatalf("Third reindex failed: %v", err)
@@ -303,7 +301,6 @@ func TestReindexParsesArcSubarcoAndUnknownStatus(t *testing.T) {
 	if len(arcs) != 2 {
 		t.Fatalf("Expected 2 arcs, got %d", len(arcs))
 	}
-	// List ordena por "order", subarc_order — el principal (subarc_order NULL) sale antes que el subarco.
 	main, sub := arcs[0], arcs[1]
 	if main.SubarcOrder != nil {
 		t.Errorf("Expected main arc SubarcOrder nil, got %v", *main.SubarcOrder)

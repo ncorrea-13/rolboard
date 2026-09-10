@@ -41,13 +41,14 @@ No hay tooling de monorepo (Turborepo/Nx) — el proyecto es lo bastante chico c
 
 ## Stack
 
-| Capa             | Elección                               | Por qué                                                                                                                                                                                                            |
-| ---------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Backend          | Go, `net/http` stdlib (sin framework)  | Consistente con la migración del homelab-status-api; ejercicio de aprendizaje de Go "sin atajos"; Go 1.22+ ya soporta path params nativos en `ServeMux`, que era el argumento fuerte a favor de routers como `chi` |
-| Base de datos    | SQLite (`modernc.org/sqlite`, sin cgo) | Single-user, dataset chico, sin necesidad de servidor de base de datos separado; mismo driver que el status-api                                                                                                    |
-| Frontend         | React + TypeScript + Vite              | Interactividad rica (mapa, grafo) que templates server-rendered no cubren bien; SPA separada del backend; el usuario ya está habituado a React                                                                     |
-| Frontend bundler | Vite (no Next.js)                      | La app es una SPA privada sin necesidad de SSR/SEO — Next añadiría complejidad sin beneficio para este caso                                                                                                        |
-| Comunicación     | REST + JSON                            | Simple, no hay necesidad de tiempo real (single-user, sin necesidad de sync entre clientes)                                                                                                                        |
+| Capa             | Elección                               |
+| ---------------- | --------------------------------------- |
+| Backend          | Go, `net/http` stdlib (sin framework)  |
+| Base de datos    | SQLite (`modernc.org/sqlite`, sin cgo) |
+| Frontend         | React + TypeScript + Vite              |
+| Comunicación     | REST + JSON                            |
+
+Razonamiento de cada elección: [`DECISIONS.md`](./DECISIONS.md).
 
 ## Despliegue
 
@@ -58,11 +59,8 @@ No hay tooling de monorepo (Turborepo/Nx) — el proyecto es lo bastante chico c
 
 ## Vault de Obsidian
 
-- Vive en una carpeta sincronizada por **Syncthing** entre varios dispositivos, incluido (o incluible) el ThinkCentre.
-- El backend **monta esa carpeta como volumen read-only** dentro del contenedor — nunca escribe sobre el vault.
-- **Codeberg** (repo privado) es el backup/versionado del vault, gestionado de forma independiente — el dashboard no depende de Codeberg para funcionar, solo lee del filesystem local sincronizado.
-- Ver [`VAULT_INDEXER.md`](./VAULT_INDEXER.md) para el detalle de cómo se lee y procesa el contenido.
+Montado read-only dentro del contenedor. Sincronización, backup y detalle de lectura/procesamiento: [`VAULT_INDEXER.md`](./VAULT_INDEXER.md).
 
 ## Por qué NO WebSockets (por ahora)
 
-Se evaluó como parte del diseño inicial (para un eventual tracker de combate en vivo), pero al confirmarse que el uso es **single-user** —el dashboard es una herramienta del DM/GM, no algo que ven los jugadores en simultáneo— no hay necesidad de sincronizar estado entre múltiples clientes conectados. REST simple alcanza. Si en el futuro se suma un caso de uso multi-cliente en tiempo real, se reevalúa.
+Uso single-user (herramienta del DM, no algo que ven los jugadores en simultáneo) — no hay estado que sincronizar entre clientes. Razonamiento completo: [`DECISIONS.md`](./DECISIONS.md#alcance-para-el-dm-no-para-los-jugadores).

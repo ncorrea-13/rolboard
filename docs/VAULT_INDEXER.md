@@ -179,16 +179,15 @@ El vault tiene casos de archivos con el mismo nombre en carpetas distintas (ej. 
 
 ## Render de notas individuales
 
-Ver `GET /api/notes/render` en `API.md`. Usa `goldmark` para convertir Markdown a HTML. Fuera del MVP de este endpoint: manejo completo de wikilinks y embeds de Obsidian dentro del render (`[[link]]` y `![[embed]]` no son Markdown estándar) — se deja como mejora incremental; el contenido se lee igual aunque esos elementos queden como texto plano por ahora.
+`GET /api/campaigns/:id/notes/render?path=<ruta>` (ver `API.md`). Usa `goldmark` con la extensión de tablas GFM. Wikilinks (`[[link]]`) se resuelven a anchors reales contra el `NameIndex` de la campaña; los que no matchean un único resultado quedan como texto plano. Callouts de Obsidian (`[!NOTE]`, `[!WARNING]`, etc.) se post-procesan a HTML con clase propia. El HTML se sanitiza contra XSS antes de devolverse (`server/internal/vault/render.go`).
 
 ## Link de apertura directa en Obsidian
 
 ```
-obsidian://open?vault=<nombre-del-vault>&file=<ruta-relativa>
+obsidian://open?vault=<nombre-del-vault>&file=<ruta-relativa-sin-extensión>
 ```
 
-- El **nombre del vault** es config del servidor (variable de entorno, ej. `OBSIDIAN_VAULT_NAME`), no un campo de la base — es constante para toda la instalación.
-- Confirmado como funcionalidad de primera clase (no solo fallback): el usuario tiene Obsidian instalado en todos sus dispositivos con el vault sincronizado vía Syncthing, por lo que el deep link funciona de forma consistente sin importar desde qué máquina se abra el dashboard.
+Armado client-side (`client/src/lib/obsidian.ts`), no por el backend. El **nombre del vault** es la columna `campaigns.vault_path` de esa campaña (no una variable de entorno global) — funciona porque Obsidian, por default, nombra el vault igual que la carpeta raíz que se abre como tal.
 
 ## Sincronización del vault con el servidor
 

@@ -1,5 +1,5 @@
 import {
-  crystalLabel,
+  crystalLabelFor,
   type Arc,
   type ArcStatus,
   type Campaign,
@@ -21,6 +21,7 @@ export interface ApiCampaign {
   name: string;
   system: string;
   status: CampaignStatus;
+  vault_path: string;
 }
 
 export function mapCampaign(c: ApiCampaign): Campaign {
@@ -29,6 +30,7 @@ export function mapCampaign(c: ApiCampaign): Campaign {
     name: c.name,
     system: c.system,
     status: c.status,
+    vaultPath: c.vault_path,
     meta: "",
     last: "",
   };
@@ -39,6 +41,7 @@ export interface ApiNpc {
   campaign_id: number;
   name: string;
   npc_kind: string;
+  detail_level: string;
   status: string;
   rol?: string;
   etnia?: string;
@@ -63,8 +66,14 @@ const apiStatusToStatusKind: Record<string, StatusKind> = {
   muerto: "dead",
   consolidado: "dead",
   desaparecido: "missing",
+  paused: "paused",
 };
-const canonicalApiStatus = new Set(["vivo", "muerto", "desaparecido"]);
+const canonicalApiStatus = new Set([
+  "vivo",
+  "muerto",
+  "desaparecido",
+  "paused",
+]);
 
 export function mapNpc(n: ApiNpc): Npc {
   const crystal = n.npc_kind as CrystalType;
@@ -77,7 +86,8 @@ export function mapNpc(n: ApiNpc): Npc {
     tipoSpren: n.tipo_spren,
     description: n.description,
     crystal,
-    crystalLabel: crystalLabel[crystal],
+    crystalLabel: crystalLabelFor(crystal),
+    detailLevel: n.detail_level === "minor" ? "minor" : "full",
     status: apiStatusToStatusKind[n.status] ?? "alive",
     statusNote: canonicalApiStatus.has(n.status) ? undefined : n.status,
     location: "—",
@@ -88,19 +98,17 @@ export function mapNpc(n: ApiNpc): Npc {
   };
 }
 
-const statusKindToApiStatus: Record<Exclude<StatusKind, "paused">, string> = {
+const statusKindToApiStatus: Record<StatusKind, string> = {
   alive: "vivo",
   missing: "desaparecido",
   dead: "muerto",
+  paused: "paused",
 };
 
 function npcStatusToApi(npc: Npc): string {
   if (npc.statusNote && apiStatusToStatusKind[npc.statusNote] === npc.status) {
     return npc.statusNote;
   }
-  // ponytail: "paused" no existe en validNPCStatuses del backend (server/internal/handlers/npcs.go).
-  // Se manda igual para que el backend lo rechace (400) en vez de mapearlo a un status inventado.
-  if (npc.status === "paused") return npc.status;
   return statusKindToApiStatus[npc.status];
 }
 
@@ -108,7 +116,7 @@ export function npcToApiPayload(npc: Npc) {
   return {
     name: npc.name,
     npc_kind: npc.crystal,
-    detail_level: "full", // ponytail: NpcEdit no tiene control para "minor" todavía
+    detail_level: npc.detailLevel,
     status: npcStatusToApi(npc),
     description: npc.description,
     rol: npc.role || undefined,
@@ -156,8 +164,25 @@ export interface ApiGroup {
   campaign_id: number;
   name: string;
   description: string;
+  alineacion: string;
+  lider_npc_id?: number;
   obsidian_path?: string;
   member_count: number;
+}
+
+export interface ApiGroupMember {
+  npc_id: number;
+  name: string;
+  role_in_group?: string;
+}
+
+export interface GroupMember {
+  npcId: string;
+  name: string;
+}
+
+export function mapGroupMember(m: ApiGroupMember): GroupMember {
+  return { npcId: String(m.npc_id), name: m.name };
 }
 
 export function mapGroup(g: ApiGroup): Group {
@@ -166,6 +191,8 @@ export function mapGroup(g: ApiGroup): Group {
     campaignId: String(g.campaign_id),
     name: g.name,
     description: g.description,
+    alineacion: g.alineacion,
+    liderNpcId: g.lider_npc_id ? String(g.lider_npc_id) : undefined,
     memberCount: g.member_count,
     obsidianPath: g.obsidian_path ?? "",
   };
@@ -175,6 +202,8 @@ export function groupToApiPayload(g: Group) {
   return {
     name: g.name,
     description: g.description,
+    alineacion: g.alineacion,
+    lider_npc_id: g.liderNpcId ? Number(g.liderNpcId) : undefined,
     obsidian_path: g.obsidianPath || undefined,
   };
 }
@@ -187,6 +216,7 @@ export interface ApiArc {
   status: string;
   subarc_order?: number;
   summary: string;
+  obsidian_path?: string;
 }
 
 export function mapArc(a: ApiArc): Arc {
@@ -199,7 +229,7 @@ export function mapArc(a: ApiArc): Arc {
     order: a.order,
     status: a.status as ArcStatus,
     subarcOrder: a.subarc_order,
-    obsidianPath: "",
+    obsidianPath: a.obsidian_path ?? "",
   };
 }
 
@@ -210,6 +240,7 @@ export function arcToApiPayload(a: Arc) {
     status: a.status,
     subarc_order: a.subarcOrder ?? undefined,
     summary: a.summary,
+    obsidian_path: a.obsidianPath || undefined,
   };
 }
 
@@ -220,11 +251,14 @@ export interface ApiQuest {
   description: string;
   status: string;
   priority?: number;
+  notes: string;
 }
 
 function questToStatus(status: string): QuestStatus {
   const valid: QuestStatus[] = ["active", "completed", "failed", "on_hold"];
-  return (valid as string[]).includes(status) ? (status as QuestStatus) : "active";
+  return (valid as string[]).includes(status)
+    ? (status as QuestStatus)
+    : "active";
 }
 
 export function mapQuest(q: ApiQuest): Quest {
@@ -236,6 +270,7 @@ export function mapQuest(q: ApiQuest): Quest {
     crystal: "faction-quest",
     status: questToStatus(q.status),
     priority: (q.priority ?? 3) as Quest["priority"],
+    notes: q.notes,
   };
 }
 
@@ -245,6 +280,7 @@ export function questToApiPayload(q: Quest) {
     description: q.hook,
     status: q.status,
     priority: q.priority,
+    notes: q.notes,
   };
 }
 
@@ -259,6 +295,8 @@ export interface ApiPlayerCharacter {
   backstory: string;
   progression_notes: string;
   obsidian_path?: string;
+  historia_path?: string;
+  avances_path?: string;
 }
 
 export function mapPlayerCharacter(p: ApiPlayerCharacter): PlayerCharacter {
@@ -274,12 +312,12 @@ export function mapPlayerCharacter(p: ApiPlayerCharacter): PlayerCharacter {
     backstory: p.backstory,
     progressionNotes: p.progression_notes,
     obsidianPath: p.obsidian_path ?? "",
+    historiaPath: p.historia_path,
+    avancesPath: p.avances_path,
   };
 }
 
 function pcStatusToApi(status: StatusKind): string {
-  // ponytail: "paused" no existe en validPCStatuses del backend (server/internal/handlers/player_characters.go).
-  // Se manda igual para que el backend lo rechace (400) en vez de mapearlo a un status inventado.
   if (status === "paused") return status;
   return statusKindToApiStatus[status];
 }
@@ -323,6 +361,13 @@ export function mapSession(s: ApiSession): Session {
     prepNotes: s.prep_notes,
     obsidianPath: s.obsidian_path,
   };
+}
+
+export interface ApiDashboardSummary {
+  active_quests: ApiQuest[];
+  on_hold_quests: ApiQuest[];
+  recent_npcs: ApiNpc[];
+  last_session?: ApiSession;
 }
 
 export function sessionToApiPayload(s: Session) {

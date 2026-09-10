@@ -1,6 +1,9 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import "./EntityDetail.css";
+import "../screens/NpcDetail.css";
 import { openInObsidian } from "../lib/obsidian";
+import { apiFetch } from "../lib/api";
+import { Modal } from "./Modal";
 
 export interface DetailField {
   label: string;
@@ -17,6 +20,9 @@ interface EntityDetailProps {
   status?: ReactNode;
   fields: DetailField[];
   obsidianPath?: string;
+  vaultName?: string;
+  campaignId?: string;
+  extraActions?: ReactNode;
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -31,9 +37,25 @@ export function EntityDetail({
   status,
   fields,
   obsidianPath,
+  vaultName,
+  campaignId,
+  extraActions,
   onEdit,
   onDelete,
 }: EntityDetailProps) {
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [noteHtml, setNoteHtml] = useState<string | null>(null);
+
+  function openNote() {
+    setNoteOpen(true);
+    setNoteHtml(null);
+    if (!campaignId || !obsidianPath) return;
+    apiFetch<{ html: string }>(
+      `/campaigns/${campaignId}/notes/render?path=${encodeURIComponent(obsidianPath)}`,
+    )
+      .then((res) => setNoteHtml(res.html))
+      .catch(() => setNoteHtml(null));
+  }
   return (
     <div className="card entity-detail">
       <div className="entity-detail__header">
@@ -61,8 +83,9 @@ export function EntityDetail({
             </span>
           )}
           {status}
-          {(onEdit || onDelete) && (
+          {(extraActions || onEdit || onDelete) && (
             <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+              {extraActions}
               {onEdit && (
                 <button className="btn btn-secondary" onClick={onEdit}>
                   Editar
@@ -92,16 +115,32 @@ export function EntityDetail({
               <span className="entity-detail__obsidian-path">
                 {obsidianPath}
               </span>
-              <button
-                className="btn btn-secondary"
-                onClick={() => openInObsidian(obsidianPath)}
-              >
-                Abrir en Obsidian
-              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => openInObsidian(vaultName ?? "", obsidianPath)}
+                >
+                  Abrir en Obsidian
+                </button>
+                {campaignId && (
+                  <button className="btn btn-secondary" onClick={openNote}>
+                    Ver nota renderizada
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
       </div>
+      {noteOpen && (
+        <Modal title={title} onClose={() => setNoteOpen(false)} size="large">
+          {noteHtml ? (
+            <div className="npc-detail__desc" dangerouslySetInnerHTML={{ __html: noteHtml }} />
+          ) : (
+            <p className="npc-detail__desc">Sin contenido para mostrar.</p>
+          )}
+        </Modal>
+      )}
     </div>
   );
 }

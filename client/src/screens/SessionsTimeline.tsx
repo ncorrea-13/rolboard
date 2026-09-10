@@ -1,20 +1,21 @@
 import "./SessionsTimeline.css";
-import { arcStatusColor, sessionCode, type Arc, type Session } from "../data/domain";
+import { arcStatusColor, formatDate, sessionCode, type Arc, type Session } from "../data/domain";
 import { MarkdownText } from "../components/MarkdownText";
 
 interface SessionsTimelineProps {
   arcs: Arc[];
   sessions: Session[];
+  nextSessionNumber: number;
   onPlanSession: () => void;
   onPlaySession: () => void;
   onOpenSession: (sessionId: string) => void;
 }
 
-export function SessionsTimeline({ arcs, sessions, onPlanSession, onPlaySession, onOpenSession }: SessionsTimelineProps) {
+export function SessionsTimeline({ arcs, sessions, nextSessionNumber, onPlanSession, onPlaySession, onOpenSession }: SessionsTimelineProps) {
   const unassigned = sessions.filter((s) => !s.arcId);
   const groups: { arc?: Arc; sessions: Session[] }[] = [
-    ...arcs.map((arc) => ({ arc, sessions: sessions.filter((s) => s.arcId === arc.id) })),
     ...(unassigned.length ? [{ arc: undefined, sessions: unassigned }] : []),
+    ...arcs.map((arc) => ({ arc, sessions: sessions.filter((s) => s.arcId === arc.id) })),
   ];
 
   return (
@@ -26,7 +27,7 @@ export function SessionsTimeline({ arcs, sessions, onPlanSession, onPlaySession,
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button className="btn btn-secondary" onClick={onPlanSession}>Planificar sesión</button>
-          <button className="btn btn-primary" onClick={onPlaySession}>Jugar sesión</button>
+          <button className="btn btn-primary" onClick={onPlaySession}>Jugar sesión {nextSessionNumber}</button>
         </div>
       </header>
 
@@ -40,24 +41,22 @@ export function SessionsTimeline({ arcs, sessions, onPlanSession, onPlaySession,
             </div>
             <div className="sessions-timeline__list">
               {groupSessions.map((s) => (
-                <div key={s.id} className="card sessions-timeline__item">
+                <div
+                  key={s.id}
+                  className="card sessions-timeline__item"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => onOpenSession(s.id)}
+                >
                   <div className="sessions-timeline__item-n">
                     <div className="sessions-timeline__item-code">{sessionCode(s)}</div>
-                    <div className="sessions-timeline__item-date">{s.date || "sin fecha"}</div>
+                    <div className="sessions-timeline__item-date">{s.date ? formatDate(s.date) : "sin fecha"}</div>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div className="sessions-timeline__item-text">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="sessions-timeline__item-text sessions-timeline__item-text--clamp">
                       {s.sessionType === "planning" && <span className="npc-detail__appearance-chip" style={{ marginRight: 8 }}>Planificada</span>}
                       <MarkdownText inline text={s.summary} />
                     </div>
                   </div>
-                  <span
-                    className="sessions-timeline__item-open"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => onOpenSession(s.id)}
-                  >
-                    Abrir
-                  </span>
                 </div>
               ))}
             </div>

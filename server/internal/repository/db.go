@@ -2,12 +2,15 @@
 package repository
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"errors"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -16,7 +19,7 @@ import (
 var migrationsFS embed.FS
 
 func Open(path string) (*sql.DB, error) {
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return nil, err
 	}
 
@@ -58,6 +61,14 @@ func Migrate(db *sql.DB) error {
 		}
 
 		migrationSQL := string(migrationContent)
+
+		if strings.HasPrefix(migrationSQL, "-- notx") {
+			if err := runMigrationWithoutForeignKeys(db, migrationSQL, entry.Name()); err != nil {
+				return err
+			}
+			continue
+		}
+
 		migrationTx, err := db.Begin()
 		if err != nil {
 			return err
@@ -75,4 +86,44 @@ func Migrate(db *sql.DB) error {
 	}
 
 	return nil
+}
+
+func runMigrationWithoutForeignKeys(db *sql.DB, migrationSQL, version string) error {
+	ctx := context.Background()
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := conn.Close(); cerr != nil {
+			log.Printf("runMigrationWithoutForeignKeys: conn.Close: %v", cerr)
+		}
+	}()
+
+	if _, err := conn.ExecContext(ctx, `PRAGMA foreign_keys=OFF`); err != nil {
+		return err
+	}
+	defer func() {
+		if _, err := conn.ExecContext(ctx, `PRAGMA foreign_keys=ON`); err != nil {
+			log.Printf("runMigrationWithoutForeignKeys: restore PRAGMA foreign_keys=ON: %v", err)
+		}
+	}()
+
+	tx, err := conn.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if rerr := tx.Rollback(); rerr != nil && !errors.Is(rerr, sql.ErrTxDone) {
+			log.Printf("runMigrationWithoutForeignKeys: tx.Rollback: %v", rerr)
+		}
+	}()
+
+	if _, err := tx.ExecContext(ctx, migrationSQL); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, `INSERT INTO schema_migrations (version) VALUES (?)`, version); err != nil {
+		return err
+	}
+	return tx.Commit()
 }

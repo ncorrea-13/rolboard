@@ -135,7 +135,6 @@ func TestGroupGetMembers(t *testing.T) {
 		t.Fatalf("Expected 2 members, got %d", len(members))
 	}
 
-	// ordered by name: Kaladin before Teft
 	if members[0].NPCID != kaladin.ID || members[0].RoleInGroup == nil || *members[0].RoleInGroup != "Leader" {
 		t.Errorf("Expected Kaladin with role 'Leader', got %+v", members[0])
 	}

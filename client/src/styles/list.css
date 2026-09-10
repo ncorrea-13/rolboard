@@ -56,6 +56,19 @@
   margin-top: 3px;
 }
 
+.list-page__row-sub--clamp-1 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-page__row-sub--clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .list-page__badge {
   font: 500 11px var(--font-mono);
   color: var(--text-body-strong);

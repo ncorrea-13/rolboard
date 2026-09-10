@@ -69,8 +69,8 @@ func (h *Handlers) CreateSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.Date == "" || !validSessionTypes[payload.SessionType] {
-		http.Error(w, "Date and a valid session_type are required fields", http.StatusBadRequest)
+	if (payload.Date == "" && payload.SessionType != "planning") || !validSessionTypes[payload.SessionType] {
+		http.Error(w, "Date (except for planning sessions) and a valid session_type are required fields", http.StatusBadRequest)
 		return
 	}
 
@@ -132,8 +132,8 @@ func (h *Handlers) UpdateSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.Date == "" || !validSessionTypes[payload.SessionType] {
-		http.Error(w, "Date and a valid session_type are required fields", http.StatusBadRequest)
+	if (payload.Date == "" && payload.SessionType != "planning") || !validSessionTypes[payload.SessionType] {
+		http.Error(w, "Date (except for planning sessions) and a valid session_type are required fields", http.StatusBadRequest)
 		return
 	}
 

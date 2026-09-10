@@ -56,6 +56,7 @@ var validNPCStatuses = map[string]bool{
 	"desaparecido": true,
 	"activo":       true,
 	"consolidado":  true,
+	"paused":       true,
 }
 
 func (h *Handlers) ListNPCs(w http.ResponseWriter, r *http.Request) {
