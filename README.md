@@ -25,20 +25,23 @@ This is a personal project and tool for the DM/GM. Runs on a homelab to learn Go
 | Backend    | Go 1.27, `net/http` stdlib (no router framework) |
 | Database   | SQLite (`modernc.org/sqlite`, no cgo)            |
 | Migrations | Versioned SQL files, embedded with `go:embed`    |
-| Frontend   | React + TypeScript + Vite                        |
+| Frontend   | React + TypeScript + Vite (scaffolded, still on mock data — not wired to the API yet) |
 
 Full rationale for each choice: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-SQLite migrations run automatically on startup. Database file lands at `server/data/campaign.db`.
+SQLite migrations run automatically on startup.
+
+One backend instance serves multiple campaigns — each `campaigns` row stores its own `vault_path`, a subfolder under a shared `VAULTS_ROOT` mount. See [`vault-template/`](vault-template/) for a ready-to-copy vault structure the indexer recognizes out of the box.
 
 ## Configuration
 
-Environment variables (via `.env`):
+Environment variables (via `.env`, see `.env.example`):
 
-| Variable | Description                                    |
-| -------- |  ---------------------------------------------- |
-| `PORT`   |  Host port to expose server (container:8080)    |
-| `DB_PATH`|  Database path inside container (read-only) |
+| Variable            | Description                                                        |
+| ------------------- | ------------------------------------------------------------------ |
+| `PORT`              | Host port to expose the server on (container listens on `:8080`)   |
+| `DB_PATH`           | Database path inside the container                                 |
+| `VAULTS_ROOT_HOST`  | Host folder holding every campaign's Obsidian vault as a subfolder |
 
 ## Docker / Podman
 
@@ -64,36 +67,28 @@ Adjust `PORT` in `.env` to expose on a different host port:
 
 ## API
 
-Implemented so far:
+Full CRUD (`GET`/`POST`/`PUT`/`DELETE`) for `campaigns`, `arcs`, `locations`, `npcs`, `player-characters`, `quests`, `sessions` and `groups`, plus `GET /api/health` and `POST /api/campaigns/{id}/reindex`. The reindex endpoint is a real upsert against the campaign's vault — creating, editing, moving or deleting a note is reflected the next time you call it, no manual DB cleanup needed.
 
-| Method | Path             | Description    |
-| ------ | ---------------- | -------------- |
-| `GET`  | `/api/health`    | Health check   |
-| `GET`  | `/api/campaigns` | List campaigns |
-
-Full planned surface (Arcs, NPCs, Locations, Groups, Player Characters, Quests, Sessions, vault indexing): [`docs/API.md`](docs/API.md).
+Full surface, including still-pending pieces (dashboard views, markdown rendering): [`docs/API.md`](docs/API.md).
 
 ## Project Structure
 
 ```
 rolboard/
-├── docs/ 
+├── docs/
+├── vault-template/                # ready-to-copy vault structure for a new campaign
+├── client/                        # React + TS frontend (mock data, not wired yet)
 ├── server/
-│   ├── cmd/server/main.go 
+│   ├── cmd/server/main.go
 │   ├── internal/
-│   │   ├── handlers/      
-│   │   │   ├── campaigns.go
-│   │   │   ├── health.go
-│   │   │   └── router.go
-│   │   ├── service/campaign.go
-│   │   ├── repository/    
-│   │   │   ├── campaign.go
-│   │   │   ├── db.go
-│   │   │   └── migrations/0001_initial_schema.sql
-│   │   └── models/campaign.go
+│   │   ├── handlers/               # HTTP handlers + router
+│   │   ├── service/                 # one file per entity
+│   │   ├── repository/              # SQLite access + versioned migrations
+│   │   ├── vault/                   # Obsidian vault indexer (walker, mapper, resolver)
+│   │   └── models/
 │   ├── go.mod
 │   └── go.sum
-├── AGENTS.md              
+├── AGENTS.md
 └── README.md
 ```
 

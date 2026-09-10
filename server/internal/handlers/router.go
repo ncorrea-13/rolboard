@@ -12,6 +12,8 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("GET /api/campaigns/{id}", http.HandlerFunc(h.GetCampaign))
 	mux.Handle("PUT /api/campaigns/{id}", http.HandlerFunc(h.UpdateCampaign))
 	mux.Handle("DELETE /api/campaigns/{id}", http.HandlerFunc(h.DeleteCampaign))
+	mux.Handle("GET /api/campaigns/{id}/dashboard", http.HandlerFunc(h.GetDashboard))
+	mux.Handle("GET /api/campaigns/{id}/notes/render", http.HandlerFunc(h.RenderNote))
 	mux.Handle("GET /api/campaigns/{id}/arcs", http.HandlerFunc(h.ListArcs))
 	mux.HandleFunc("POST /api/campaigns/{id}/arcs", h.CreateArc)
 	mux.Handle("GET /api/arcs/{id}", http.HandlerFunc(h.GetArc))
@@ -29,6 +31,9 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("GET /api/npcs/{id}", http.HandlerFunc(h.GetNPC))
 	mux.Handle("PUT /api/npcs/{id}", http.HandlerFunc(h.UpdateNPC))
 	mux.Handle("DELETE /api/npcs/{id}", http.HandlerFunc(h.DeleteNPC))
+	mux.Handle("GET /api/npcs/{id}/relations", http.HandlerFunc(h.ListNPCRelations))
+	mux.Handle("POST /api/npcs/{id}/relations", http.HandlerFunc(h.CreateNPCRelation))
+	mux.Handle("DELETE /api/npcs/{id}/relations/{toId}/{role}", http.HandlerFunc(h.DeleteNPCRelation))
 
 	mux.Handle("GET /api/campaigns/{id}/player-characters", http.HandlerFunc(h.ListPlayerCharacters))
 	mux.HandleFunc("POST /api/campaigns/{id}/player-characters", h.CreatePlayerCharacter)
@@ -47,6 +52,12 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("GET /api/sessions/{id}", http.HandlerFunc(h.GetSession))
 	mux.Handle("PUT /api/sessions/{id}", http.HandlerFunc(h.UpdateSession))
 	mux.Handle("DELETE /api/sessions/{id}", http.HandlerFunc(h.DeleteSession))
+	mux.Handle("GET /api/sessions/{id}/npcs", http.HandlerFunc(h.ListSessionNpcs))
+	mux.Handle("POST /api/sessions/{id}/npcs", http.HandlerFunc(h.AddSessionNpc))
+	mux.Handle("DELETE /api/sessions/{id}/npcs/{npcId}", http.HandlerFunc(h.RemoveSessionNpc))
+	mux.Handle("GET /api/sessions/{id}/quests", http.HandlerFunc(h.ListSessionQuests))
+	mux.Handle("POST /api/sessions/{id}/quests", http.HandlerFunc(h.AddSessionQuest))
+	mux.Handle("DELETE /api/sessions/{id}/quests/{questId}", http.HandlerFunc(h.RemoveSessionQuest))
 
 	mux.Handle("GET /api/campaigns/{id}/groups", http.HandlerFunc(h.ListGroups))
 	mux.HandleFunc("POST /api/campaigns/{id}/groups", h.CreateGroup)
@@ -55,7 +66,8 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("PUT /api/groups/{id}", http.HandlerFunc(h.UpdateGroup))
 	mux.Handle("DELETE /api/groups/{id}", http.HandlerFunc(h.DeleteGroup))
 
-	mux.HandleFunc("POST /api/admin/reindex", h.Reindex)
+	mux.HandleFunc("POST /api/campaigns/{id}/reindex", h.Reindex)
+	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.ListVaultDirs))
 
 	return mux
 }

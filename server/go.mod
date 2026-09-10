@@ -3,6 +3,7 @@ module github.com/ncorrea-13/rolboard/server
 go 1.27.0
 
 require (
+	github.com/yuin/goldmark v1.8.6
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.57.0
 )

@@ -1,0 +1,145 @@
+.npc-edit {
+  overflow: hidden;
+}
+
+.npc-edit__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 22px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+}
+
+.npc-edit__bar-left {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.npc-edit__body {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+}
+
+.npc-edit__col {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.npc-edit__col:first-child {
+  border-right: 1px solid var(--border-subtle);
+}
+
+.npc-edit__grid-2 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+}
+
+.npc-edit__input,
+.npc-edit__select,
+.npc-edit__textarea {
+  width: 100%;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 9px 12px;
+  margin-top: 6px;
+  font: 400 14px var(--font-body);
+  color: var(--text-primary);
+}
+
+.npc-edit__select--native {
+  appearance: none;
+  cursor: pointer;
+}
+
+.npc-edit__input--focus {
+  box-shadow: 0 0 0 1px rgba(208, 138, 60, 0.5);
+}
+
+.npc-edit__hint {
+  font: 400 11.5px var(--font-body);
+  color: var(--text-secondary);
+  margin-top: 5px;
+}
+
+.npc-edit__select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-body);
+}
+
+.npc-edit__chevron {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.npc-edit__type-row {
+  display: flex;
+  gap: 7px;
+  margin-top: 7px;
+}
+
+.npc-edit__type-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 12.5px var(--font-body);
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 7px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.npc-edit__type-chip--active {
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border-color: #34393d;
+}
+
+.npc-edit__type-mark {
+  width: 3px;
+  height: 11px;
+  border-radius: 2px;
+}
+
+.npc-edit__textarea {
+  min-height: 74px;
+  line-height: 1.7;
+  color: var(--text-body);
+}
+
+.npc-edit__warning {
+  border-color: var(--status-dead-border);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.npc-edit__warning-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 500 12.5px var(--font-body);
+  color: var(--status-dead);
+}
+
+.npc-edit__warning-body {
+  font: 400 12.5px/1.6 var(--font-body);
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+.npc-edit__note {
+  margin-top: auto;
+  font: 400 12px/1.6 var(--font-body);
+  color: var(--text-secondary);
+}

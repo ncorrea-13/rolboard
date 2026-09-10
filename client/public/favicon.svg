@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <path fill="#9b7bea" d="M24 4 L42 15 L42 33 L24 44 L6 33 L6 15 Z"/>
+  <path fill="#7457c9" d="M24 4 L42 15 L24 17 Z M6 15 L24 4 L24 17 Z M6 15 L24 17 L24 31 L13 24 Z M42 15 L24 17 L24 31 L35 24 Z"/>
+  <path fill="#a892f0" d="M24 17 L35 24 L24 31 L13 24 Z"/>
+  <path fill="none" stroke="#07080a" stroke-width="1" stroke-linejoin="round" d="
+    M24 4 L42 15 L42 33 L24 44 L6 33 L6 15 Z
+    M24 4 L24 17 M6 15 L24 17 L42 15
+    M24 17 L13 24 L24 31 L35 24 Z
+    M24 31 L24 44 M6 33 L13 24 M42 33 L35 24
+  "/>
+</svg>

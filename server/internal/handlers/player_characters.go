@@ -13,17 +13,32 @@ import (
 type CreatePlayerCharacterPayload struct {
 	PlayerName       string  `json:"player_name"`
 	CharacterName    string  `json:"character_name"`
+	Race             string  `json:"race"`
+	Class            string  `json:"class"`
+	Status           string  `json:"status"`
 	Backstory        string  `json:"backstory"`
 	ProgressionNotes string  `json:"progression_notes"`
 	ObsidianPath     *string `json:"obsidian_path"`
 }
 
+// UpdatePlayerCharacterPayload no tiene spren_npc_id a propósito: ese campo
+// solo lo resuelve el indexer del vault, ver PlayerCharacterRepository.Update.
 type UpdatePlayerCharacterPayload struct {
 	PlayerName       string  `json:"player_name"`
 	CharacterName    string  `json:"character_name"`
+	Race             string  `json:"race"`
+	Class            string  `json:"class"`
+	Status           string  `json:"status"`
 	Backstory        string  `json:"backstory"`
 	ProgressionNotes string  `json:"progression_notes"`
 	ObsidianPath     *string `json:"obsidian_path"`
+}
+
+var validPCStatuses = map[string]bool{
+	"vivo":         true,
+	"muerto":       true,
+	"desaparecido": true,
+	"activo":       true,
 }
 
 func (h *Handlers) ListPlayerCharacters(w http.ResponseWriter, r *http.Request) {
@@ -57,8 +72,8 @@ func (h *Handlers) CreatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.PlayerName == "" || payload.CharacterName == "" {
-		http.Error(w, "player_name and character_name are required fields", http.StatusBadRequest)
+	if payload.PlayerName == "" || payload.CharacterName == "" || !validPCStatuses[payload.Status] {
+		http.Error(w, "player_name, character_name and a valid status are required fields", http.StatusBadRequest)
 		return
 	}
 
@@ -66,6 +81,9 @@ func (h *Handlers) CreatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 		CampaignID:       campaignID,
 		PlayerName:       payload.PlayerName,
 		CharacterName:    payload.CharacterName,
+		Race:             payload.Race,
+		Class:            payload.Class,
+		Status:           payload.Status,
 		Backstory:        payload.Backstory,
 		ProgressionNotes: payload.ProgressionNotes,
 		ObsidianPath:     payload.ObsidianPath,
@@ -117,14 +135,17 @@ func (h *Handlers) UpdatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.PlayerName == "" || payload.CharacterName == "" {
-		http.Error(w, "player_name and character_name are required fields", http.StatusBadRequest)
+	if payload.PlayerName == "" || payload.CharacterName == "" || !validPCStatuses[payload.Status] {
+		http.Error(w, "player_name, character_name and a valid status are required fields", http.StatusBadRequest)
 		return
 	}
 
 	pc := models.PlayerCharacter{
 		PlayerName:       payload.PlayerName,
 		CharacterName:    payload.CharacterName,
+		Race:             payload.Race,
+		Class:            payload.Class,
+		Status:           payload.Status,
 		Backstory:        payload.Backstory,
 		ProgressionNotes: payload.ProgressionNotes,
 		ObsidianPath:     payload.ObsidianPath,

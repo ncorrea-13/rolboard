@@ -24,6 +24,7 @@ func TestArcCreate(t *testing.T) {
 	arc := &models.Arc{
 		Title:      "Arc 1",
 		Order:      1,
+		Status:     "planificado",
 		Summary:    "First arc",
 		CampaignID: campaignID,
 	}
@@ -49,12 +50,12 @@ func TestArcListByCampaign(t *testing.T) {
 
 	repo := NewArcRepository(db)
 	for i := 1; i <= 3; i++ {
-		arc := &models.Arc{Title: "Arc", Order: int64(i), CampaignID: campaignID}
+		arc := &models.Arc{Title: "Arc", Order: int64(i), Status: "planificado", CampaignID: campaignID}
 		if err := repo.Create(ctx, arc); err != nil {
 			t.Fatalf("Create failed: %v", err)
 		}
 	}
-	if err := repo.Create(ctx, &models.Arc{Title: "Other", Order: 1, CampaignID: otherCampaignID}); err != nil {
+	if err := repo.Create(ctx, &models.Arc{Title: "Other", Order: 1, Status: "planificado", CampaignID: otherCampaignID}); err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
 
@@ -79,8 +80,8 @@ func TestArcListExcludesDeleted(t *testing.T) {
 	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
 
 	repo := NewArcRepository(db)
-	a1 := &models.Arc{Title: "Arc 1", Order: 1, CampaignID: campaignID}
-	a2 := &models.Arc{Title: "Arc 2", Order: 2, CampaignID: campaignID}
+	a1 := &models.Arc{Title: "Arc 1", Order: 1, Status: "planificado", CampaignID: campaignID}
+	a2 := &models.Arc{Title: "Arc 2", Order: 2, Status: "planificado", CampaignID: campaignID}
 	if err := repo.Create(ctx, a1); err != nil {
 		t.Fatalf("Create a1 failed: %v", err)
 	}
@@ -111,7 +112,7 @@ func TestArcGetByID(t *testing.T) {
 	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
 
 	repo := NewArcRepository(db)
-	created := &models.Arc{Title: "Test Arc", Order: 1, Summary: "Desc", CampaignID: campaignID}
+	created := &models.Arc{Title: "Test Arc", Order: 1, Status: "planificado", Summary: "Desc", CampaignID: campaignID}
 	if err := repo.Create(ctx, created); err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
@@ -149,12 +150,12 @@ func TestArcUpdate(t *testing.T) {
 	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
 
 	repo := NewArcRepository(db)
-	created := &models.Arc{Title: "Original", Order: 1, Summary: "Original summary", CampaignID: campaignID}
+	created := &models.Arc{Title: "Original", Order: 1, Status: "planificado", Summary: "Original summary", CampaignID: campaignID}
 	if err := repo.Create(ctx, created); err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}
 
-	updated := &models.Arc{Title: "Updated", Order: 2, Summary: "Updated summary"}
+	updated := &models.Arc{Title: "Updated", Order: 2, Status: "en_curso", Summary: "Updated summary"}
 	if err := repo.Update(ctx, created.ID, updated); err != nil {
 		t.Fatalf("Update failed: %v", err)
 	}
@@ -193,7 +194,7 @@ func TestArcDelete(t *testing.T) {
 	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
 
 	repo := NewArcRepository(db)
-	created := &models.Arc{Title: "To Delete", Order: 1, CampaignID: campaignID}
+	created := &models.Arc{Title: "To Delete", Order: 1, Status: "planificado", CampaignID: campaignID}
 	if err := repo.Create(ctx, created); err != nil {
 		t.Fatalf("Create failed: %v", err)
 	}

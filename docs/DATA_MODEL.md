@@ -2,7 +2,9 @@
 
 ## Alcance del MVP (núcleo)
 
-Entidades confirmadas para la primera versión. Quedan **fuera** del MVP: grafo de relaciones NPC↔NPC (odios, alianzas informales), mapa interactivo, tracker de combate en vivo — todo eso es capa 2/3, ver `DECISIONS.md`.
+Entidades confirmadas para la primera versión. Quedan **fuera** del MVP: mapa interactivo, tracker de combate en vivo — todo eso es capa 2/3, ver `DECISIONS.md`.
+
+El grafo de relaciones NPC↔NPC (odios, alianzas informales, "ACREEDOR DE", etc.) **sí entró al MVP** (tabla `npc_relations`, ver más abajo) — reemplaza a `vinculo_con` como única relación con rol libre en vez de un campo fijo.
 
 ## Diagrama de entidades
 
@@ -18,6 +20,7 @@ campaigns
 
 -- Relaciones many-to-many
 npc_groups        (npc ↔ group, con role_in_group)
+npc_relations     (npc ↔ npc, dirigida, con role)
 quest_npcs        (quest ↔ npc)
 session_npcs      (session ↔ npc)
 session_pcs       (session ↔ player_character)
@@ -52,13 +55,15 @@ Aplican a **todas** las tablas de entidad (no a las tablas puente, ver más abaj
 
 Agrupa sesiones en tramos narrativos (ej. "Arco 2 - Shadesmar").
 
-| Campo       | Tipo           | Notas                              |
-| ----------- | -------------- | ----------------------------------- |
-| id          | PK             |                                     |
-| campaign_id | FK → campaigns | NOT NULL, `ON DELETE RESTRICT`      |
-| title       | TEXT           | NOT NULL                           |
-| order       | INTEGER        | NOT NULL — para ordenarlos         |
-| summary     | TEXT           | NOT NULL DEFAULT ''                |
+| Campo        | Tipo           | Notas                              |
+| ------------ | -------------- | ----------------------------------- |
+| id           | PK             |                                     |
+| campaign_id  | FK → campaigns | NOT NULL, `ON DELETE RESTRICT`      |
+| title        | TEXT           | NOT NULL                           |
+| order        | INTEGER        | NOT NULL — número de arco (1, 2, 3...) |
+| status       | TEXT           | NOT NULL DEFAULT 'planificado', `CHECK IN ('planificado','en_curso','cerrado')` |
+| subarc_order | INTEGER        | nullable — `NULL` en el arco principal, 1/2/3... en sus subarcos (comparten el mismo `order` que el arco principal, ver `docs/DECISIONS.md`) |
+| summary      | TEXT           | NOT NULL DEFAULT ''                |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
 ### sessions
@@ -73,9 +78,12 @@ Agrupa sesiones en tramos narrativos (ej. "Arco 2 - Shadesmar").
 | session_type   | TEXT                    | NOT NULL, `CHECK IN ('session','interlude','planning')`         |
 | date           | TEXT                    | ISO 8601 (`YYYY-MM-DD`), NOT NULL                                |
 | summary        | TEXT                    | NOT NULL DEFAULT ''                                              |
+| prep_notes     | TEXT                    | NOT NULL DEFAULT '' — notas de preparación, dashboard-only (migración `0008_sessions_prep_notes.sql`) |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
 `UNIQUE(campaign_id, session_number, sub_number)`.
+
+`session_npcs`/`session_quests` tienen endpoints de escritura propios (mismo patrón que `npc_relations`): `GET/POST /api/sessions/:id/npcs`, `DELETE /api/sessions/:id/npcs/:npcId`, y análogo para `/quests`. `session_npcs` lo puede escribir tanto el dashboard (preparación, antes de jugar) como el indexer (wikilinks reales del body, que pisan lo anterior en cada reindex — ver `docs/DECISIONS.md`); `session_quests` es 100% dashboard, el indexer nunca lo toca.
 
 > **Nota**: `sub_number` se define `NOT NULL DEFAULT 0` en vez de `NULL` a propósito — SQLite trata cada `NULL` como distinto dentro de un `UNIQUE`, así que dos sesiones normales con `sub_number NULL` no chocarían entre sí y el constraint no protegería nada. Con `0` como valor "no aplica", el `UNIQUE` compuesto funciona de verdad.
 
@@ -95,7 +103,7 @@ Facciones/organizaciones — entidad completa desde el MVP (no un campo de texto
 
 `UNIQUE(campaign_id, obsidian_path)`.
 
-> Nota de implementación: `miembros_conocidos` (grupo → NPCs) **no se guarda como campo propio** — se calcula con una query sobre `npc_groups`, poblada desde el campo `groups`/`faccion` del **NPC**. Evita duplicar la misma relación en dos lugares (ver `VAULT_INDEXER.md`).
+> Nota de implementación: `miembros_conocidos` (grupo → NPCs) **no se guarda como campo propio** — se calcula con una query sobre `npc_groups`, poblada desde el campo `groups`/`faccion` del **NPC**. Evita duplicar la misma relación en dos lugares (ver `VAULT_INDEXER.md`). Lo mismo aplica a `member_count`: no es columna, es `COUNT(*)` sobre `npc_groups` calculado en el `SELECT` de `List`/`GetByID`, expuesto en el JSON de respuesta pero no persistido.
 
 ### locations
 
@@ -128,7 +136,6 @@ Jerárquica (planeta → región → ciudad → sitio puntual), vía self-join.
 | location_id    | FK → locations, nullable  | `ON DELETE RESTRICT` — ubicación actual                                                     |
 | etnia          | TEXT, nullable            |                                                                                              |
 | rol            | TEXT, nullable            |                                                                                              |
-| vinculo_con    | FK → npcs, self, nullable | `ON DELETE RESTRICT` — relevante para spren: a qué NPC están vinculados                     |
 | tipo_spren     | TEXT, nullable            | solo aplica si `npc_kind = 'spren'`                                                         |
 | description    | TEXT                      | NOT NULL DEFAULT ''                                                                          |
 | notes          | TEXT                      | NOT NULL DEFAULT ''                                                                          |
@@ -136,6 +143,8 @@ Jerárquica (planeta → región → ciudad → sitio puntual), vía self-join.
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
 `UNIQUE(campaign_id, obsidian_path)`.
+
+> Nota de implementación: los vínculos con otros NPCs (spren↔portador, deudas, alianzas, lo que antes vivía en `vinculo_con`) **no son un campo propio** — viven en `npc_relations` (ver tablas puente). El vault solo puebla una relación fija por nota (`role = "vinculado_a"`, desde el campo `vinculo_con` del frontmatter); cualquier otra relación con rol libre se crea/edita solo desde el dashboard, nunca desde el vault (mismo patrón que `quest_npcs`/`session_quests`, ver `AGENTS.md`).
 
 ### player_characters
 
@@ -190,12 +199,15 @@ Ver `VAULT_INDEXER.md` y `API.md` para el detalle de cada uno.
 A diferencia de las tablas de entidad, **no llevan `deleted_at`**: la relación existe o no existe, borrar una fila acá es un `DELETE` físico normal (quitar a un NPC de un grupo no es una "pérdida de historia" como sí lo sería borrar al NPC). Tampoco llevan `id` propio — la PK es compuesta, estándar para many-to-many puro sin atributos que necesiten ser referenciados desde otro lado.
 
 ```sql
-npc_groups     (npc_id FK, group_id FK, role_in_group TEXT, PRIMARY KEY (npc_id, group_id))
-quest_npcs     (quest_id FK, npc_id FK,                       PRIMARY KEY (quest_id, npc_id))
-session_npcs   (session_id FK, npc_id FK,                     PRIMARY KEY (session_id, npc_id))
-session_pcs    (session_id FK, pc_id FK,                      PRIMARY KEY (session_id, pc_id))
-session_quests (session_id FK, quest_id FK,                   PRIMARY KEY (session_id, quest_id))
+npc_groups     (npc_id FK, group_id FK, role_in_group TEXT,          PRIMARY KEY (npc_id, group_id))
+npc_relations  (from_npc_id FK, to_npc_id FK, role TEXT NOT NULL,    PRIMARY KEY (from_npc_id, to_npc_id, role))
+quest_npcs     (quest_id FK, npc_id FK,                              PRIMARY KEY (quest_id, npc_id))
+session_npcs   (session_id FK, npc_id FK,                            PRIMARY KEY (session_id, npc_id))
+session_pcs    (session_id FK, pc_id FK,                             PRIMARY KEY (session_id, pc_id))
+session_quests (session_id FK, quest_id FK,                          PRIMARY KEY (session_id, quest_id))
 ```
+
+`npc_relations` es **dirigida**, no simétrica: `role` describe la relación desde `from_npc_id` hacia `to_npc_id` (ej. "ACREEDOR" de A hacia B no implica una fila inversa "LE DEBE A" de B hacia A — si esa relación también es real narrativamente, es una segunda fila explícita). `PRIMARY KEY` incluye `role` porque un mismo par de NPCs puede tener más de un tipo de vínculo a la vez.
 
 Todas las FKs de las tablas puente: `ON DELETE RESTRICT`.
 
@@ -212,7 +224,7 @@ CREATE INDEX idx_<tabla>_campaign_id ON <tabla>(campaign_id);
 
 - **`location_id` directo en `npcs`** en vez de forzar el grafo completo de relaciones desde el MVP — cubre gran parte del valor de "pantallazo" con poco esfuerzo.
 - **`parent_location_id` autoreferencial** en vez de una tabla de jerarquía aparte — alcanza con un self-join para modelar contención geográfica.
-- **`vinculo_con` autoreferencial** en `npcs` — el vínculo relevante (ej. spren↔portador) es siempre con otro NPC modelado, no texto libre.
+- **`npc_relations` como tabla puente dirigida con rol libre** — reemplaza al `vinculo_con` autoreferencial original en `npcs` (una sola relación fija) para cubrir el grafo completo de vínculos NPC↔NPC (spren↔portador, deudas, alianzas, odios) sin forzarlos a texto libre suelto en `notes`.
 - **Grupos como entidad completa desde el MVP** (decisión explícita, confirmada por el usuario) — justificada por el volumen real de grupos y menciones cruzadas en el vault (23 grupos, con NPCs de sobra referenciando membresía).
 - **PCs en el núcleo del MVP** (decisión explícita, confirmada por el usuario) — los personajes jugadores son protagonistas, no un detalle secundario.
 - **Baja lógica + `ON DELETE RESTRICT`** en vez de `CASCADE` — perder datos de campaña por accidente (borrar una location y que se lleve puesto todo lo que la referenciaba) es peor que tener que desvincular a mano.

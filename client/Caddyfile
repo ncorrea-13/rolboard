@@ -1,0 +1,10 @@
+:80 {
+	handle /api/* {
+		reverse_proxy rolboard-server:8080
+	}
+	handle {
+		root * /srv
+		file_server
+		try_files {path} /index.html
+	}
+}

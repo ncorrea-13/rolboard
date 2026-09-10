@@ -10,11 +10,16 @@ type NPC struct {
 	LocationID   *int64  `json:"location_id,omitempty"`
 	Etnia        *string `json:"etnia,omitempty"`
 	Rol          *string `json:"rol,omitempty"`
-	VinculoCon   *int64  `json:"vinculo_con,omitempty"`
 	TipoSpren    *string `json:"tipo_spren,omitempty"`
 	Description  string  `json:"description"`
 	Notes        string  `json:"notes"`
 	ObsidianPath *string `json:"obsidian_path,omitempty"`
 	CreatedAt    string  `json:"created_at"`
 	UpdatedAt    string  `json:"updated_at"`
+}
+
+type NPCRelation struct {
+	FromNPCID int64  `json:"from_npc_id"`
+	ToNPCID   int64  `json:"to_npc_id"`
+	Role      string `json:"role"`
 }

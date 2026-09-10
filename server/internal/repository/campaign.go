@@ -19,7 +19,7 @@ func NewCampaignRepository(db *sql.DB) *CampaignRepository {
 }
 
 func (r *CampaignRepository) List(ctx context.Context) ([]models.Campaign, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, name, system, description, status, created_at, updated_at
+	rows, err := r.db.QueryContext(ctx, `SELECT id, name, system, description, status, vault_path, created_at, updated_at
 		FROM campaigns WHERE deleted_at IS NULL ORDER BY name`)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (r *CampaignRepository) List(ctx context.Context) ([]models.Campaign, error
 	var campaigns []models.Campaign
 	for rows.Next() {
 		c := models.Campaign{}
-		if err := rows.Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.CreatedAt, &c.UpdatedAt); err != nil {
+		if err := rows.Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.CreatedAt, &c.UpdatedAt); err != nil {
 			return nil, err
 		}
 		campaigns = append(campaigns, c)
@@ -47,21 +47,21 @@ func (r *CampaignRepository) List(ctx context.Context) ([]models.Campaign, error
 
 func (r *CampaignRepository) Create(ctx context.Context, c *models.Campaign) error {
 	return r.db.QueryRowContext(ctx, `
-              INSERT INTO campaigns (name, system, description)
-              VALUES (?, ?, ?)
-              RETURNING id, name, system, description, status, created_at, updated_at`,
-		c.Name, c.System, c.Description,
-	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.CreatedAt, &c.UpdatedAt)
+              INSERT INTO campaigns (name, system, description, vault_path)
+              VALUES (?, ?, ?, ?)
+              RETURNING id, name, system, description, status, vault_path, created_at, updated_at`,
+		c.Name, c.System, c.Description, c.VaultPath,
+	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.CreatedAt, &c.UpdatedAt)
 }
 
 func (r *CampaignRepository) GetByID(ctx context.Context, id int64) (*models.Campaign, error) {
 	c := models.Campaign{}
 	err := r.db.QueryRowContext(ctx, `
-	SELECT id, name, system, description, status, created_at, updated_at FROM campaigns
+	SELECT id, name, system, description, status, vault_path, created_at, updated_at FROM campaigns
 		WHERE id = ? 
 		AND deleted_at IS NULL`,
 		id,
-	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.CreatedAt, &c.UpdatedAt)
+	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.CreatedAt, &c.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -75,11 +75,11 @@ func (r *CampaignRepository) GetByID(ctx context.Context, id int64) (*models.Cam
 func (r *CampaignRepository) Update(ctx context.Context, id int64, c *models.Campaign) error {
 	err := r.db.QueryRowContext(ctx, `
               UPDATE campaigns
-              SET name = ?, system = ?, description = ?, status = ?, updated_at = datetime('now')
+              SET name = ?, system = ?, description = ?, status = ?, vault_path = ?, updated_at = datetime('now')
               WHERE id = ? AND deleted_at IS NULL
-              RETURNING id, name, system, description, status, created_at, updated_at`,
-		c.Name, c.System, c.Description, c.Status, id,
-	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.CreatedAt, &c.UpdatedAt)
+              RETURNING id, name, system, description, status, vault_path, created_at, updated_at`,
+		c.Name, c.System, c.Description, c.Status, c.VaultPath, id,
+	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.CreatedAt, &c.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}

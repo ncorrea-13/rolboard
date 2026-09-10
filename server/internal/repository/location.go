@@ -53,6 +53,9 @@ func (r *LocationRepository) Create(ctx context.Context, l *models.Location) err
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO locations (campaign_id, name, location_type, parent_location_id, description, notes, obsidian_path)
 		VALUES (?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
+			name = excluded.name, location_type = excluded.location_type, parent_location_id = excluded.parent_location_id,
+			description = excluded.description, notes = excluded.notes, deleted_at = NULL, updated_at = datetime('now')
 		RETURNING id, campaign_id, name, location_type, parent_location_id, description, notes, obsidian_path, created_at, updated_at`,
 		l.CampaignID, l.Name, l.LocationType, toNullInt64(l.ParentLocationID), l.Description, l.Notes, toNullString(l.ObsidianPath),
 	).Scan(&l.ID, &l.CampaignID, &l.Name, &l.LocationType, &parentLocationID, &l.Description, &l.Notes, &obsidianPath, &l.CreatedAt, &l.UpdatedAt)

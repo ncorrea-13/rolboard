@@ -16,7 +16,9 @@ func NewGroupRepository(db *sql.DB) *GroupRepository {
 }
 
 func (r *GroupRepository) List(ctx context.Context, campaignID int64) ([]models.Group, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, name, description, notes, obsidian_path, created_at, updated_at
+	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, name, description, notes, obsidian_path,
+			(SELECT COUNT(*) FROM npc_groups WHERE npc_groups.group_id = groups.id) AS member_count,
+			created_at, updated_at
 		FROM groups WHERE campaign_id = ? AND deleted_at IS NULL ORDER BY name`,
 		campaignID,
 	)
@@ -33,7 +35,7 @@ func (r *GroupRepository) List(ctx context.Context, campaignID int64) ([]models.
 	for rows.Next() {
 		g := models.Group{}
 		var obsidianPath sql.NullString
-		if err := rows.Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &obsidianPath, &g.CreatedAt, &g.UpdatedAt); err != nil {
+		if err := rows.Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &obsidianPath, &g.MemberCount, &g.CreatedAt, &g.UpdatedAt); err != nil {
 			return nil, err
 		}
 		g.ObsidianPath = fromNullString(obsidianPath)
@@ -50,6 +52,8 @@ func (r *GroupRepository) Create(ctx context.Context, g *models.Group) error {
 	err := r.db.QueryRowContext(ctx, `
 		INSERT INTO groups (campaign_id, name, description, notes, obsidian_path)
 		VALUES (?, ?, ?, ?, ?)
+		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
+			name = excluded.name, description = excluded.description, notes = excluded.notes, deleted_at = NULL, updated_at = datetime('now')
 		RETURNING id, campaign_id, name, description, notes, obsidian_path, created_at, updated_at`,
 		g.CampaignID, g.Name, g.Description, g.Notes, toNullString(g.ObsidianPath),
 	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &obsidianPath, &g.CreatedAt, &g.UpdatedAt)

@@ -1,0 +1,130 @@
+.npc-list {
+  padding: 20px 22px;
+}
+
+.npc-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.npc-list__count {
+  font: 500 13px var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.npc-list__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.npc-list__search {
+  width: 230px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 7px 11px;
+  font: 400 12.5px var(--font-body);
+  color: var(--text-body-strong);
+}
+
+.npc-list__search::placeholder {
+  color: var(--text-secondary);
+}
+
+.npc-list__filters {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.npc-list__filter-label {
+  font: 500 11.5px var(--font-mono);
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  margin-right: 2px;
+}
+
+.npc-list__filter-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font: 500 12px var(--font-body);
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  padding: 5px 11px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.npc-list__filter-chip--active {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border-color: #34393d;
+}
+
+.npc-list__empty {
+  padding: 28px 14px;
+  text-align: center;
+  font: 400 13px var(--font-body);
+  color: var(--text-secondary);
+}
+
+.npc-list__filter-mark {
+  width: 3px;
+  height: 11px;
+  border-radius: 2px;
+}
+
+.npc-list__divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 6px;
+}
+
+.npc-list__row {
+  display: grid;
+  grid-template-columns: 2.1fr 1fr 1.6fr 1.3fr 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 11px 14px;
+}
+
+.npc-list__row--head {
+  font: 500 10px var(--font-mono);
+  letter-spacing: 0.11em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.npc-list__row--data {
+  background: var(--bg-surface);
+  border-top: 1px solid var(--border-hairline);
+  cursor: pointer;
+}
+
+.npc-list__type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 400 12.5px var(--font-body);
+  color: var(--text-secondary);
+}
+
+.npc-list__type-mark {
+  width: 3px;
+  height: 11px;
+  border-radius: 2px;
+}
+
+.npc-list__cell {
+  font: 400 12.5px var(--font-body);
+  color: var(--text-secondary);
+}

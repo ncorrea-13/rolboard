@@ -1,14 +1,24 @@
 version: "3.8"
 
 services:
-  server:
+  rolboard-server:
     build: ./server
-    ports:
-      - "${PORT}:8080"
+    env_file:
+      - .env
     volumes:
       - campaign_data:/data
+      - ${VAULTS_ROOT_HOST}:/vaults:ro
     environment:
       DB_PATH: /data/campaign.db
+      VAULTS_ROOT: /vaults
+    restart: unless-stopped
+
+  client:
+    build: ./client
+    ports:
+      - "${PORT}:80"
+    depends_on:
+      - rolboard-server
     restart: unless-stopped
 
 volumes:
