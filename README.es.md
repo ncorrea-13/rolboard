@@ -25,24 +25,13 @@ Herramienta de uso exclusivo para el DM/GM, no algo que ven los jugadores. Corre
 | Backend | Go 1.27, `net/http` stdlib (sin router de terceros) |
 | Base de datos | SQLite (`modernc.org/sqlite`, sin cgo) |
 | Migraciones | Archivos SQL versionados, embebidos con `go:embed` |
-| Frontend | React + TypeScript + Vite (scaffold armado, todavía con datos mockeados — sin conectar a la API) |
+| Frontend | React + TypeScript + Vite |
 
 Razonamiento completo de cada elección: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-Un solo backend sirve varias campañas — cada fila de `campaigns` guarda su propio `vault_path`, una subcarpeta dentro de un mount compartido (`VAULTS_ROOT`). Ver [`vault-template/`](vault-template/) para una estructura de vault lista para copiar que el indexador reconoce sin tocar código.
-
-## Quick Start
-
-```bash
-git clone git@github.com:ncorrea-13/rolboard.git
-cd rolboard
-cp .env.example .env
-# completar VAULTS_ROOT_HOST en .env con la carpeta que contiene tus vaults de Obsidian
-docker-compose up --build
-# → http://localhost:8080/api/health
-```
-
 Las migraciones de SQLite corren automáticamente al arrancar.
+
+Un solo backend sirve varias campañas — cada fila de `campaigns` guarda su propio `vault_path`, una subcarpeta dentro de un mount compartido (`VAULTS_ROOT`). Ver [`vault-template/`](vault-template/) para una estructura de vault lista para copiar que el indexador reconoce sin tocar código.
 
 ## Configuración
 
@@ -54,32 +43,35 @@ Variables de entorno (vía `.env`, ver `.env.example`):
 | `DB_PATH` | Path de la base de datos dentro del container |
 | `VAULTS_ROOT_HOST` | Carpeta en el host que contiene el vault de cada campaña como subcarpeta |
 
+## Docker / Podman
+
+Corré con **Docker** o **Podman** (sin diferencias en los comandos):
+
+```bash
+# Copiar el template de variables de entorno
+cp .env.example .env
+
+# Build y run
+docker-compose up --build
+
+# O con Podman
+podman-compose up --build
+```
+
+El container incluye:
+- SQLite
+- Migraciones de esquema automáticas al arrancar
+- Volumen de datos persistente (`campaign_data`)
+
+Ajustá `PORT` en `.env` para exponer en otro puerto del host.
+
 ## API
 
-CRUD completo (`GET`/`POST`/`PUT`/`DELETE`) para `campaigns`, `arcs`, `locations`, `npcs`, `player-characters`, `quests`, `sessions` y `groups`, más `GET /api/health` y `POST /api/campaigns/{id}/reindex`. El reindex es un upsert real contra el vault de esa campaña — crear, editar, mover o borrar una nota se refleja solo la próxima vez que lo llamás, sin limpieza manual de la base.
-
-Superficie completa, incluyendo lo que falta (vistas de dashboard, render de markdown): [`docs/API.md`](docs/API.md).
+CRUD completo sobre las entidades principales, más dashboard, reindex del vault y render de Markdown. Lista completa de endpoints: [`docs/API.md`](docs/API.md).
 
 ## Estructura del Proyecto
 
-```
-rolboard/
-├── docs/                          # arquitectura, modelo de datos, API, decisiones (estilo ADR)
-├── vault-template/                # estructura de vault lista para copiar en campaña nueva
-├── client/                        # frontend React + TS (datos mockeados, sin conectar aún)
-├── server/                        # backend (Go)
-│   ├── cmd/server/main.go         # entrypoint
-│   ├── internal/
-│   │   ├── handlers/              # HTTP handlers + router
-│   │   ├── service/                # un archivo por entidad
-│   │   ├── repository/             # acceso a SQLite + migraciones versionadas
-│   │   ├── vault/                  # indexador del vault de Obsidian (walker, mapper, resolver)
-│   │   └── models/
-│   ├── go.mod
-│   └── go.sum
-├── AGENTS.md                      # acuerdo de trabajo para desarrollo asistido por IA
-└── README.md
-```
+`server/` (backend Go) y `client/` (frontend React/TS), cada uno con su propio layout `internal`/`src`. Árbol completo y detalle de capas: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Sobre el proyecto
 
