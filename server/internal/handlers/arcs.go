@@ -64,8 +64,8 @@ func (h *Handlers) CreateArc(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.Summary == "" || payload.Title == "" || payload.Order == 0 || !validArcStatuses[payload.Status] {
-		http.Error(w, "Name, Order, Summary and a valid Status are required fields", http.StatusBadRequest)
+	if payload.Title == "" || payload.Order == 0 || !validArcStatuses[payload.Status] {
+		http.Error(w, "Name, Order and a valid Status are required fields", http.StatusBadRequest)
 		return
 	}
 	arc := models.Arc{
@@ -125,8 +125,8 @@ func (h *Handlers) UpdateArc(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.Summary == "" || payload.Title == "" || payload.Order == 0 || !validArcStatuses[payload.Status] {
-		http.Error(w, "Name, Order, Summary and a valid Status are required fields", http.StatusBadRequest)
+	if payload.Title == "" || payload.Order == 0 || !validArcStatuses[payload.Status] {
+		http.Error(w, "Name, Order and a valid Status are required fields", http.StatusBadRequest)
 		return
 	}
 
