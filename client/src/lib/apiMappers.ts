@@ -8,6 +8,8 @@ import {
   type Group,
   type Location,
   type Npc,
+  type Quest,
+  type QuestStatus,
   type StatusKind,
 } from "../data/mock";
 
@@ -203,5 +205,40 @@ export function arcToApiPayload(a: Arc) {
     status: a.status,
     subarc_order: a.subarcOrder ?? undefined,
     summary: a.summary,
+  };
+}
+
+export interface ApiQuest {
+  id: number;
+  campaign_id: number;
+  title: string;
+  description: string;
+  status: string;
+  priority?: number;
+}
+
+function questToStatus(status: string): QuestStatus {
+  const valid: QuestStatus[] = ["active", "completed", "failed", "on_hold"];
+  return (valid as string[]).includes(status) ? (status as QuestStatus) : "active";
+}
+
+export function mapQuest(q: ApiQuest): Quest {
+  return {
+    id: String(q.id),
+    campaignId: String(q.campaign_id),
+    name: q.title,
+    hook: q.description,
+    crystal: "faction-quest",
+    status: questToStatus(q.status),
+    priority: (q.priority ?? 3) as Quest["priority"],
+  };
+}
+
+export function questToApiPayload(q: Quest) {
+  return {
+    title: q.name,
+    description: q.hook,
+    status: q.status,
+    priority: q.priority,
   };
 }

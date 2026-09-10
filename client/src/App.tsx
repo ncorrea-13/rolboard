@@ -32,7 +32,6 @@ import {
 } from "./screens/EntityDetails";
 import {
   npcs as initialNpcs,
-  quests as initialQuests,
   playerCharacters as initialPlayerCharacters,
   type Campaign,
   type Npc,
@@ -63,11 +62,14 @@ import {
   groupToApiPayload,
   mapArc,
   arcToApiPayload,
+  mapQuest,
+  questToApiPayload,
   type ApiCampaign,
   type ApiNpc,
   type ApiLocation,
   type ApiGroup,
   type ApiArc,
+  type ApiQuest,
 } from "./lib/apiMappers";
 
 type Route =
@@ -166,7 +168,14 @@ export default function App() {
       .catch((err) => console.error("Error cargando locaciones:", err));
   }, [activeCampaignId]);
 
-  const [quests, setQuests] = useState<Quest[]>(initialQuests);
+  const [quests, setQuests] = useState<Quest[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiQuest[]>(`/campaigns/${activeCampaignId}/quests`)
+      .then((data) => setQuests((data ?? []).map(mapQuest)))
+      .catch((err) => console.error("Error cargando quests:", err));
+  }, [activeCampaignId]);
   const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
     initialPlayerCharacters,
   );
@@ -330,10 +339,6 @@ export default function App() {
     setNewSessionOpen(false);
   }
 
-  function nextId(prefix: string, items: { id: string }[]) {
-    return `${prefix}${items.length + 1}`;
-  }
-
   function submitEntityForm(values: Record<string, string>) {
     if (!entityForm) return;
     const { kind, id } = entityForm;
@@ -462,35 +467,28 @@ export default function App() {
       }
       case "quest": {
         const priority = (Number(values.priority) || 3) as Quest["priority"];
-        if (id) {
-          setQuests((prev) =>
-            prev.map((q) =>
-              q.id === id
-                ? {
-                    ...q,
-                    name: values.name,
-                    hook: values.hook,
-                    status: values.status as Quest["status"],
-                    priority,
-                  }
-                : q,
-            ),
-          );
-        } else {
-          const newId = nextId("q", quests);
-          setQuests((prev) => [
-            ...prev,
-            {
-              id: newId,
+        const current = id ? quests.find((q) => q.id === id) : undefined;
+        const draft: Quest = current
+          ? { ...current, name: values.name, hook: values.hook, status: values.status as Quest["status"], priority }
+          : {
+              id: "",
               campaignId: activeCampaign!.id,
               name: values.name,
               hook: values.hook,
               crystal: "faction-quest",
               status: values.status as Quest["status"],
               priority,
-            },
-          ]);
-        }
+            };
+        const payload = JSON.stringify(questToApiPayload(draft));
+        const request = id
+          ? apiFetch<ApiQuest>(`/quests/${id}`, { method: "PUT", body: payload })
+          : apiFetch<ApiQuest>(`/campaigns/${activeCampaign!.id}/quests`, { method: "POST", body: payload });
+        request
+          .then((saved) => {
+            const quest = mapQuest(saved);
+            setQuests((prev) => (id ? prev.map((q) => (q.id === id ? quest : q)) : [...prev, quest]));
+          })
+          .catch((err) => console.error("Error guardando quest:", err));
         break;
       }
     }
@@ -526,14 +524,9 @@ export default function App() {
       goToEntitySection(kind);
       return;
     }
-    const deletedAt = new Date().toISOString();
-    switch (kind) {
-      case "quest":
-        setQuests((prev) =>
-          prev.map((q) => (q.id === id ? { ...q, deletedAt } : q)),
-        );
-        break;
-    }
+    apiFetch(`/quests/${id}`, { method: "DELETE" })
+      .then(() => setQuests((prev) => prev.filter((q) => q.id !== id)))
+      .catch((err) => console.error("Error borrando quest:", err));
     goToEntitySection(kind);
   }
 
