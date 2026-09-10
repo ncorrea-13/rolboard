@@ -49,7 +49,12 @@ func (s *NotesService) Render(ctx context.Context, campaignID int64, relPath str
 		return "", err
 	}
 
-	full := filepath.Join(s.vaultsRoot, campaign.VaultPath, relPath)
+	clean := filepath.Clean(relPath)
+	if filepath.IsAbs(clean) || clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) || filepath.Ext(clean) != ".md" {
+		return "", os.ErrInvalid
+	}
+
+	full := filepath.Join(s.vaultsRoot, campaign.VaultPath, clean)
 	content, err := os.ReadFile(full)
 	if err != nil {
 		return "", err
