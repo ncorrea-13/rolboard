@@ -12,7 +12,7 @@ import {
   type StatusKind,
   type Location,
   type Group,
-} from "../data/mock";
+} from "../data/domain";
 
 const typeOptions: { label: string; crystal: CrystalType }[] = [
   { label: "NPC", crystal: "npc" },

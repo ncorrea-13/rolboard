@@ -1,5 +1,5 @@
 import "../styles/list.css";
-import type { Group } from "../data/mock";
+import type { Group } from "../data/domain";
 
 interface FactionsListProps {
   groups: Group[];

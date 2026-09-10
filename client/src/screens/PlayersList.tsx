@@ -1,5 +1,5 @@
 import "../styles/list.css";
-import type { PlayerCharacter } from "../data/mock";
+import type { PlayerCharacter } from "../data/domain";
 
 interface PlayersListProps {
   playerCharacters: PlayerCharacter[];

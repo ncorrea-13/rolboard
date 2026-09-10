@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Campaign } from "../data/mock";
+import type { Campaign } from "../data/domain";
 import { apiFetch } from "../lib/api";
 
 interface NewCampaignFormProps {

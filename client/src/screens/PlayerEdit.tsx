@@ -10,7 +10,7 @@ import {
   type PlayerCharacter,
   type StatusKind,
   type Group,
-} from "../data/mock";
+} from "../data/domain";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 

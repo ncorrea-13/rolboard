@@ -1,5 +1,5 @@
 import "../styles/list.css";
-import { type Arc } from "../data/mock";
+import { type Arc } from "../data/domain";
 import { ArcStatusPill } from "../components/StatusPill";
 
 interface ArcsListProps {

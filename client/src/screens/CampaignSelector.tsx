@@ -1,5 +1,5 @@
 import "./CampaignSelector.css";
-import type { Campaign } from "../data/mock";
+import type { Campaign } from "../data/domain";
 import { CampaignStatusPill } from "../components/StatusPill";
 
 interface CampaignSelectorProps {

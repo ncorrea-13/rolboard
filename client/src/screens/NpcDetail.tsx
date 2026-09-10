@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./NpcDetail.css";
-import { crystalColor, type Npc, type Quest } from "../data/mock";
+import { crystalColor, type Npc, type Quest } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";

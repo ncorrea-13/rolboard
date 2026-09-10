@@ -13,7 +13,7 @@ import {
   type QuestStatus,
   type CampaignStatus,
   type ArcStatus,
-} from "../data/mock";
+} from "../data/domain";
 
 export function StatusPill({
   status,

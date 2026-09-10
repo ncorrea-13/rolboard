@@ -11,8 +11,10 @@ import {
   type PlayerCharacter,
   type Quest,
   type QuestStatus,
+  type Session,
+  type SessionType,
   type StatusKind,
-} from "../data/mock";
+} from "../data/domain";
 
 export interface ApiCampaign {
   id: number;
@@ -198,7 +200,6 @@ export function mapArc(a: ApiArc): Arc {
     status: a.status as ArcStatus,
     subarcOrder: a.subarc_order,
     obsidianPath: "",
-    sessions: [],
   };
 }
 
@@ -293,5 +294,46 @@ export function playerCharacterToApiPayload(p: PlayerCharacter) {
     backstory: p.backstory,
     progression_notes: p.progressionNotes,
     obsidian_path: p.obsidianPath || undefined,
+  };
+}
+
+export interface ApiSession {
+  id: number;
+  campaign_id: number;
+  arc_id?: number;
+  session_number: number;
+  sub_number: number;
+  session_type: string;
+  date: string;
+  summary: string;
+  prep_notes: string;
+  obsidian_path?: string;
+}
+
+export function mapSession(s: ApiSession): Session {
+  return {
+    id: String(s.id),
+    campaignId: String(s.campaign_id),
+    arcId: s.arc_id ? String(s.arc_id) : undefined,
+    sessionNumber: s.session_number,
+    subNumber: s.sub_number,
+    sessionType: s.session_type as SessionType,
+    date: s.date,
+    summary: s.summary,
+    prepNotes: s.prep_notes,
+    obsidianPath: s.obsidian_path,
+  };
+}
+
+export function sessionToApiPayload(s: Session) {
+  return {
+    arc_id: s.arcId ? Number(s.arcId) : undefined,
+    session_number: s.sessionNumber,
+    sub_number: s.subNumber,
+    session_type: s.sessionType,
+    date: s.date,
+    summary: s.summary,
+    prep_notes: s.prepNotes,
+    obsidian_path: s.obsidianPath || undefined,
   };
 }

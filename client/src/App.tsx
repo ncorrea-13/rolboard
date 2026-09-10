@@ -31,7 +31,6 @@ import {
   QuestDetail,
 } from "./screens/EntityDetails";
 import {
-  npcs as initialNpcs,
   locationBreadcrumb,
   type Campaign,
   type Npc,
@@ -41,8 +40,8 @@ import {
   type Location,
   type Quest,
   type PlayerCharacter,
-  type SessionEntry,
-} from "./data/mock";
+  type Session,
+} from "./data/domain";
 import {
   type EntityKind,
   entityKindLabel,
@@ -66,6 +65,8 @@ import {
   questToApiPayload,
   mapPlayerCharacter,
   playerCharacterToApiPayload,
+  mapSession,
+  sessionToApiPayload,
   type ApiCampaign,
   type ApiNpc,
   type ApiLocation,
@@ -73,6 +74,7 @@ import {
   type ApiArc,
   type ApiQuest,
   type ApiPlayerCharacter,
+  type ApiSession,
 } from "./lib/apiMappers";
 
 type Route =
@@ -87,8 +89,7 @@ type Route =
   | { name: "session-plan" }
   | {
       name: "session-edit";
-      arcId: string;
-      sessionN: string;
+      sessionId: string;
       autoConfirm?: boolean;
     }
   | { name: "entity-detail"; kind: EntityKind; id: string };
@@ -132,7 +133,7 @@ export default function App() {
       .catch((err) => console.error("Error cargando campañas:", err));
   }, []);
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
-  const [npcs, setNpcs] = useState<Npc[]>(initialNpcs);
+  const [npcs, setNpcs] = useState<Npc[]>([]);
 
   useEffect(() => {
     if (!activeCampaignId) return;
@@ -188,6 +189,15 @@ export default function App() {
       .catch((err) => console.error("Error cargando personajes:", err));
   }, [activeCampaignId]);
 
+  const [sessions, setSessions] = useState<Session[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiSession[]>(`/campaigns/${activeCampaignId}/sessions`)
+      .then((data) => setSessions((data ?? []).map(mapSession)))
+      .catch((err) => console.error("Error cargando sesiones:", err));
+  }, [activeCampaignId]);
+
   const [reindexing, setReindexing] = useState(false);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
@@ -219,6 +229,15 @@ export default function App() {
   const campaignPlayerCharacters = playerCharacters.filter(
     (p) => p.campaignId === activeCampaignId && !p.deletedAt,
   );
+  const campaignSessions = sessions
+    .filter((s) => s.campaignId === activeCampaignId && !s.deletedAt)
+    .sort((a, b) => a.sessionNumber - b.sessionNumber || a.subNumber - b.subNumber);
+
+  const nextSessionNumber =
+    campaignSessions.reduce((max, s) => Math.max(max, s.sessionNumber), 0) + 1;
+
+  const plannedSessions = campaignSessions.filter((s) => s.sessionType === "planning");
+  const pendingPlannedSession = plannedSessions[plannedSessions.length - 1];
 
   function selectCampaign(id: string) {
     setActiveCampaignId(id);
@@ -333,40 +352,83 @@ export default function App() {
       .catch((err) => console.error("Error creando personaje:", err));
   }
 
-  function editSession(
-    arcId: string,
-    sessionN: string,
-    patch: Omit<SessionEntry, "n">,
+  function saveSession(id: string, patch: Partial<Session>) {
+    const current = sessions.find((s) => s.id === id);
+    if (!current) return;
+    const draft: Session = { ...current, ...patch };
+    apiFetch<ApiSession>(`/sessions/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(sessionToApiPayload(draft)),
+    })
+      .then((saved) => {
+        const session = mapSession(saved);
+        setSessions((prev) => prev.map((s) => (s.id === id ? session : s)));
+        setRoute({ name: "section", section: "sesiones" });
+      })
+      .catch((err) => console.error("Error guardando sesión:", err));
+  }
+
+  const defaultSessionArc =
+    campaignArcs.find((a) => a.status === "en_curso") ??
+    campaignArcs[campaignArcs.length - 1];
+
+  function createSession(
+    values: { sessionType: Session["sessionType"]; date: string; summary: string },
+    expectedNpcIds: string[] = [],
+    expectedQuestIds: string[] = [],
   ) {
-    setArcs((prev) =>
-      prev.map((a) =>
-        a.id === arcId
-          ? {
-              ...a,
-              sessions: a.sessions.map((s) =>
-                s.n === sessionN ? { ...s, ...patch } : s,
-              ),
-            }
-          : a,
-      ),
+    const draft: Session = {
+      id: "",
+      campaignId: activeCampaign!.id,
+      arcId: defaultSessionArc?.id,
+      sessionNumber: nextSessionNumber,
+      subNumber: 0,
+      sessionType: values.sessionType,
+      date: values.date,
+      summary: values.summary,
+      prepNotes: "",
+    };
+    apiFetch<ApiSession>(`/campaigns/${activeCampaign!.id}/sessions`, {
+      method: "POST",
+      body: JSON.stringify(sessionToApiPayload(draft)),
+    })
+      .then((saved) => {
+        const session = mapSession(saved);
+        setSessions((prev) => [...prev, session]);
+        Promise.all([
+          ...expectedNpcIds.map((npcId) =>
+            apiFetch(`/sessions/${session.id}/npcs`, {
+              method: "POST",
+              body: JSON.stringify({ npc_id: Number(npcId) }),
+            }),
+          ),
+          ...expectedQuestIds.map((questId) =>
+            apiFetch(`/sessions/${session.id}/quests`, {
+              method: "POST",
+              body: JSON.stringify({ quest_id: Number(questId) }),
+            }),
+          ),
+        ]).catch((err) => console.error("Error asociando sesión:", err));
+        setRoute({ name: "section", section: "sesiones" });
+      })
+      .catch((err) => console.error("Error creando sesión:", err));
+  }
+
+  function planSession(values: {
+    date: string;
+    summary: string;
+    expectedNpcIds: string[];
+    expectedQuestIds: string[];
+  }) {
+    createSession(
+      { sessionType: "planning", date: values.date, summary: values.summary },
+      values.expectedNpcIds,
+      values.expectedQuestIds,
     );
   }
 
-  function addSessionEntry(entry: SessionEntry) {
-    const currentArc =
-      campaignArcs.find((a) => a.status === "en_curso") ??
-      campaignArcs[campaignArcs.length - 1];
-    if (!currentArc) return;
-    setArcs((prev) =>
-      prev.map((a) =>
-        a.id === currentArc.id ? { ...a, sessions: [...a.sessions, entry] } : a,
-      ),
-    );
-    setRoute({ name: "section", section: "sesiones" });
-  }
-
-  function playSession(entry: SessionEntry) {
-    addSessionEntry(entry);
+  function playSession(values: { date: string; summary: string }) {
+    createSession({ sessionType: "session", date: values.date, summary: values.summary });
     setNewSessionOpen(false);
   }
 
@@ -394,7 +456,6 @@ export default function App() {
               order: Number(values.order) || 0,
               status: values.status as ArcStatus,
               obsidianPath: `Arcos/${values.label}.md`,
-              sessions: [],
             };
         const payload = JSON.stringify(arcToApiPayload(draft));
         const request = id
@@ -405,11 +466,10 @@ export default function App() {
             });
         request
           .then((saved) => {
-            // mapArc no trae meta/sessions (Sessions sin wirear todavía) — se conservan del draft/actual.
+            // mapArc no trae meta — se conserva del draft/actual.
             const arc = {
               ...mapArc(saved),
               meta: current?.meta ?? "",
-              sessions: current?.sessions ?? [],
             };
             setArcs((prev) =>
               id ? prev.map((a) => (a.id === id ? arc : a)) : [...prev, arc],
@@ -675,32 +735,11 @@ export default function App() {
               ? entityKindSection[route.kind]
               : "resumen";
 
-  const highestSessionNumber = campaignArcs.reduce((max, a) => {
-    const arcMax = a.sessions.reduce(
-      (m, s) => Math.max(m, Number(s.n.replace(/\D/g, "")) || 0),
-      0,
-    );
-    return Math.max(max, arcMax);
-  }, 0);
-  const nextSessionNumber = highestSessionNumber + 1;
-
-  const pendingPlannedSession = campaignArcs.reduce<
-    { arcId: string; sessionN: string; num: number } | undefined
-  >((best, a) => {
-    for (const s of a.sessions) {
-      if (s.played) continue;
-      const num = Number(s.n.replace(/\D/g, "")) || 0;
-      if (!best || num > best.num) best = { arcId: a.id, sessionN: s.n, num };
-    }
-    return best;
-  }, undefined);
-
   function startPlaySession() {
     if (pendingPlannedSession) {
       setRoute({
         name: "session-edit",
-        arcId: pendingPlannedSession.arcId,
-        sessionN: pendingPlannedSession.sessionN,
+        sessionId: pendingPlannedSession.id,
         autoConfirm: true,
       });
     } else {
@@ -735,6 +774,7 @@ export default function App() {
               arcs={campaignArcs}
               npcs={campaignNpcs}
               quests={campaignQuests}
+              sessions={campaignSessions}
               onNavigate={(section) => setRoute({ name: "section", section })}
               onSelectNpc={(npcId) => setRoute({ name: "npc-detail", npcId })}
               onStartSession={startPlaySession}
@@ -752,10 +792,11 @@ export default function App() {
           {route.name === "section" && route.section === "sesiones" && (
             <SessionsTimeline
               arcs={campaignArcs}
+              sessions={campaignSessions}
               onPlaySession={startPlaySession}
               onPlanSession={() => setRoute({ name: "session-plan" })}
-              onOpenSession={(arcId, sessionN) =>
-                setRoute({ name: "session-edit", arcId, sessionN })
+              onOpenSession={(sessionId) =>
+                setRoute({ name: "session-edit", sessionId })
               }
             />
           )}
@@ -810,6 +851,7 @@ export default function App() {
               arc={
                 campaignArcs.find((a) => a.id === route.id) ?? campaignArcs[0]
               }
+              sessions={campaignSessions.filter((s) => s.arcId === route.id)}
               onBack={() => goToEntitySection("arc")}
               onEdit={() => setEntityForm({ kind: "arc", id: route.id })}
               onDelete={() => deleteEntity("arc", route.id)}
@@ -937,13 +979,10 @@ export default function App() {
           {route.name === "session-plan" && (
             <PlanSession
               nextNumber={nextSessionNumber}
-              currentArc={
-                campaignArcs.find((a) => a.status === "en_curso") ??
-                campaignArcs[campaignArcs.length - 1]
-              }
+              currentArc={defaultSessionArc}
               npcs={campaignNpcs}
               quests={campaignQuests}
-              onConfirm={addSessionEntry}
+              onConfirm={planSession}
               onCancel={() =>
                 setRoute({ name: "section", section: "sesiones" })
               }
@@ -952,20 +991,15 @@ export default function App() {
 
           {route.name === "session-edit" &&
             (() => {
-              const arc = campaignArcs.find((a) => a.id === route.arcId);
-              const session = arc?.sessions.find((s) => s.n === route.sessionN);
-              if (!arc || !session) return null;
+              const session = campaignSessions.find((s) => s.id === route.sessionId);
+              if (!session) return null;
+              const arc = campaignArcs.find((a) => a.id === session.arcId);
               return (
                 <SessionEdit
                   arc={arc}
                   session={session}
-                  npcs={campaignNpcs}
-                  quests={campaignQuests}
                   autoConfirm={route.autoConfirm}
-                  onSave={(patch) => {
-                    editSession(arc.id, session.n, patch);
-                    setRoute({ name: "section", section: "sesiones" });
-                  }}
+                  onSave={(patch) => saveSession(session.id, patch)}
                   onBack={() =>
                     setRoute({ name: "section", section: "sesiones" })
                   }

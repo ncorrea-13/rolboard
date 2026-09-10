@@ -1,6 +1,6 @@
 import type { FormField } from "../components/EntityForm";
 import type { DashboardSection } from "../screens/CampaignDashboard";
-import { locationTypeLabel, type Location } from "./mock";
+import { locationTypeLabel, type Location } from "./domain";
 
 export type EntityKind = "arc" | "faction" | "location" | "quest";
 

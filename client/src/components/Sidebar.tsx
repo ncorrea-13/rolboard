@@ -10,7 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import "./Sidebar.css";
-import { crystalColor } from "../data/mock";
+import { crystalColor } from "../data/domain";
 import type { DashboardSection } from "../screens/CampaignDashboard";
 
 const navItems: {

@@ -1,11 +1,13 @@
 import "./CampaignDashboard.css";
 import {
   crystalColor,
+  sessionCode,
   type Npc,
   type Campaign,
   type Arc,
   type Quest,
-} from "../data/mock";
+  type Session,
+} from "../data/domain";
 import { StatusPill, ArcStatusPill, QuestStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
@@ -26,6 +28,7 @@ interface CampaignDashboardProps {
   arcs: Arc[];
   npcs: Npc[];
   quests: Quest[];
+  sessions: Session[];
   onNavigate: (section: DashboardSection) => void;
   onSelectNpc: (npcId: string) => void;
   onStartSession: () => void;
@@ -38,6 +41,7 @@ export function CampaignDashboard({
   arcs,
   npcs,
   quests,
+  sessions,
   onNavigate,
   onSelectNpc,
   onStartSession,
@@ -48,8 +52,16 @@ export function CampaignDashboard({
   const activeQuests = quests.filter((q) => q.status === "active");
   const currentArc =
     arcs.find((a) => a.status === "en_curso") ?? arcs[arcs.length - 1];
-  const totalSessions = arcs.reduce((acc, a) => acc + a.sessions.length, 0);
-  const lastSession = currentArc?.sessions[currentArc.sessions.length - 1];
+  const totalSessions = sessions.length;
+  const lastSession = sessions
+    .filter((s) => s.arcId === currentArc?.id)
+    .reduce<Session | undefined>(
+      (best, s) =>
+        !best || s.sessionNumber > best.sessionNumber || (s.sessionNumber === best.sessionNumber && s.subNumber > best.subNumber)
+          ? s
+          : best,
+      undefined,
+    );
   const arcProgressMatch = currentArc?.meta.match(/(\d+)\s*(?:de|\/)\s*(\d+)/);
   const arcProgressPct = arcProgressMatch
     ? Math.round(
@@ -122,25 +134,13 @@ export function CampaignDashboard({
               <span className="label">Última sesión</span>
               <div className="campaign-dashboard__session-title">
                 <span className="campaign-dashboard__session-n">
-                  {lastSession.n}
+                  {sessionCode(lastSession)}
                 </span>
                 <span className="campaign-dashboard__session-date">
                   {lastSession.date}
                 </span>
               </div>
-              <MarkdownText className="campaign-dashboard__desc" text={lastSession.text} />
-              {lastSession.tags && (
-                <div className="campaign-dashboard__chips">
-                  {lastSession.tags
-                    .split(" ")
-                    .filter(Boolean)
-                    .map((tag) => (
-                      <span key={tag} className="campaign-dashboard__chip">
-                        {tag}
-                      </span>
-                    ))}
-                </div>
-              )}
+              <MarkdownText className="campaign-dashboard__desc" text={lastSession.summary} />
             </div>
           )}
         </div>

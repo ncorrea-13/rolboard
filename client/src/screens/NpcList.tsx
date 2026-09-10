@@ -6,7 +6,7 @@ import {
   type CrystalType,
   type Npc,
   type StatusKind,
-} from "../data/mock";
+} from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 

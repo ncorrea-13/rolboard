@@ -1,20 +1,24 @@
 import { useState } from "react";
 import "./NpcEdit.css";
-import type { Arc, Npc, Quest, SessionEntry } from "../data/mock";
+import type { Arc, Npc, Quest } from "../data/domain";
 
 interface PlanSessionProps {
   nextNumber: number;
   currentArc?: Arc;
   npcs: Npc[];
   quests: Quest[];
-  onConfirm: (session: SessionEntry) => void;
+  onConfirm: (values: {
+    date: string;
+    summary: string;
+    expectedNpcIds: string[];
+    expectedQuestIds: string[];
+  }) => void;
   onCancel: () => void;
 }
 
 export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, onCancel }: PlanSessionProps) {
   const [date, setDate] = useState("");
   const [text, setText] = useState("");
-  const [tags, setTags] = useState("");
   const [expectedNpcIds, setExpectedNpcIds] = useState<Set<string>>(new Set());
   const [expectedQuestIds, setExpectedQuestIds] = useState<Set<string>>(new Set());
 
@@ -40,11 +44,8 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
 
   function handleConfirm() {
     onConfirm({
-      n: sessionCode,
       date,
-      text: text.trim() || "Sin notas de preparación todavía.",
-      tags,
-      played: false,
+      summary: text.trim() || "Sin notas de preparación todavía.",
       expectedNpcIds: [...expectedNpcIds],
       expectedQuestIds: [...expectedQuestIds],
     });
@@ -87,11 +88,6 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
-          </div>
-
-          <div>
-            <span className="label">Tags</span>
-            <input className="npc-edit__input" placeholder="#ej #tags" value={tags} onChange={(e) => setTags(e.target.value)} />
           </div>
         </div>
 

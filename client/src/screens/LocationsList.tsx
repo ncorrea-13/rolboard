@@ -1,5 +1,5 @@
 import "../styles/list.css";
-import { locationTypeLabel, type Location } from "../data/mock";
+import { locationTypeLabel, type Location } from "../data/domain";
 
 function depthOf(loc: Location, all: Location[]): number {
   let depth = 0;
