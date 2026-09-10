@@ -1,0 +1,207 @@
+import {
+  crystalLabel,
+  type Arc,
+  type ArcStatus,
+  type Campaign,
+  type CampaignStatus,
+  type CrystalType,
+  type Group,
+  type Location,
+  type Npc,
+  type StatusKind,
+} from "../data/mock";
+
+export interface ApiCampaign {
+  id: number;
+  name: string;
+  system: string;
+  status: CampaignStatus;
+}
+
+export function mapCampaign(c: ApiCampaign): Campaign {
+  return {
+    id: String(c.id),
+    name: c.name,
+    system: c.system,
+    status: c.status,
+    meta: "",
+    last: "",
+  };
+}
+
+export interface ApiNpc {
+  id: number;
+  campaign_id: number;
+  name: string;
+  npc_kind: string;
+  status: string;
+  rol?: string;
+  etnia?: string;
+  tipo_spren?: string;
+  description: string;
+  obsidian_path?: string;
+}
+
+function initialsFromName(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join("");
+}
+
+const apiStatusToStatusKind: Record<string, StatusKind> = {
+  vivo: "alive",
+  activo: "alive",
+  muerto: "dead",
+  consolidado: "dead",
+  desaparecido: "missing",
+};
+const canonicalApiStatus = new Set(["vivo", "muerto", "desaparecido"]);
+
+export function mapNpc(n: ApiNpc): Npc {
+  const crystal = n.npc_kind as CrystalType;
+  return {
+    id: String(n.id),
+    campaignId: String(n.campaign_id),
+    name: n.name,
+    role: n.rol ?? "",
+    etnia: n.etnia,
+    tipoSpren: n.tipo_spren,
+    description: n.description,
+    crystal,
+    crystalLabel: crystalLabel[crystal],
+    status: apiStatusToStatusKind[n.status] ?? "alive",
+    statusNote: canonicalApiStatus.has(n.status) ? undefined : n.status,
+    location: "—",
+    faction: "—",
+    initials: initialsFromName(n.name),
+    obsidianPath: n.obsidian_path ?? "",
+  };
+}
+
+const statusKindToApiStatus: Record<Exclude<StatusKind, "paused">, string> = {
+  alive: "vivo",
+  missing: "desaparecido",
+  dead: "muerto",
+};
+
+function npcStatusToApi(npc: Npc): string {
+  if (npc.statusNote && apiStatusToStatusKind[npc.statusNote] === npc.status) {
+    return npc.statusNote;
+  }
+  // ponytail: "paused" no existe en validNPCStatuses del backend (server/internal/handlers/npcs.go).
+  // Se manda igual para que el backend lo rechace (400) en vez de mapearlo a un status inventado.
+  if (npc.status === "paused") return npc.status;
+  return statusKindToApiStatus[npc.status];
+}
+
+export function npcToApiPayload(npc: Npc) {
+  return {
+    name: npc.name,
+    npc_kind: npc.crystal,
+    detail_level: "full", // ponytail: NpcEdit no tiene control para "minor" todavía
+    status: npcStatusToApi(npc),
+    description: npc.description,
+    rol: npc.role || undefined,
+    etnia: npc.etnia || undefined,
+    tipo_spren: npc.tipoSpren || undefined,
+    obsidian_path: npc.obsidianPath || undefined,
+  };
+}
+
+export interface ApiLocation {
+  id: number;
+  campaign_id: number;
+  name: string;
+  location_type: string;
+  parent_location_id?: number;
+  description: string;
+  obsidian_path?: string;
+}
+
+export function mapLocation(l: ApiLocation): Location {
+  return {
+    id: String(l.id),
+    campaignId: String(l.campaign_id),
+    name: l.name,
+    locationType: l.location_type as Location["locationType"],
+    parentId: l.parent_location_id ? String(l.parent_location_id) : undefined,
+    description: l.description,
+    obsidianPath: l.obsidian_path ?? "",
+  };
+}
+
+export function locationToApiPayload(l: Location) {
+  return {
+    name: l.name,
+    location_type: l.locationType,
+    parent_location_id: l.parentId ? Number(l.parentId) : undefined,
+    description: l.description,
+    obsidian_path: l.obsidianPath || undefined,
+  };
+}
+
+export interface ApiGroup {
+  id: number;
+  campaign_id: number;
+  name: string;
+  description: string;
+  obsidian_path?: string;
+  member_count: number;
+}
+
+export function mapGroup(g: ApiGroup): Group {
+  return {
+    id: String(g.id),
+    campaignId: String(g.campaign_id),
+    name: g.name,
+    description: g.description,
+    memberCount: g.member_count,
+    obsidianPath: g.obsidian_path ?? "",
+  };
+}
+
+export function groupToApiPayload(g: Group) {
+  return {
+    name: g.name,
+    description: g.description,
+    obsidian_path: g.obsidianPath || undefined,
+  };
+}
+
+export interface ApiArc {
+  id: number;
+  campaign_id: number;
+  title: string;
+  order: number;
+  status: string;
+  subarc_order?: number;
+  summary: string;
+}
+
+export function mapArc(a: ApiArc): Arc {
+  return {
+    id: String(a.id),
+    campaignId: String(a.campaign_id),
+    label: a.title,
+    summary: a.summary,
+    meta: "",
+    order: a.order,
+    status: a.status as ArcStatus,
+    subarcOrder: a.subarc_order,
+    obsidianPath: "",
+    sessions: [],
+  };
+}
+
+export function arcToApiPayload(a: Arc) {
+  return {
+    name: a.label,
+    order: a.order,
+    status: a.status,
+    subarc_order: a.subarcOrder ?? undefined,
+    summary: a.summary,
+  };
+}
