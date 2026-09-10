@@ -18,7 +18,6 @@ type CreateNPCPayload struct {
 	LocationID   *int64  `json:"location_id"`
 	Etnia        *string `json:"etnia"`
 	Rol          *string `json:"rol"`
-	VinculoCon   *int64  `json:"vinculo_con"`
 	TipoSpren    *string `json:"tipo_spren"`
 	Description  string  `json:"description"`
 	Notes        string  `json:"notes"`
@@ -33,7 +32,6 @@ type UpdateNPCPayload struct {
 	LocationID   *int64  `json:"location_id"`
 	Etnia        *string `json:"etnia"`
 	Rol          *string `json:"rol"`
-	VinculoCon   *int64  `json:"vinculo_con"`
 	TipoSpren    *string `json:"tipo_spren"`
 	Description  string  `json:"description"`
 	Notes        string  `json:"notes"`
@@ -105,7 +103,6 @@ func (h *Handlers) CreateNPC(w http.ResponseWriter, r *http.Request) {
 		LocationID:   payload.LocationID,
 		Etnia:        payload.Etnia,
 		Rol:          payload.Rol,
-		VinculoCon:   payload.VinculoCon,
 		TipoSpren:    payload.TipoSpren,
 		Description:  payload.Description,
 		Notes:        payload.Notes,
@@ -171,7 +168,6 @@ func (h *Handlers) UpdateNPC(w http.ResponseWriter, r *http.Request) {
 		LocationID:   payload.LocationID,
 		Etnia:        payload.Etnia,
 		Rol:          payload.Rol,
-		VinculoCon:   payload.VinculoCon,
 		TipoSpren:    payload.TipoSpren,
 		Description:  payload.Description,
 		Notes:        payload.Notes,

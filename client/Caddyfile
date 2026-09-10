@@ -1,6 +1,6 @@
 :80 {
 	handle /api/* {
-		reverse_proxy server:8080
+		reverse_proxy rolboard-server:8080
 	}
 	handle {
 		root * /srv

@@ -17,6 +17,7 @@ type CreateSessionPayload struct {
 	SessionType   string  `json:"session_type"`
 	Date          string  `json:"date"`
 	Summary       string  `json:"summary"`
+	PrepNotes     string  `json:"prep_notes"`
 	ObsidianPath  *string `json:"obsidian_path"`
 }
 
@@ -27,6 +28,7 @@ type UpdateSessionPayload struct {
 	SessionType   string  `json:"session_type"`
 	Date          string  `json:"date"`
 	Summary       string  `json:"summary"`
+	PrepNotes     string  `json:"prep_notes"`
 	ObsidianPath  *string `json:"obsidian_path"`
 }
 
@@ -80,6 +82,7 @@ func (h *Handlers) CreateSession(w http.ResponseWriter, r *http.Request) {
 		SessionType:   payload.SessionType,
 		Date:          payload.Date,
 		Summary:       payload.Summary,
+		PrepNotes:     payload.PrepNotes,
 		ObsidianPath:  payload.ObsidianPath,
 	}
 
@@ -141,6 +144,7 @@ func (h *Handlers) UpdateSession(w http.ResponseWriter, r *http.Request) {
 		SessionType:   payload.SessionType,
 		Date:          payload.Date,
 		Summary:       payload.Summary,
+		PrepNotes:     payload.PrepNotes,
 		ObsidianPath:  payload.ObsidianPath,
 	}
 	err = h.sessions.Update(r.Context(), id, &session)

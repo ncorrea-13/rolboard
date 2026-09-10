@@ -8,7 +8,7 @@ RUN npm install -g pnpm@12 && pnpm install --frozen-lockfile
 COPY . ./
 RUN pnpm build
 
-FROM caddy:2-alpine
+FROM docker.io/library/caddy:2-alpine
 
 COPY --from=builder /build/dist /srv
 COPY Caddyfile /etc/caddy/Caddyfile

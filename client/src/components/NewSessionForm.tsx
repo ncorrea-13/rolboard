@@ -1,9 +1,8 @@
 import { useState } from "react";
-import type { SessionEntry } from "../data/mock";
 
 interface NewSessionFormProps {
   nextNumber: number;
-  onConfirm: (session: SessionEntry) => void;
+  onConfirm: (values: { date: string; summary: string }) => void;
   onCancel: () => void;
 }
 
@@ -17,11 +16,8 @@ export function NewSessionForm({
 
   function handleConfirm() {
     onConfirm({
-      n: `S${String(nextNumber).padStart(2, "0")}`,
       date,
-      text: text.trim() || "Sesión sin resumen todavía.",
-      tags: "",
-      played: true,
+      summary: text.trim() || "Sesión sin resumen todavía.",
     });
   }
 

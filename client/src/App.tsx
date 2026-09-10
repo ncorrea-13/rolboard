@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
+import { apiFetch } from "./lib/api";
 import { AppShell } from "./components/AppShell";
 import { Modal } from "./components/Modal";
 import { NewSessionForm } from "./components/NewSessionForm";
@@ -30,126 +31,51 @@ import {
   QuestDetail,
 } from "./screens/EntityDetails";
 import {
-  campaigns as initialCampaigns,
-  npcs as initialNpcs,
-  arcs as initialArcs,
-  groups as initialGroups,
-  locations as initialLocations,
-  quests as initialQuests,
-  playerCharacters as initialPlayerCharacters,
-  locationTypeLabel,
+  locationBreadcrumb,
   type Campaign,
   type Npc,
   type Arc,
+  type ArcStatus,
   type Group,
   type Location,
   type Quest,
   type PlayerCharacter,
-  type SessionEntry,
-} from "./data/mock";
-
-type EntityKind = "arc" | "faction" | "location" | "quest";
-
-const entityKindLabel: Record<EntityKind, string> = {
-  arc: "arco",
-  faction: "facción",
-  location: "locación",
-  quest: "quest",
-};
-
-function arcFields(): FormField[] {
-  return [
-    {
-      key: "label",
-      label: "Nombre del arco",
-      type: "text",
-      placeholder: "ej. Arco III · La Marea Alta",
-    },
-    { key: "summary", label: "Resumen", type: "textarea" },
-    {
-      key: "status",
-      label: "Estado",
-      type: "select",
-      options: [
-        { value: "alive", label: "En curso" },
-        { value: "dead", label: "Cerrado" },
-      ],
-    },
-  ];
-}
-
-function factionFields(): FormField[] {
-  return [
-    { key: "name", label: "Nombre", type: "text" },
-    { key: "description", label: "Descripción", type: "textarea" },
-    { key: "memberCount", label: "Miembros conocidos", type: "number" },
-  ];
-}
-
-function locationFields(
-  locations: Location[],
-  excludeId?: string,
-): FormField[] {
-  return [
-    { key: "name", label: "Nombre", type: "text" },
-    {
-      key: "locationType",
-      label: "Tipo",
-      type: "select",
-      options: Object.entries(locationTypeLabel).map(([value, label]) => ({
-        value,
-        label,
-      })),
-    },
-    {
-      key: "parentId",
-      label: "Ubicación padre",
-      type: "select",
-      options: [
-        { value: "", label: "— sin padre —" },
-        ...locations
-          .filter((l) => l.id !== excludeId)
-          .map((l) => ({ value: l.id, label: l.name })),
-      ],
-    },
-    { key: "description", label: "Descripción", type: "textarea" },
-  ];
-}
-
-function questFields(): FormField[] {
-  return [
-    { key: "name", label: "Título", type: "text" },
-    { key: "hook", label: "Gancho narrativo", type: "textarea" },
-    {
-      key: "status",
-      label: "Estado",
-      type: "select",
-      options: [
-        { value: "active", label: "Activa" },
-        { value: "on_hold", label: "En pausa" },
-        { value: "completed", label: "Completada" },
-        { value: "failed", label: "Fallida" },
-      ],
-    },
-    {
-      key: "priority",
-      label: "Prioridad",
-      type: "select",
-      options: [
-        { value: "1", label: "Alta" },
-        { value: "2", label: "Media" },
-        { value: "3", label: "Baja" },
-      ],
-    },
-  ];
-}
-
-const entityKindSection: Record<EntityKind, DashboardSection> = {
-  arc: "arcos",
-  faction: "facciones",
-  location: "locaciones",
-  quest: "quests",
-};
+  type Session,
+} from "./data/domain";
+import {
+  type EntityKind,
+  entityKindLabel,
+  entityKindSection,
+  arcFields,
+  factionFields,
+  locationFields,
+  questFields,
+} from "./data/entityForms";
+import {
+  mapCampaign,
+  mapNpc,
+  npcToApiPayload,
+  mapLocation,
+  locationToApiPayload,
+  mapGroup,
+  groupToApiPayload,
+  mapArc,
+  arcToApiPayload,
+  mapQuest,
+  questToApiPayload,
+  mapPlayerCharacter,
+  playerCharacterToApiPayload,
+  mapSession,
+  sessionToApiPayload,
+  type ApiCampaign,
+  type ApiNpc,
+  type ApiLocation,
+  type ApiGroup,
+  type ApiArc,
+  type ApiQuest,
+  type ApiPlayerCharacter,
+  type ApiSession,
+} from "./lib/apiMappers";
 
 type Route =
   | { name: "campaigns" }
@@ -161,7 +87,11 @@ type Route =
   | { name: "player-edit"; playerId: string }
   | { name: "player-create" }
   | { name: "session-plan" }
-  | { name: "session-edit"; arcId: string; sessionN: string; autoConfirm?: boolean }
+  | {
+      name: "session-edit";
+      sessionId: string;
+      autoConfirm?: boolean;
+    }
   | { name: "entity-detail"; kind: EntityKind; id: string };
 
 const blankNpcDraft: Npc = {
@@ -195,16 +125,80 @@ const blankPlayerDraft: PlayerCharacter = {
 
 export default function App() {
   const [route, setRoute] = useState<Route>({ name: "campaigns" });
-  const [campaigns, setCampaigns] = useState<Campaign[]>(initialCampaigns);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+
+  useEffect(() => {
+    apiFetch<ApiCampaign[]>("/campaigns")
+      .then((data) => setCampaigns((data ?? []).map(mapCampaign)))
+      .catch((err) => console.error("Error cargando campañas:", err));
+  }, []);
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
-  const [npcs, setNpcs] = useState<Npc[]>(initialNpcs);
-  const [arcs, setArcs] = useState<Arc[]>(initialArcs);
-  const [groups, setGroups] = useState<Group[]>(initialGroups);
-  const [locations, setLocations] = useState<Location[]>(initialLocations);
-  const [quests, setQuests] = useState<Quest[]>(initialQuests);
-  const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
-    initialPlayerCharacters,
-  );
+  const [npcs, setNpcs] = useState<Npc[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiNpc[]>(`/campaigns/${activeCampaignId}/npcs`)
+      .then((data) =>
+        setNpcs(
+          (data ?? []).filter((n) => n.npc_kind !== "referencia").map(mapNpc),
+        ),
+      )
+      .catch((err) => console.error("Error cargando NPCs:", err));
+  }, [activeCampaignId]);
+
+  const [arcs, setArcs] = useState<Arc[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiArc[]>(`/campaigns/${activeCampaignId}/arcs`)
+      .then((data) => setArcs((data ?? []).map(mapArc)))
+      .catch((err) => console.error("Error cargando arcos:", err));
+  }, [activeCampaignId]);
+  const [groups, setGroups] = useState<Group[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiGroup[]>(`/campaigns/${activeCampaignId}/groups`)
+      .then((data) => setGroups((data ?? []).map(mapGroup)))
+      .catch((err) => console.error("Error cargando facciones:", err));
+  }, [activeCampaignId]);
+
+  const [locations, setLocations] = useState<Location[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiLocation[]>(`/campaigns/${activeCampaignId}/locations`)
+      .then((data) => setLocations((data ?? []).map(mapLocation)))
+      .catch((err) => console.error("Error cargando locaciones:", err));
+  }, [activeCampaignId]);
+
+  const [quests, setQuests] = useState<Quest[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiQuest[]>(`/campaigns/${activeCampaignId}/quests`)
+      .then((data) => setQuests((data ?? []).map(mapQuest)))
+      .catch((err) => console.error("Error cargando quests:", err));
+  }, [activeCampaignId]);
+  const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiPlayerCharacter[]>(`/campaigns/${activeCampaignId}/player-characters`)
+      .then((data) => setPlayerCharacters((data ?? []).map(mapPlayerCharacter)))
+      .catch((err) => console.error("Error cargando personajes:", err));
+  }, [activeCampaignId]);
+
+  const [sessions, setSessions] = useState<Session[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiSession[]>(`/campaigns/${activeCampaignId}/sessions`)
+      .then((data) => setSessions((data ?? []).map(mapSession)))
+      .catch((err) => console.error("Error cargando sesiones:", err));
+  }, [activeCampaignId]);
+
+  const [reindexing, setReindexing] = useState(false);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
   const [entityForm, setEntityForm] = useState<{
@@ -214,117 +208,228 @@ export default function App() {
 
   const activeCampaign = campaigns.find((c) => c.id === activeCampaignId);
 
-  const campaignNpcs = npcs.filter((n) => n.campaignId === activeCampaignId && !n.deletedAt);
-  const campaignArcs = arcs.filter((a) => a.campaignId === activeCampaignId && !a.deletedAt);
+  const campaignArcs = arcs.filter(
+    (a) => a.campaignId === activeCampaignId && !a.deletedAt,
+  );
   const campaignGroups = groups.filter(
     (g) => g.campaignId === activeCampaignId && !g.deletedAt,
   );
   const campaignLocations = locations.filter(
     (l) => l.campaignId === activeCampaignId && !l.deletedAt,
   );
+  const campaignNpcs = npcs
+    .filter((n) => n.campaignId === activeCampaignId && !n.deletedAt)
+    .map((n) => {
+      const loc = n.locationId ? campaignLocations.find((l) => l.id === n.locationId) : undefined;
+      return loc ? { ...n, location: locationBreadcrumb(loc, campaignLocations) } : n;
+    });
   const campaignQuests = quests.filter(
     (q) => q.campaignId === activeCampaignId && !q.deletedAt,
   );
   const campaignPlayerCharacters = playerCharacters.filter(
     (p) => p.campaignId === activeCampaignId && !p.deletedAt,
   );
+  const campaignSessions = sessions
+    .filter((s) => s.campaignId === activeCampaignId && !s.deletedAt)
+    .sort((a, b) => a.sessionNumber - b.sessionNumber || a.subNumber - b.subNumber);
+
+  const nextSessionNumber =
+    campaignSessions.reduce((max, s) => Math.max(max, s.sessionNumber), 0) + 1;
+
+  const plannedSessions = campaignSessions.filter((s) => s.sessionType === "planning");
+  const pendingPlannedSession = plannedSessions[plannedSessions.length - 1];
 
   function selectCampaign(id: string) {
     setActiveCampaignId(id);
     setRoute({ name: "section", section: "resumen" });
   }
 
-  function createCampaign(campaign: Omit<Campaign, "id">) {
-    const id = `c${campaigns.length + 1}`;
-    setCampaigns((prev) => [...prev, { ...campaign, id }]);
-    setNewCampaignOpen(false);
-    selectCampaign(id);
+  function createCampaign(campaign: Omit<Campaign, "id">, vaultPath: string) {
+    apiFetch<ApiCampaign>("/campaigns", {
+      method: "POST",
+      body: JSON.stringify({
+        name: campaign.name,
+        system: campaign.system,
+        description: "",
+        vault_path: vaultPath,
+      }),
+    })
+      .then((created) => {
+        const mapped = mapCampaign(created);
+        setCampaigns((prev) => [...prev, mapped]);
+        setNewCampaignOpen(false);
+        selectCampaign(mapped.id);
+      })
+      .catch((err) => console.error("Error creando campaña:", err));
+  }
+
+  function handleReindex() {
+    if (!activeCampaign || reindexing) return;
+    setReindexing(true);
+    apiFetch(`/campaigns/${activeCampaign.id}/reindex`, { method: "POST" })
+      .then((result) => console.log("Reindexado:", result))
+      .catch((err) => console.error("Error reindexando:", err))
+      .finally(() => setReindexing(false));
   }
 
   function saveNpc(id: string, patch: Partial<Npc>) {
-    setNpcs((prev) => prev.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+    const current = npcs.find((n) => n.id === id);
+    if (!current) return;
+    const merged = { ...current, ...patch };
+    apiFetch(`/npcs/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(npcToApiPayload(merged)),
+    })
+      .then(() =>
+        setNpcs((prev) => prev.map((n) => (n.id === id ? merged : n))),
+      )
+      .catch((err) => console.error("Error guardando NPC:", err));
   }
 
   function createNpc(patch: Partial<Npc>) {
-    const id = `n${npcs.length + 1}`;
     const name = patch.name ?? "";
-    const initials =
-      name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((w) => w[0]?.toUpperCase())
-        .join("") || "??";
-    const npc: Npc = {
+    const draft: Npc = {
       ...blankNpcDraft,
       ...patch,
-      id,
       campaignId: activeCampaign!.id,
-      initials,
       obsidianPath: `NPCs/${name}.md`,
     };
-    setNpcs((prev) => [...prev, npc]);
-    setRoute({ name: "npc-detail", npcId: id });
+    apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
+      method: "POST",
+      body: JSON.stringify(npcToApiPayload(draft)),
+    })
+      .then((created) => {
+        // mapNpc ya trae locationId real del backend. faction/links no tienen
+        // backing todavía (npc_groups/npc_relations son indexer-only) — se conservan del draft.
+        const npc: Npc = {
+          ...mapNpc(created),
+          faction: draft.faction,
+          links: draft.links,
+        };
+        setNpcs((prev) => [...prev, npc]);
+        setRoute({ name: "npc-detail", npcId: npc.id });
+      })
+      .catch((err) => console.error("Error creando NPC:", err));
   }
 
   function savePlayer(id: string, patch: Partial<PlayerCharacter>) {
-    setPlayerCharacters((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const current = playerCharacters.find((p) => p.id === id);
+    if (!current) return;
+    const merged = { ...current, ...patch };
+    apiFetch(`/player-characters/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(playerCharacterToApiPayload(merged)),
+    })
+      .then(() =>
+        setPlayerCharacters((prev) => prev.map((p) => (p.id === id ? merged : p))),
+      )
+      .catch((err) => console.error("Error guardando personaje:", err));
   }
 
   function createPlayer(patch: Partial<PlayerCharacter>) {
-    const id = `p${playerCharacters.length + 1}`;
     const playerName = patch.playerName ?? "";
     const characterName = patch.characterName ?? "";
-    const player: PlayerCharacter = {
+    const draft: PlayerCharacter = {
       ...blankPlayerDraft,
       ...patch,
-      id,
       campaignId: activeCampaign!.id,
       obsidianPath: `Jugadores/${playerName}/${characterName}.md`,
     };
-    setPlayerCharacters((prev) => [...prev, player]);
-    setRoute({ name: "player-detail", playerId: id });
+    apiFetch<ApiPlayerCharacter>(`/campaigns/${activeCampaign!.id}/player-characters`, {
+      method: "POST",
+      body: JSON.stringify(playerCharacterToApiPayload(draft)),
+    })
+      .then((created) => {
+        // faction/links no tienen backing todavía (pc_groups es indexer-only) — se conservan del draft.
+        const player: PlayerCharacter = {
+          ...mapPlayerCharacter(created),
+          faction: draft.faction,
+          links: draft.links,
+        };
+        setPlayerCharacters((prev) => [...prev, player]);
+        setRoute({ name: "player-detail", playerId: player.id });
+      })
+      .catch((err) => console.error("Error creando personaje:", err));
   }
 
-  function editSession(
-    arcId: string,
-    sessionN: string,
-    patch: Omit<SessionEntry, "n">,
+  function saveSession(id: string, patch: Partial<Session>) {
+    const current = sessions.find((s) => s.id === id);
+    if (!current) return;
+    const draft: Session = { ...current, ...patch };
+    apiFetch<ApiSession>(`/sessions/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(sessionToApiPayload(draft)),
+    })
+      .then((saved) => {
+        const session = mapSession(saved);
+        setSessions((prev) => prev.map((s) => (s.id === id ? session : s)));
+        setRoute({ name: "section", section: "sesiones" });
+      })
+      .catch((err) => console.error("Error guardando sesión:", err));
+  }
+
+  const defaultSessionArc =
+    campaignArcs.find((a) => a.status === "en_curso") ??
+    campaignArcs[campaignArcs.length - 1];
+
+  function createSession(
+    values: { sessionType: Session["sessionType"]; date: string; summary: string },
+    expectedNpcIds: string[] = [],
+    expectedQuestIds: string[] = [],
   ) {
-    setArcs((prev) =>
-      prev.map((a) =>
-        a.id === arcId
-          ? {
-              ...a,
-              sessions: a.sessions.map((s) =>
-                s.n === sessionN ? { ...s, ...patch } : s,
-              ),
-            }
-          : a,
-      ),
+    const draft: Session = {
+      id: "",
+      campaignId: activeCampaign!.id,
+      arcId: defaultSessionArc?.id,
+      sessionNumber: nextSessionNumber,
+      subNumber: 0,
+      sessionType: values.sessionType,
+      date: values.date,
+      summary: values.summary,
+      prepNotes: "",
+    };
+    apiFetch<ApiSession>(`/campaigns/${activeCampaign!.id}/sessions`, {
+      method: "POST",
+      body: JSON.stringify(sessionToApiPayload(draft)),
+    })
+      .then((saved) => {
+        const session = mapSession(saved);
+        setSessions((prev) => [...prev, session]);
+        Promise.all([
+          ...expectedNpcIds.map((npcId) =>
+            apiFetch(`/sessions/${session.id}/npcs`, {
+              method: "POST",
+              body: JSON.stringify({ npc_id: Number(npcId) }),
+            }),
+          ),
+          ...expectedQuestIds.map((questId) =>
+            apiFetch(`/sessions/${session.id}/quests`, {
+              method: "POST",
+              body: JSON.stringify({ quest_id: Number(questId) }),
+            }),
+          ),
+        ]).catch((err) => console.error("Error asociando sesión:", err));
+        setRoute({ name: "section", section: "sesiones" });
+      })
+      .catch((err) => console.error("Error creando sesión:", err));
+  }
+
+  function planSession(values: {
+    date: string;
+    summary: string;
+    expectedNpcIds: string[];
+    expectedQuestIds: string[];
+  }) {
+    createSession(
+      { sessionType: "planning", date: values.date, summary: values.summary },
+      values.expectedNpcIds,
+      values.expectedQuestIds,
     );
   }
 
-  function addSessionEntry(entry: SessionEntry) {
-    const currentArc =
-      campaignArcs.find((a) => a.status === "alive") ??
-      campaignArcs[campaignArcs.length - 1];
-    if (!currentArc) return;
-    setArcs((prev) =>
-      prev.map((a) =>
-        a.id === currentArc.id ? { ...a, sessions: [...a.sessions, entry] } : a,
-      ),
-    );
-    setRoute({ name: "section", section: "sesiones" });
-  }
-
-  function playSession(entry: SessionEntry) {
-    addSessionEntry(entry);
+  function playSession(values: { date: string; summary: string }) {
+    createSession({ sessionType: "session", date: values.date, summary: values.summary });
     setNewSessionOpen(false);
-  }
-
-  function nextId(prefix: string, items: { id: string }[]) {
-    return `${prefix}${items.length + 1}`;
   }
 
   function submitEntityForm(values: Record<string, string>) {
@@ -333,131 +438,148 @@ export default function App() {
 
     switch (kind) {
       case "arc": {
-        if (id) {
-          setArcs((prev) =>
-            prev.map((a) =>
-              a.id === id
-                ? {
-                    ...a,
-                    label: values.label,
-                    summary: values.summary,
-                    status: values.status as Arc["status"],
-                  }
-                : a,
-            ),
-          );
-        } else {
-          const newId = nextId("a", arcs);
-          setArcs((prev) => [
-            ...prev,
-            {
-              id: newId,
+        const current = id ? arcs.find((a) => a.id === id) : undefined;
+        const draft: Arc = current
+          ? {
+              ...current,
+              label: values.label,
+              summary: values.summary,
+              order: Number(values.order) || current.order,
+              status: values.status as ArcStatus,
+            }
+          : {
+              id: "",
               campaignId: activeCampaign!.id,
               label: values.label,
               summary: values.summary,
-              meta: "0 sesiones",
-              status: values.status as Arc["status"],
+              meta: "",
+              order: Number(values.order) || 0,
+              status: values.status as ArcStatus,
               obsidianPath: `Arcos/${values.label}.md`,
-              sessions: [],
-            },
-          ]);
-        }
+            };
+        const payload = JSON.stringify(arcToApiPayload(draft));
+        const request = id
+          ? apiFetch<ApiArc>(`/arcs/${id}`, { method: "PUT", body: payload })
+          : apiFetch<ApiArc>(`/campaigns/${activeCampaign!.id}/arcs`, {
+              method: "POST",
+              body: payload,
+            });
+        request
+          .then((saved) => {
+            // mapArc no trae meta — se conserva del draft/actual.
+            const arc = {
+              ...mapArc(saved),
+              meta: current?.meta ?? "",
+            };
+            setArcs((prev) =>
+              id ? prev.map((a) => (a.id === id ? arc : a)) : [...prev, arc],
+            );
+          })
+          .catch((err) => console.error("Error guardando arco:", err));
         break;
       }
       case "faction": {
-        if (id) {
-          setGroups((prev) =>
-            prev.map((g) =>
-              g.id === id
-                ? {
-                    ...g,
-                    name: values.name,
-                    description: values.description,
-                    memberCount: Number(values.memberCount) || 0,
-                  }
-                : g,
-            ),
-          );
-        } else {
-          const newId = nextId("g", groups);
-          setGroups((prev) => [
-            ...prev,
-            {
-              id: newId,
+        const current = id ? groups.find((g) => g.id === id) : undefined;
+        const draft: Group = current
+          ? { ...current, name: values.name, description: values.description }
+          : {
+              id: "",
               campaignId: activeCampaign!.id,
               name: values.name,
               description: values.description,
-              memberCount: Number(values.memberCount) || 0,
+              memberCount: 0,
               obsidianPath: `Facciones/${values.name}.md`,
-            },
-          ]);
-        }
+            };
+        const payload = JSON.stringify(groupToApiPayload(draft));
+        const request = id
+          ? apiFetch<ApiGroup>(`/groups/${id}`, {
+              method: "PUT",
+              body: payload,
+            })
+          : apiFetch<ApiGroup>(`/campaigns/${activeCampaign!.id}/groups`, {
+              method: "POST",
+              body: payload,
+            });
+        request
+          .then((saved) => {
+            // GetByID/Update no calculan member_count (siempre 0) — se conserva el real ya cargado por List.
+            const group = {
+              ...mapGroup(saved),
+              memberCount: current?.memberCount ?? 0,
+            };
+            setGroups((prev) =>
+              id
+                ? prev.map((g) => (g.id === id ? group : g))
+                : [...prev, group],
+            );
+          })
+          .catch((err) => console.error("Error guardando facción:", err));
         break;
       }
       case "location": {
-        if (id) {
-          setLocations((prev) =>
-            prev.map((l) =>
-              l.id === id
-                ? {
-                    ...l,
-                    name: values.name,
-                    locationType:
-                      values.locationType as Location["locationType"],
-                    parentId: values.parentId || undefined,
-                    description: values.description,
-                  }
-                : l,
-            ),
-          );
-        } else {
-          const newId = nextId("l", locations);
-          setLocations((prev) => [
-            ...prev,
-            {
-              id: newId,
+        const draft: Location = id
+          ? {
+              ...locations.find((l) => l.id === id)!,
+              name: values.name,
+              locationType: values.locationType as Location["locationType"],
+              parentId: values.parentId || undefined,
+              description: values.description,
+            }
+          : {
+              id: "",
               campaignId: activeCampaign!.id,
               name: values.name,
               locationType: values.locationType as Location["locationType"],
               parentId: values.parentId || undefined,
               description: values.description,
               obsidianPath: `Locaciones/${values.name}.md`,
-            },
-          ]);
-        }
+            };
+        const payload = JSON.stringify(locationToApiPayload(draft));
+        const request = id
+          ? apiFetch<ApiLocation>(`/locations/${id}`, {
+              method: "PUT",
+              body: payload,
+            })
+          : apiFetch<ApiLocation>(
+              `/campaigns/${activeCampaign!.id}/locations`,
+              { method: "POST", body: payload },
+            );
+        request
+          .then((saved) => {
+            const location = mapLocation(saved);
+            setLocations((prev) =>
+              id
+                ? prev.map((l) => (l.id === id ? location : l))
+                : [...prev, location],
+            );
+          })
+          .catch((err) => console.error("Error guardando locación:", err));
         break;
       }
       case "quest": {
         const priority = (Number(values.priority) || 3) as Quest["priority"];
-        if (id) {
-          setQuests((prev) =>
-            prev.map((q) =>
-              q.id === id
-                ? {
-                    ...q,
-                    name: values.name,
-                    hook: values.hook,
-                    status: values.status as Quest["status"],
-                    priority,
-                  }
-                : q,
-            ),
-          );
-        } else {
-          const newId = nextId("q", quests);
-          setQuests((prev) => [
-            ...prev,
-            {
-              id: newId,
+        const current = id ? quests.find((q) => q.id === id) : undefined;
+        const draft: Quest = current
+          ? { ...current, name: values.name, hook: values.hook, status: values.status as Quest["status"], priority }
+          : {
+              id: "",
               campaignId: activeCampaign!.id,
               name: values.name,
               hook: values.hook,
               crystal: "faction-quest",
               status: values.status as Quest["status"],
               priority,
-            },
-          ]);
-        }
+            };
+        const payload = JSON.stringify(questToApiPayload(draft));
+        const request = id
+          ? apiFetch<ApiQuest>(`/quests/${id}`, { method: "PUT", body: payload })
+          : apiFetch<ApiQuest>(`/campaigns/${activeCampaign!.id}/quests`, { method: "POST", body: payload });
+        request
+          .then((saved) => {
+            const quest = mapQuest(saved);
+            setQuests((prev) => (id ? prev.map((q) => (q.id === id ? quest : q)) : [...prev, quest]));
+          })
+          .catch((err) => console.error("Error guardando quest:", err));
         break;
       }
     }
@@ -466,34 +588,64 @@ export default function App() {
   }
 
   function deleteEntity(kind: EntityKind, id: string) {
-    if (!window.confirm(`¿Dar de baja este ${entityKindLabel[kind]}? Deja de verse en la campaña, no se borra.`)) return;
-    const deletedAt = new Date().toISOString();
-    switch (kind) {
-      case "arc":
-        setArcs((prev) => prev.map((a) => (a.id === id ? { ...a, deletedAt } : a)));
-        break;
-      case "faction":
-        setGroups((prev) => prev.map((g) => (g.id === id ? { ...g, deletedAt } : g)));
-        break;
-      case "location":
-        setLocations((prev) => prev.map((l) => (l.id === id ? { ...l, deletedAt } : l)));
-        break;
-      case "quest":
-        setQuests((prev) => prev.map((q) => (q.id === id ? { ...q, deletedAt } : q)));
-        break;
+    if (
+      !window.confirm(
+        `¿Dar de baja este ${entityKindLabel[kind]}? Deja de verse en la campaña, no se borra.`,
+      )
+    )
+      return;
+    if (kind === "location") {
+      apiFetch(`/locations/${id}`, { method: "DELETE" })
+        .then(() => setLocations((prev) => prev.filter((l) => l.id !== id)))
+        .catch((err) => console.error("Error borrando locación:", err));
+      goToEntitySection(kind);
+      return;
     }
+    if (kind === "faction") {
+      apiFetch(`/groups/${id}`, { method: "DELETE" })
+        .then(() => setGroups((prev) => prev.filter((g) => g.id !== id)))
+        .catch((err) => console.error("Error borrando facción:", err));
+      goToEntitySection(kind);
+      return;
+    }
+    if (kind === "arc") {
+      apiFetch(`/arcs/${id}`, { method: "DELETE" })
+        .then(() => setArcs((prev) => prev.filter((a) => a.id !== id)))
+        .catch((err) => console.error("Error borrando arco:", err));
+      goToEntitySection(kind);
+      return;
+    }
+    apiFetch(`/quests/${id}`, { method: "DELETE" })
+      .then(() => setQuests((prev) => prev.filter((q) => q.id !== id)))
+      .catch((err) => console.error("Error borrando quest:", err));
     goToEntitySection(kind);
   }
 
   function deleteNpc(id: string) {
-    if (!window.confirm("¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.")) return;
-    setNpcs((prev) => prev.map((n) => (n.id === id ? { ...n, deletedAt: new Date().toISOString() } : n)));
-    setRoute({ name: "section", section: "npcs" });
+    if (
+      !window.confirm(
+        "¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.",
+      )
+    )
+      return;
+    apiFetch(`/npcs/${id}`, { method: "DELETE" })
+      .then(() => {
+        setNpcs((prev) => prev.filter((n) => n.id !== id));
+        setRoute({ name: "section", section: "npcs" });
+      })
+      .catch((err) => console.error("Error borrando NPC:", err));
   }
 
   function deletePlayer(id: string) {
-    if (!window.confirm("¿Dar de baja este personaje? Deja de verse en la campaña, no se borra.")) return;
-    setPlayerCharacters((prev) => prev.map((p) => (p.id === id ? { ...p, deletedAt: new Date().toISOString() } : p)));
+    if (
+      !window.confirm(
+        "¿Dar de baja este personaje? Deja de verse en la campaña, no se borra.",
+      )
+    )
+      return;
+    apiFetch(`/player-characters/${id}`, { method: "DELETE" })
+      .then(() => setPlayerCharacters((prev) => prev.filter((p) => p.id !== id)))
+      .catch((err) => console.error("Error borrando personaje:", err));
     setRoute({ name: "section", section: "jugadores" });
   }
 
@@ -519,18 +671,17 @@ export default function App() {
       case "arc": {
         const a = arcs.find((x) => x.id === id);
         return a
-          ? { label: a.label, summary: a.summary, status: a.status }
+          ? {
+              label: a.label,
+              summary: a.summary,
+              order: String(a.order),
+              status: a.status,
+            }
           : undefined;
       }
       case "faction": {
         const g = groups.find((x) => x.id === id);
-        return g
-          ? {
-              name: g.name,
-              description: g.description,
-              memberCount: String(g.memberCount),
-            }
-          : undefined;
+        return g ? { name: g.name, description: g.description } : undefined;
       }
       case "location": {
         const l = locations.find((x) => x.id === id);
@@ -584,30 +735,13 @@ export default function App() {
               ? entityKindSection[route.kind]
               : "resumen";
 
-  // Los números de sesión no son necesariamente contiguos (ej. S03 -> S05,
-  // salteando un interludio/planificación descartada) — el próximo número
-  // tiene que salir del máximo real usado, no de la cantidad de sesiones.
-  const highestSessionNumber = campaignArcs.reduce((max, a) => {
-    const arcMax = a.sessions.reduce((m, s) => Math.max(m, Number(s.n.replace(/\D/g, "")) || 0), 0);
-    return Math.max(max, arcMax);
-  }, 0);
-  const nextSessionNumber = highestSessionNumber + 1;
-
-  // "Jugar sesión" no debería crear una entrada suelta si ya hay una
-  // planificada sin jugar — toma la más reciente (mayor número) y la abre
-  // directo en modo "confirmar como jugada" en vez de loguear una nueva.
-  const pendingPlannedSession = campaignArcs.reduce<{ arcId: string; sessionN: string; num: number } | undefined>((best, a) => {
-    for (const s of a.sessions) {
-      if (s.played) continue;
-      const num = Number(s.n.replace(/\D/g, "")) || 0;
-      if (!best || num > best.num) best = { arcId: a.id, sessionN: s.n, num };
-    }
-    return best;
-  }, undefined);
-
   function startPlaySession() {
     if (pendingPlannedSession) {
-      setRoute({ name: "session-edit", arcId: pendingPlannedSession.arcId, sessionN: pendingPlannedSession.sessionN, autoConfirm: true });
+      setRoute({
+        name: "session-edit",
+        sessionId: pendingPlannedSession.id,
+        autoConfirm: true,
+      });
     } else {
       setNewSessionOpen(true);
     }
@@ -640,9 +774,12 @@ export default function App() {
               arcs={campaignArcs}
               npcs={campaignNpcs}
               quests={campaignQuests}
+              sessions={campaignSessions}
               onNavigate={(section) => setRoute({ name: "section", section })}
               onSelectNpc={(npcId) => setRoute({ name: "npc-detail", npcId })}
               onStartSession={startPlaySession}
+              onReindex={handleReindex}
+              reindexing={reindexing}
             />
           )}
           {route.name === "section" && route.section === "npcs" && (
@@ -655,9 +792,12 @@ export default function App() {
           {route.name === "section" && route.section === "sesiones" && (
             <SessionsTimeline
               arcs={campaignArcs}
+              sessions={campaignSessions}
               onPlaySession={startPlaySession}
               onPlanSession={() => setRoute({ name: "session-plan" })}
-              onOpenSession={(arcId, sessionN) => setRoute({ name: "session-edit", arcId, sessionN })}
+              onOpenSession={(sessionId) =>
+                setRoute({ name: "session-edit", sessionId })
+              }
             />
           )}
           {route.name === "section" && route.section === "arcos" && (
@@ -699,7 +839,9 @@ export default function App() {
           {route.name === "section" && route.section === "jugadores" && (
             <PlayersList
               playerCharacters={campaignPlayerCharacters}
-              onSelect={(playerId) => setRoute({ name: "player-detail", playerId })}
+              onSelect={(playerId) =>
+                setRoute({ name: "player-detail", playerId })
+              }
               onCreate={() => setRoute({ name: "player-create" })}
             />
           )}
@@ -709,6 +851,7 @@ export default function App() {
               arc={
                 campaignArcs.find((a) => a.id === route.id) ?? campaignArcs[0]
               }
+              sessions={campaignSessions.filter((s) => s.arcId === route.id)}
               onBack={() => goToEntitySection("arc")}
               onEdit={() => setEntityForm({ kind: "arc", id: route.id })}
               onDelete={() => deleteEntity("arc", route.id)}
@@ -795,7 +938,9 @@ export default function App() {
             <PlayerDetail
               player={selectedPlayer}
               npcs={campaignNpcs}
-              onEdit={() => setRoute({ name: "player-edit", playerId: selectedPlayer.id })}
+              onEdit={() =>
+                setRoute({ name: "player-edit", playerId: selectedPlayer.id })
+              }
               onBack={() => setRoute({ name: "section", section: "jugadores" })}
               onDelete={() => deletePlayer(selectedPlayer.id)}
             />
@@ -808,9 +953,14 @@ export default function App() {
               groups={campaignGroups}
               onSave={(patch) => {
                 savePlayer(selectedPlayer.id, patch);
-                setRoute({ name: "player-detail", playerId: selectedPlayer.id });
+                setRoute({
+                  name: "player-detail",
+                  playerId: selectedPlayer.id,
+                });
               }}
-              onDiscard={() => setRoute({ name: "player-detail", playerId: selectedPlayer.id })}
+              onDiscard={() =>
+                setRoute({ name: "player-detail", playerId: selectedPlayer.id })
+              }
             />
           )}
 
@@ -820,40 +970,42 @@ export default function App() {
               npcs={campaignNpcs}
               groups={campaignGroups}
               onSave={createPlayer}
-              onDiscard={() => setRoute({ name: "section", section: "jugadores" })}
+              onDiscard={() =>
+                setRoute({ name: "section", section: "jugadores" })
+              }
             />
           )}
 
           {route.name === "session-plan" && (
             <PlanSession
               nextNumber={nextSessionNumber}
-              currentArc={campaignArcs.find((a) => a.status === "alive") ?? campaignArcs[campaignArcs.length - 1]}
+              currentArc={defaultSessionArc}
               npcs={campaignNpcs}
               quests={campaignQuests}
-              onConfirm={addSessionEntry}
-              onCancel={() => setRoute({ name: "section", section: "sesiones" })}
+              onConfirm={planSession}
+              onCancel={() =>
+                setRoute({ name: "section", section: "sesiones" })
+              }
             />
           )}
 
-          {route.name === "session-edit" && (() => {
-            const arc = campaignArcs.find((a) => a.id === route.arcId);
-            const session = arc?.sessions.find((s) => s.n === route.sessionN);
-            if (!arc || !session) return null;
-            return (
-              <SessionEdit
-                arc={arc}
-                session={session}
-                npcs={campaignNpcs}
-                quests={campaignQuests}
-                autoConfirm={route.autoConfirm}
-                onSave={(patch) => {
-                  editSession(arc.id, session.n, patch);
-                  setRoute({ name: "section", section: "sesiones" });
-                }}
-                onBack={() => setRoute({ name: "section", section: "sesiones" })}
-              />
-            );
-          })()}
+          {route.name === "session-edit" &&
+            (() => {
+              const session = campaignSessions.find((s) => s.id === route.sessionId);
+              if (!session) return null;
+              const arc = campaignArcs.find((a) => a.id === session.arcId);
+              return (
+                <SessionEdit
+                  arc={arc}
+                  session={session}
+                  autoConfirm={route.autoConfirm}
+                  onSave={(patch) => saveSession(session.id, patch)}
+                  onBack={() =>
+                    setRoute({ name: "section", section: "sesiones" })
+                  }
+                />
+              );
+            })()}
         </AppShell>
       )}
 

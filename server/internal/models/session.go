@@ -9,7 +9,18 @@ type Session struct {
 	SessionType   string  `json:"session_type"`
 	Date          string  `json:"date"`
 	Summary       string  `json:"summary"`
+	PrepNotes     string  `json:"prep_notes"`
 	ObsidianPath  *string `json:"obsidian_path,omitempty"`
 	CreatedAt     string  `json:"created_at"`
 	UpdatedAt     string  `json:"updated_at"`
+}
+
+type SessionNpc struct {
+	NPCID int64  `json:"npc_id"`
+	Name  string `json:"name"`
+}
+
+type SessionQuest struct {
+	QuestID int64  `json:"quest_id"`
+	Title   string `json:"title"`
 }

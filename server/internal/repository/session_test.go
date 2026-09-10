@@ -38,7 +38,7 @@ func TestSessionCreateWithArc(t *testing.T) {
 	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
 
 	arcRepo := NewArcRepository(db)
-	arc := &models.Arc{CampaignID: campaignID, Title: "Arc 1", Order: 1}
+	arc := &models.Arc{CampaignID: campaignID, Title: "Arc 1", Order: 1, Status: "planificado"}
 	if err := arcRepo.Create(ctx, arc); err != nil {
 		t.Fatalf("Create arc failed: %v", err)
 	}

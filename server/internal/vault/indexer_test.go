@@ -143,6 +143,177 @@ func TestReindexCreatesEntitiesAndResolvesRelations(t *testing.T) {
 	if sessions[0].ArcID == nil || *sessions[0].ArcID != arcs[0].ID {
 		t.Errorf("Expected session.ArcID = %d, got %v", arcs[0].ID, sessions[0].ArcID)
 	}
+	if arcs[0].Status != "en_curso" {
+		t.Errorf("Expected arc status 'en_curso' (from vault 'en curso'), got %q", arcs[0].Status)
+	}
+	if arcs[0].SubarcOrder != nil {
+		t.Errorf("Expected nil SubarcOrder for an arc without subarco, got %v", *arcs[0].SubarcOrder)
+	}
+}
+
+func TestReindexPreservesDashboardEditWhenNoteUnchanged(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\n---\nCapitán de Bridge Four.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	if _, err := indexer.Reindex(ctx); err != nil {
+		t.Fatalf("First reindex failed: %v", err)
+	}
+
+	npcRepo := repository.NewNPCRepository(db)
+	npcs, err := npcRepo.List(ctx, campaign.ID)
+	if err != nil || len(npcs) != 1 {
+		t.Fatalf("Expected 1 npc after first reindex, err=%v npcs=%+v", err, npcs)
+	}
+	kaladin := npcs[0]
+
+	// Simula una edición hecha desde el dashboard (PUT /npcs/{id}), sin tocar el archivo del vault.
+	kaladin.Status = "muerto"
+	if err := npcRepo.Update(ctx, kaladin.ID, &kaladin); err != nil {
+		t.Fatalf("Simulated dashboard edit failed: %v", err)
+	}
+
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Second reindex failed: %v", err)
+	}
+	if len(result.Errors) != 0 {
+		t.Errorf("Expected no errors on second reindex, got %v", result.Errors)
+	}
+	if result.Processed != 1 {
+		t.Errorf("Expected 1 processed (skipped-unchanged still counts), got %d", result.Processed)
+	}
+
+	after, err := npcRepo.GetByID(ctx, kaladin.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if after.Status != "muerto" {
+		t.Errorf("Expected dashboard edit 'muerto' to survive an unchanged-note reindex, got %q", after.Status)
+	}
+
+	// Si la nota SÍ cambia, el vault vuelve a mandar.
+	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\n---\nCapitán de Bridge Four, ascendido a Alto Príncipe.")
+	if _, err := indexer.Reindex(ctx); err != nil {
+		t.Fatalf("Third reindex failed: %v", err)
+	}
+	after, err = npcRepo.GetByID(ctx, kaladin.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if after.Status != "vivo" {
+		t.Errorf("Expected vault edit to win once the note actually changed, got %q", after.Status)
+	}
+}
+
+func TestReindexResolvesPlayerCharacterSprenAndFaccion(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "NPC/Astillas/Cuarzo.md", "---\ntipo: spren\nstatus: vivo\ntipo_spren: Honorspren\n---\nSpren de Valisha.")
+	writeVaultFile(t, root, "Grupos/Radiantes.md", "---\ntipo: faccion\nalineacion: neutral\n---\nOrden de Radiantes.")
+	writeVaultFile(t, root, "Jugadores/Valisha.md", "---\ntipo: jugador\njugador: Agus Horas\nstatus: activo\nraza: Cognitiva\nspren: \"[[Cuarzo]]\"\nfacciones:\n  - \"[[Radiantes]]\"\n---\nPersonaje jugado por Agus.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+	if len(result.Errors) != 0 {
+		t.Errorf("Expected no errors, got %v", result.Errors)
+	}
+	if len(result.UnresolvedWikilinks) != 0 {
+		t.Errorf("Expected no unresolved wikilinks, got %v", result.UnresolvedWikilinks)
+	}
+
+	npcs, err := repository.NewNPCRepository(db).List(ctx, campaign.ID)
+	if err != nil || len(npcs) != 1 {
+		t.Fatalf("Expected 1 npc (Cuarzo), err=%v npcs=%+v", err, npcs)
+	}
+	cuarzo := npcs[0]
+
+	groups, err := repository.NewGroupRepository(db).List(ctx, campaign.ID)
+	if err != nil || len(groups) != 1 {
+		t.Fatalf("Expected 1 group (Radiantes), err=%v groups=%+v", err, groups)
+	}
+	radiantes := groups[0]
+
+	pcs, err := repository.NewPlayerCharacterRepository(db).List(ctx, campaign.ID)
+	if err != nil || len(pcs) != 1 {
+		t.Fatalf("Expected 1 player character, err=%v pcs=%+v", err, pcs)
+	}
+	valisha := pcs[0]
+
+	if valisha.Race != "Cognitiva" {
+		t.Errorf("Expected race 'Cognitiva', got %q", valisha.Race)
+	}
+	if valisha.Status != "activo" {
+		t.Errorf("Expected status 'activo', got %q", valisha.Status)
+	}
+	if valisha.SprenNPCID == nil || *valisha.SprenNPCID != cuarzo.ID {
+		t.Errorf("Expected SprenNPCID = %d, got %v", cuarzo.ID, valisha.SprenNPCID)
+	}
+
+	var groupID int64
+	err = db.QueryRowContext(ctx, `SELECT group_id FROM pc_groups WHERE pc_id = ?`, valisha.ID).Scan(&groupID)
+	if err != nil {
+		t.Fatalf("Expected pc_groups row for Valisha, got: %v", err)
+	}
+	if groupID != radiantes.ID {
+		t.Errorf("Expected pc_groups.group_id = %d, got %d", radiantes.ID, groupID)
+	}
+}
+
+func TestReindexParsesArcSubarcoAndUnknownStatus(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "Arcos/Arco 2.md", "---\ntipo: arco\narco: 2\ntitulo: Arco Dos\nstatus: planificado\n---\nSegundo arco.")
+	writeVaultFile(t, root, "Arcos/Arco 2.1.md", "---\ntipo: arco\narco: 2\nsubarco: 1\ntitulo: Shadesmar - parte 1\nstatus: rota\n---\nSubarco.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	if _, err := indexer.Reindex(ctx); err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+
+	arcs, err := repository.NewArcRepository(db).List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List arcs failed: %v", err)
+	}
+	if len(arcs) != 2 {
+		t.Fatalf("Expected 2 arcs, got %d", len(arcs))
+	}
+	// List ordena por "order", subarc_order — el principal (subarc_order NULL) sale antes que el subarco.
+	main, sub := arcs[0], arcs[1]
+	if main.SubarcOrder != nil {
+		t.Errorf("Expected main arc SubarcOrder nil, got %v", *main.SubarcOrder)
+	}
+	if sub.SubarcOrder == nil || *sub.SubarcOrder != 1 {
+		t.Errorf("Expected subarc SubarcOrder 1, got %v", sub.SubarcOrder)
+	}
+	if sub.Status != "planificado" {
+		t.Errorf("Expected unknown vault status 'rota' to fall back to 'planificado', got %q", sub.Status)
+	}
 }
 
 func TestReindexUnresolvedWikilink(t *testing.T) {

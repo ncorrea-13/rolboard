@@ -4,9 +4,16 @@ import {
   statusLabel,
   questStatusColor,
   questStatusLabel,
+  campaignStatusColor,
+  campaignStatusDotColor,
+  campaignStatusLabel,
+  arcStatusColor,
+  arcStatusLabel,
   type StatusKind,
   type QuestStatus,
-} from "../data/mock";
+  type CampaignStatus,
+  type ArcStatus,
+} from "../data/domain";
 
 export function StatusPill({
   status,
@@ -32,6 +39,28 @@ export function QuestStatusPill({ status }: { status: QuestStatus }) {
     <span className="status-pill" style={{ color }}>
       <span className="status-dot" style={{ background: color }} />
       {questStatusLabel[status]}
+    </span>
+  );
+}
+
+export function ArcStatusPill({ status }: { status: ArcStatus }) {
+  const color = arcStatusColor[status];
+  return (
+    <span className="status-pill" style={{ color }}>
+      <span className="status-dot" style={{ background: color }} />
+      {arcStatusLabel[status]}
+    </span>
+  );
+}
+
+export function CampaignStatusPill({ status }: { status: CampaignStatus }) {
+  return (
+    <span className="status-pill" style={{ color: campaignStatusColor[status] }}>
+      <span
+        className="status-dot"
+        style={{ background: campaignStatusDotColor[status] }}
+      />
+      {campaignStatusLabel[status]}
     </span>
   );
 }

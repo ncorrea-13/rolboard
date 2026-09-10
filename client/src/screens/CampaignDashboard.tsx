@@ -1,12 +1,14 @@
 import "./CampaignDashboard.css";
 import {
   crystalColor,
+  sessionCode,
   type Npc,
   type Campaign,
   type Arc,
   type Quest,
-} from "../data/mock";
-import { StatusPill, QuestStatusPill } from "../components/StatusPill";
+  type Session,
+} from "../data/domain";
+import { StatusPill, ArcStatusPill, QuestStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
 import { openInObsidian } from "../lib/obsidian";
@@ -26,9 +28,12 @@ interface CampaignDashboardProps {
   arcs: Arc[];
   npcs: Npc[];
   quests: Quest[];
+  sessions: Session[];
   onNavigate: (section: DashboardSection) => void;
   onSelectNpc: (npcId: string) => void;
   onStartSession: () => void;
+  onReindex: () => void;
+  reindexing: boolean;
 }
 
 export function CampaignDashboard({
@@ -36,22 +41,33 @@ export function CampaignDashboard({
   arcs,
   npcs,
   quests,
+  sessions,
   onNavigate,
   onSelectNpc,
   onStartSession,
+  onReindex,
+  reindexing,
 }: CampaignDashboardProps) {
   const recentNpcs = npcs.slice(0, 4);
   const activeQuests = quests.filter((q) => q.status === "active");
   const currentArc =
-    arcs.find((a) => a.status === "alive") ?? arcs[arcs.length - 1];
-  const totalSessions = arcs.reduce((acc, a) => acc + a.sessions.length, 0);
-  const lastSession = currentArc?.sessions[currentArc.sessions.length - 1];
+    arcs.find((a) => a.status === "en_curso") ?? arcs[arcs.length - 1];
+  const totalSessions = sessions.length;
+  const lastSession = sessions
+    .filter((s) => s.arcId === currentArc?.id)
+    .reduce<Session | undefined>(
+      (best, s) =>
+        !best || s.sessionNumber > best.sessionNumber || (s.sessionNumber === best.sessionNumber && s.subNumber > best.subNumber)
+          ? s
+          : best,
+      undefined,
+    );
   const arcProgressMatch = currentArc?.meta.match(/(\d+)\s*(?:de|\/)\s*(\d+)/);
   const arcProgressPct = arcProgressMatch
     ? Math.round(
         (Number(arcProgressMatch[1]) / Number(arcProgressMatch[2])) * 100,
       )
-    : currentArc?.status === "alive"
+    : currentArc?.status === "en_curso"
       ? 0
       : 100;
 
@@ -76,6 +92,13 @@ export function CampaignDashboard({
               Abrir en Obsidian
             </button>
           )}
+          <button
+            className="btn btn-secondary"
+            onClick={onReindex}
+            disabled={reindexing}
+          >
+            {reindexing ? "Reindexando…" : "Reindexar vault"}
+          </button>
           <button className="btn btn-primary" onClick={onStartSession}>
             Jugar sesión {totalSessions + 1}
           </button>
@@ -87,10 +110,7 @@ export function CampaignDashboard({
           <div className="card campaign-dashboard__panel">
             <div className="campaign-dashboard__panel-top">
               <span className="label">Arco actual</span>
-              <StatusPill
-                status={currentArc.status}
-                label={currentArc.status === "alive" ? "En curso" : "Cerrado"}
-              />
+              <ArcStatusPill status={currentArc.status} />
             </div>
             <div className="display" style={{ fontSize: 21, marginTop: 9 }}>
               {currentArc.label}
@@ -114,25 +134,13 @@ export function CampaignDashboard({
               <span className="label">Última sesión</span>
               <div className="campaign-dashboard__session-title">
                 <span className="campaign-dashboard__session-n">
-                  {lastSession.n}
+                  {sessionCode(lastSession)}
                 </span>
                 <span className="campaign-dashboard__session-date">
                   {lastSession.date}
                 </span>
               </div>
-              <MarkdownText className="campaign-dashboard__desc" text={lastSession.text} />
-              {lastSession.tags && (
-                <div className="campaign-dashboard__chips">
-                  {lastSession.tags
-                    .split(" ")
-                    .filter(Boolean)
-                    .map((tag) => (
-                      <span key={tag} className="campaign-dashboard__chip">
-                        {tag}
-                      </span>
-                    ))}
-                </div>
-              )}
+              <MarkdownText className="campaign-dashboard__desc" text={lastSession.summary} />
             </div>
           )}
         </div>

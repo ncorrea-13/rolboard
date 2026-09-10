@@ -5,27 +5,21 @@ import {
   statusLabel,
   statusColor,
   statusDotColor,
+  locationBreadcrumb,
   type CrystalType,
   type Npc,
   type NpcLink,
   type StatusKind,
   type Location,
   type Group,
-} from "../data/mock";
+} from "../data/domain";
 
 const typeOptions: { label: string; crystal: CrystalType }[] = [
   { label: "NPC", crystal: "npc" },
   { label: "Spren / cognitiva", crystal: "spren" },
-  { label: "Referencia", crystal: "location" },
 ];
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
-
-function locationBreadcrumb(loc: Location, all: Location[]): string {
-  const parent = loc.parentId ? all.find((l) => l.id === loc.parentId) : undefined;
-  if (!parent || parent.locationType === "planet" || parent.locationType === "region") return loc.name;
-  return `${parent.name} · ${loc.name}`;
-}
 
 interface NpcEditProps {
   npc: Npc;
@@ -43,27 +37,31 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
   const [crystal, setCrystal] = useState<CrystalType>(npc.crystal);
   const [linkRole, setLinkRole] = useState(npc.links?.[0]?.role ?? "");
   const [linkNpcId, setLinkNpcId] = useState(npc.links?.[0]?.npcId ?? "");
-  const [location, setLocation] = useState(npc.location);
+  const [locationId, setLocationId] = useState(npc.locationId ?? "");
   const [faction, setFaction] = useState(npc.faction);
+  const [etnia, setEtnia] = useState(npc.etnia ?? "");
+  const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
 
   const dirty =
     name !== npc.name ||
     description !== npc.description ||
     status !== npc.status ||
     crystal !== npc.crystal ||
-    location !== npc.location ||
+    locationId !== (npc.locationId ?? "") ||
     faction !== npc.faction ||
+    etnia !== (npc.etnia ?? "") ||
+    tipoSpren !== (npc.tipoSpren ?? "") ||
     linkRole !== (npc.links?.[0]?.role ?? "") ||
     linkNpcId !== (npc.links?.[0]?.npcId ?? "");
 
   function handleSave() {
     const crystalLabel = typeOptions.find((t) => t.crystal === crystal)?.label ?? npc.crystalLabel;
     const links: NpcLink[] = linkNpcId ? [{ role: linkRole || "VINCULADO", npcId: linkNpcId }, ...(npc.links ?? []).slice(1)] : [];
-    onSave({ name, description, status, crystal, crystalLabel, location, faction, links });
+    onSave({ name, description, status, crystal, crystalLabel, locationId: locationId || undefined, faction, etnia, tipoSpren, links });
   }
 
   const linkTarget = npcs.find((n) => n.id === linkNpcId);
-  const missingOrigin = location.trim() === "";
+  const missingOrigin = locationId.trim() === "";
 
   return (
     <div className="card npc-edit">
@@ -125,6 +123,30 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
             </div>
           </div>
 
+          <div className="npc-edit__grid-2">
+            {crystal === "spren" ? (
+              <div>
+                <span className="label">Tipo de spren</span>
+                <input
+                  className="npc-edit__input"
+                  value={tipoSpren}
+                  onChange={(e) => setTipoSpren(e.target.value)}
+                  placeholder="ej. Honorspren"
+                />
+              </div>
+            ) : (
+              <div>
+                <span className="label">Etnia</span>
+                <input
+                  className="npc-edit__input"
+                  value={etnia}
+                  onChange={(e) => setEtnia(e.target.value)}
+                  placeholder="ej. Alethi"
+                />
+              </div>
+            )}
+          </div>
+
           <div>
             <span className="label">Descripción</span>
             <textarea className="npc-edit__textarea" value={description} onChange={(e) => setDescription(e.target.value)} />
@@ -164,14 +186,13 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
             <select
               className="npc-edit__select npc-edit__select--native"
               style={{ borderBottom: "2px solid var(--crystal-location)" }}
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              value={locationId}
+              onChange={(e) => setLocationId(e.target.value)}
             >
               <option value="">— sin ubicación —</option>
-              {locations.map((l) => {
-                const breadcrumb = locationBreadcrumb(l, locations);
-                return <option key={l.id} value={breadcrumb}>{breadcrumb}</option>;
-              })}
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>{locationBreadcrumb(l, locations)}</option>
+              ))}
             </select>
           </div>
           <div>

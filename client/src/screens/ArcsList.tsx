@@ -1,6 +1,6 @@
 import "../styles/list.css";
-import { type Arc } from "../data/mock";
-import { StatusPill } from "../components/StatusPill";
+import { type Arc } from "../data/domain";
+import { ArcStatusPill } from "../components/StatusPill";
 
 interface ArcsListProps {
   arcs: Arc[];
@@ -34,10 +34,7 @@ export function ArcsList({ arcs, onSelect, onCreate }: ArcsListProps) {
               <div className="list-page__row-sub">{a.summary}</div>
             </div>
             <span className="list-page__badge">{a.meta}</span>
-            <StatusPill
-              status={a.status}
-              label={a.status === "alive" ? "En curso" : "Cerrado"}
-            />
+            <ArcStatusPill status={a.status} />
           </div>
         ))}
       </div>

@@ -24,6 +24,7 @@
   --crystal-spren: #6fa98c;
   --crystal-location: #6289a8;
   --crystal-faction-quest: #9a8fc0;
+  --crystal-entidad-cognitiva: var(--accent-crystalline);
 
   --status-alive: #7fb58c;
   --status-missing: #c79a55;

@@ -1,5 +1,5 @@
 import "../styles/list.css";
-import { crystalColor, type Quest } from "../data/mock";
+import { crystalColor, type Quest } from "../data/domain";
 import { QuestStatusPill } from "../components/StatusPill";
 
 const priorityLabel = { 1: "P1", 2: "P2", 3: "P3" } as const;

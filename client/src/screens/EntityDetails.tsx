@@ -1,16 +1,19 @@
 import { EntityDetail } from "../components/EntityDetail";
 import { StatusPill } from "../components/StatusPill";
 import { QuestStatusPill } from "../components/StatusPill";
+import { ArcStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import {
   crystalColor,
   locationTypeLabel,
+  sessionCode,
   type Arc,
   type Group,
   type Location,
   type Quest,
   type Npc,
-} from "../data/mock";
+  type Session,
+} from "../data/domain";
 
 interface EditableProps {
   onEdit: () => void;
@@ -19,34 +22,29 @@ interface EditableProps {
 
 export function ArcDetail({
   arc,
+  sessions,
   onBack,
   onEdit,
   onDelete,
-}: { arc: Arc; onBack: () => void } & EditableProps) {
+}: { arc: Arc; sessions: Session[]; onBack: () => void } & EditableProps) {
   return (
     <EntityDetail
       eyebrow="ARCOS"
       backLabel="ARCOS"
       onBack={onBack}
       title={arc.label}
-      status={
-        <StatusPill
-          status={arc.status}
-          label={arc.status === "alive" ? "En curso" : "Cerrado"}
-        />
-      }
+      status={<ArcStatusPill status={arc.status} />}
       obsidianPath={arc.obsidianPath}
       onEdit={onEdit}
       onDelete={onDelete}
       fields={[
         { label: "Resumen", value: arc.summary },
-        { label: "Progreso", value: arc.meta },
         {
-          label: `Sesiones (${arc.sessions.length})`,
+          label: `Sesiones (${sessions.length})`,
           value: (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {arc.sessions.map((s) => (
-                <div key={s.n} style={{ display: "flex", gap: 12 }}>
+              {sessions.map((s) => (
+                <div key={s.id} style={{ display: "flex", gap: 12 }}>
                   <span
                     style={{
                       font: "500 13px var(--font-mono)",
@@ -54,9 +52,9 @@ export function ArcDetail({
                       width: 40,
                     }}
                   >
-                    {s.n}
+                    {sessionCode(s)}
                   </span>
-                  <span style={{ flex: 1 }}>{s.text}</span>
+                  <span style={{ flex: 1 }}>{s.summary}</span>
                   <span
                     style={{
                       font: "400 12px var(--font-mono)",

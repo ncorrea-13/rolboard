@@ -1,6 +1,6 @@
 import "./CampaignSelector.css";
-import type { Campaign } from "../data/mock";
-import { StatusPill } from "../components/StatusPill";
+import type { Campaign } from "../data/domain";
+import { CampaignStatusPill } from "../components/StatusPill";
 
 interface CampaignSelectorProps {
   campaigns: Campaign[];
@@ -31,7 +31,7 @@ export function CampaignSelector({ campaigns, onSelect, onCreate }: CampaignSele
                 <div className="display" style={{ fontSize: 18.5 }}>{c.name}</div>
                 <div className="campaign-card__system">{c.system}</div>
               </div>
-              <StatusPill status={c.status} />
+              <CampaignStatusPill status={c.status} />
             </div>
             <div className="campaign-card__bottom">
               <span>{c.meta}</span>
