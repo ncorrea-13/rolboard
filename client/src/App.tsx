@@ -32,7 +32,6 @@ import {
 } from "./screens/EntityDetails";
 import {
   npcs as initialNpcs,
-  playerCharacters as initialPlayerCharacters,
   locationBreadcrumb,
   type Campaign,
   type Npc,
@@ -65,12 +64,15 @@ import {
   arcToApiPayload,
   mapQuest,
   questToApiPayload,
+  mapPlayerCharacter,
+  playerCharacterToApiPayload,
   type ApiCampaign,
   type ApiNpc,
   type ApiLocation,
   type ApiGroup,
   type ApiArc,
   type ApiQuest,
+  type ApiPlayerCharacter,
 } from "./lib/apiMappers";
 
 type Route =
@@ -177,9 +179,15 @@ export default function App() {
       .then((data) => setQuests((data ?? []).map(mapQuest)))
       .catch((err) => console.error("Error cargando quests:", err));
   }, [activeCampaignId]);
-  const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
-    initialPlayerCharacters,
-  );
+  const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiPlayerCharacter[]>(`/campaigns/${activeCampaignId}/player-characters`)
+      .then((data) => setPlayerCharacters((data ?? []).map(mapPlayerCharacter)))
+      .catch((err) => console.error("Error cargando personajes:", err));
+  }, [activeCampaignId]);
+
   const [reindexing, setReindexing] = useState(false);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
@@ -286,24 +294,43 @@ export default function App() {
   }
 
   function savePlayer(id: string, patch: Partial<PlayerCharacter>) {
-    setPlayerCharacters((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...patch } : p)),
-    );
+    const current = playerCharacters.find((p) => p.id === id);
+    if (!current) return;
+    const merged = { ...current, ...patch };
+    apiFetch(`/player-characters/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(playerCharacterToApiPayload(merged)),
+    })
+      .then(() =>
+        setPlayerCharacters((prev) => prev.map((p) => (p.id === id ? merged : p))),
+      )
+      .catch((err) => console.error("Error guardando personaje:", err));
   }
 
   function createPlayer(patch: Partial<PlayerCharacter>) {
-    const id = `p${playerCharacters.length + 1}`;
     const playerName = patch.playerName ?? "";
     const characterName = patch.characterName ?? "";
-    const player: PlayerCharacter = {
+    const draft: PlayerCharacter = {
       ...blankPlayerDraft,
       ...patch,
-      id,
       campaignId: activeCampaign!.id,
       obsidianPath: `Jugadores/${playerName}/${characterName}.md`,
     };
-    setPlayerCharacters((prev) => [...prev, player]);
-    setRoute({ name: "player-detail", playerId: id });
+    apiFetch<ApiPlayerCharacter>(`/campaigns/${activeCampaign!.id}/player-characters`, {
+      method: "POST",
+      body: JSON.stringify(playerCharacterToApiPayload(draft)),
+    })
+      .then((created) => {
+        // faction/links no tienen backing todavía (pc_groups es indexer-only) — se conservan del draft.
+        const player: PlayerCharacter = {
+          ...mapPlayerCharacter(created),
+          faction: draft.faction,
+          links: draft.links,
+        };
+        setPlayerCharacters((prev) => [...prev, player]);
+        setRoute({ name: "player-detail", playerId: player.id });
+      })
+      .catch((err) => console.error("Error creando personaje:", err));
   }
 
   function editSession(
@@ -556,11 +583,9 @@ export default function App() {
       )
     )
       return;
-    setPlayerCharacters((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, deletedAt: new Date().toISOString() } : p,
-      ),
-    );
+    apiFetch(`/player-characters/${id}`, { method: "DELETE" })
+      .then(() => setPlayerCharacters((prev) => prev.filter((p) => p.id !== id)))
+      .catch((err) => console.error("Error borrando personaje:", err));
     setRoute({ name: "section", section: "jugadores" });
   }
 

@@ -8,6 +8,7 @@ import {
   type Group,
   type Location,
   type Npc,
+  type PlayerCharacter,
   type Quest,
   type QuestStatus,
   type StatusKind,
@@ -243,5 +244,54 @@ export function questToApiPayload(q: Quest) {
     description: q.hook,
     status: q.status,
     priority: q.priority,
+  };
+}
+
+export interface ApiPlayerCharacter {
+  id: number;
+  campaign_id: number;
+  player_name: string;
+  character_name: string;
+  race: string;
+  class: string;
+  status: string;
+  backstory: string;
+  progression_notes: string;
+  obsidian_path?: string;
+}
+
+export function mapPlayerCharacter(p: ApiPlayerCharacter): PlayerCharacter {
+  return {
+    id: String(p.id),
+    campaignId: String(p.campaign_id),
+    playerName: p.player_name,
+    characterName: p.character_name,
+    race: p.race,
+    class: p.class,
+    status: apiStatusToStatusKind[p.status] ?? "alive",
+    faction: "—",
+    backstory: p.backstory,
+    progressionNotes: p.progression_notes,
+    obsidianPath: p.obsidian_path ?? "",
+  };
+}
+
+function pcStatusToApi(status: StatusKind): string {
+  // ponytail: "paused" no existe en validPCStatuses del backend (server/internal/handlers/player_characters.go).
+  // Se manda igual para que el backend lo rechace (400) en vez de mapearlo a un status inventado.
+  if (status === "paused") return status;
+  return statusKindToApiStatus[status];
+}
+
+export function playerCharacterToApiPayload(p: PlayerCharacter) {
+  return {
+    player_name: p.playerName,
+    character_name: p.characterName,
+    race: p.race,
+    class: p.class,
+    status: pcStatusToApi(p.status),
+    backstory: p.backstory,
+    progression_notes: p.progressionNotes,
+    obsidian_path: p.obsidianPath || undefined,
   };
 }
