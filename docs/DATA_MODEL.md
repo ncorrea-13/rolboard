@@ -2,7 +2,9 @@
 
 ## Alcance del MVP (núcleo)
 
-Entidades confirmadas para la primera versión. Quedan **fuera** del MVP: mapa interactivo, tracker de combate en vivo — todo eso es capa 2/3, ver `DECISIONS.md`.
+Entidades confirmadas para la primera versión.
+
+El tracker de combate (`encounters`/`encounter_participants`) **entró como vista de control personal del DM**, no como feature compartida con jugadores (ver `DECISIONS.md`).
 
 El grafo de relaciones NPC↔NPC (odios, alianzas informales, "ACREEDOR DE", etc.) **sí entró al MVP** (tabla `npc_relations`, ver más abajo) — reemplaza a `vinculo_con` como única relación con rol libre en vez de un campo fijo.
 
@@ -16,7 +18,9 @@ campaigns
 ├── locations (1:N, jerárquico vía parent_location_id)
 ├── npcs (1:N)
 ├── player_characters (1:N)
-└── quests (1:N)
+├── quests (1:N)
+└── encounters (1:N)
+    └── encounter_participants (1:N, referencia opcional a npc o player_character)
 
 -- Relaciones many-to-many
 npc_groups        (npc ↔ group, con role_in_group)
@@ -146,6 +150,8 @@ Jerárquica (planeta → región → ciudad → sitio puntual), vía self-join.
 | tipo_spren     | TEXT, nullable            | solo aplica si `npc_kind = 'spren'`                                                         |
 | description    | TEXT                      | NOT NULL DEFAULT ''                                                                          |
 | notes          | TEXT                      | NOT NULL DEFAULT ''                                                                          |
+| attributes     | TEXT (JSON)               | NOT NULL DEFAULT `'{}'` — build mecánico opcional; solo se completa en NPCs con `detail_level='full'` ("falsos jugadores"), sin `CHECK` (ver nota multi-sistema abajo) |
+| skills         | TEXT (JSON)               | NOT NULL DEFAULT `'{}'` — mismo criterio que `attributes`                                    |
 | obsidian_path  | TEXT, nullable            | ver sección `obsidian_path`                                                                  |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
@@ -169,12 +175,49 @@ Distinto de `npcs` — representa al personaje jugado por una persona real.
 | spren_npc_id       | FK → npcs, nullable | `ON DELETE RESTRICT` — indexer-only, no viaja por PUT del dashboard |
 | backstory          | TEXT           | NOT NULL DEFAULT ''     |
 | progression_notes  | TEXT           | NOT NULL DEFAULT ''     |
+| attributes         | TEXT (JSON)    | NOT NULL DEFAULT `'{}'` — build mecánico del PJ, mismo shape que `npcs.attributes` (ver nota multi-sistema abajo) |
+| skills             | TEXT (JSON)    | NOT NULL DEFAULT `'{}'` — mismo criterio que `attributes`                                     |
 | obsidian_path      | TEXT, nullable | ver sección `obsidian_path` |
 | historia_path      | TEXT, nullable | ruta a la nota `Historia.md` de la carpeta del jugador — resuelta por el indexer vía el campo `personaje` de esa nota, indexer-only |
 | avances_path       | TEXT, nullable | ruta a la nota `Avances.md`, mismo mecanismo que `historia_path` |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
 `UNIQUE(campaign_id, obsidian_path)`. Tabla `pc_groups` (pc_id, group_id, role_in_group) — facción del personaje, mismo patrón que `npc_groups`.
+
+> **Nota multi-sistema (`attributes`/`skills`)**: `campaign.system` es texto libre ("Cosmere RPG", "D&D 5e", etc.) y cada sistema define sus propios atributos/habilidades (Cosmere: Velocidad, Fuerza, Voluntad...; D&D: Fuerza, Destreza, Constitución...). No hay tabla de catálogo de atributos/habilidades ni `CHECK` — mismo trato que `class` (ver `DECISIONS.md`): JSON libre, validado del lado de la UI si hace falta, no en la base. Se elige JSON en vez de tablas normalizadas porque no hay caso de uso hoy que necesite `JOIN`/filtrar por atributo individual entre personajes; si aparece, se migra a tabla en ese momento.
+
+### encounters
+
+Tracker de combate — vista de control personal del DM, no compartida con jugadores (ver `DECISIONS.md`). Vive fuera del flujo narrativo del vault: no tiene `obsidian_path`, no lo indexa `vault/`.
+
+| Campo       | Tipo           | Notas                                             |
+| ----------- | -------------- | -------------------------------------------------- |
+| id          | PK             |                                                     |
+| campaign_id | FK → campaigns | NOT NULL, `ON DELETE RESTRICT`                     |
+| session_id  | FK → sessions, nullable | `ON DELETE RESTRICT` — combate puede armarse sin sesión asociada todavía |
+| round       | INTEGER        | NOT NULL DEFAULT 1                                 |
+| status      | TEXT           | NOT NULL DEFAULT 'activo', `CHECK IN ('activo','cerrado')` |
+| created_at, updated_at, deleted_at | — | ver convenciones transversales |
+
+### encounter_participants
+
+Una fila por combatiente en un encuentro. Puede referenciar un PJ, un NPC con ficha, o ser un enemigo genérico sin entidad propia (`display_name` suelto) — evita crear NPCs basura para enemigos de un solo uso.
+
+| Campo             | Tipo                    | Notas                                                                 |
+| ------------------ | ----------------------- | ------------------------------------------------------------------------ |
+| id                 | PK                      |                                                                            |
+| encounter_id       | FK → encounters         | NOT NULL, `ON DELETE RESTRICT`                                            |
+| pc_id              | FK → player_characters, nullable | `ON DELETE RESTRICT` — si es PJ                                  |
+| npc_id             | FK → npcs, nullable     | `ON DELETE RESTRICT` — si es NPC con ficha propia                        |
+| display_name       | TEXT, nullable          | nombre libre para enemigos ad-hoc sin `npc_id`                           |
+| current_hp         | INTEGER, nullable       | PJ: se sincroniza contra vida persistente del PJ (ver nota abajo). NPC: efímero, vive solo acá |
+| max_hp             | INTEGER, nullable       | valor de referencia, opcional                                            |
+| initiative_value   | INTEGER, nullable       | **D&D**: número fijo por combate, se ordena la lista desc               |
+| turn_type          | TEXT, nullable          | **Cosmere**: `CHECK IN ('rapido','lento')`, se reedita cada ronda — no hay orden numérico, el front agrupa por fase (PJ rápido → PNJ rápido → PJ lento → PNJ lento) |
+| notes              | TEXT                    | NOT NULL DEFAULT ''                                                       |
+| created_at, updated_at, deleted_at | — | ver convenciones transversales |
+
+> **Nota HP persistente vs efímero**: la vida de un PJ persiste entre sesiones/combates (vive en `player_characters`, no acá — pendiente agregar esa columna cuando se implemente esa parte). La vida de un NPC es efímera por default: se define en el momento del encuentro y se descarta al cerrarlo, salvo NPCs prepped (`detail_level='full'`) que pueden traer un `max_hp` de referencia desde su ficha.
 
 ### quests
 
