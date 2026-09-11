@@ -196,7 +196,7 @@ Tracker de combate — vista de control personal del DM, no compartida con jugad
 | campaign_id | FK → campaigns | NOT NULL, `ON DELETE RESTRICT`                     |
 | session_id  | FK → sessions, nullable | `ON DELETE RESTRICT` — combate puede armarse sin sesión asociada todavía |
 | round       | INTEGER        | NOT NULL DEFAULT 1                                 |
-| status      | TEXT           | NOT NULL DEFAULT 'activo', `CHECK IN ('activo','cerrado')` |
+| status      | TEXT           | NOT NULL DEFAULT 'planificado', `CHECK IN ('planificado','activo','cerrado')` |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
 ### encounter_participants

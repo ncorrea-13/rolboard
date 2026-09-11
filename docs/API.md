@@ -103,6 +103,27 @@ POST   /api/sessions/:id/quests    {"quest_id": N}
 DELETE /api/sessions/:id/quests/:questId
 ```
 
+## Encounters
+
+Tracker de combate — vista de control personal del DM, no compartida con jugadores (ver `DECISIONS.md`).
+
+```
+GET    /api/campaigns/:id/encounters
+POST   /api/campaigns/:id/encounters   {"session_id": N|null, "round": N, "status": "planificado"|"activo"|"cerrado"}
+GET    /api/encounters/:id
+PUT    /api/encounters/:id
+DELETE /api/encounters/:id
+GET    /api/encounters/:id/participants
+POST   /api/encounters/:id/participants
+    {"pc_id": N|null, "npc_id": N|null, "display_name": string|null,
+     "current_hp": N|null, "max_hp": N|null, "initiative_value": N|null,
+     "turn_type": "rapido"|"lento"|null, "notes": string}
+PUT    /api/encounter-participants/:id
+DELETE /api/encounter-participants/:id
+```
+
+`pc_id`/`npc_id`/`display_name` son mutuamente excluyentes: a lo sumo uno con valor por participante (PJ, NPC con ficha, o enemigo ad-hoc sin entidad propia) — validado en el handler y en un `CHECK` de la tabla.
+
 ## Dashboard (agregado)
 
 ```
