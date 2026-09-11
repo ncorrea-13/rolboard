@@ -11,25 +11,29 @@ import (
 )
 
 type CreatePlayerCharacterPayload struct {
-	PlayerName       string  `json:"player_name"`
-	CharacterName    string  `json:"character_name"`
-	Race             string  `json:"race"`
-	Class            string  `json:"class"`
-	Status           string  `json:"status"`
-	Backstory        string  `json:"backstory"`
-	ProgressionNotes string  `json:"progression_notes"`
-	ObsidianPath     *string `json:"obsidian_path"`
+	PlayerName       string          `json:"player_name"`
+	CharacterName    string          `json:"character_name"`
+	Race             string          `json:"race"`
+	Class            string          `json:"class"`
+	Status           string          `json:"status"`
+	Backstory        string          `json:"backstory"`
+	ProgressionNotes string          `json:"progression_notes"`
+	Attributes       json.RawMessage `json:"attributes"`
+	Skills           json.RawMessage `json:"skills"`
+	ObsidianPath     *string         `json:"obsidian_path"`
 }
 
 type UpdatePlayerCharacterPayload struct {
-	PlayerName       string  `json:"player_name"`
-	CharacterName    string  `json:"character_name"`
-	Race             string  `json:"race"`
-	Class            string  `json:"class"`
-	Status           string  `json:"status"`
-	Backstory        string  `json:"backstory"`
-	ProgressionNotes string  `json:"progression_notes"`
-	ObsidianPath     *string `json:"obsidian_path"`
+	PlayerName       string          `json:"player_name"`
+	CharacterName    string          `json:"character_name"`
+	Race             string          `json:"race"`
+	Class            string          `json:"class"`
+	Status           string          `json:"status"`
+	Backstory        string          `json:"backstory"`
+	ProgressionNotes string          `json:"progression_notes"`
+	Attributes       json.RawMessage `json:"attributes"`
+	Skills           json.RawMessage `json:"skills"`
+	ObsidianPath     *string         `json:"obsidian_path"`
 }
 
 var validPCStatuses = map[string]bool{
@@ -84,6 +88,8 @@ func (h *Handlers) CreatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 		Status:           payload.Status,
 		Backstory:        payload.Backstory,
 		ProgressionNotes: payload.ProgressionNotes,
+		Attributes:       payload.Attributes,
+		Skills:           payload.Skills,
 		ObsidianPath:     payload.ObsidianPath,
 	}
 
@@ -146,6 +152,8 @@ func (h *Handlers) UpdatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 		Status:           payload.Status,
 		Backstory:        payload.Backstory,
 		ProgressionNotes: payload.ProgressionNotes,
+		Attributes:       payload.Attributes,
+		Skills:           payload.Skills,
 		ObsidianPath:     payload.ObsidianPath,
 	}
 	err = h.playerCharacters.Update(r.Context(), id, &pc)

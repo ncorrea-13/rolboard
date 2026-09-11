@@ -11,14 +11,16 @@ import (
 )
 
 type CreateEncounterParticipantPayload struct {
-	PcID        *int64  `json:"pc_id"`
-	NpcID       *int64  `json:"npc_id"`
-	DisplayName *string `json:"display_name"`
-	CurrentHp   *int64  `json:"current_hp"`
-	MaxHp       *int64  `json:"max_hp"`
-	Initiative  *int64  `json:"initiative_value"`
-	TurnType    *string `json:"turn_type"`
-	Notes       string  `json:"notes"`
+	PcID        *int64          `json:"pc_id"`
+	NpcID       *int64          `json:"npc_id"`
+	DisplayName *string         `json:"display_name"`
+	CurrentHp   *int64          `json:"current_hp"`
+	MaxHp       *int64          `json:"max_hp"`
+	Initiative  *int64          `json:"initiative_value"`
+	TurnType    *string         `json:"turn_type"`
+	Notes       string          `json:"notes"`
+	Attributes  json.RawMessage `json:"attributes"`
+	Skills      json.RawMessage `json:"skills"`
 }
 
 type UpdateEncounterParticipantPayload = CreateEncounterParticipantPayload
@@ -92,6 +94,8 @@ func (h *Handlers) CreateEncounterParticipant(w http.ResponseWriter, r *http.Req
 		Initiative:  payload.Initiative,
 		TurnType:    payload.TurnType,
 		Notes:       payload.Notes,
+		Attributes:  payload.Attributes,
+		Skills:      payload.Skills,
 	}
 
 	err = h.encounterParticipants.Create(r.Context(), &participant)
@@ -132,6 +136,8 @@ func (h *Handlers) UpdateEncounterParticipant(w http.ResponseWriter, r *http.Req
 		Initiative:  payload.Initiative,
 		TurnType:    payload.TurnType,
 		Notes:       payload.Notes,
+		Attributes:  payload.Attributes,
+		Skills:      payload.Skills,
 	}
 	err = h.encounterParticipants.Update(r.Context(), id, &participant)
 
