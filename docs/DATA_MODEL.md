@@ -177,6 +177,8 @@ Distinto de `npcs` — representa al personaje jugado por una persona real.
 | progression_notes  | TEXT           | NOT NULL DEFAULT ''     |
 | attributes         | TEXT (JSON)    | NOT NULL DEFAULT `'{}'` — build mecánico del PJ, mismo shape que `npcs.attributes` (ver nota multi-sistema abajo) |
 | skills             | TEXT (JSON)    | NOT NULL DEFAULT `'{}'` — mismo criterio que `attributes`                                     |
+| current_hp         | INTEGER, nullable | migración `0014` — vida persistente entre sesiones/combates, `NULL` hasta que se carga la primera vez |
+| max_hp             | INTEGER, nullable | migración `0014`, mismo criterio que `current_hp` |
 | obsidian_path      | TEXT, nullable | ver sección `obsidian_path` |
 | historia_path      | TEXT, nullable | ruta a la nota `Historia.md` de la carpeta del jugador — resuelta por el indexer vía el campo `personaje` de esa nota, indexer-only |
 | avances_path       | TEXT, nullable | ruta a la nota `Avances.md`, mismo mecanismo que `historia_path` |
@@ -215,9 +217,15 @@ Una fila por combatiente en un encuentro. Puede referenciar un PJ, un NPC con fi
 | initiative_value   | INTEGER, nullable       | **D&D**: número fijo por combate, se ordena la lista desc               |
 | turn_type          | TEXT, nullable          | **Cosmere**: `CHECK IN ('rapido','lento')`, se reedita cada ronda — no hay orden numérico, el front agrupa por fase (PJ rápido → PNJ rápido → PJ lento → PNJ lento) |
 | notes              | TEXT                    | NOT NULL DEFAULT ''                                                       |
+| attributes         | TEXT (JSON)             | NOT NULL DEFAULT `'{}'` — migración `0013`. Ficha propia del participante, solo tiene sentido para enemigos ad-hoc (sin `npc_id`/`pc_id`): un PJ/NPC vinculado ya trae su ficha desde `npcs.attributes`/`player_characters.attributes`, esta columna queda en `'{}'` sin usar en esos casos |
+| skills             | TEXT (JSON)             | NOT NULL DEFAULT `'{}'` — mismo criterio que `attributes`                 |
 | created_at, updated_at, deleted_at | — | ver convenciones transversales |
 
+**`CHECK ((pc_id IS NOT NULL) + (npc_id IS NOT NULL) + (display_name IS NOT NULL) <= 1)`**: a lo sumo una de las tres referencias tiene valor por fila — SQLite evalúa cada condición booleana como `0`/`1`, la suma no puede superar 1.
+
 > **Nota HP persistente vs efímero**: la vida de un PJ persiste entre sesiones/combates (vive en `player_characters`, no acá — pendiente agregar esa columna cuando se implemente esa parte). La vida de un NPC es efímera por default: se define en el momento del encuentro y se descarta al cerrarlo, salvo NPCs prepped (`detail_level='full'`) que pueden traer un `max_hp` de referencia desde su ficha.
+
+> **Migración `0013`**: `attributes`/`skills` se agregaron después de que `0012` ya había corrido en el entorno real (Docker) — no se pudo editar `0012` in-place (regla del proyecto: nunca editar una migración ya aplicada), de ahí el `ALTER TABLE` separado en `0013`.
 
 ### quests
 
@@ -246,14 +254,19 @@ obsidian_path   -- ruta relativa DENTRO del vault, ej. "NPC/Humanos/Adolin.md"
 
 A diferencia de las tablas de entidad, **no llevan `deleted_at`**: la relación existe o no existe, borrar una fila acá es un `DELETE` físico normal (quitar a un NPC de un grupo no es una "pérdida de historia" como sí lo sería borrar al NPC). Tampoco llevan `id` propio — la PK es compuesta, estándar para many-to-many puro sin atributos que necesiten ser referenciados desde otro lado.
 
+**Excepción**: `npc_groups`/`pc_groups` sí llevan baja lógica, vía columna `source` (no `deleted_at`) — ver más abajo. Son las únicas tablas puente que el indexer también escribe (reindex desde el vault), y necesitan distinguir "esto lo puso el vault" de "esto lo puso la DJ a mano" para no pisarse entre sí.
+
 ```sql
-npc_groups     (npc_id FK, group_id FK, role_in_group TEXT,          PRIMARY KEY (npc_id, group_id))
+npc_groups     (npc_id FK, group_id FK, role_in_group TEXT, source TEXT, PRIMARY KEY (npc_id, group_id))
 npc_relations  (from_npc_id FK, to_npc_id FK, role TEXT NOT NULL,    PRIMARY KEY (from_npc_id, to_npc_id, role))
 quest_npcs     (quest_id FK, npc_id FK,                              PRIMARY KEY (quest_id, npc_id))
 session_npcs   (session_id FK, npc_id FK,                            PRIMARY KEY (session_id, npc_id))
 session_pcs    (session_id FK, pc_id FK,                             PRIMARY KEY (session_id, pc_id))
 session_quests (session_id FK, quest_id FK,                          PRIMARY KEY (session_id, quest_id))
+pc_groups      (pc_id FK, group_id FK, role_in_group TEXT, source TEXT,  PRIMARY KEY (pc_id, group_id))
 ```
+
+**`source`** (`npc_groups`/`pc_groups`, migración `0015`): `'vault'` | `'dashboard'` | `'removed'`. El indexer solo borra/pisa filas `'vault'` en cada reindex; lo agregado a mano (`'dashboard'`) sobrevive. Sacar una membresía a mano es baja lógica (`source = 'removed'`), no `DELETE` — si fuera `DELETE` físico y el vault todavía afirma esa membresía, el próximo reindex la revive en silencio. `GetMembers`/`GetPCMembers` filtran `source != 'removed'`.
 
 `npc_relations` es **dirigida**, no simétrica: `role` describe la relación desde `from_npc_id` hacia `to_npc_id` (ej. "ACREEDOR" de A hacia B no implica una fila inversa "LE DEBE A" de B hacia A — si esa relación también es real narrativamente, es una segunda fila explícita). `PRIMARY KEY` incluye `role` porque un mismo par de NPCs puede tener más de un tipo de vínculo a la vez.
 

@@ -268,7 +268,7 @@ Migración `0007_player_characters_extend.sql`:
 
 **Bug relacionado, encontrado y arreglado en el camino**: `NPCRepository.Update` SÍ tenía `location_id` en su `UPDATE`, pero `NpcEdit.tsx` nunca mandaba un `location_id` real (el selector de ubicación usaba el breadcrumb como `value`, no el id) — cada edición de NPC desde el dashboard pisaba `location_id` a `NULL` en silencio. Se evaluó sacar `location_id` del `UPDATE` (como se hizo con `spren_npc_id` arriba) pero se descartó: a diferencia de `spren`/`vinculo_con`, la ubicación **sí** tiene un selector real y con intención de ser editable desde el dashboard. Se arregló wireando el selector a IDs reales (`Npc.locationId`, `NpcEdit.tsx` usa `value={l.id}` en vez de breadcrumb) en vez de capar el backend — el breadcrumb de display (`Npc.location`) ahora se computa en `App.tsx` (`campaignNpcs`) a partir de `locationId` + `campaignLocations`, no se guarda como string suelto.
 
-**Pendiente, no resuelto en esta pasada**: no hay endpoint `GET /player-characters/{id}/members`-equivalente para mostrar PJs como miembros de una facción (el `GetMembers` de groups solo trae NPCs) — `pc_groups` se pobla desde el indexer pero no se expone todavía. `faction`/`links` en `PlayerEdit.tsx` siguen siendo cosmético-only en el dashboard (igual que en NPC), no se manda por PUT.
+**Pendiente en su momento, resuelto más abajo** ("Cierre de pendientes"): faltaba `GET /groups/{id}/pc-members` para mostrar PJs como miembros de una facción. `faction`/`links` en `PlayerEdit.tsx` siguen siendo cosmético-only en el dashboard (igual que en NPC), no se manda por PUT — esto sigue sin resolver.
 
 ---
 
@@ -287,6 +287,69 @@ Migración `0007_player_characters_extend.sql`:
 - **HP asimétrico a propósito**: la vida de un PJ es persistente entre sesiones (pertenece conceptualmente a `player_characters`, columna todavía no agregada — pendiente para cuando se implemente esa parte); la vida de un NPC es efímera por default, vive solo en `encounter_participants.current_hp` y se descarta al cerrar el encuentro, salvo que sea un NPC prepped (`detail_level='full'`) que puede traer `max_hp` de referencia desde su propia ficha.
 - **Orden de turno, por sistema, mismas columnas**: `initiative_value` (D&D — número fijo por combate, se ordena la lista descendente) y `turn_type` (Cosmere — `CHECK IN ('rapido','lento')`, se reedita cada ronda, no hay orden numérico: confirmado leyendo `Manual_del_Archivo/10_combate.md` del vault, Cosmere RPG no usa tirada de iniciativa individual, sino fases fijas por ronda — PJs rápidos → PNJs rápidos → PJs lentos → PNJs lentos — con elección de bando en cada ronda y desempate por Velocidad y luego d20). No se modeló una tabla separada por sistema: ambas columnas conviven nullable en la misma tabla, cada sistema usa la que le corresponde.
 
-**Pendiente, no resuelto en esta pasada**: columna de HP persistente en `player_characters` todavía no existe (el PJ no tiene vida fuera de un encuentro activo). Sin backend/handlers Go ni UI todavía — esta migración es solo el schema.
+**Pendiente en su momento, resuelto más abajo** ("Cierre de pendientes"): columna de HP persistente en `player_characters`.
 
 **Nota de scope**: el mapa interactivo, que estas mismas entradas mencionaban antes como ítem de capa 2/3, se descarta del proyecto — no se va a implementar. Alcance MVP actualizado en `DATA_MODEL.md`.
+
+---
+
+## Wireo de `attributes`/`skills` (backend + UI) y tracker de combate: estados, iniciativa, ficha
+
+**Contexto**: `0012` había agregado las columnas `attributes`/`skills` a `npcs`/`player_characters` como puro schema, sin backend Go ni UI (ver entrada anterior). Esta pasada completa el wireo end-to-end y construye la UI del tracker de combate (`EncountersList`/`EncounterDetail`).
+
+**`status` de `encounters` — 3 valores, no 2**: se agregó `planificado` (antes solo `activo`/`cerrado`) porque un encounter puede armarse antes de jugarlo — mismo criterio que `arcs.status`. **Migración editada in-place en `0012`** porque en ese momento todavía no había corrido contra ningún DB real (confirmado antes de tocarla).
+
+**`CHECK` de exclusión mutua en `encounter_participants`**: `(pc_id IS NOT NULL) + (npc_id IS NOT NULL) + (display_name IS NOT NULL) <= 1`, agregado a `0012` por el mismo motivo (no corrida aún) — mismo criterio de la decisión "CHECK constraints en campos enum-like", extendido a esta regla de integridad aunque no sea un enum.
+
+**Migración `0013`, no editar `0012` de nuevo**: al agregar `attributes`/`skills` a `encounter_participants`, `0012` ya había corrido en el volumen Docker real (`rolboard_campaign_data`) — el error concreto fue un 500 en `GET /encounters/:id/participants` por columnas inexistentes. Se revirtió el intento de editar `0012` y se agregó `0013` con `ALTER TABLE` — refuerza la regla "nunca editar una migración ya aplicada" con un caso real, no hipotético.
+
+**Dónde vive la edición de `attributes`/`skills`**: en `NpcEdit`/`PlayerEdit`, no en el tracker de combate. Por qué: son datos de la ficha del personaje (persistente, fuera de un combate puntual) — editarlos en el tracker mezclaría la vista operativa de la ronda con el build del personaje. Excepción: un enemigo ad-hoc (`display_name`, sin `npc_id`/`pc_id`) no tiene ficha en ningún otro lado — para ese caso sí se edita inline en el tracker (`encounter_participants.attributes`/`skills`, agregado en `0013`), es la única ubicación posible.
+
+**Vista de ficha en el tracker — solo lectura para PJ/NPC vinculados**: botón "Ver ficha" abre un modal (`CharacterSheet`, componente compartido con `NpcDetail`/`PlayerDetail`) que lee `attributes`/`skills` de la entidad vinculada, no del participant. Incluye HP del combate actual (`current_hp`/`max_hp` de `encounter_participants`) porque eso sí es dato de la ronda, no del personaje — el personaje todavía no tiene HP persistente propio (pendiente, ver entrada anterior).
+
+**División visual de `attributes` en dos filas de hasta 6**: los primeros 6 campos cargados (por orden de inserción del JSON, que en JS/Go se preserva) se muestran como "Atributos" (Fuerza, Destreza, etc.); del 7º al 12º como "Otros" (armadura, defensa, y similares). No se agregó un tercer campo al schema para distinguirlos — se decidió que no pagaba la complejidad de una migración nueva para algo que el orden de carga ya resuelve razonablemente. `skills` no tiene esta división: se muestra en tabla única ordenada alfabéticamente (no depende de orden de carga).
+
+**Íconos en la ficha — variedad visual, no significado por campo**: 3 íconos fijos rotando por índice en cada sección (atributos, "otros", habilidades) — se descartó mapear íconos por nombre de campo (ej. "armadura" → ícono de escudo) por ser lógica frágil con vocabulario libre en español/inglés mezclado, para un beneficio puramente decorativo.
+
+**Tracker de Cosmere — sin iniciativa tirada, fases fijas**: confirmado contra `Tracker de Iniciativa.md` del vault real — el sistema no usa iniciativa numérica, sino 4 fases por ronda (PJ rápido → PNJ rápido → PJ lento → PNJ lento), cada personaje elige rápido/lento y juega una sola vez por ronda. El tracker agrupa participantes por fase (`turn_type` × PJ/NPC) en vez de ordenar por `initiative_value` (ese campo es de D&D, se muestra pero no ordena). El "ya jugó su turno" es un checkbox local del navegador, no persistido en DB — se resetea solo al cambiar de ronda (estado de mesa, no de campaña, ver "Solo agrupar visualmente" más abajo). Al avanzar de ronda (`+1 ronda`) se limpia `turn_type` de todos los participantes (vía `PUT`), pero no `initiative_value`.
+
+**Modal `size="sheet"`**: variante nueva de `Modal` (ancho ~680px, alto automático con tope de viewport y scroll interno) para la ficha — la variante `"large"` existente fuerza casi pantalla completa, incómodo para un contenido que normalmente entra en media pantalla. Usada de forma consistente en `NpcDetail`, `PlayerDetail` y el tracker, mismo tamaño en los tres lugares.
+
+---
+
+## Cierre de pendientes acumulados (HP persistente de PJ, `pc_groups` expuesto, `vault_file_state` huérfano)
+
+**`ArcRepository.Create` sin `ON CONFLICT` / `arcs` sin `obsidian_path`**: revisado — ya estaba resuelto (migración `0009_arcs_obsidian_path_groups_extend.sql` agregó la columna, `ArcRepository.Create` ya tenía el `ON CONFLICT (campaign_id, obsidian_path)`). La nota "pendiente" había quedado desactualizada en el documento, no reflejaba el código real.
+
+**HP persistente en `player_characters`**: migración `0014_player_characters_hp.sql` agrega `current_hp`/`max_hp` (`INTEGER`, nullable — un PJ recién creado no tiene vida cargada todavía). Wireado end-to-end: `PlayerEdit.tsx` tiene los inputs, `PlayerDetail.tsx`/`CharacterSheet` los muestran.
+
+**Sincronización con `encounter_participants.current_hp`/`max_hp` para un PJ**: al agregar un PJ a un encuentro, su HP arranca desde el valor persistido en `player_characters` (no desde cero) — `EncounterDetail.addParticipant` lo lee de `playerCharacters` antes de armar el `POST`. Al editar el HP de un participante vinculado a un PJ durante el combate, se propaga de vuelta a `player_characters` (`onSyncPlayerHp`, reusa `savePlayer` del hook — mismo camino que cualquier edición de ficha, no un fetch aparte) para que la vida persista después de cerrar el encuentro. Para un NPC, no hay propagación — su HP sigue efímero, vive y muere con el `encounter_participants` (decisión ya tomada, sin cambios).
+
+**`GET /groups/{id}/pc-members`**: nuevo endpoint, calcado de `GET /groups/{id}/members` pero contra `pc_groups`/`player_characters` en vez de `npc_groups`/`npcs`. Solo lectura — a diferencia de los miembros NPC (que se administran a mano desde el dashboard, `AddMember`/`RemoveMember`), `pc_groups` se puebla exclusivamente desde el indexer (campo `facciones:` del vault) — no tiene sentido un botón "Agregar PJ" en el dashboard para un dato que el vault ya gobierna. `FactionDetail` muestra la sección "Jugadores" solo si hay al menos un PJ vinculado (no un bloque vacío permanente).
+
+**`vault_file_state` huérfano al borrar del vault**: `Indexer.deleteStalePaths` borraba la entidad (NPC/location/group/PC) pero nunca su fila en `vault_file_state` — quedaba una fila con `entity_id` apuntando a una entidad ya borrada, inofensiva pero sin recolectar indefinidamente. Se agregó `VaultFileStateRepository.Delete` y se llama junto con cada borrado de entidad stale. `sessions` queda afuera a propósito, mismo motivo que la entrada original de `vault_file_state` (nunca se le hizo `Set` en primer lugar, no hay nada que limpiar ahí).
+
+---
+
+## `Npc.faction`/`PlayerCharacter.faction` eliminados — eran decorativos, nunca persistían
+
+**Contexto**: se evaluó agregar una FK `faccion_id` a `player_characters` para que el dropdown "Facción" de `PlayerEdit` funcionara de verdad. Al revisar el código se encontró que ese dropdown (y su equivalente en `NpcEdit`) **nunca hizo nada**: `mapNpc`/`mapPlayerCharacter` devuelven `faction: "—"` fijo, ninguno de los dos `toApiPayload` manda el campo — cualquier valor elegido en el `<select>` se descartaba en el próximo reload. `NpcList` además filtraba/mostraba una columna "Facción" que por lo mismo siempre decía `"—"`.
+
+**Decisión**: no agregar la FK — hubiera sido una segunda fuente de verdad al lado de la que ya existe (`npc_groups`/`pc_groups`, many-to-many, poblada por el indexer desde el vault). Se eliminó el campo `faction` de `Npc`/`PlayerCharacter` (dominio, mappers, drafts en blanco, forms de edición, columna/búsqueda de `NpcList`, bloques de display muertos en `NpcDetail`/`PlayerDetail` que nunca renderizaban por la misma razón). La gestión real de membresía sigue siendo `FactionDetail` (`AddMember`/`RemoveMember` para NPC; solo lectura para PJ vía `pc-members`, ver entrada anterior).
+
+**Por qué eliminar en vez de arreglar el dropdown**: arreglarlo (hacer que el `<select>` escriba a `npc_groups`/`pc_groups`) hubiera significado reimplementar ahí lo que `FactionDetail` ya hace bien — dos UIs para la misma acción, con el problema extra de que un PJ/NPC puede estar en más de una facción y un `<select>` de valor único no puede representar eso sin mentir. Eliminar el campo decorativo y señalar al lugar que ya funciona era la opción con menos código y menos superficie de bugs.
+
+---
+
+## `npc_groups`/`pc_groups` ganan `source` — el reindex pisaba en silencio membresías agregadas a mano
+
+**Contexto**: al plantear exponer alta/baja de PJ en `FactionDetail` (mismo patrón que NPC), se encontró que `resolveNPCs`/`resolvePCs` en el indexer hacen `DELETE FROM npc_groups WHERE npc_id = ?` (ídem `pc_groups`) **en cada reindex**, después reinsertan desde el vault. Esto ya afectaba a NPC (que sí tenía botones `AddMember`/`RemoveMember` desde antes): agregar una facción a mano y después reindexar el vault borraba esa membresía sin aviso. No era un bug nuevo introducido por esta sesión, pero se decidió arreglarlo de raíz en vez de repetirlo para PJ.
+
+**Decisión**: migración `0015_group_membership_source.sql` agrega `source TEXT NOT NULL DEFAULT 'dashboard' CHECK IN ('vault','dashboard','removed')` a ambas tablas puente.
+
+- El indexer solo borra filas `source='vault'` (`DELETE ... AND source = 'vault'`) — lo agregado a mano nunca se toca en un reindex.
+- El `INSERT` del indexer usa `ON CONFLICT DO UPDATE SET source = CASE WHEN source = 'removed' THEN 'removed' ELSE 'vault' END` — si el vault confirma una membresía que ya existía a mano, pasa a ser "del vault" (sin pérdida de dato); si estaba dada de baja a mano (`'removed'`), el reindex no la revive.
+- **Baja lógica, no física**: `RemoveMember`/`RemovePCMember` pasan de `DELETE` a `UPDATE ... SET source = 'removed'` — mismo criterio que el resto del proyecto ("baja lógica, no `DELETE` físico"), aplicado acá a una tabla puente porque hace falta recordar la intención explícita de la DJ de sacar algo que el vault sigue afirmando. Sin esto, sacar a mano una membresía que el vault todavía lista hubiera sido inútil: el próximo reindex la revive en silencio, mismo problema que se estaba arreglando. `AddMember`/`AddPCMember` revive una fila `'removed'` (`ON CONFLICT DO UPDATE SET source = 'dashboard'`).
+- `GetMembers`/`GetPCMembers` filtran `source != 'removed'`.
+
+**`GET/POST/DELETE /api/groups/{id}/pc-members`**: con el bug de raíz resuelto, ya tiene sentido exponer alta/baja de PJ igual que NPC — se agregó `AddPCMember`/`RemovePCMember` (handler, service, repo) calcados de los de NPC, y la UI correspondiente en `FactionDetail` (antes solo mostraba PJs, ahora también permite agregar/sacar). La entrada anterior de este documento ("pc-members solo lectura, no tiene sentido un botón para un dato que el vault ya gobierna") queda superada por esto — la razón de fondo para no tener el botón era el bug del reindex, no que fuera conceptualmente incorrecto tener uno.

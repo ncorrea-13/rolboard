@@ -42,6 +42,8 @@ DELETE /api/npcs/:id/relations/:toId/:role         -- :id es from_npc_id
 
 `role` es texto libre (sin `CHECK` en DB, sin enum en Go) — a diferencia de `status`/`npc_kind`, estos roles nacen de prosa de sesión ("ACREEDOR", "LE DEBE A", "VINCULADO A"), no de un vocabulario cerrado.
 
+`attributes`/`skills` (`{"fuerza": 10, "sigilo": 3}`, JSON libre por sistema) viajan en el `POST`/`PUT` igual que el resto de los campos — se editan desde `NpcEdit`, no desde el tracker de combate.
+
 ## Locations
 
 ```
@@ -63,9 +65,14 @@ DELETE /api/groups/:id
 GET    /api/groups/:id/members       -- calculado desde npc_groups, no almacenado
 POST   /api/groups/:id/members       {"npc_id": N}
 DELETE /api/groups/:id/members/:npcId
+GET    /api/groups/:id/pc-members    -- calculado desde pc_groups
+POST   /api/groups/:id/pc-members    {"pc_id": N}
+DELETE /api/groups/:id/pc-members/:pcId
 ```
 
 `GET /api/campaigns/:id/groups` y `GET /api/groups/:id` incluyen `member_count` (calculado desde `npc_groups`, mismo caso que `members`, no es columna).
+
+Alta/baja de miembro (NPC o PJ) es baja lógica del lado de `npc_groups`/`pc_groups` (columna `source`, no se borra la fila) — el indexer también escribe estas tablas al reindexar, y necesita distinguir lo que puso el vault de lo que agregaste/sacaste a mano para no pisarlo (ver `DECISIONS.md`).
 
 ## Player Characters
 
@@ -76,6 +83,10 @@ GET    /api/player-characters/:id
 PUT    /api/player-characters/:id
 DELETE /api/player-characters/:id
 ```
+
+`attributes`/`skills`, mismo trato que en NPCs — se editan desde `PlayerEdit`.
+
+`current_hp`/`max_hp` (nullable) persisten la vida del PJ entre sesiones — se sincronizan automáticamente desde `PUT /api/encounter-participants/:id` cuando el participante está vinculado a este PJ (ver sección Encounters).
 
 ## Quests
 
@@ -117,12 +128,15 @@ GET    /api/encounters/:id/participants
 POST   /api/encounters/:id/participants
     {"pc_id": N|null, "npc_id": N|null, "display_name": string|null,
      "current_hp": N|null, "max_hp": N|null, "initiative_value": N|null,
-     "turn_type": "rapido"|"lento"|null, "notes": string}
+     "turn_type": "rapido"|"lento"|null, "notes": string,
+     "attributes": {...}, "skills": {...}}
 PUT    /api/encounter-participants/:id
 DELETE /api/encounter-participants/:id
 ```
 
 `pc_id`/`npc_id`/`display_name` son mutuamente excluyentes: a lo sumo uno con valor por participante (PJ, NPC con ficha, o enemigo ad-hoc sin entidad propia) — validado en el handler y en un `CHECK` de la tabla.
+
+`attributes`/`skills` del participante solo tienen sentido para enemigos ad-hoc (sin `pc_id`/`npc_id`) — un PJ/NPC vinculado ya trae su ficha propia desde `player-characters`/`npcs`, el front la muestra de solo lectura en el tracker (botón "Ver ficha") y la edita en `NpcEdit`/`PlayerEdit`, no acá.
 
 ## Dashboard (agregado)
 
