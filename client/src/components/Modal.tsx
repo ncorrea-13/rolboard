@@ -10,12 +10,12 @@ export function Modal({
   title: string;
   onClose: () => void;
   children: ReactNode;
-  size?: "large";
+  size?: "large" | "sheet";
 }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className={`card modal-panel${size === "large" ? " modal-panel--large" : ""}`}
+        className={`card modal-panel${size ? ` modal-panel--${size}` : ""}`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-panel__header">

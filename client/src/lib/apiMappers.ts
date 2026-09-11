@@ -5,6 +5,9 @@ import {
   type Campaign,
   type CampaignStatus,
   type CrystalType,
+  type Encounter,
+  type EncounterParticipant,
+  type EncounterStatus,
   type Group,
   type Location,
   type Npc,
@@ -13,7 +16,9 @@ import {
   type QuestStatus,
   type Session,
   type SessionType,
+  type StatMap,
   type StatusKind,
+  type TurnType,
 } from "../data/domain";
 
 export interface ApiCampaign {
@@ -48,6 +53,8 @@ export interface ApiNpc {
   tipo_spren?: string;
   location_id?: number;
   description: string;
+  attributes?: StatMap;
+  skills?: StatMap;
   obsidian_path?: string;
 }
 
@@ -92,9 +99,10 @@ export function mapNpc(n: ApiNpc): Npc {
     statusNote: canonicalApiStatus.has(n.status) ? undefined : n.status,
     location: "—",
     locationId: n.location_id ? String(n.location_id) : undefined,
-    faction: "—",
     initials: initialsFromName(n.name),
     obsidianPath: n.obsidian_path ?? "",
+    attributes: n.attributes ?? {},
+    skills: n.skills ?? {},
   };
 }
 
@@ -123,6 +131,8 @@ export function npcToApiPayload(npc: Npc) {
     etnia: npc.etnia || undefined,
     tipo_spren: npc.tipoSpren || undefined,
     location_id: npc.locationId ? Number(npc.locationId) : undefined,
+    attributes: npc.attributes,
+    skills: npc.skills,
     obsidian_path: npc.obsidianPath || undefined,
   };
 }
@@ -183,6 +193,21 @@ export interface GroupMember {
 
 export function mapGroupMember(m: ApiGroupMember): GroupMember {
   return { npcId: String(m.npc_id), name: m.name };
+}
+
+export interface ApiPCGroupMember {
+  pc_id: number;
+  character_name: string;
+  role_in_group?: string;
+}
+
+export interface PCGroupMember {
+  pcId: string;
+  characterName: string;
+}
+
+export function mapPCGroupMember(m: ApiPCGroupMember): PCGroupMember {
+  return { pcId: String(m.pc_id), characterName: m.character_name };
 }
 
 export function mapGroup(g: ApiGroup): Group {
@@ -294,6 +319,10 @@ export interface ApiPlayerCharacter {
   status: string;
   backstory: string;
   progression_notes: string;
+  attributes?: StatMap;
+  skills?: StatMap;
+  current_hp?: number;
+  max_hp?: number;
   obsidian_path?: string;
   historia_path?: string;
   avances_path?: string;
@@ -308,12 +337,15 @@ export function mapPlayerCharacter(p: ApiPlayerCharacter): PlayerCharacter {
     race: p.race,
     class: p.class,
     status: apiStatusToStatusKind[p.status] ?? "alive",
-    faction: "—",
     backstory: p.backstory,
     progressionNotes: p.progression_notes,
     obsidianPath: p.obsidian_path ?? "",
     historiaPath: p.historia_path,
     avancesPath: p.avances_path,
+    attributes: p.attributes ?? {},
+    skills: p.skills ?? {},
+    currentHp: p.current_hp,
+    maxHp: p.max_hp,
   };
 }
 
@@ -331,6 +363,10 @@ export function playerCharacterToApiPayload(p: PlayerCharacter) {
     status: pcStatusToApi(p.status),
     backstory: p.backstory,
     progression_notes: p.progressionNotes,
+    attributes: p.attributes,
+    skills: p.skills,
+    current_hp: p.currentHp,
+    max_hp: p.maxHp,
     obsidian_path: p.obsidianPath || undefined,
   };
 }
@@ -368,6 +404,79 @@ export interface ApiDashboardSummary {
   on_hold_quests: ApiQuest[];
   recent_npcs: ApiNpc[];
   last_session?: ApiSession;
+}
+
+export interface ApiEncounter {
+  id: number;
+  campaign_id: number;
+  session_id?: number;
+  round: number;
+  status: string;
+}
+
+export function mapEncounter(e: ApiEncounter): Encounter {
+  return {
+    id: String(e.id),
+    campaignId: String(e.campaign_id),
+    sessionId: e.session_id ? String(e.session_id) : undefined,
+    round: e.round,
+    status: e.status as EncounterStatus,
+  };
+}
+
+export function encounterToApiPayload(e: Encounter) {
+  return {
+    session_id: e.sessionId ? Number(e.sessionId) : undefined,
+    round: e.round,
+    status: e.status,
+  };
+}
+
+export interface ApiEncounterParticipant {
+  id: number;
+  encounter_id: number;
+  pc_id?: number;
+  npc_id?: number;
+  display_name?: string;
+  current_hp?: number;
+  max_hp?: number;
+  initiative_value?: number;
+  turn_type?: string;
+  notes: string;
+  attributes?: StatMap;
+  skills?: StatMap;
+}
+
+export function mapEncounterParticipant(p: ApiEncounterParticipant): EncounterParticipant {
+  return {
+    id: String(p.id),
+    encounterId: String(p.encounter_id),
+    pcId: p.pc_id ? String(p.pc_id) : undefined,
+    npcId: p.npc_id ? String(p.npc_id) : undefined,
+    displayName: p.display_name,
+    currentHp: p.current_hp,
+    maxHp: p.max_hp,
+    initiativeValue: p.initiative_value,
+    turnType: p.turn_type as TurnType | undefined,
+    notes: p.notes,
+    attributes: p.attributes ?? {},
+    skills: p.skills ?? {},
+  };
+}
+
+export function participantToApiPayload(p: EncounterParticipant) {
+  return {
+    pc_id: p.pcId ? Number(p.pcId) : undefined,
+    npc_id: p.npcId ? Number(p.npcId) : undefined,
+    display_name: p.displayName || undefined,
+    current_hp: p.currentHp,
+    max_hp: p.maxHp,
+    initiative_value: p.initiativeValue,
+    turn_type: p.turnType,
+    notes: p.notes,
+    attributes: p.attributes,
+    skills: p.skills,
+  };
 }
 
 export function sessionToApiPayload(s: Session) {

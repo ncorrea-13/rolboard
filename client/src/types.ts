@@ -24,4 +24,5 @@ export type Route =
   | { name: "faction-edit"; factionId: string }
   | { name: "faction-create" }
   | { name: "location-edit"; locationId: string }
-  | { name: "location-create" };
+  | { name: "location-create" }
+  | { name: "encounter-detail"; encounterId: string };
