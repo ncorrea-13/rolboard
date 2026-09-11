@@ -515,11 +515,17 @@ func (ix *Indexer) snapshotObsidianPaths(ctx context.Context) (obsidianPathSnaps
 }
 
 func (ix *Indexer) deleteStalePaths(ctx context.Context, stale obsidianPathSnapshot, seen map[string]bool, result *Result) {
+	deleteState := func(path string) {
+		if err := ix.fileState.Delete(ctx, ix.campaignID, path); err != nil {
+			result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", path, err))
+		}
+	}
 	for path, id := range stale.locations {
 		if !seen[path] {
 			if err := ix.locations.Delete(ctx, id); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", path, err))
 			}
+			deleteState(path)
 		}
 	}
 	for path, id := range stale.npcs {
@@ -527,6 +533,7 @@ func (ix *Indexer) deleteStalePaths(ctx context.Context, stale obsidianPathSnaps
 			if err := ix.npcs.Delete(ctx, id); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", path, err))
 			}
+			deleteState(path)
 		}
 	}
 	for path, id := range stale.groups {
@@ -534,6 +541,7 @@ func (ix *Indexer) deleteStalePaths(ctx context.Context, stale obsidianPathSnaps
 			if err := ix.groups.Delete(ctx, id); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", path, err))
 			}
+			deleteState(path)
 		}
 	}
 	for path, id := range stale.sessions {
@@ -548,6 +556,7 @@ func (ix *Indexer) deleteStalePaths(ctx context.Context, stale obsidianPathSnaps
 			if err := ix.playerCharacters.Delete(ctx, id); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", path, err))
 			}
+			deleteState(path)
 		}
 	}
 }
@@ -611,7 +620,7 @@ func (ix *Indexer) resolveNPCs(ctx context.Context, idx *NameIndex, staged []sta
 			}
 		}
 
-		if _, err := ix.db.ExecContext(ctx, `DELETE FROM npc_groups WHERE npc_id = ?`, sn.id); err != nil {
+		if _, err := ix.db.ExecContext(ctx, `DELETE FROM npc_groups WHERE npc_id = ? AND source = 'vault'`, sn.id); err != nil {
 			result.Errors = append(result.Errors, err.Error())
 			continue
 		}
@@ -622,7 +631,9 @@ func (ix *Indexer) resolveNPCs(ctx context.Context, idx *NameIndex, staged []sta
 				continue
 			}
 			if _, err := ix.db.ExecContext(ctx,
-				`INSERT OR IGNORE INTO npc_groups (npc_id, group_id) VALUES (?, ?)`,
+				`INSERT INTO npc_groups (npc_id, group_id, source) VALUES (?, ?, 'vault')
+				 ON CONFLICT (npc_id, group_id) DO UPDATE SET
+				   source = CASE WHEN source = 'removed' THEN 'removed' ELSE 'vault' END`,
 				sn.id, groupID,
 			); err != nil {
 				result.Errors = append(result.Errors, err.Error())
@@ -682,7 +693,7 @@ func (ix *Indexer) resolvePCs(ctx context.Context, idx *NameIndex, staged []stag
 			}
 		}
 
-		if _, err := ix.db.ExecContext(ctx, `DELETE FROM pc_groups WHERE pc_id = ?`, sp.id); err != nil {
+		if _, err := ix.db.ExecContext(ctx, `DELETE FROM pc_groups WHERE pc_id = ? AND source = 'vault'`, sp.id); err != nil {
 			result.Errors = append(result.Errors, err.Error())
 			continue
 		}
@@ -693,7 +704,9 @@ func (ix *Indexer) resolvePCs(ctx context.Context, idx *NameIndex, staged []stag
 				continue
 			}
 			if _, err := ix.db.ExecContext(ctx,
-				`INSERT OR IGNORE INTO pc_groups (pc_id, group_id) VALUES (?, ?)`,
+				`INSERT INTO pc_groups (pc_id, group_id, source) VALUES (?, ?, 'vault')
+				 ON CONFLICT (pc_id, group_id) DO UPDATE SET
+				   source = CASE WHEN source = 'removed' THEN 'removed' ELSE 'vault' END`,
 				sp.id, groupID,
 			); err != nil {
 				result.Errors = append(result.Errors, err.Error())

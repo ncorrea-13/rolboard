@@ -20,6 +20,8 @@ type CreatePlayerCharacterPayload struct {
 	ProgressionNotes string          `json:"progression_notes"`
 	Attributes       json.RawMessage `json:"attributes"`
 	Skills           json.RawMessage `json:"skills"`
+	CurrentHp        *int64          `json:"current_hp"`
+	MaxHp            *int64          `json:"max_hp"`
 	ObsidianPath     *string         `json:"obsidian_path"`
 }
 
@@ -33,6 +35,8 @@ type UpdatePlayerCharacterPayload struct {
 	ProgressionNotes string          `json:"progression_notes"`
 	Attributes       json.RawMessage `json:"attributes"`
 	Skills           json.RawMessage `json:"skills"`
+	CurrentHp        *int64          `json:"current_hp"`
+	MaxHp            *int64          `json:"max_hp"`
 	ObsidianPath     *string         `json:"obsidian_path"`
 }
 
@@ -90,6 +94,8 @@ func (h *Handlers) CreatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 		ProgressionNotes: payload.ProgressionNotes,
 		Attributes:       payload.Attributes,
 		Skills:           payload.Skills,
+		CurrentHp:        payload.CurrentHp,
+		MaxHp:            payload.MaxHp,
 		ObsidianPath:     payload.ObsidianPath,
 	}
 
@@ -154,6 +160,8 @@ func (h *Handlers) UpdatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 		ProgressionNotes: payload.ProgressionNotes,
 		Attributes:       payload.Attributes,
 		Skills:           payload.Skills,
+		CurrentHp:        payload.CurrentHp,
+		MaxHp:            payload.MaxHp,
 		ObsidianPath:     payload.ObsidianPath,
 	}
 	err = h.playerCharacters.Update(r.Context(), id, &pc)

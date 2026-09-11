@@ -127,6 +127,25 @@ func (h *Handlers) GetMembers(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handlers) GetPCMembers(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	members, err := h.groups.GetPCMembers(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Error retrieving group PC members", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(members); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
+}
+
 func (h *Handlers) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {

@@ -31,6 +31,18 @@ func (s *GroupService) GetMembers(ctx context.Context, groupID int64) ([]models.
 	return s.repo.GetMembers(ctx, groupID)
 }
 
+func (s *GroupService) GetPCMembers(ctx context.Context, groupID int64) ([]models.PCGroupMember, error) {
+	return s.repo.GetPCMembers(ctx, groupID)
+}
+
+func (s *GroupService) AddPCMember(ctx context.Context, groupID, pcID int64) error {
+	return s.repo.AddPCMember(ctx, groupID, pcID)
+}
+
+func (s *GroupService) RemovePCMember(ctx context.Context, groupID, pcID int64) error {
+	return s.repo.RemovePCMember(ctx, groupID, pcID)
+}
+
 func (s *GroupService) AddMember(ctx context.Context, groupID, npcID int64) error {
 	return s.repo.AddMember(ctx, groupID, npcID)
 }

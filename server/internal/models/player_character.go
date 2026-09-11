@@ -15,6 +15,8 @@ type PlayerCharacter struct {
 	ProgressionNotes string          `json:"progression_notes"`
 	Attributes       json.RawMessage `json:"attributes"`
 	Skills           json.RawMessage `json:"skills"`
+	CurrentHp        *int64          `json:"current_hp,omitempty"`
+	MaxHp            *int64          `json:"max_hp,omitempty"`
 	ObsidianPath     *string         `json:"obsidian_path,omitempty"`
 	HistoriaPath     *string         `json:"historia_path,omitempty"`
 	AvancesPath      *string         `json:"avances_path,omitempty"`
