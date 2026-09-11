@@ -68,6 +68,16 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("PUT /api/groups/{id}", http.HandlerFunc(h.UpdateGroup))
 	mux.Handle("DELETE /api/groups/{id}", http.HandlerFunc(h.DeleteGroup))
 
+	mux.Handle("GET /api/campaigns/{id}/encounters", http.HandlerFunc(h.ListEncounters))
+	mux.HandleFunc("POST /api/campaigns/{id}/encounters", h.CreateEncounter)
+	mux.Handle("GET /api/encounters/{id}", http.HandlerFunc(h.GetEncounter))
+	mux.Handle("PUT /api/encounters/{id}", http.HandlerFunc(h.UpdateEncounter))
+	mux.Handle("DELETE /api/encounters/{id}", http.HandlerFunc(h.DeleteEncounter))
+	mux.Handle("GET /api/encounters/{id}/participants", http.HandlerFunc(h.ListEncounterParticipants))
+	mux.HandleFunc("POST /api/encounters/{id}/participants", h.CreateEncounterParticipant)
+	mux.Handle("PUT /api/encounter-participants/{id}", http.HandlerFunc(h.UpdateEncounterParticipant))
+	mux.Handle("DELETE /api/encounter-participants/{id}", http.HandlerFunc(h.DeleteEncounterParticipant))
+
 	mux.HandleFunc("POST /api/campaigns/{id}/reindex", h.Reindex)
 	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.ListVaultDirs))
 

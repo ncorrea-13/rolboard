@@ -61,11 +61,17 @@ func main() {
 	groupRepo := repository.NewGroupRepository(db)
 	groupSvc := service.NewGroupService(groupRepo)
 
+	encounterRepo := repository.NewEncounterRepository(db)
+	encounterSvc := service.NewEncounterService(encounterRepo)
+
+	encounterParticipantRepo := repository.NewEncounterParticipantRepository(db)
+	encounterParticipantSvc := service.NewEncounterParticipantService(encounterParticipantRepo)
+
 	adminSvc := service.NewAdminService(db, campaignRepo, vaultsRoot)
 	dashboardSvc := service.NewDashboardService(questSvc, npcSvc, sessionSvc)
 	notesSvc := service.NewNotesService(campaignRepo, locationRepo, npcRepo, groupRepo, sessionRepo, arcRepo, pcRepo, vaultsRoot)
 
-	h := handlers.NewHandlers(campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc)
+	h := handlers.NewHandlers(campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
 
 	mux := handlers.NewRouter(h)
 
