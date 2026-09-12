@@ -9,10 +9,13 @@ import {
   campaignStatusLabel,
   arcStatusColor,
   arcStatusLabel,
+  encounterStatusColor,
+  encounterStatusLabel,
   type StatusKind,
   type QuestStatus,
   type CampaignStatus,
   type ArcStatus,
+  type EncounterStatus,
 } from "../data/domain";
 
 export function StatusPill({
@@ -49,6 +52,16 @@ export function ArcStatusPill({ status }: { status: ArcStatus }) {
     <span className="status-pill" style={{ color }}>
       <span className="status-dot" style={{ background: color }} />
       {arcStatusLabel[status]}
+    </span>
+  );
+}
+
+export function EncounterStatusPill({ status }: { status: EncounterStatus }) {
+  const color = encounterStatusColor[status];
+  return (
+    <span className="status-pill" style={{ color }}>
+      <span className="status-dot" style={{ background: color }} />
+      {encounterStatusLabel[status]}
     </span>
   );
 }

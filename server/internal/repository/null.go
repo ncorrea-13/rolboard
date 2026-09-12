@@ -1,6 +1,16 @@
 package repository
 
-import "database/sql"
+import (
+	"database/sql"
+	"encoding/json"
+)
+
+func toJSONText(r json.RawMessage) string {
+	if len(r) == 0 {
+		return "{}"
+	}
+	return string(r)
+}
 
 func toNullString(s *string) sql.NullString {
 	if s == nil {

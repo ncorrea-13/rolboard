@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./NpcDetail.css";
 import { crystalColor, type Npc, type Quest } from "../data/domain";
+import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
@@ -29,6 +30,7 @@ export function NpcDetail({
   onDelete,
 }: NpcDetailProps) {
   const color = crystalColor[npc.crystal];
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteHtml, setNoteHtml] = useState<string | null>(null);
 
@@ -103,6 +105,9 @@ export function NpcDetail({
               onClick={openNote}
             >
               Ver nota renderizada
+            </button>
+            <button className="btn btn-secondary" onClick={() => setSheetOpen(true)}>
+              Ver ficha
             </button>
             <button className="btn btn-secondary" onClick={onDelete}>
               Dar de baja
@@ -189,29 +194,6 @@ export function NpcDetail({
               ))}
             </div>
           </div>
-          {npc.faction !== "—" && (
-            <div>
-              <span className="label">Facción</span>
-              <div className="card npc-detail__faction">
-                <span className="title-underline">
-                  <span
-                    style={{
-                      fontWeight: 500,
-                      fontSize: 13.5,
-                      color: "var(--text-body-strong)",
-                    }}
-                  >
-                    {npc.faction}
-                  </span>
-                  <span
-                    className="title-underline__bar"
-                    style={{ background: "var(--crystal-faction-quest)" }}
-                  />
-                </span>
-                <span className="npc-detail__faction-role">miembro</span>
-              </div>
-            </div>
-          )}
           {appearances.length > 0 && (
             <div>
               <span className="label">Apariciones</span>
@@ -276,6 +258,12 @@ export function NpcDetail({
           ) : (
             <p className="npc-detail__desc">{npc.description}</p>
           )}
+        </Modal>
+      )}
+
+      {sheetOpen && (
+        <Modal title={`Ficha · ${npc.name}`} onClose={() => setSheetOpen(false)} size="sheet">
+          <CharacterSheet attributes={npc.attributes} skills={npc.skills} />
         </Modal>
       )}
     </div>

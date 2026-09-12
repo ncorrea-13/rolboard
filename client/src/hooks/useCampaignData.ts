@@ -5,6 +5,7 @@ import {
   type Campaign,
   type Npc,
   type Arc,
+  type Encounter,
   type Group,
   type Location,
   type Quest,
@@ -21,6 +22,8 @@ import {
   groupToApiPayload,
   mapArc,
   arcToApiPayload,
+  mapEncounter,
+  encounterToApiPayload,
   mapQuest,
   questToApiPayload,
   mapPlayerCharacter,
@@ -31,6 +34,7 @@ import {
   type ApiLocation,
   type ApiGroup,
   type ApiArc,
+  type ApiEncounter,
   type ApiQuest,
   type ApiPlayerCharacter,
   type ApiSession,
@@ -49,9 +53,10 @@ const blankNpcDraft: Npc = {
   status: "alive",
   detailLevel: "full",
   location: "",
-  faction: "—",
   initials: "",
   obsidianPath: "",
+  attributes: {},
+  skills: {},
 };
 
 const blankPlayerDraft: PlayerCharacter = {
@@ -62,10 +67,11 @@ const blankPlayerDraft: PlayerCharacter = {
   race: "",
   class: "",
   status: "alive",
-  faction: "—",
   backstory: "",
   progressionNotes: "",
   obsidianPath: "",
+  attributes: {},
+  skills: {},
 };
 
 const blankFactionDraft: Group = {
@@ -109,6 +115,13 @@ const blankQuestDraft: Quest = {
   notes: "",
 };
 
+const blankEncounterDraft: Encounter = {
+  id: "",
+  campaignId: "",
+  round: 1,
+  status: "planificado",
+};
+
 export const blankDrafts = {
   npc: blankNpcDraft,
   player: blankPlayerDraft,
@@ -116,6 +129,7 @@ export const blankDrafts = {
   location: blankLocationDraft,
   arc: blankArcDraft,
   quest: blankQuestDraft,
+  encounter: blankEncounterDraft,
 };
 
 export function useCampaignData(
@@ -194,6 +208,15 @@ export function useCampaignData(
       .catch((err) => console.error("Error cargando sesiones:", err));
   }, [activeCampaignId]);
 
+  const [encounters, setEncounters] = useState<Encounter[]>([]);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiEncounter[]>(`/campaigns/${activeCampaignId}/encounters`)
+      .then((data) => setEncounters((data ?? []).map(mapEncounter)))
+      .catch((err) => console.error("Error cargando encuentros:", err));
+  }, [activeCampaignId]);
+
   const [dashboardSummary, setDashboardSummary] = useState<ApiDashboardSummary | null>(null);
 
   useEffect(() => {
@@ -245,6 +268,9 @@ export function useCampaignData(
   const campaignPlayerCharacters = playerCharacters.filter(
     (p) => p.campaignId === activeCampaignId && !p.deletedAt,
   );
+  const campaignEncounters = encounters
+    .filter((e) => e.campaignId === activeCampaignId && !e.deletedAt)
+    .sort((a, b) => Number(b.id) - Number(a.id));
   const campaignSessions = sessions
     .filter((s) => s.campaignId === activeCampaignId && !s.deletedAt)
     .sort(
@@ -292,10 +318,7 @@ export function useCampaignData(
       body: JSON.stringify(npcToApiPayload(draft)),
     })
       .then((created) => {
-        const npc: Npc = {
-          ...mapNpc(created),
-          faction: draft.faction,
-        };
+        const npc = mapNpc(created);
         setNpcs((prev) => [...prev, npc]);
         setRoute({ name: "npc-detail", npcId: npc.id });
       })
@@ -362,10 +385,7 @@ export function useCampaignData(
       },
     )
       .then((created) => {
-        const player: PlayerCharacter = {
-          ...mapPlayerCharacter(created),
-          faction: draft.faction,
-        };
+        const player = mapPlayerCharacter(created);
         setPlayerCharacters((prev) => [...prev, player]);
         setRoute({ name: "player-detail", playerId: player.id });
       })
@@ -665,6 +685,58 @@ export function useCampaignData(
       });
   }
 
+  function saveEncounter(id: string, patch: Partial<Encounter>) {
+    const current = encounters.find((e) => e.id === id);
+    if (!current) return;
+    const merged = { ...current, ...patch };
+    apiFetch<ApiEncounter>(`/encounters/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(encounterToApiPayload(merged)),
+    })
+      .then((saved) => {
+        const encounter = mapEncounter(saved);
+        setEncounters((prev) => prev.map((e) => (e.id === id ? encounter : e)));
+      })
+      .catch((err) => {
+        console.error("Error guardando encuentro:", err);
+        notify("Error guardando encuentro", "error");
+      });
+  }
+
+  function createEncounter(patch: Partial<Encounter> = {}) {
+    const draft: Encounter = {
+      ...blankEncounterDraft,
+      ...patch,
+      campaignId: activeCampaign!.id,
+    };
+    apiFetch<ApiEncounter>(`/campaigns/${activeCampaign!.id}/encounters`, {
+      method: "POST",
+      body: JSON.stringify(encounterToApiPayload(draft)),
+    })
+      .then((created) => {
+        const encounter = mapEncounter(created);
+        setEncounters((prev) => [...prev, encounter]);
+        setRoute({ name: "encounter-detail", encounterId: encounter.id });
+      })
+      .catch((err) => {
+        console.error("Error creando encuentro:", err);
+        notify("Error creando encuentro", "error");
+      });
+  }
+
+  function deleteEncounter(id: string) {
+    if (!window.confirm("¿Borrar este encuentro? No se puede deshacer.")) return;
+    apiFetch(`/encounters/${id}`, { method: "DELETE" })
+      .then(() => {
+        setEncounters((prev) => prev.filter((e) => e.id !== id));
+        setRoute({ name: "section", section: "encuentros" });
+      })
+      .catch((err) => {
+        console.error("Error borrando encuentro:", err);
+        notify("Error borrando encuentro", "error");
+      });
+  }
+
   function goToEntitySection(kind: EntityKind) {
     setRoute({ name: "section", section: entityKindSection[kind] });
   }
@@ -742,6 +814,7 @@ export function useCampaignData(
     campaignQuests,
     campaignPlayerCharacters,
     campaignSessions,
+    campaignEncounters,
     dashboardSummary,
     reindexing,
     handleReindex,
@@ -764,6 +837,9 @@ export function useCampaignData(
     deleteEntity,
     saveSession,
     deleteSession,
+    saveEncounter,
+    createEncounter,
+    deleteEncounter,
     planSession,
     playSession,
     startPlaySession,

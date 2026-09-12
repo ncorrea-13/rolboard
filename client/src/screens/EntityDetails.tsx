@@ -6,7 +6,12 @@ import { ArcStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
 import { apiFetch } from "../lib/api";
-import { mapGroupMember, type ApiGroupMember } from "../lib/apiMappers";
+import {
+  mapGroupMember,
+  mapPCGroupMember,
+  type ApiGroupMember,
+  type ApiPCGroupMember,
+} from "../lib/apiMappers";
 import {
   crystalColor,
   formatDate,
@@ -17,6 +22,7 @@ import {
   type Location,
   type Quest,
   type Npc,
+  type PlayerCharacter,
   type Session,
 } from "../data/domain";
 
@@ -108,22 +114,28 @@ export function ArcDetail({
 export function FactionDetail({
   group,
   npcs,
+  playerCharacters,
   vaultName,
   campaignId,
   onBack,
   onSelectNpc,
+  onSelectPlayer,
   onEdit,
   onDelete,
 }: {
   group: Group;
   npcs: Npc[];
+  playerCharacters: PlayerCharacter[];
   vaultName: string;
   campaignId: string;
   onBack: () => void;
   onSelectNpc: (id: string) => void;
+  onSelectPlayer: (id: string) => void;
 } & EditableProps) {
   const [memberIds, setMemberIds] = useState<string[]>([]);
+  const [pcMemberIds, setPcMemberIds] = useState<string[]>([]);
   const [addNpcId, setAddNpcId] = useState("");
+  const [addPcId, setAddPcId] = useState("");
 
   function reloadMembers() {
     apiFetch<ApiGroupMember[]>(`/groups/${group.id}/members`)
@@ -132,6 +144,14 @@ export function FactionDetail({
   }
 
   useEffect(reloadMembers, [group.id]);
+
+  function reloadPcMembers() {
+    apiFetch<ApiPCGroupMember[]>(`/groups/${group.id}/pc-members`)
+      .then((data) => setPcMemberIds((data ?? []).map(mapPCGroupMember).map((m) => m.pcId)))
+      .catch((err) => console.error("Error cargando PJs miembros:", err));
+  }
+
+  useEffect(reloadPcMembers, [group.id]);
 
   function addMember() {
     if (!addNpcId) return;
@@ -152,8 +172,29 @@ export function FactionDetail({
       .catch((err) => console.error("Error sacando miembro:", err));
   }
 
+  function addPcMember() {
+    if (!addPcId) return;
+    apiFetch(`/groups/${group.id}/pc-members`, {
+      method: "POST",
+      body: JSON.stringify({ pc_id: Number(addPcId) }),
+    })
+      .then(() => {
+        setAddPcId("");
+        reloadPcMembers();
+      })
+      .catch((err) => console.error("Error agregando PJ:", err));
+  }
+
+  function removePcMember(pcId: string) {
+    apiFetch(`/groups/${group.id}/pc-members/${pcId}`, { method: "DELETE" })
+      .then(reloadPcMembers)
+      .catch((err) => console.error("Error sacando PJ:", err));
+  }
+
   const members = npcs.filter((n) => memberIds.includes(n.id));
   const addableNpcs = npcs.filter((n) => !memberIds.includes(n.id));
+  const pcMembers = playerCharacters.filter((p) => pcMemberIds.includes(p.id));
+  const addablePcs = playerCharacters.filter((p) => !pcMemberIds.includes(p.id));
   const lider = npcs.find((n) => n.id === group.liderNpcId);
   return (
     <EntityDetail
@@ -218,6 +259,60 @@ export function FactionDetail({
                     ))}
                   </select>
                   <button className="btn btn-secondary" onClick={addMember} disabled={!addNpcId}>
+                    Agregar
+                  </button>
+                </div>
+              )}
+            </div>
+          ),
+        },
+        {
+          label: `Jugadores (${pcMembers.length})`,
+          value: (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {pcMembers.map((p) => (
+                <div
+                  key={p.id}
+                  className="list-page__row"
+                  style={{ display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <div
+                    style={{ flex: 1, cursor: "pointer" }}
+                    onClick={() => onSelectPlayer(p.id)}
+                  >
+                    <EntityIdentity
+                      initials={p.characterName.slice(0, 2).toUpperCase()}
+                      name={p.characterName}
+                      role={`Jugado por ${p.playerName}`}
+                      color="var(--crystal-npc)"
+                    />
+                  </div>
+                  <StatusPill status={p.status} />
+                  <button className="btn btn-secondary" onClick={() => removePcMember(p.id)}>
+                    Sacar
+                  </button>
+                </div>
+              ))}
+              {pcMembers.length === 0 && (
+                <span style={{ color: "var(--text-secondary)" }}>
+                  Sin jugadores todavía.
+                </span>
+              )}
+              {addablePcs.length > 0 && (
+                <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                  <select
+                    className="npc-edit__select npc-edit__select--native"
+                    value={addPcId}
+                    onChange={(e) => setAddPcId(e.target.value)}
+                  >
+                    <option value="">Agregar jugador…</option>
+                    {addablePcs.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.characterName}
+                      </option>
+                    ))}
+                  </select>
+                  <button className="btn btn-secondary" onClick={addPcMember} disabled={!addPcId}>
                     Agregar
                   </button>
                 </div>

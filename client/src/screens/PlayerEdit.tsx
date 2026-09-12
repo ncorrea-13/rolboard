@@ -5,28 +5,31 @@ import {
   statusColor,
   statusDotColor,
   type PlayerCharacter,
+  type StatMap,
   type StatusKind,
-  type Group,
 } from "../data/domain";
+import { SkillsEditor } from "../components/SkillsEditor";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
 interface PlayerEditProps {
   player: PlayerCharacter;
-  groups: Group[];
   onSave: (patch: Partial<PlayerCharacter>) => void;
   onDiscard: () => void;
 }
 
-export function PlayerEdit({ player, groups, onSave, onDiscard }: PlayerEditProps) {
+export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
   const [playerName, setPlayerName] = useState(player.playerName);
   const [characterName, setCharacterName] = useState(player.characterName);
   const [race, setRace] = useState(player.race);
   const [charClass, setCharClass] = useState(player.class);
   const [status, setStatus] = useState<StatusKind>(player.status);
-  const [faction, setFaction] = useState(player.faction);
   const [backstory, setBackstory] = useState(player.backstory);
   const [progressionNotes, setProgressionNotes] = useState(player.progressionNotes);
+  const [attributes, setAttributes] = useState<StatMap>(player.attributes);
+  const [skills, setSkills] = useState<StatMap>(player.skills);
+  const [currentHp, setCurrentHp] = useState<number | undefined>(player.currentHp);
+  const [maxHp, setMaxHp] = useState<number | undefined>(player.maxHp);
 
   const dirty =
     playerName !== player.playerName ||
@@ -34,12 +37,15 @@ export function PlayerEdit({ player, groups, onSave, onDiscard }: PlayerEditProp
     race !== player.race ||
     charClass !== player.class ||
     status !== player.status ||
-    faction !== player.faction ||
     backstory !== player.backstory ||
-    progressionNotes !== player.progressionNotes;
+    progressionNotes !== player.progressionNotes ||
+    JSON.stringify(attributes) !== JSON.stringify(player.attributes) ||
+    JSON.stringify(skills) !== JSON.stringify(player.skills) ||
+    currentHp !== player.currentHp ||
+    maxHp !== player.maxHp;
 
   function handleSave() {
-    onSave({ playerName, characterName, race, class: charClass, status, faction, backstory, progressionNotes });
+    onSave({ playerName, characterName, race, class: charClass, status, backstory, progressionNotes, attributes, skills, currentHp, maxHp });
   }
 
   const missingRace = race.trim() === "";
@@ -116,22 +122,30 @@ export function PlayerEdit({ player, groups, onSave, onDiscard }: PlayerEditProp
             <textarea className="npc-edit__textarea" value={progressionNotes} onChange={(e) => setProgressionNotes(e.target.value)} />
           </div>
 
+          <SkillsEditor label="Atributos" value={attributes} onChange={setAttributes} />
+          <SkillsEditor label="Habilidades" value={skills} onChange={setSkills} />
         </div>
 
         <div className="npc-edit__col">
-          <div>
-            <span className="label">Facción</span>
-            <select
-              className="npc-edit__select npc-edit__select--native"
-              style={{ borderBottom: "2px solid var(--crystal-faction-quest)" }}
-              value={faction}
-              onChange={(e) => setFaction(e.target.value)}
-            >
-              <option value="—">— sin facción —</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.name}>{g.name}</option>
-              ))}
-            </select>
+          <div className="npc-edit__grid-2">
+            <div>
+              <span className="label">HP actual</span>
+              <input
+                className="npc-edit__input"
+                type="number"
+                value={currentHp ?? ""}
+                onChange={(e) => setCurrentHp(e.target.value === "" ? undefined : Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <span className="label">HP máximo</span>
+              <input
+                className="npc-edit__input"
+                type="number"
+                value={maxHp ?? ""}
+                onChange={(e) => setMaxHp(e.target.value === "" ? undefined : Number(e.target.value))}
+              />
+            </div>
           </div>
           <div>
             <span className="label">Nota de Obsidian</span>
@@ -148,6 +162,10 @@ export function PlayerEdit({ player, groups, onSave, onDiscard }: PlayerEditProp
               <div className="npc-edit__warning-body">Podés guardar igual; el campo queda marcado como incompleto en la ficha.</div>
             </div>
           )}
+          <div className="npc-edit__note">
+            La facción de este PJ se lee del vault (`facciones:` en su ficha), no se edita acá — ver la ficha de la
+            facción para consultarla.
+          </div>
         </div>
       </div>
     </div>

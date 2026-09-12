@@ -191,7 +191,6 @@ Armado client-side (`client/src/lib/obsidian.ts`), no por el backend. El **nombr
 
 ## Sincronización del vault con el servidor
 
-- El vault vive en una carpeta sincronizada por **Syncthing**.
-- El servidor (ThinkCentre) debe estar incluido como uno de los destinos de esa sincronización.
+- El vault vive en una carpeta mantenida sincronizada externamente al contenedor (ver [`DECISIONS.md`](./DECISIONS.md) para el porqué de filesystem sync en vez de clonar desde el repo remoto).
 - El contenedor del dashboard monta esa carpeta como **volumen read-only** — el indexador nunca escribe sobre el vault.
-- `.git/` de esa misma carpeta (si el vault también es un repo de Codeberg) debe estar **excluido vía `.stignore`** de Syncthing, para evitar que Syncthing intente sincronizar a nivel de bytes los objetos internos de Git, lo cual puede generar corrupción si hay commits hechos desde distintos dispositivos.
+- Si el vault también es un repo Git, excluir `.git/` de la herramienta de sincronización usada — sincronizar objetos internos de Git a nivel de bytes puede corromperlos si hay commits hechos desde distintos dispositivos.

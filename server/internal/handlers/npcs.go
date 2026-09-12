@@ -11,31 +11,35 @@ import (
 )
 
 type CreateNPCPayload struct {
-	Name         string  `json:"name"`
-	NPCKind      string  `json:"npc_kind"`
-	DetailLevel  string  `json:"detail_level"`
-	Status       string  `json:"status"`
-	LocationID   *int64  `json:"location_id"`
-	Etnia        *string `json:"etnia"`
-	Rol          *string `json:"rol"`
-	TipoSpren    *string `json:"tipo_spren"`
-	Description  string  `json:"description"`
-	Notes        string  `json:"notes"`
-	ObsidianPath *string `json:"obsidian_path"`
+	Name         string          `json:"name"`
+	NPCKind      string          `json:"npc_kind"`
+	DetailLevel  string          `json:"detail_level"`
+	Status       string          `json:"status"`
+	LocationID   *int64          `json:"location_id"`
+	Etnia        *string         `json:"etnia"`
+	Rol          *string         `json:"rol"`
+	TipoSpren    *string         `json:"tipo_spren"`
+	Description  string          `json:"description"`
+	Notes        string          `json:"notes"`
+	Attributes   json.RawMessage `json:"attributes"`
+	Skills       json.RawMessage `json:"skills"`
+	ObsidianPath *string         `json:"obsidian_path"`
 }
 
 type UpdateNPCPayload struct {
-	Name         string  `json:"name"`
-	NPCKind      string  `json:"npc_kind"`
-	DetailLevel  string  `json:"detail_level"`
-	Status       string  `json:"status"`
-	LocationID   *int64  `json:"location_id"`
-	Etnia        *string `json:"etnia"`
-	Rol          *string `json:"rol"`
-	TipoSpren    *string `json:"tipo_spren"`
-	Description  string  `json:"description"`
-	Notes        string  `json:"notes"`
-	ObsidianPath *string `json:"obsidian_path"`
+	Name         string          `json:"name"`
+	NPCKind      string          `json:"npc_kind"`
+	DetailLevel  string          `json:"detail_level"`
+	Status       string          `json:"status"`
+	LocationID   *int64          `json:"location_id"`
+	Etnia        *string         `json:"etnia"`
+	Rol          *string         `json:"rol"`
+	TipoSpren    *string         `json:"tipo_spren"`
+	Description  string          `json:"description"`
+	Notes        string          `json:"notes"`
+	Attributes   json.RawMessage `json:"attributes"`
+	Skills       json.RawMessage `json:"skills"`
+	ObsidianPath *string         `json:"obsidian_path"`
 }
 
 var validNPCKinds = map[string]bool{
@@ -107,6 +111,8 @@ func (h *Handlers) CreateNPC(w http.ResponseWriter, r *http.Request) {
 		TipoSpren:    payload.TipoSpren,
 		Description:  payload.Description,
 		Notes:        payload.Notes,
+		Attributes:   payload.Attributes,
+		Skills:       payload.Skills,
 		ObsidianPath: payload.ObsidianPath,
 	}
 
@@ -172,6 +178,8 @@ func (h *Handlers) UpdateNPC(w http.ResponseWriter, r *http.Request) {
 		TipoSpren:    payload.TipoSpren,
 		Description:  payload.Description,
 		Notes:        payload.Notes,
+		Attributes:   payload.Attributes,
+		Skills:       payload.Skills,
 		ObsidianPath: payload.ObsidianPath,
 	}
 	err = h.npcs.Update(r.Context(), id, &npc)

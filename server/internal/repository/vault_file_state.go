@@ -35,6 +35,14 @@ func (r *VaultFileStateRepository) Get(ctx context.Context, campaignID int64, pa
 	return &s, nil
 }
 
+func (r *VaultFileStateRepository) Delete(ctx context.Context, campaignID int64, path string) error {
+	_, err := r.db.ExecContext(ctx, `
+		DELETE FROM vault_file_state WHERE campaign_id = ? AND path = ?`,
+		campaignID, path,
+	)
+	return err
+}
+
 func (r *VaultFileStateRepository) Set(ctx context.Context, campaignID int64, path, contentHash, entityType string, entityID int64) error {
 	_, err := r.db.ExecContext(ctx, `
 		INSERT INTO vault_file_state (campaign_id, path, content_hash, entity_type, entity_id)

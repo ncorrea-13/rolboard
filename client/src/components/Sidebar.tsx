@@ -7,6 +7,7 @@ import {
   MapPin,
   Shield,
   Swords,
+  Skull,
   type LucideIcon,
 } from "lucide-react";
 import "./Sidebar.css";
@@ -61,6 +62,12 @@ const navItems: {
     section: "quests",
     Icon: Swords,
     color: "var(--accent-teal)",
+  },
+  {
+    label: "Encuentros",
+    section: "encuentros",
+    Icon: Skull,
+    color: "var(--accent-flame)",
   },
 ];
 
