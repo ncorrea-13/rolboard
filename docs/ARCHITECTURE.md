@@ -53,7 +53,7 @@ Razonamiento de cada elección: [`DECISIONS.md`](./DECISIONS.md).
 ## Despliegue
 
 - Corre como contenedor (Docker o Podman, ver [`README.md`](../README.md)), sin exposición pública — acceso restringido a red privada (justifica la ausencia de autenticación, ver [`API.md`](./API.md)).
-- El **build estático del frontend** (`vite build`) se sirve desde el mismo binario Go o desde un contenedor Caddy aparte — a definir en la fase de despliegue, no bloqueante para el desarrollo.
+- El **build estático del frontend** (`vite build`) se sirve desde un contenedor Caddy aparte (`client/Dockerfile` + `client/Caddyfile`), que además hace de reverse proxy de `/api/*` hacia `rolboard-server:8080` (ver `docker-compose.yml`).
 
 ## Vault de Obsidian
 
