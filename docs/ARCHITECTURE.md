@@ -52,9 +52,7 @@ Razonamiento de cada elección: [`DECISIONS.md`](./DECISIONS.md).
 
 ## Despliegue
 
-- Corre como **contenedor Podman rootless** con **Quadlet (systemd)**, mismo patrón que el resto de los servicios de aplicación del homelab.
-- **Nodo: ThinkCentre** — no la Raspberry Pi. La Pi cumple rol de gateway (Pi-hole, Unbound, Caddy, cloudflared) y no debe cargarse con servicios de aplicación; el ThinkCentre es donde viven Vaultwarden, Miniflux, Immich, homelab-status-api, etc.
-- **Acceso**: solo por Tailscale (tailnet), sin exposición pública.
+- Corre como contenedor (Docker o Podman, ver [`README.md`](../README.md)), sin exposición pública — acceso restringido a red privada (justifica la ausencia de autenticación, ver [`API.md`](./API.md)).
 - El **build estático del frontend** (`vite build`) se sirve desde el mismo binario Go o desde un contenedor Caddy aparte — a definir en la fase de despliegue, no bloqueante para el desarrollo.
 
 ## Vault de Obsidian

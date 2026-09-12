@@ -50,14 +50,6 @@ Se evaluaron: to-do básico, gestor de gastos personal, dashboard de hábitos, l
 
 ---
 
-## Despliegue: ThinkCentre, no Raspberry Pi
-
-**Decisión**: el proyecto corre en el ThinkCentre.
-
-**Por qué**: separación de responsabilidades — la Pi cumple rol de gateway crítico (Pi-hole, Unbound, Caddy, cloudflared) y no debe cargarse con servicios de aplicación adicionales; el ThinkCentre es el nodo designado para aplicaciones (Vaultwarden, Miniflux, Immich, etc.). La diferencia de memoria libre entre ambos nodos en el momento de la decisión (~650MB en Pi vs. ~4GB en ThinkCentre) refuerza la decisión pero no es la razón principal.
-
----
-
 ## Multi-campaña desde el día uno
 
 **Decisión**: el modelo de datos soporta múltiples campañas desde el MVP (no una sola campaña hardcodeada).
@@ -94,7 +86,7 @@ Se evaluaron: to-do básico, gestor de gastos personal, dashboard de hábitos, l
 
 **Decisión**: el backend lee el vault desde un volumen montado read-only, sincronizado por Syncthing — no clona ni hace `git pull` del repo de Codeberg en cada operación.
 
-**Por qué**: evita latencia de red y dependencia de que Codeberg esté disponible; el vault ya se sincroniza por Syncthing entre los dispositivos del usuario, así que basta con incluir al ThinkCentre como destino de esa sincronización. Codeberg queda como backup/versionado independiente, gestionado aparte (con la recomendación de excluir `.git/` del `.stignore` para evitar corrupción por sincronización a nivel de bytes de los objetos internos de Git).
+**Por qué**: evita latencia de red y dependencia de que Codeberg esté disponible; el vault ya se sincroniza por Syncthing entre los dispositivos del usuario, así que basta con incluir al servidor como destino de esa sincronización. Codeberg queda como backup/versionado independiente, gestionado aparte (con la recomendación de excluir `.git/` del `.stignore` para evitar corrupción por sincronización a nivel de bytes de los objetos internos de Git).
 
 ---
 
@@ -154,17 +146,13 @@ Discutido a fondo antes de escribir la primera migración SQL — ver `DATA_MODE
 
 **Migraciones versionadas**, no un `schema.sql` único: archivos numerados (`0001_...sql`, `0002_...sql`) embebidos con `go:embed`, tracking de versión aplicada en tabla `schema_migrations`. Por qué: aunque es un proyecto de un solo dev, el modelo tiene evolución esperada (capas 2/3 del roadmap) y versionar desde el día uno es más barato que migrar el enfoque después.
 
-**Baja lógica (`deleted_at`), no `DELETE` físico**: todas las tablas de entidad (no las puente) llevan `deleted_at TEXT NULL`. El `DELETE` físico queda como excepción rara. Por qué: decisión explícita del usuario, perder datos de campaña por error es peor que acumular filas inactivas — un vault de rol no genera volumen que justifique purgar.
-
-**FKs con `ON DELETE RESTRICT`, no `CASCADE`**: ninguna fila padre se puede borrar físicamente mientras algo la referencie, sea la FK nullable o no. Por qué: decisión explícita del usuario — mismo espíritu que la baja lógica, preferir bloquear antes que borrar en cadena por accidente. Requiere `PRAGMA foreign_keys = ON` por conexión (SQLite lo trae apagado por default).
-
-**`CHECK` constraints en campos enum-like** (`status`, `npc_kind`, `session_type`, `location_type`, etc.), no solo validación del lado Go. Por qué: decisión explícita del usuario — no depender de que todo el acceso a la DB pase por el código de la app para mantener la integridad de esos valores.
+Baja lógica, `ON DELETE RESTRICT` y `CHECK` en enum-like: ver el porqué de cada una en `DATA_MODEL.md` (convenciones transversales), no repetido acá.
 
 **PK compuesta en tablas puente** (`PRIMARY KEY (a_id, b_id)`), no `id` surrogate + `UNIQUE` aparte. Por qué: es el estándar para many-to-many puro sin atributos propios que necesiten ser referenciados desde otro lado — ahorra una columna y el índice de unicidad sale gratis de la PK.
 
 **Timestamps como `TEXT` ISO 8601** (`datetime('now')`), no `INTEGER` epoch. Por qué: con el volumen del proyecto (~166 entidades) la diferencia de performance es irrelevante; gana la legibilidad de poder inspeccionar el `.db` a mano con `sqlite3` sin convertir fechas.
 
-**`obsidian_path` único por campaña** (`UNIQUE(campaign_id, obsidian_path)`), no único global. Por qué: la ruta tiene sentido dentro del scope de su campaña/vault — el root absoluto del vault (ej. `/home/ncorrea/Documents/Obsidian/Cosmere` en esta laptop) NO se guarda en la base, es config de servidor (env var) porque difiere entre esta laptop y el ThinkCentre.
+**`obsidian_path` único por campaña** (`UNIQUE(campaign_id, obsidian_path)`), no único global. Por qué: la ruta tiene sentido dentro del scope de su campaña/vault — el root absoluto del vault NO se guarda en la base, es config de servidor (env var) porque difiere entre dispositivos.
 
 **Índices sobre FKs, diferidos**: SQLite no indexa automático las foreign keys comunes (solo PK y `UNIQUE`). Se documentó la falta pero se decidió no bloquear el MVP por esto — con ~166 entidades un table scan es instantáneo; se agregan cuando el volumen lo justifique.
 
@@ -180,20 +168,11 @@ Discutido a fondo antes de escribir la primera migración SQL — ver `DATA_MODE
 
 ---
 
-## Frontend: paleta "Obsidiana" (Shadesmar) + tipografía EB Garamond / Alegreya Sans / IBM Plex Mono
+## Frontend: paleta oscura + tipografía por rol (display/cuerpo/datos)
 
-**Decisión**: de las direcciones visuales exploradas en `screens/Cosmere DM Dashboard - Direcciones visuales.dc.html`, se tomó la paleta oscura "Obsidiana" (turno 2, opción 2a — negro neutro-verdoso `#07080A`/`#0E1114`/`#161A1D`, acento único cálido `#D08A3C`, colores de "cristal" por tipo de entidad NPC/spren/locación/facción-quest, semáforo de estado apagado con punto+palabra) aplicada al set completo de 6 pantallas (turno 3, opción 3a), combinando el tratamiento de resaltado 4a (sigilo teñido: el color vive en el tile de inicial) + 4d (subrayado del nombre) en simultáneo, y la tipografía 4e (EB Garamond para display, Alegreya Sans para texto de cuerpo, IBM Plex Mono para labels/datos).
+**Decisión**: paleta oscura con colores de "cristal" separados por tipo de entidad (NPC/spren/locación/facción-quest) y escala de "estado" independiente — nunca se combinan en el mismo elemento. Tipografía con tres roles (display/cuerpo/datos-labels). Valores exactos (hex, fuentes, tokens) en `client/src/styles/tokens.css`, no acá.
 
-**Por qué**: decisión explícita del usuario tras revisar las alternativas exploradas en el documento de direcciones visuales — 4a+4d combinados dan más peso al color de tipo de entidad que cualquiera de las dos opciones por separado, sin tocar el fondo de la fila (que queda reservado para el estado). Tokens exactos en `client/src/styles/tokens.css`.
-
-**Nota**: el color de "cristal" (tipo de entidad) y el de "estado" son escalas separadas y no se combinan en el mismo elemento — regla ya establecida en el documento de direcciones visuales, ver sección "Reglas de uso del color" de 2a.
-
-**Actualizado en sesión posterior** (el documento de direcciones visuales ya no existe, se usó y se borró — ver `AGENTS.md`):
-- **Tipografía**: EB Garamond + Alegreya Sans reemplazadas por **Fraunces** (display) + **Inter** (cuerpo) — la combo original leía como "mockup fantasy genérico" para una herramienta que se usa en vivo durante la sesión (legibilidad en tablas/listas a 11-13px pesa más que tono literario). IBM Plex Mono se mantiene para datos/labels.
-- **Filete vertical de color eliminado en todos lados**, incluida la sidebar (el ítem activo tenía `inset 2px 0 0 var(--accent-flame)`, la misma línea vertical ya descartada en 4a-4d) — reemplazado por subrayado (mismo patrón 4d) bajo el label del ítem activo.
-- **Paleta de acentos ampliada**, ya no un único ámbar de CTA: `--accent-obsidian` (violeta, identidad principal — CTA/links/marca/glow), `--accent-obsidian-deep` (hover), `--accent-sky` (celeste — barras de progreso y códigos de sesión, dato no-CTA), `--accent-teal` (variedad extra en nav). El ámbar (`--accent-flame`) y el rojo (`--status-dead`) se mantienen pero acotados a usos con significado real (ej. prioridad de quest P1=rojo/P2=ámbar/P3=neutro, barra "editando sin guardar" en NpcEdit) — no decorativos sueltos.
-- **Cada ítem del sidebar tiene un color distinto y notorio** (ícono + marcador + subrayado activo comparten el mismo color por ítem) para que se distingan a simple vista, no solo los que tienen "cristal" semántico (NPCs/Locaciones/Facciones/Quests) — Resumen/Arcos/Sesiones/Jugadores también llevan color propio aunque no tengan tipo-cristal asociado.
-- **Íconos de sidebar**: `lucide-react` (íconos de línea reales, no emoji a color ni glyphs Unicode sueltos) — se probaron ambas alternativas antes y no daban el tono correcto para una herramienta de DM seria.
+**Por qué**: explorado en sesión de diseño visual con el usuario (documento de referencia ya no existe, se usó y se borró — ver `AGENTS.md`). La tipografía inicial leía como "mockup fantasy genérico" para una herramienta usada en vivo durante la sesión — legibilidad en tablas a 11-13px pesa más que tono literario, de ahí el cambio. Cada ítem del sidebar lleva color propio, no solo los que tienen tipo "cristal" semántico, para distinguirse a simple vista.
 
 ---
 
