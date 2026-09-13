@@ -11,8 +11,6 @@ import (
 
 var ErrSessionNotFound = errors.New("session not found")
 
-// sqliteTimeLayout matches the format SQLite's own datetime('now') produces,
-// so string comparisons in WHERE clauses stay valid.
 const sqliteTimeLayout = "2006-01-02 15:04:05"
 
 type AuthSessionRepository struct {

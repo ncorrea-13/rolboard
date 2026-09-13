@@ -25,8 +25,6 @@ func NewAuthService(campaignRepo *repository.CampaignRepository, sessionRepo *re
 	return &AuthService{campaignRepo: campaignRepo, sessionRepo: sessionRepo}
 }
 
-// SetAccessCode hashes and stores the campaign's access code. Called once from
-// an admin-only setup step, never from the public campaign update payload.
 func (s *AuthService) SetAccessCode(ctx context.Context, campaignID int64, code string) error {
 	hash, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
 	if err != nil {
@@ -62,7 +60,10 @@ func (s *AuthService) Logout(ctx context.Context, token string) error {
 	return s.sessionRepo.Delete(ctx, hashToken(token))
 }
 
-// ValidateToken is what the auth middleware calls on every request.
+func (s *AuthService) SessionTTL() time.Duration {
+	return sessionTTL
+}
+
 func (s *AuthService) ValidateToken(ctx context.Context, token string) (campaignID int64, err error) {
 	session, err := s.sessionRepo.GetValidByTokenHash(ctx, hashToken(token))
 	if err != nil {

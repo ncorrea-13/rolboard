@@ -1,8 +1,15 @@
 package handlers
 
-import "github.com/ncorrea-13/rolboard/server/internal/service"
+import (
+	"database/sql"
+
+	"github.com/ncorrea-13/rolboard/server/internal/service"
+)
 
 type Handlers struct {
+	db                    *sql.DB
+	adminToken            string
+	auth                  *service.AuthService
 	campaigns             *service.CampaignService
 	arcs                  *service.ArcService
 	locations             *service.LocationService
@@ -19,6 +26,9 @@ type Handlers struct {
 }
 
 func NewHandlers(
+	db *sql.DB,
+	adminToken string,
+	auth *service.AuthService,
 	campaigns *service.CampaignService,
 	arcs *service.ArcService,
 	locations *service.LocationService,
@@ -34,6 +44,9 @@ func NewHandlers(
 	encounterParticipants *service.EncounterParticipantService,
 ) *Handlers {
 	return &Handlers{
+		db:                    db,
+		adminToken:            adminToken,
+		auth:                  auth,
 		campaigns:             campaigns,
 		arcs:                  arcs,
 		locations:             locations,
