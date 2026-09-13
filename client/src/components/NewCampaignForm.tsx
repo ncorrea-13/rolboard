@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Campaign } from "../data/domain";
 import { apiFetch } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 interface NewCampaignFormProps {
   onConfirm: (campaign: Omit<Campaign, "id">, vaultPath: string) => void;
@@ -8,6 +9,7 @@ interface NewCampaignFormProps {
 }
 
 export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
+  const t = useT();
   const [name, setName] = useState("");
   const [system, setSystem] = useState("");
   const [vaultPath, setVaultPath] = useState("");
@@ -37,31 +39,31 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
   return (
     <>
       <div>
-        <span className="label">Nombre de la campaña</span>
+        <span className="label">{t("newCampaignForm.name")}</span>
         <input
           className="npc-edit__input"
-          placeholder="ej. La Fisura de Kholinar"
+          placeholder={t("newCampaignForm.namePlaceholder")}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
       </div>
       <div>
-        <span className="label">Sistema</span>
+        <span className="label">{t("newCampaignForm.system")}</span>
         <input
           className="npc-edit__input"
-          placeholder="ej. Cosmere RPG"
+          placeholder={t("newCampaignForm.systemPlaceholder")}
           value={system}
           onChange={(e) => setSystem(e.target.value)}
         />
       </div>
       <div>
-        <span className="label">Directorio del vault</span>
+        <span className="label">{t("newCampaignForm.vaultDir")}</span>
         <select
           className="npc-edit__input"
           value={vaultPath}
           onChange={(e) => setVaultPath(e.target.value)}
         >
-          <option value="">Sin vault (campaña solo dashboard)</option>
+          <option value="">{t("newCampaignForm.noVault")}</option>
           {vaultDirs.map((dir) => (
             <option key={dir} value={dir}>
               {dir}
@@ -78,14 +80,14 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
         }}
       >
         <button className="btn btn-secondary" onClick={onCancel}>
-          Cancelar
+          {t("common.cancel")}
         </button>
         <button
           className="btn btn-primary"
           onClick={handleConfirm}
           disabled={!name.trim()}
         >
-          Crear campaña
+          {t("newCampaignForm.confirm")}
         </button>
       </div>
     </>

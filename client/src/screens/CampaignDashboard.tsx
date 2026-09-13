@@ -13,6 +13,7 @@ import { StatusPill, ArcStatusPill, QuestStatusPill } from "../components/Status
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
 import { openInObsidian } from "../lib/obsidian";
+import { useT } from "../lib/i18n";
 
 export type DashboardSection =
   | "resumen"
@@ -66,6 +67,7 @@ export function CampaignDashboard({
   onReindex,
   reindexing,
 }: CampaignDashboardProps) {
+  const t = useT();
   const recentNpcs = summary?.recentNpcs ?? npcs.slice(0, 4);
   const activeQuests = summary?.activeQuests ?? quests.filter((q) => q.status === "active");
   const currentArc =
@@ -98,7 +100,7 @@ export function CampaignDashboard({
               className="btn btn-secondary"
               onClick={() => openInObsidian(campaign.vaultPath, currentArc.obsidianPath)}
             >
-              Abrir en Obsidian
+              {t("entityDetail.openInObsidian")}
             </button>
           )}
           <button
@@ -106,15 +108,15 @@ export function CampaignDashboard({
             onClick={onReindex}
             disabled={reindexing}
           >
-            {reindexing ? "Reindexando…" : "Reindexar vault"}
+            {reindexing ? t("dashboard.reindexing") : t("dashboard.reindexVault")}
           </button>
           {lastSession && lastSession.sessionType !== "planning" ? (
             <button className="btn btn-primary" onClick={onPlanSession}>
-              Planificar sesión
+              {t("sessionsTimeline.plan")}
             </button>
           ) : (
             <button className="btn btn-primary" onClick={onStartSession}>
-              Jugar sesión {nextSessionNumber}
+              {t("sessionsTimeline.play")} {nextSessionNumber}
             </button>
           )}
         </div>
@@ -127,7 +129,7 @@ export function CampaignDashboard({
             onClick={() => onSelectArc(currentArc.id)}
           >
             <div className="campaign-dashboard__panel-top">
-              <span className="label">Arco actual</span>
+              <span className="label">{t("dashboard.currentArc")}</span>
               <ArcStatusPill status={currentArc.status} />
             </div>
             <div className="display" style={{ fontSize: 21, marginTop: 9 }}>
@@ -160,10 +162,10 @@ export function CampaignDashboard({
                     onPlanSession();
                   }}
                 >
-                  Planificar sesión
+                  {t("sessionsTimeline.plan")}
                 </button>
               )}
-              <span className="label">Última sesión</span>
+              <span className="label">{t("dashboard.lastSession")}</span>
               <div className="campaign-dashboard__session-title">
                 <span className="campaign-dashboard__session-n">
                   {sessionCode(lastSession)}
@@ -188,13 +190,13 @@ export function CampaignDashboard({
                 color: "var(--text-primary)",
               }}
             >
-              Quests activas
+              {t("dashboard.activeQuests")}
             </span>
             <button
               className="campaign-dashboard__list-action"
               onClick={() => onNavigate("quests")}
             >
-              Ver todas
+              {t("dashboard.viewAllFem")}
             </button>
           </div>
           {activeQuests.map((q) => (
@@ -246,13 +248,13 @@ export function CampaignDashboard({
                 color: "var(--text-primary)",
               }}
             >
-              NPCs recientes
+              {t("dashboard.recentNpcs")}
             </span>
             <button
               className="campaign-dashboard__list-action"
               onClick={() => onNavigate("npcs")}
             >
-              Ver todos
+              {t("dashboard.viewAllMasc")}
             </button>
           </div>
           {recentNpcs.map((n) => (

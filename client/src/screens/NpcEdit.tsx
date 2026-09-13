@@ -14,10 +14,11 @@ import {
 } from "../data/domain";
 import { apiFetch } from "../lib/api";
 import { SkillsEditor } from "../components/SkillsEditor";
+import { useT, type TranslationKey } from "../lib/i18n";
 
-const typeOptions: { label: string; crystal: CrystalType }[] = [
-  { label: "NPC", crystal: "npc" },
-  { label: "Spren / cognitiva", crystal: "spren" },
+const typeOptions: { label: string; labelKey: TranslationKey; crystal: CrystalType }[] = [
+  { label: "NPC", labelKey: "npcEdit.typeNpc", crystal: "npc" },
+  { label: "Spren / cognitiva", labelKey: "npcEdit.typeSprenCognitive", crystal: "spren" },
 ];
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
@@ -31,6 +32,7 @@ interface NpcEditProps {
 }
 
 export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProps) {
+  const t = useT();
   const [name, setName] = useState(npc.name);
   const [description, setDescription] = useState(npc.description);
   const [status, setStatus] = useState<StatusKind>(npc.status);
@@ -88,7 +90,7 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
   }
 
   function handleSave() {
-    const crystalLabel = typeOptions.find((t) => t.crystal === crystal)?.label ?? npc.crystalLabel;
+    const crystalLabel = typeOptions.find((opt) => opt.crystal === crystal)?.label ?? npc.crystalLabel;
     onSave({ name, description, status, detailLevel, crystal, crystalLabel, locationId: locationId || undefined, etnia, tipoSpren, attributes, skills });
     if (npc.id) syncLink(npc.id);
   }
@@ -102,15 +104,15 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
         <div className="npc-edit__bar-left">
           <span className="status-dot" style={{ background: "var(--accent-flame)" }} />
           <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {npc.id ? `Editando · ${npc.name}` : "Nuevo NPC"}
+            {npc.id ? `${t("common.editing")} · ${npc.name}` : t("npcEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>cambios sin guardar</span>
+            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>Descartar</button>
-          <button className="btn btn-primary" onClick={handleSave}>Guardar</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
+          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
         </div>
       </div>
 
@@ -118,12 +120,12 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
         <div className="npc-edit__col">
           <div className="npc-edit__grid-2">
             <div>
-              <span className="label">Nombre</span>
+              <span className="label">{t("common.name")}</span>
               <input className="npc-edit__input npc-edit__input--focus" value={name} onChange={(e) => setName(e.target.value)} />
-              <div className="npc-edit__hint">Campo con foco: anillo ámbar de 1px, nunca glow.</div>
+              <div className="npc-edit__hint">{t("npcEdit.focusHint")}</div>
             </div>
             <div>
-              <span className="label">Status</span>
+              <span className="label">{t("common.status")}</span>
               <select
                 className="npc-edit__select npc-edit__select--native"
                 value={status}
@@ -138,30 +140,30 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
               </select>
             </div>
             <div>
-              <span className="label">Nivel de detalle</span>
+              <span className="label">{t("npcEdit.detailLevel")}</span>
               <select
                 className="npc-edit__select npc-edit__select--native"
                 value={detailLevel}
                 onChange={(e) => setDetailLevel(e.target.value as "full" | "minor")}
               >
-                <option value="full">Completo</option>
-                <option value="minor">Menor</option>
+                <option value="full">{t("npcEdit.detailFull")}</option>
+                <option value="minor">{t("npcEdit.detailMinor")}</option>
               </select>
             </div>
           </div>
 
           <div>
-            <span className="label">Tipo</span>
+            <span className="label">{t("common.type")}</span>
             <div className="npc-edit__type-row">
-              {typeOptions.map((t) => (
+              {typeOptions.map((opt) => (
                 <button
-                  key={t.label}
+                  key={opt.label}
                   type="button"
-                  className={`npc-edit__type-chip${crystal === t.crystal ? " npc-edit__type-chip--active" : ""}`}
-                  onClick={() => setCrystal(t.crystal)}
+                  className={`npc-edit__type-chip${crystal === opt.crystal ? " npc-edit__type-chip--active" : ""}`}
+                  onClick={() => setCrystal(opt.crystal)}
                 >
-                  <span className="npc-edit__type-mark" style={{ background: crystalColor[t.crystal] }} />
-                  {t.label}
+                  <span className="npc-edit__type-mark" style={{ background: crystalColor[opt.crystal] }} />
+                  {t(opt.labelKey)}
                 </button>
               ))}
             </div>
@@ -170,38 +172,38 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
           <div className="npc-edit__grid-2">
             {crystal === "spren" ? (
               <div>
-                <span className="label">Tipo de spren</span>
+                <span className="label">{t("npcEdit.sprenType")}</span>
                 <input
                   className="npc-edit__input"
                   value={tipoSpren}
                   onChange={(e) => setTipoSpren(e.target.value)}
-                  placeholder="ej. Honorspren"
+                  placeholder={t("npcEdit.sprenPlaceholder")}
                 />
               </div>
             ) : (
               <div>
-                <span className="label">Etnia</span>
+                <span className="label">{t("npcEdit.ethnicity")}</span>
                 <input
                   className="npc-edit__input"
                   value={etnia}
                   onChange={(e) => setEtnia(e.target.value)}
-                  placeholder="ej. Alethi"
+                  placeholder={t("npcEdit.ethnicityPlaceholder")}
                 />
               </div>
             )}
           </div>
 
           <div>
-            <span className="label">Descripción</span>
+            <span className="label">{t("common.description")}</span>
             <textarea className="npc-edit__textarea" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
 
           <div>
-            <span className="label">Vínculo con otro NPC</span>
+            <span className="label">{t("npcEdit.linkWithNpc")}</span>
             <div className="npc-edit__grid-2">
               <input
                 className="npc-edit__select npc-edit__select--native"
-                placeholder="Rol (ej. VINCULADO)"
+                placeholder={t("npcEdit.linkRolePlaceholder")}
                 value={linkRole}
                 onChange={(e) => setLinkRole(e.target.value)}
               />
@@ -211,39 +213,38 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
                 onChange={(e) => setLinkNpcId(e.target.value)}
                 style={linkTarget ? { borderBottom: `2px solid ${crystalColor[linkTarget.crystal]}` } : undefined}
               >
-                <option value="">— sin vínculo —</option>
+                <option value="">{t("npcEdit.noLink")}</option>
                 {npcs.filter((n) => n.id !== npc.id).map((n) => (
                   <option key={n.id} value={n.id}>{n.name}</option>
                 ))}
               </select>
             </div>
             <div className="npc-edit__hint">
-              El selector hereda el color de cristal del tipo elegido — se ve que el vínculo es con un spren sin leer
-              la etiqueta.
+              {t("npcEdit.linkHint")}
             </div>
           </div>
 
-          <SkillsEditor label="Atributos" value={attributes} onChange={setAttributes} />
-          <SkillsEditor label="Habilidades" value={skills} onChange={setSkills} />
+          <SkillsEditor label={t("characterSheet.attributes")} value={attributes} onChange={setAttributes} />
+          <SkillsEditor label={t("characterSheet.skills")} value={skills} onChange={setSkills} />
         </div>
 
         <div className="npc-edit__col">
           <div>
-            <span className="label">Ubicación actual</span>
+            <span className="label">{t("npcList.colLocation")}</span>
             <select
               className="npc-edit__select npc-edit__select--native"
               style={{ borderBottom: "2px solid var(--crystal-location)" }}
               value={locationId}
               onChange={(e) => setLocationId(e.target.value)}
             >
-              <option value="">— sin ubicación —</option>
+              <option value="">{t("npcEdit.noLocation")}</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>{locationBreadcrumb(l, locations)}</option>
               ))}
             </select>
           </div>
           <div>
-            <span className="label">Nota de Obsidian</span>
+            <span className="label">{t("entityDetail.obsidianNote")}</span>
             <div className="npc-edit__select" style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}>
               {npc.obsidianPath}
             </div>
@@ -252,18 +253,16 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
             <div className="card npc-edit__warning" style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}>
               <div className="npc-edit__warning-title">
                 <span className="status-dot" style={{ background: statusDotColor[status] }} />
-                {status === "dead" ? "NPC marcado como muerto" : "Falta la ubicación de origen"}
+                {status === "dead" ? t("npcEdit.markedDead") : t("npcEdit.missingOrigin")}
               </div>
-              <div className="npc-edit__warning-body">Podés guardar igual; el campo queda marcado como incompleto en la ficha.</div>
+              <div className="npc-edit__warning-body">{t("npcEdit.warningBody")}</div>
             </div>
           )}
           <div className="npc-edit__note">
-            Decisión: edición en la misma vista, no modal. Un modal taparía la ficha justo cuando estás copiando datos
-            de ella en vivo, y los vínculos necesitan el ancho completo.
+            {t("npcEdit.note1")}
           </div>
           <div className="npc-edit__note">
-            La facción se gestiona desde la ficha de la facción ("Agregar NPC"), no acá — evita tener dos lugares
-            que puedan decir cosas distintas sobre a qué grupo pertenece.
+            {t("npcEdit.note2")}
           </div>
         </div>
       </div>

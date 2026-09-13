@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./NpcEdit.css";
 import { type Group, type Npc } from "../data/domain";
+import { useT } from "../lib/i18n";
 
 interface FactionEditProps {
   group: Group;
@@ -10,6 +11,7 @@ interface FactionEditProps {
 }
 
 export function FactionEdit({ group, npcs, onSave, onDiscard }: FactionEditProps) {
+  const t = useT();
   const [name, setName] = useState(group.name);
   const [description, setDescription] = useState(group.description);
   const [alineacion, setAlineacion] = useState(group.alineacion);
@@ -31,22 +33,22 @@ export function FactionEdit({ group, npcs, onSave, onDiscard }: FactionEditProps
         <div className="npc-edit__bar-left">
           <span className="status-dot" style={{ background: "var(--crystal-faction-quest)" }} />
           <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {group.id ? `Editando · ${group.name}` : "Nueva facción"}
+            {group.id ? `${t("common.editing")} · ${group.name}` : t("factionEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>cambios sin guardar</span>
+            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>Descartar</button>
-          <button className="btn btn-primary" onClick={handleSave}>Guardar</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
+          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
         </div>
       </div>
 
       <div className="npc-edit__body">
         <div className="npc-edit__col">
           <div>
-            <span className="label">Nombre</span>
+            <span className="label">{t("common.name")}</span>
             <input
               className="npc-edit__input npc-edit__input--focus"
               value={name}
@@ -54,7 +56,7 @@ export function FactionEdit({ group, npcs, onSave, onDiscard }: FactionEditProps
             />
           </div>
           <div>
-            <span className="label">Descripción</span>
+            <span className="label">{t("common.description")}</span>
             <textarea
               className="npc-edit__textarea"
               value={description}
@@ -65,7 +67,7 @@ export function FactionEdit({ group, npcs, onSave, onDiscard }: FactionEditProps
 
         <div className="npc-edit__col">
           <div>
-            <span className="label">Alineación</span>
+            <span className="label">{t("factionDetail.alignment")}</span>
             <input
               className="npc-edit__input"
               value={alineacion}
@@ -73,13 +75,13 @@ export function FactionEdit({ group, npcs, onSave, onDiscard }: FactionEditProps
             />
           </div>
           <div>
-            <span className="label">Líder</span>
+            <span className="label">{t("factionDetail.leader")}</span>
             <select
               className="npc-edit__select npc-edit__select--native"
               value={liderNpcId}
               onChange={(e) => setLiderNpcId(e.target.value)}
             >
-              <option value="">Sin líder</option>
+              <option value="">{t("factionEdit.noLeader")}</option>
               {npcs.map((n) => (
                 <option key={n.id} value={n.id}>
                   {n.name}

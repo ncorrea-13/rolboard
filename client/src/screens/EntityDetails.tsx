@@ -25,6 +25,7 @@ import {
   type PlayerCharacter,
   type Session,
 } from "../data/domain";
+import { useT } from "../lib/i18n";
 
 interface EditableProps {
   onEdit: () => void;
@@ -50,22 +51,23 @@ export function ArcDetail({
   onStart: () => void;
   onClose: () => void;
 } & EditableProps) {
+  const t = useT();
   return (
     <EntityDetail
-      eyebrow="ARCOS"
-      backLabel="ARCOS"
+      eyebrow={t("entityDetails.arcosBreadcrumb")}
+      backLabel={t("entityDetails.arcosBreadcrumb")}
       onBack={onBack}
       title={arc.label}
       status={<ArcStatusPill status={arc.status} />}
       extraActions={
         arc.status === "en_curso" ? (
           <button className="btn btn-danger" onClick={onClose}>
-            Cerrar arco
+            {t("arcDetail.closeArc")}
           </button>
         ) : (
           arc.status !== "cerrado" && (
             <button className="btn btn-success" onClick={onStart}>
-              Iniciar arco
+              {t("arcDetail.startArc")}
             </button>
           )
         )
@@ -76,9 +78,9 @@ export function ArcDetail({
       onEdit={onEdit}
       onDelete={onDelete}
       fields={[
-        { label: "Resumen", value: arc.summary },
+        { label: t("common.summary"), value: arc.summary },
         {
-          label: `Sesiones (${sessions.length})`,
+          label: `${t("arcDetail.sessions")} (${sessions.length})`,
           value: (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {sessions.map((s) => (
@@ -132,6 +134,7 @@ export function FactionDetail({
   onSelectNpc: (id: string) => void;
   onSelectPlayer: (id: string) => void;
 } & EditableProps) {
+  const t = useT();
   const [memberIds, setMemberIds] = useState<string[]>([]);
   const [pcMemberIds, setPcMemberIds] = useState<string[]>([]);
   const [addNpcId, setAddNpcId] = useState("");
@@ -198,8 +201,8 @@ export function FactionDetail({
   const lider = npcs.find((n) => n.id === group.liderNpcId);
   return (
     <EntityDetail
-      eyebrow="FACCIONES"
-      backLabel="FACCIONES"
+      eyebrow={t("entityDetails.faccionesBreadcrumb")}
+      backLabel={t("entityDetails.faccionesBreadcrumb")}
       onBack={onBack}
       title={group.name}
       accentColor="var(--crystal-faction-quest)"
@@ -209,11 +212,11 @@ export function FactionDetail({
       onEdit={onEdit}
       onDelete={onDelete}
       fields={[
-        { label: "Descripción", value: group.description },
-        ...(group.alineacion ? [{ label: "Alineación", value: group.alineacion }] : []),
-        ...(lider ? [{ label: "Líder", value: lider.name }] : []),
+        { label: t("common.description"), value: group.description },
+        ...(group.alineacion ? [{ label: t("factionDetail.alignment"), value: group.alineacion }] : []),
+        ...(lider ? [{ label: t("factionDetail.leader"), value: lider.name }] : []),
         {
-          label: `Miembros (${members.length})`,
+          label: `${t("factionDetail.members")} (${members.length})`,
           value: (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {members.map((n) => (
@@ -235,13 +238,13 @@ export function FactionDetail({
                   </div>
                   <StatusPill status={n.status} />
                   <button className="btn btn-secondary" onClick={() => removeMember(n.id)}>
-                    Sacar
+                    {t("factionDetail.remove")}
                   </button>
                 </div>
               ))}
               {members.length === 0 && (
                 <span style={{ color: "var(--text-secondary)" }}>
-                  Sin miembros todavía.
+                  {t("factionDetail.noMembers")}
                 </span>
               )}
               {addableNpcs.length > 0 && (
@@ -251,7 +254,7 @@ export function FactionDetail({
                     value={addNpcId}
                     onChange={(e) => setAddNpcId(e.target.value)}
                   >
-                    <option value="">Agregar NPC…</option>
+                    <option value="">{t("factionDetail.addNpcPlaceholder")}</option>
                     {addableNpcs.map((n) => (
                       <option key={n.id} value={n.id}>
                         {n.name}
@@ -259,7 +262,7 @@ export function FactionDetail({
                     ))}
                   </select>
                   <button className="btn btn-secondary" onClick={addMember} disabled={!addNpcId}>
-                    Agregar
+                    {t("common.add")}
                   </button>
                 </div>
               )}
@@ -267,7 +270,7 @@ export function FactionDetail({
           ),
         },
         {
-          label: `Jugadores (${pcMembers.length})`,
+          label: `${t("factionDetail.players")} (${pcMembers.length})`,
           value: (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {pcMembers.map((p) => (
@@ -283,19 +286,19 @@ export function FactionDetail({
                     <EntityIdentity
                       initials={p.characterName.slice(0, 2).toUpperCase()}
                       name={p.characterName}
-                      role={`Jugado por ${p.playerName}`}
+                      role={`${t("playersList.playedBy")} ${p.playerName}`}
                       color="var(--crystal-npc)"
                     />
                   </div>
                   <StatusPill status={p.status} />
                   <button className="btn btn-secondary" onClick={() => removePcMember(p.id)}>
-                    Sacar
+                    {t("factionDetail.remove")}
                   </button>
                 </div>
               ))}
               {pcMembers.length === 0 && (
                 <span style={{ color: "var(--text-secondary)" }}>
-                  Sin jugadores todavía.
+                  {t("factionDetail.noPlayers")}
                 </span>
               )}
               {addablePcs.length > 0 && (
@@ -305,7 +308,7 @@ export function FactionDetail({
                     value={addPcId}
                     onChange={(e) => setAddPcId(e.target.value)}
                   >
-                    <option value="">Agregar jugador…</option>
+                    <option value="">{t("factionDetail.addPlayerPlaceholder")}</option>
                     {addablePcs.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.characterName}
@@ -313,7 +316,7 @@ export function FactionDetail({
                     ))}
                   </select>
                   <button className="btn btn-secondary" onClick={addPcMember} disabled={!addPcId}>
-                    Agregar
+                    {t("common.add")}
                   </button>
                 </div>
               )}
@@ -340,6 +343,7 @@ export function LocationDetail({
   campaignId: string;
   onBack: () => void;
 } & EditableProps) {
+  const t = useT();
   const breadcrumb: Location[] = [];
   let current: Location | undefined = location;
   while (current) {
@@ -350,8 +354,8 @@ export function LocationDetail({
 
   return (
     <EntityDetail
-      eyebrow="LOCACIONES"
-      backLabel="LOCACIONES"
+      eyebrow={t("entityDetails.locacionesBreadcrumb")}
+      backLabel={t("entityDetails.locacionesBreadcrumb")}
       onBack={onBack}
       title={location.name}
       accentColor="var(--crystal-location)"
@@ -363,12 +367,12 @@ export function LocationDetail({
       onDelete={onDelete}
       fields={[
         {
-          label: "Jerarquía",
+          label: t("locationDetail.hierarchy"),
           value: breadcrumb.map((l) => l.name).join(" › "),
         },
-        { label: "Descripción", value: location.description },
+        { label: t("common.description"), value: location.description },
         {
-          label: `Sub-locaciones (${children.length})`,
+          label: `${t("locationDetail.subLocations")} (${children.length})`,
           value:
             children.length > 0 ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -383,7 +387,7 @@ export function LocationDetail({
               </div>
             ) : (
               <span style={{ color: "var(--text-secondary)" }}>
-                Sin sub-locaciones registradas.
+                {t("locationDetail.noSubLocations")}
               </span>
             ),
         },
@@ -398,11 +402,16 @@ export function QuestDetail({
   onEdit,
   onDelete,
 }: { quest: Quest; onBack: () => void } & EditableProps) {
-  const priorityLabel = { 1: "Alta", 2: "Media", 3: "Baja" } as const;
+  const t = useT();
+  const priorityLabel = {
+    1: t("questDetail.priorityHigh"),
+    2: t("questDetail.priorityMedium"),
+    3: t("questDetail.priorityLow"),
+  } as const;
   return (
     <EntityDetail
-      eyebrow="QUESTS"
-      backLabel="QUESTS"
+      eyebrow={t("sidebar.quests")}
+      backLabel={t("sidebar.quests")}
       onBack={onBack}
       title={quest.name}
       accentColor={crystalColor[quest.crystal]}
@@ -410,10 +419,10 @@ export function QuestDetail({
       onEdit={onEdit}
       onDelete={onDelete}
       fields={[
-        { label: "Gancho", value: <MarkdownText text={quest.hook} /> },
-        { label: "Prioridad", value: priorityLabel[quest.priority] },
+        { label: t("questDetail.hook"), value: <MarkdownText text={quest.hook} /> },
+        { label: t("questDetail.priority"), value: priorityLabel[quest.priority] },
         ...(quest.notes
-          ? [{ label: "Notas del DM", value: <MarkdownText text={quest.notes} /> }]
+          ? [{ label: t("questDetail.notes"), value: <MarkdownText text={quest.notes} /> }]
           : []),
       ]}
     />

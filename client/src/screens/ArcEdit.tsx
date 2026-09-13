@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./NpcEdit.css";
 import { type Arc, type ArcStatus } from "../data/domain";
+import { useT } from "../lib/i18n";
 
 const statusOptions: { value: ArcStatus; label: string }[] = [
   { value: "planificado", label: "Planificado" },
@@ -15,6 +16,7 @@ interface ArcEditProps {
 }
 
 export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
+  const t = useT();
   const [label, setLabel] = useState(arc.label);
   const [summary, setSummary] = useState(arc.summary);
   const [order, setOrder] = useState(String(arc.order || ""));
@@ -49,15 +51,15 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
         <div className="npc-edit__bar-left">
           <span className="status-dot" style={{ background: "var(--accent-obsidian)" }} />
           <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {arc.id ? `Editando · ${arc.label}` : "Nuevo arco"}
+            {arc.id ? `${t("common.editing")} · ${arc.label}` : t("arcEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>cambios sin guardar</span>
+            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>Descartar</button>
-          <button className="btn btn-primary" onClick={handleSave}>Guardar</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
+          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
         </div>
       </div>
 
@@ -65,16 +67,16 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
         <div className="npc-edit__col">
           <div className="npc-edit__grid-2">
             <div>
-              <span className="label">Nombre del arco</span>
+              <span className="label">{t("arcEdit.nameLabel")}</span>
               <input
                 className="npc-edit__input npc-edit__input--focus"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
-                placeholder="ej. Arco III · La Marea Alta"
+                placeholder={t("arcEdit.namePlaceholder")}
               />
             </div>
             <div>
-              <span className="label">Número de arco</span>
+              <span className="label">{t("arcEdit.numberLabel")}</span>
               <input
                 className="npc-edit__input"
                 type="number"
@@ -83,19 +85,19 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
               />
             </div>
             <div>
-              <span className="label">Subarco (opcional, ej. 1 para "Arco {order || "N"}.1")</span>
+              <span className="label">{t("arcEdit.subarcPrefix")} {order || "N"}.1")</span>
               <input
                 className="npc-edit__input"
                 type="number"
                 value={subarcOrder}
                 onChange={(e) => setSubarcOrder(e.target.value)}
-                placeholder="vacío = arco principal"
+                placeholder={t("arcEdit.subarcPlaceholder")}
               />
             </div>
           </div>
 
           <div>
-            <span className="label">Resumen</span>
+            <span className="label">{t("common.summary")}</span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 200 }}
@@ -107,7 +109,7 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
 
         <div className="npc-edit__col">
           <div>
-            <span className="label">Estado</span>
+            <span className="label">{t("common.status")}</span>
             <select
               className="npc-edit__select npc-edit__select--native"
               value={status}
@@ -121,7 +123,7 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
             </select>
           </div>
           <div>
-            <span className="label">Ruta en Obsidian</span>
+            <span className="label">{t("arcEdit.obsidianPathLabel")}</span>
             <input
               className="npc-edit__input"
               value={obsidianPath}

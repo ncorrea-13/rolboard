@@ -8,6 +8,7 @@ import {
 } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
+import { useT } from "../lib/i18n";
 
 const statusFilters: StatusKind[] = ["alive", "dead", "missing", "paused"];
 
@@ -22,6 +23,7 @@ export function NpcList({
   onSelect: (id: string) => void;
   onCreate: () => void;
 }) {
+  const t = useT();
   const [search, setSearch] = useState("");
   const [activeTypes, setActiveTypes] = useState<Set<string>>(new Set());
   const [activeStatuses, setActiveStatuses] = useState<Set<StatusKind>>(
@@ -96,7 +98,7 @@ export function NpcList({
         <div className="npc-list__actions">
           <input
             className="npc-list__search"
-            placeholder="Buscar nombre, locación…"
+            placeholder={t("npcList.searchPlaceholder")}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -104,13 +106,13 @@ export function NpcList({
             }}
           />
           <button className="btn btn-primary" onClick={onCreate}>
-            Nuevo NPC
+            {t("npcList.new")}
           </button>
         </div>
       </div>
 
       <div className="npc-list__filters">
-        <span className="npc-list__filter-label">TIPO</span>
+        <span className="npc-list__filter-label">{t("npcList.typeFilterLabel")}</span>
         {typeFilters.map((f) => (
           <button
             key={f.crystal}
@@ -125,7 +127,7 @@ export function NpcList({
           </button>
         ))}
         <span className="npc-list__divider" />
-        <span className="npc-list__filter-label">STATUS</span>
+        <span className="npc-list__filter-label">{t("npcList.statusFilterLabel")}</span>
         {statusFilters.map((s) => (
           <button
             key={s}
@@ -147,15 +149,15 @@ export function NpcList({
       </div>
 
       <div className="npc-list__row npc-list__row--head">
-        <span>Nombre</span>
-        <span>Tipo</span>
-        <span>Ubicación actual</span>
-        <span>Status</span>
+        <span>{t("npcList.colName")}</span>
+        <span>{t("npcList.colType")}</span>
+        <span>{t("npcList.colLocation")}</span>
+        <span>{t("npcList.colStatus")}</span>
       </div>
 
       {filtered.length === 0 && (
         <div className="npc-list__empty">
-          Ningún NPC coincide con el filtro.
+          {t("npcList.empty")}
         </div>
       )}
 
@@ -190,17 +192,17 @@ export function NpcList({
             disabled={currentPage <= 1}
             onClick={() => setPage(currentPage - 1)}
           >
-            Anterior
+            {t("npcList.prev")}
           </button>
           <span className="npc-list__pagination-label">
-            Página {currentPage} de {pageCount}
+            {t("npcList.page")} {currentPage} {t("npcList.of")} {pageCount}
           </span>
           <button
             className="btn btn-secondary"
             disabled={currentPage >= pageCount}
             onClick={() => setPage(currentPage + 1)}
           >
-            Siguiente
+            {t("npcList.next")}
           </button>
         </div>
       )}

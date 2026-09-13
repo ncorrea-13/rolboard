@@ -1,6 +1,7 @@
 import "../styles/list.css";
 import { type Arc } from "../data/domain";
 import { ArcStatusPill } from "../components/StatusPill";
+import { useT } from "../lib/i18n";
 
 interface ArcsListProps {
   arcs: Arc[];
@@ -9,17 +10,18 @@ interface ArcsListProps {
 }
 
 export function ArcsList({ arcs, onSelect, onCreate }: ArcsListProps) {
+  const t = useT();
   return (
     <div className="card list-page">
       <div className="list-page__header">
         <div>
           <div className="display" style={{ fontSize: 21 }}>
-            Arcos
+            {t("arcsList.title")}
           </div>
-          <span className="list-page__count">{arcs.length} arcos</span>
+          <span className="list-page__count">{arcs.length} {t("arcsList.count")}</span>
         </div>
         <button className="btn btn-primary" onClick={onCreate}>
-          Nuevo arco
+          {t("arcsList.new")}
         </button>
       </div>
       <div className="list-page__rows">

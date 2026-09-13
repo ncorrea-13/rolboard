@@ -1,18 +1,13 @@
 import { useState } from "react";
 import "./NpcEdit.css";
 import { type Quest, type QuestStatus } from "../data/domain";
+import { useT } from "../lib/i18n";
 
 const statusOptions: { value: QuestStatus; label: string }[] = [
   { value: "active", label: "Activa" },
   { value: "on_hold", label: "En pausa" },
   { value: "completed", label: "Completada" },
   { value: "failed", label: "Fallida" },
-];
-
-const priorityOptions: { value: 1 | 2 | 3; label: string }[] = [
-  { value: 1, label: "Alta" },
-  { value: 2, label: "Media" },
-  { value: 3, label: "Baja" },
 ];
 
 interface QuestEditProps {
@@ -22,6 +17,12 @@ interface QuestEditProps {
 }
 
 export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
+  const t = useT();
+  const priorityOptions: { value: 1 | 2 | 3; label: string }[] = [
+    { value: 1, label: t("questDetail.priorityHigh") },
+    { value: 2, label: t("questDetail.priorityMedium") },
+    { value: 3, label: t("questDetail.priorityLow") },
+  ];
   const [name, setName] = useState(quest.name);
   const [hook, setHook] = useState(quest.hook);
   const [status, setStatus] = useState<QuestStatus>(quest.status);
@@ -45,22 +46,22 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
         <div className="npc-edit__bar-left">
           <span className="status-dot" style={{ background: "var(--crystal-faction-quest)" }} />
           <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {quest.id ? `Editando · ${quest.name}` : "Nueva quest"}
+            {quest.id ? `${t("common.editing")} · ${quest.name}` : t("questEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>cambios sin guardar</span>
+            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>Descartar</button>
-          <button className="btn btn-primary" onClick={handleSave}>Guardar</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
+          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
         </div>
       </div>
 
       <div className="npc-edit__body">
         <div className="npc-edit__col">
           <div>
-            <span className="label">Título</span>
+            <span className="label">{t("questEdit.title")}</span>
             <input
               className="npc-edit__input npc-edit__input--focus"
               value={name}
@@ -69,7 +70,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
           </div>
 
           <div>
-            <span className="label">Gancho narrativo (admite Markdown)</span>
+            <span className="label">{t("questEdit.hookLabel")}</span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 140 }}
@@ -79,7 +80,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
           </div>
 
           <div>
-            <span className="label">Notas del DM (privadas, admite Markdown)</span>
+            <span className="label">{t("questEdit.notesLabel")}</span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 160 }}
@@ -92,7 +93,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
         <div className="npc-edit__col">
           <div className="npc-edit__grid-2">
             <div>
-              <span className="label">Estado</span>
+              <span className="label">{t("common.status")}</span>
               <select
                 className="npc-edit__select npc-edit__select--native"
                 value={status}
@@ -106,7 +107,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
               </select>
             </div>
             <div>
-              <span className="label">Prioridad</span>
+              <span className="label">{t("questDetail.priority")}</span>
               <select
                 className="npc-edit__select npc-edit__select--native"
                 value={priority}

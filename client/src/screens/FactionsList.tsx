@@ -1,5 +1,6 @@
 import "../styles/list.css";
 import type { Group } from "../data/domain";
+import { useT } from "../lib/i18n";
 
 interface FactionsListProps {
   groups: Group[];
@@ -12,17 +13,18 @@ export function FactionsList({
   onSelect,
   onCreate,
 }: FactionsListProps) {
+  const t = useT();
   return (
     <div className="card list-page">
       <div className="list-page__header">
         <div>
           <div className="display" style={{ fontSize: 21 }}>
-            Facciones
+            {t("factionsList.title")}
           </div>
-          <span className="list-page__count">{groups.length} facciones</span>
+          <span className="list-page__count">{groups.length} {t("factionsList.count")}</span>
         </div>
         <button className="btn btn-primary" onClick={onCreate}>
-          Nueva facción
+          {t("factionsList.new")}
         </button>
       </div>
       <div className="list-page__rows">
@@ -44,7 +46,7 @@ export function FactionsList({
                 {g.description}
               </div>
             </div>
-            <span className="list-page__badge">{g.memberCount} miembros</span>
+            <span className="list-page__badge">{g.memberCount} {t("factionsList.members")}</span>
           </div>
         ))}
       </div>

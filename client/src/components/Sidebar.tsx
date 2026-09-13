@@ -13,58 +13,60 @@ import {
 import "./Sidebar.css";
 import { crystalColor } from "../data/domain";
 import type { DashboardSection } from "../screens/CampaignDashboard";
+import { LanguageToggle } from "./LanguageToggle";
+import { useT, type TranslationKey } from "../lib/i18n";
 
 const navItems: {
-  label: string;
+  labelKey: TranslationKey;
   section?: DashboardSection;
   Icon: LucideIcon;
   color: string;
 }[] = [
   {
-    label: "Resumen",
+    labelKey: "sidebar.resumen",
     section: "resumen",
     Icon: LayoutDashboard,
     color: "var(--accent-obsidian)",
   },
   {
-    label: "Arcos",
+    labelKey: "sidebar.arcos",
     section: "arcos",
     Icon: BookOpen,
     color: "var(--accent-sky)",
   },
   {
-    label: "Sesiones",
+    labelKey: "sidebar.sesiones",
     section: "sesiones",
     Icon: CalendarDays,
     color: "var(--status-alive)",
   },
-  { label: "NPCs", section: "npcs", Icon: Users, color: crystalColor.npc },
+  { labelKey: "sidebar.npcs", section: "npcs", Icon: Users, color: crystalColor.npc },
   {
-    label: "Jugadores",
+    labelKey: "sidebar.jugadores",
     section: "jugadores",
     Icon: Dices,
     color: "var(--status-dead)",
   },
   {
-    label: "Locaciones",
+    labelKey: "sidebar.locaciones",
     section: "locaciones",
     Icon: MapPin,
     color: crystalColor.location,
   },
   {
-    label: "Facciones",
+    labelKey: "sidebar.facciones",
     section: "facciones",
     Icon: Shield,
     color: crystalColor["faction-quest"],
   },
   {
-    label: "Quests",
+    labelKey: "sidebar.quests",
     section: "quests",
     Icon: Swords,
     color: "var(--accent-teal)",
   },
   {
-    label: "Encuentros",
+    labelKey: "sidebar.encuentros",
     section: "encuentros",
     Icon: Skull,
     color: "var(--accent-flame)",
@@ -84,12 +86,13 @@ export function Sidebar({
   onNavigate,
   onBack,
 }: SidebarProps) {
+  const t = useT();
   return (
     <nav className="sidebar">
       <button
         className="sidebar__brand"
         onClick={onBack}
-        title="Volver a campañas"
+        title={t("sidebar.backToCampaigns")}
       >
         <span className="sidebar__glow" />
         <span className="sidebar__name">{campaignName}</span>
@@ -98,7 +101,7 @@ export function Sidebar({
         const isActive = item.section === active;
         return (
           <div
-            key={item.label}
+            key={item.labelKey}
             className={`sidebar__item${isActive ? " sidebar__item--active" : ""}${item.section ? " sidebar__item--clickable" : ""}`}
             onClick={item.section ? () => onNavigate(item.section!) : undefined}
           >
@@ -113,7 +116,7 @@ export function Sidebar({
               style={{ background: item.color }}
             />
             <span className="sidebar__item-label">
-              {item.label}
+              {t(item.labelKey)}
               {isActive && (
                 <span
                   className="sidebar__item-underline"
@@ -124,6 +127,9 @@ export function Sidebar({
           </div>
         );
       })}
+      <div style={{ padding: "8px 12px", marginTop: "auto" }}>
+        <LanguageToggle />
+      </div>
     </nav>
   );
 }

@@ -9,6 +9,7 @@ import {
   type StatusKind,
 } from "../data/domain";
 import { SkillsEditor } from "../components/SkillsEditor";
+import { useT } from "../lib/i18n";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
@@ -19,6 +20,7 @@ interface PlayerEditProps {
 }
 
 export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
+  const t = useT();
   const [playerName, setPlayerName] = useState(player.playerName);
   const [characterName, setCharacterName] = useState(player.characterName);
   const [race, setRace] = useState(player.race);
@@ -56,15 +58,15 @@ export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
         <div className="npc-edit__bar-left">
           <span className="status-dot" style={{ background: "var(--accent-flame)" }} />
           <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {player.id ? `Editando · ${player.characterName}` : "Nuevo personaje"}
+            {player.id ? `${t("common.editing")} · ${player.characterName}` : t("playerEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>cambios sin guardar</span>
+            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>Descartar</button>
-          <button className="btn btn-primary" onClick={handleSave}>Guardar</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
+          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
         </div>
       </div>
 
@@ -72,7 +74,7 @@ export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
         <div className="npc-edit__col">
           <div className="npc-edit__grid-2">
             <div>
-              <span className="label">Nombre del personaje</span>
+              <span className="label">{t("playerEdit.characterName")}</span>
               <input
                 className="npc-edit__input npc-edit__input--focus"
                 value={characterName}
@@ -80,7 +82,7 @@ export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
               />
             </div>
             <div>
-              <span className="label">Status</span>
+              <span className="label">{t("common.status")}</span>
               <select
                 className="npc-edit__select npc-edit__select--native"
                 value={status}
@@ -97,39 +99,39 @@ export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
           </div>
 
           <div>
-            <span className="label">Jugador</span>
+            <span className="label">{t("playerEdit.player")}</span>
             <input className="npc-edit__input" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
           </div>
 
           <div className="npc-edit__grid-2">
             <div>
-              <span className="label">Raza</span>
+              <span className="label">{t("playerEdit.race")}</span>
               <input className="npc-edit__input" value={race} onChange={(e) => setRace(e.target.value)} />
             </div>
             <div>
-              <span className="label">Clase</span>
+              <span className="label">{t("playerEdit.class")}</span>
               <input className="npc-edit__input" value={charClass} onChange={(e) => setCharClass(e.target.value)} />
             </div>
           </div>
 
           <div>
-            <span className="label">Trasfondo</span>
+            <span className="label">{t("playerDetail.backstory")}</span>
             <textarea className="npc-edit__textarea" value={backstory} onChange={(e) => setBackstory(e.target.value)} />
           </div>
 
           <div>
-            <span className="label">Notas de progresión</span>
+            <span className="label">{t("playerDetail.progressionNotes")}</span>
             <textarea className="npc-edit__textarea" value={progressionNotes} onChange={(e) => setProgressionNotes(e.target.value)} />
           </div>
 
-          <SkillsEditor label="Atributos" value={attributes} onChange={setAttributes} />
-          <SkillsEditor label="Habilidades" value={skills} onChange={setSkills} />
+          <SkillsEditor label={t("characterSheet.attributes")} value={attributes} onChange={setAttributes} />
+          <SkillsEditor label={t("characterSheet.skills")} value={skills} onChange={setSkills} />
         </div>
 
         <div className="npc-edit__col">
           <div className="npc-edit__grid-2">
             <div>
-              <span className="label">HP actual</span>
+              <span className="label">{t("playerEdit.currentHp")}</span>
               <input
                 className="npc-edit__input"
                 type="number"
@@ -138,7 +140,7 @@ export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
               />
             </div>
             <div>
-              <span className="label">HP máximo</span>
+              <span className="label">{t("playerEdit.maxHp")}</span>
               <input
                 className="npc-edit__input"
                 type="number"
@@ -148,7 +150,7 @@ export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
             </div>
           </div>
           <div>
-            <span className="label">Nota de Obsidian</span>
+            <span className="label">{t("entityDetail.obsidianNote")}</span>
             <div className="npc-edit__select" style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}>
               {player.obsidianPath}
             </div>
@@ -157,14 +159,13 @@ export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
             <div className="card npc-edit__warning" style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}>
               <div className="npc-edit__warning-title">
                 <span className="status-dot" style={{ background: statusDotColor[status] }} />
-                {status === "dead" ? "Personaje marcado como muerto" : "Falta definir la raza"}
+                {status === "dead" ? t("playerEdit.markedDead") : t("playerEdit.missingRace")}
               </div>
-              <div className="npc-edit__warning-body">Podés guardar igual; el campo queda marcado como incompleto en la ficha.</div>
+              <div className="npc-edit__warning-body">{t("npcEdit.warningBody")}</div>
             </div>
           )}
           <div className="npc-edit__note">
-            La facción de este PJ se lee del vault (`facciones:` en su ficha), no se edita acá — ver la ficha de la
-            facción para consultarla.
+            {t("playerEdit.note")}
           </div>
         </div>
       </div>

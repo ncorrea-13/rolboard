@@ -1,6 +1,8 @@
 import "./CampaignSelector.css";
 import type { Campaign } from "../data/domain";
 import { CampaignStatusPill } from "../components/StatusPill";
+import { LanguageToggle } from "../components/LanguageToggle";
+import { useT } from "../lib/i18n";
 
 interface CampaignSelectorProps {
   campaigns: Campaign[];
@@ -9,19 +11,23 @@ interface CampaignSelectorProps {
 }
 
 export function CampaignSelector({ campaigns, onSelect, onCreate }: CampaignSelectorProps) {
+  const t = useT();
   return (
     <div className="card campaign-selector">
       <header className="campaign-selector__header">
         <div>
           <div className="campaign-selector__title">
             <span className="sidebar__glow-standalone" />
-            <span className="display" style={{ fontSize: 26 }}>Tus campañas</span>
+            <span className="display" style={{ fontSize: 26 }}>{t("campaignSelector.title")}</span>
           </div>
           <div className="campaign-selector__subtitle">
-            {campaigns.length} {campaigns.length === 1 ? "campaña" : "campañas"}
+            {campaigns.length} {campaigns.length === 1 ? t("campaignSelector.one") : t("campaignSelector.many")}
           </div>
         </div>
-        <button className="btn btn-primary" onClick={onCreate}>Nueva campaña</button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <LanguageToggle />
+          <button className="btn btn-primary" onClick={onCreate}>{t("campaignSelector.new")}</button>
+        </div>
       </header>
       <div className="campaign-selector__grid">
         {campaigns.map((c) => (
@@ -39,7 +45,7 @@ export function CampaignSelector({ campaigns, onSelect, onCreate }: CampaignSele
             </div>
           </div>
         ))}
-        <div className="campaign-card campaign-card--new" onClick={onCreate}>+ Crear campaña</div>
+        <div className="campaign-card campaign-card--new" onClick={onCreate}>{t("campaignSelector.newCard")}</div>
       </div>
     </div>
   );
