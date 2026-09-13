@@ -1,6 +1,6 @@
 # API
 
-REST + JSON. Router: `net/http` stdlib (Go 1.27+, `ServeMux` con path params nativos). Sin autenticación — la seguridad es perimetral (acceso solo vía Tailscale).
+REST + JSON. Router: `net/http` stdlib (Go 1.27+, `ServeMux` con path params nativos). Autenticación por campaña vía código de acceso (ver sección Dashboard/Login más abajo); rutas de gestión de instancia (crear campaña, listar vault dirs) piden `X-Admin-Token` (ver sección Admin).
 
 ## Convenciones
 
@@ -11,7 +11,7 @@ REST + JSON. Router: `net/http` stdlib (Go 1.27+, `ServeMux` con path params nat
 
 ```
 GET    /api/campaigns
-POST   /api/campaigns
+POST   /api/campaigns              -- requiere header X-Admin-Token
 GET    /api/campaigns/:id
 PUT    /api/campaigns/:id
 DELETE /api/campaigns/:id
@@ -157,10 +157,13 @@ Lee el `.md` correspondiente del vault de esa campaña (resuelto contra su `vaul
 ## Admin / Reindexado del vault
 
 ```
-POST /api/admin/reindex
+POST /api/campaigns/:id/reindex   -- requiere sesión de esa campaña (cookie), no X-Admin-Token
+GET  /api/admin/vault-dirs        -- requiere header X-Admin-Token
 ```
 
-Dispara el reindexado completo del vault de Obsidian (síncrono, ver `decisiones.md`). Vacía y repuebla las tablas indexables a partir del contenido actual del vault montado. Devuelve un resumen del resultado (cantidad de entidades procesadas, wikilinks no resueltos, conflictos de nombre duplicado, etc.).
+`reindex` dispara el reindexado del vault de esa campaña (incremental por `content_hash`, no vacía tablas — ver `vault/indexer.go`). Devuelve un resumen del resultado (cantidad de entidades procesadas, wikilinks no resueltos, conflictos de nombre duplicado, errores por archivo).
+
+`vault-dirs` lista los directorios sin campaña asignada bajo el root del vault montado, para el selector de `NewCampaignForm`. Gateado con `X-Admin-Token` porque expone estructura del filesystem — mismo token que `POST /api/campaigns`.
 
 ## Health check
 

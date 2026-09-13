@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { apiFetch, ApiError, loginToCampaign } from "./lib/api";
+import { apiFetch, ApiError, loginToCampaign, setAdminSecret, hasAdminSecret } from "./lib/api";
 import { CampaignLoginForm } from "./components/CampaignLoginForm";
+import { AdminSecretForm } from "./components/AdminSecretForm";
 import { AppShell } from "./components/AppShell";
 import { Modal } from "./components/Modal";
 import { Toast } from "./components/Toast";
@@ -60,6 +61,7 @@ export default function App() {
   const [loginCampaignId, setLoginCampaignId] = useState<string | null>(null);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
+  const [adminGateOpen, setAdminGateOpen] = useState(false);
   const [toast, setToast] = useState<{
     id: number;
     message: string;
@@ -134,9 +136,18 @@ export default function App() {
     }
   }
 
+  function openNewCampaign() {
+    if (hasAdminSecret()) {
+      setNewCampaignOpen(true);
+    } else {
+      setAdminGateOpen(true);
+    }
+  }
+
   function createCampaign(campaign: Omit<Campaign, "id">, vaultPath: string) {
     apiFetch<ApiCampaign>("/campaigns", {
       method: "POST",
+      admin: true,
       body: JSON.stringify({
         name: campaign.name,
         system: campaign.system,
@@ -197,7 +208,7 @@ export default function App() {
           <CampaignSelector
             campaigns={campaigns}
             onSelect={selectCampaign}
-            onCreate={() => setNewCampaignOpen(true)}
+            onCreate={openNewCampaign}
           />
         </div>
       ) : (
@@ -642,6 +653,25 @@ export default function App() {
             nextNumber={nextSessionNumber}
             onConfirm={playSession}
             onCancel={() => setNewSessionOpen(false)}
+          />
+        </Modal>
+      )}
+
+      {adminGateOpen && (
+        <Modal title="Confirmar" onClose={() => setAdminGateOpen(false)}>
+          <AdminSecretForm
+            onSubmit={async (secret) => {
+              setAdminSecret(secret);
+              try {
+                await apiFetch("/admin/vault-dirs", { admin: true });
+              } catch (err) {
+                setAdminSecret("");
+                throw err;
+              }
+              setAdminGateOpen(false);
+              setNewCampaignOpen(true);
+            }}
+            onCancel={() => setAdminGateOpen(false)}
           />
         </Modal>
       )}
