@@ -39,7 +39,8 @@ Environment variables (via `.env`, see `.env.example`):
 
 | Variable            | Description                                                        |
 | ------------------- | ------------------------------------------------------------------ |
-| `PORT`              | Host port to expose the server on (container listens on `:8080`)   |
+| `CLIENT_PORT`        | Host port to expose the client on (defaults to `8080`)             |
+| `ADMIN_TOKEN`        | Required to create campaigns / list vault dirs (see [`docs/API.md`](docs/API.md)) |
 | `DB_PATH`           | Database path inside the container                                 |
 | `VAULTS_ROOT_HOST`  | Host folder holding every campaign's Obsidian vault as a subfolder |
 
@@ -63,7 +64,60 @@ The container includes:
 - Automatic schema migrations on startup
 - Persistent data volume (`campaign_data`)
 
-Adjust `PORT` in `.env` to expose on a different host port.
+Adjust `CLIENT_PORT` in `.env` to expose on a different host port.
+
+## Production deployment
+
+The dev `docker-compose.yml` builds from source and keeps `ADMIN_TOKEN` as a plain env var — fine for local use, not for a token exposed to `docker inspect`/`ps` on a shared or internet-facing host. For production, pull the prebuilt images from GHCR and pass the admin token as a secret instead of an env var.
+
+This deployment currently runs on **Podman**, where a secret can be created and managed outside Swarm (`podman secret create`) and referenced as `external: true`. Docker Compose does **not** support `external: true` secrets without Swarm mode active (`docker swarm init` — `docker secret create` is a Swarm-scoped command) — on plain `docker compose`, use a `file:`-based secret instead (mounts straight from a local file, same result, no daemon-managed store required).
+
+```yaml
+# compose.yaml
+secrets:
+  rolboard_admin_token:
+    external: true                     # Podman, no Swarm needed
+    # file: ${ADMIN_TOKEN_FILE_HOST}   # Docker without Swarm — use this form instead
+
+services:
+  server:
+    container_name: rolboard-server
+    image: ghcr.io/ncorrea-13/rolboard-server:main
+    env_file:
+      - .env
+    secrets:
+      - rolboard_admin_token
+    environment:
+      DB_PATH: /data/campaign.db
+      VAULTS_ROOT: /vaults
+      PORT: 8080
+      ADMIN_TOKEN_FILE: /run/secrets/rolboard_admin_token
+    volumes:
+      - ${DATA_PATH}:/data
+      - ${VAULTS_ROOT_HOST}:/vaults:ro
+    restart: unless-stopped
+
+  client:
+    container_name: rolboard-client
+    image: ghcr.io/ncorrea-13/rolboard-client:main
+    ports:
+      - "${CLIENT_PORT:-8080}:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+```
+
+```bash
+# Podman
+podman secret create rolboard_admin_token -
+# (paste the token, then Ctrl-D)
+podman-compose -f compose.yaml up -d
+
+# Docker, without Swarm — switch the secret to file: first (see commented line above)
+mkdir -p secrets && echo -n "your-admin-token" > secrets/admin_token
+echo "ADMIN_TOKEN_FILE_HOST=./secrets/admin_token" >> .env
+docker compose -f compose.yaml up -d
+```
 
 ## API
 

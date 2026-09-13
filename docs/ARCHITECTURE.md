@@ -52,8 +52,9 @@ Razonamiento de cada elección: [`DECISIONS.md`](./DECISIONS.md).
 
 ## Despliegue
 
-- Corre como contenedor (Docker o Podman, ver [`README.md`](../README.md)). Cada campaña tiene su propio código de acceso; rutas de gestión de instancia (crear campaña, listar vault dirs) se protegen aparte con `X-Admin-Token` (ver [`API.md`](./API.md)).
-- El **build estático del frontend** (`vite build`) se sirve desde un contenedor Caddy aparte (`client/Dockerfile` + `client/Caddyfile`), que además hace de reverse proxy de `/api/*` hacia `rolboard-server:8080` (ver `docker-compose.yml`).
+- Corre como contenedor (Docker o Podman). Dos compose distintos: `docker-compose.yml` en el repo builda desde código fuente para dev (`ADMIN_TOKEN` como env var plana alcanza); el compose de producción (documentado en [`README.md`](../README.md), no versionado como archivo) usa las imágenes de GHCR y pasa el admin token como secret. En Podman, secret nativo sin Swarm (`podman secret create` + `external: true`); en Docker plano sin Swarm, `external: true` no funciona (es scoped a Swarm) — ahí el secret va como `file:` en su lugar, mismo resultado sin store manejado por el daemon.
+- Cada campaña tiene su propio código de acceso; rutas de gestión de instancia (crear campaña, listar vault dirs) se protegen aparte con `X-Admin-Token` (ver [`API.md`](./API.md)).
+- El **build estático del frontend** (`vite build`) se sirve desde un contenedor Caddy aparte (`client/Dockerfile` + `client/Caddyfile`), que además hace de reverse proxy de `/api/*` hacia `rolboard-server:8080` — puerto interno fijo, desacoplado del `CLIENT_PORT` que expone el host.
 
 ## Vault de Obsidian
 
