@@ -25,6 +25,8 @@ import { FactionsList } from "./screens/FactionsList";
 import { LocationsList } from "./screens/LocationsList";
 import { QuestsList } from "./screens/QuestsList";
 import { PlayersList } from "./screens/PlayersList";
+import { EncountersList } from "./screens/EncountersList";
+import { EncounterDetail } from "./screens/EncounterDetail";
 import {
   ArcDetail,
   FactionDetail,
@@ -82,6 +84,7 @@ export default function App() {
     campaignQuests,
     campaignPlayerCharacters,
     campaignSessions,
+    campaignEncounters,
     dashboardSummary,
     reindexing,
     handleReindex,
@@ -104,6 +107,9 @@ export default function App() {
     deleteEntity,
     saveSession,
     deleteSession,
+    saveEncounter,
+    createEncounter,
+    deleteEncounter,
     planSession,
     playSession,
     startPlaySession,
@@ -167,7 +173,9 @@ export default function App() {
                     ? "facciones"
                     : route.name === "location-edit" || route.name === "location-create"
                       ? "locaciones"
-                      : "resumen";
+                      : route.name === "encounter-detail"
+                        ? "encuentros"
+                        : "resumen";
 
   return (
     <div className="app">
@@ -290,6 +298,16 @@ export default function App() {
               onCreate={() => setRoute({ name: "player-create" })}
             />
           )}
+          {route.name === "section" && route.section === "encuentros" && (
+            <EncountersList
+              encounters={campaignEncounters}
+              sessions={campaignSessions}
+              onSelect={(encounterId) =>
+                setRoute({ name: "encounter-detail", encounterId })
+              }
+              onCreate={() => createEncounter()}
+            />
+          )}
 
           {route.name === "entity-detail" && route.kind === "arc" && (
             <ArcDetail
@@ -313,10 +331,12 @@ export default function App() {
                 campaignGroups[0]
               }
               npcs={campaignNpcs}
+              playerCharacters={campaignPlayerCharacters}
               vaultName={activeCampaign!.vaultPath}
               campaignId={activeCampaignId!}
               onBack={() => goToEntitySection("faction")}
               onSelectNpc={(npcId) => setRoute({ name: "npc-detail", npcId })}
+              onSelectPlayer={(playerId) => setRoute({ name: "player-detail", playerId })}
               onEdit={() =>
                 setRoute({ name: "faction-edit", factionId: route.id })
               }
@@ -483,7 +503,6 @@ export default function App() {
               key={selectedNpc.id}
               npc={selectedNpc}
               npcs={campaignNpcs}
-              groups={campaignGroups}
               locations={campaignLocations}
               onSave={(patch) => {
                 saveNpc(selectedNpc.id, patch);
@@ -499,7 +518,6 @@ export default function App() {
             <NpcEdit
               npc={blankDrafts.npc}
               npcs={campaignNpcs}
-              groups={campaignGroups}
               locations={campaignLocations}
               onSave={createNpc}
               onDiscard={() => setRoute({ name: "section", section: "npcs" })}
@@ -523,7 +541,6 @@ export default function App() {
             <PlayerEdit
               key={selectedPlayer.id}
               player={selectedPlayer}
-              groups={campaignGroups}
               onSave={(patch) => {
                 savePlayer(selectedPlayer.id, patch);
                 setRoute({
@@ -540,13 +557,32 @@ export default function App() {
           {route.name === "player-create" && (
             <PlayerEdit
               player={blankDrafts.player}
-              groups={campaignGroups}
               onSave={createPlayer}
               onDiscard={() =>
                 setRoute({ name: "section", section: "jugadores" })
               }
             />
           )}
+
+          {route.name === "encounter-detail" &&
+            (() => {
+              const encounter = campaignEncounters.find((e) => e.id === route.encounterId);
+              if (!encounter) return null;
+              return (
+                <EncounterDetail
+                  key={encounter.id}
+                  encounter={encounter}
+                  npcs={campaignNpcs}
+                  playerCharacters={campaignPlayerCharacters}
+                  onBack={() => setRoute({ name: "section", section: "encuentros" })}
+                  onStart={() => saveEncounter(encounter.id, { status: "activo" })}
+                  onClose={() => saveEncounter(encounter.id, { status: "cerrado" })}
+                  onNextRound={() => saveEncounter(encounter.id, { round: encounter.round + 1 })}
+                  onDelete={() => deleteEncounter(encounter.id)}
+                  onSyncPlayerHp={(pcId, patch) => savePlayer(pcId, patch)}
+                />
+              );
+            })()}
 
           {route.name === "session-plan" && (
             <PlanSession

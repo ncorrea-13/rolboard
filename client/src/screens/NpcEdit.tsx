@@ -8,11 +8,12 @@ import {
   locationBreadcrumb,
   type CrystalType,
   type Npc,
+  type StatMap,
   type StatusKind,
   type Location,
-  type Group,
 } from "../data/domain";
 import { apiFetch } from "../lib/api";
+import { SkillsEditor } from "../components/SkillsEditor";
 
 const typeOptions: { label: string; crystal: CrystalType }[] = [
   { label: "NPC", crystal: "npc" },
@@ -24,13 +25,12 @@ const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 interface NpcEditProps {
   npc: Npc;
   npcs: Npc[];
-  groups: Group[];
   locations: Location[];
   onSave: (patch: Partial<Npc>) => void;
   onDiscard: () => void;
 }
 
-export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: NpcEditProps) {
+export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProps) {
   const [name, setName] = useState(npc.name);
   const [description, setDescription] = useState(npc.description);
   const [status, setStatus] = useState<StatusKind>(npc.status);
@@ -40,9 +40,10 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
   const [linkNpcId, setLinkNpcId] = useState("");
   const [existingLink, setExistingLink] = useState<{ role: string; npcId: string } | null>(null);
   const [locationId, setLocationId] = useState(npc.locationId ?? "");
-  const [faction, setFaction] = useState(npc.faction);
   const [etnia, setEtnia] = useState(npc.etnia ?? "");
   const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
+  const [attributes, setAttributes] = useState<StatMap>(npc.attributes);
+  const [skills, setSkills] = useState<StatMap>(npc.skills);
 
   useEffect(() => {
     if (!npc.id) return;
@@ -65,11 +66,12 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
     detailLevel !== npc.detailLevel ||
     crystal !== npc.crystal ||
     locationId !== (npc.locationId ?? "") ||
-    faction !== npc.faction ||
     etnia !== (npc.etnia ?? "") ||
     tipoSpren !== (npc.tipoSpren ?? "") ||
     linkRole !== (existingLink?.role ?? "") ||
-    linkNpcId !== (existingLink?.npcId ?? "");
+    linkNpcId !== (existingLink?.npcId ?? "") ||
+    JSON.stringify(attributes) !== JSON.stringify(npc.attributes) ||
+    JSON.stringify(skills) !== JSON.stringify(npc.skills);
 
   function syncLink(savedNpcId: string) {
     if (existingLink) {
@@ -87,7 +89,7 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
 
   function handleSave() {
     const crystalLabel = typeOptions.find((t) => t.crystal === crystal)?.label ?? npc.crystalLabel;
-    onSave({ name, description, status, detailLevel, crystal, crystalLabel, locationId: locationId || undefined, faction, etnia, tipoSpren });
+    onSave({ name, description, status, detailLevel, crystal, crystalLabel, locationId: locationId || undefined, etnia, tipoSpren, attributes, skills });
     if (npc.id) syncLink(npc.id);
   }
 
@@ -220,6 +222,9 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
               la etiqueta.
             </div>
           </div>
+
+          <SkillsEditor label="Atributos" value={attributes} onChange={setAttributes} />
+          <SkillsEditor label="Habilidades" value={skills} onChange={setSkills} />
         </div>
 
         <div className="npc-edit__col">
@@ -234,20 +239,6 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
               <option value="">— sin ubicación —</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>{locationBreadcrumb(l, locations)}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <span className="label">Facción</span>
-            <select
-              className="npc-edit__select npc-edit__select--native"
-              style={{ borderBottom: "2px solid var(--crystal-faction-quest)" }}
-              value={faction}
-              onChange={(e) => setFaction(e.target.value)}
-            >
-              <option value="—">— sin facción —</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.name}>{g.name}</option>
               ))}
             </select>
           </div>
@@ -269,6 +260,10 @@ export function NpcEdit({ npc, npcs, groups, locations, onSave, onDiscard }: Npc
           <div className="npc-edit__note">
             Decisión: edición en la misma vista, no modal. Un modal taparía la ficha justo cuando estás copiando datos
             de ella en vivo, y los vínculos necesitan el ancho completo.
+          </div>
+          <div className="npc-edit__note">
+            La facción se gestiona desde la ficha de la facción ("Agregar NPC"), no acá — evita tener dos lugares
+            que puedan decir cosas distintas sobre a qué grupo pertenece.
           </div>
         </div>
       </div>

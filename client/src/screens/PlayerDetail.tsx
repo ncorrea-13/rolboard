@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./NpcDetail.css";
 import { type PlayerCharacter } from "../data/domain";
+import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
@@ -17,6 +18,7 @@ interface PlayerDetailProps {
 }
 
 export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, onDelete }: PlayerDetailProps) {
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState<{ title: string; fallback: string } | null>(null);
   const [noteHtml, setNoteHtml] = useState<string | null>(null);
 
@@ -48,9 +50,15 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
             size="header"
           />
           <StatusPill status={player.status} />
+          {(player.currentHp != null || player.maxHp != null) && (
+            <span className="npc-detail__breadcrumb-type" style={{ fontFamily: "var(--font-mono)" }}>
+              {player.currentHp ?? "—"} / {player.maxHp ?? "—"} HP
+            </span>
+          )}
           <div className="npc-detail__header-actions">
             <button className="btn btn-secondary" onClick={() => openInObsidian(vaultName, player.obsidianPath)}>Abrir en Obsidian</button>
-            <button className="btn btn-secondary" onClick={() => openNote(player.obsidianPath, player.characterName, "")}>Ver ficha</button>
+            <button className="btn btn-secondary" onClick={() => openNote(player.obsidianPath, player.characterName, "")}>Ver nota renderizada</button>
+            <button className="btn btn-secondary" onClick={() => setSheetOpen(true)}>Ver ficha</button>
             <button className="btn btn-secondary" onClick={onDelete}>Dar de baja</button>
             <button className="btn btn-primary" onClick={onEdit}>Editar</button>
           </div>
@@ -87,18 +95,6 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
         </div>
 
         <div className="npc-detail__col npc-detail__col--side">
-          {player.faction !== "—" && (
-            <div>
-              <span className="label">Facción</span>
-              <div className="card npc-detail__faction">
-                <span className="title-underline">
-                  <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-body-strong)" }}>{player.faction}</span>
-                  <span className="title-underline__bar" style={{ background: "var(--crystal-faction-quest)" }} />
-                </span>
-                <span className="npc-detail__faction-role">miembro</span>
-              </div>
-            </div>
-          )}
           <div>
             <span className="label">Nota de Obsidian</span>
             <div className="entity-detail__obsidian">
@@ -119,6 +115,16 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
           ) : (
             <p className="npc-detail__desc">{noteOpen.fallback}</p>
           )}
+        </Modal>
+      )}
+
+      {sheetOpen && (
+        <Modal title={`Ficha · ${player.characterName}`} onClose={() => setSheetOpen(false)} size="sheet">
+          <CharacterSheet
+            attributes={player.attributes}
+            skills={player.skills}
+            hp={{ current: player.currentHp, max: player.maxHp }}
+          />
         </Modal>
       )}
     </div>

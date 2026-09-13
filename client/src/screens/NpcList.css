@@ -91,7 +91,7 @@
 
 .npc-list__row {
   display: grid;
-  grid-template-columns: 2.1fr 1fr 1.6fr 1.3fr 1fr;
+  grid-template-columns: 2.1fr 1fr 1.6fr 1fr;
   gap: 14px;
   align-items: center;
   padding: 11px 14px;

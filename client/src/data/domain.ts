@@ -195,11 +195,12 @@ export interface Npc {
   detailLevel: "full" | "minor";
   location: string;
   locationId?: string;
-  faction: string;
   initials: string;
   obsidianPath: string;
   appearances?: string[];
   relatedQuestIds?: string[];
+  attributes: StatMap;
+  skills: StatMap;
 }
 
 export interface PlayerCharacter {
@@ -211,12 +212,15 @@ export interface PlayerCharacter {
   race: string;
   class: string;
   status: StatusKind;
-  faction: string;
   backstory: string;
   progressionNotes: string;
   obsidianPath: string;
   historiaPath?: string;
   avancesPath?: string;
+  attributes: StatMap;
+  skills: StatMap;
+  currentHp?: number;
+  maxHp?: number;
 }
 
 export type SessionType = "session" | "interlude" | "planning";
@@ -262,4 +266,51 @@ export interface Arc {
   status: ArcStatus;
   subarcOrder?: number;
   obsidianPath: string;
+}
+
+export type EncounterStatus = "planificado" | "activo" | "cerrado";
+
+export const encounterStatusColor: Record<EncounterStatus, string> = {
+  planificado: "var(--text-secondary)",
+  activo: "var(--status-alive)",
+  cerrado: "var(--status-dead)",
+};
+
+export const encounterStatusLabel: Record<EncounterStatus, string> = {
+  planificado: "Planificado",
+  activo: "Activo",
+  cerrado: "Cerrado",
+};
+
+export interface Encounter {
+  id: string;
+  deletedAt?: string;
+  campaignId: string;
+  sessionId?: string;
+  round: number;
+  status: EncounterStatus;
+}
+
+export type TurnType = "rapido" | "lento";
+
+export const turnTypeLabel: Record<TurnType, string> = {
+  rapido: "Rápido",
+  lento: "Lento",
+};
+
+export type StatMap = Record<string, string | number>;
+
+export interface EncounterParticipant {
+  id: string;
+  encounterId: string;
+  pcId?: string;
+  npcId?: string;
+  displayName?: string;
+  currentHp?: number;
+  maxHp?: number;
+  initiativeValue?: number;
+  turnType?: TurnType;
+  notes: string;
+  attributes: StatMap;
+  skills: StatMap;
 }

@@ -80,3 +80,75 @@ func (h *Handlers) RemoveGroupMember(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+type AddGroupPCMemberPayload struct {
+	PCID int64 `json:"pc_id"`
+}
+
+func (h *Handlers) AddGroupPCMember(w http.ResponseWriter, r *http.Request) {
+	groupID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid group id", http.StatusBadRequest)
+		return
+	}
+
+	var payload AddGroupPCMemberPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if payload.PCID == 0 {
+		http.Error(w, "pc_id is a required field", http.StatusBadRequest)
+		return
+	}
+
+	group, err := h.groups.GetByID(r.Context(), groupID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "Group not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving group", http.StatusInternalServerError)
+		return
+	}
+	pc, err := h.playerCharacters.GetByID(r.Context(), payload.PCID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "Player character not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving player character", http.StatusInternalServerError)
+		return
+	}
+	if group.CampaignID != pc.CampaignID {
+		http.Error(w, "Player character does not belong to the same campaign as the group", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.groups.AddPCMember(r.Context(), groupID, payload.PCID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *Handlers) RemoveGroupPCMember(w http.ResponseWriter, r *http.Request) {
+	groupID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid group id", http.StatusBadRequest)
+		return
+	}
+	pcID, err := strconv.ParseInt(r.PathValue("pcId"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid pc id", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.groups.RemovePCMember(r.Context(), groupID, pcID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

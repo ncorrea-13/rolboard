@@ -63,7 +63,6 @@ export function NpcList({
       if (
         q &&
         !n.name.toLowerCase().includes(q) &&
-        !n.faction.toLowerCase().includes(q) &&
         !n.location.toLowerCase().includes(q)
       ) {
         return false;
@@ -97,7 +96,7 @@ export function NpcList({
         <div className="npc-list__actions">
           <input
             className="npc-list__search"
-            placeholder="Buscar nombre, facción, locación…"
+            placeholder="Buscar nombre, locación…"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -151,7 +150,6 @@ export function NpcList({
         <span>Nombre</span>
         <span>Tipo</span>
         <span>Ubicación actual</span>
-        <span>Facción</span>
         <span>Status</span>
       </div>
 
@@ -181,7 +179,6 @@ export function NpcList({
             {n.crystalLabel}
           </span>
           <span className="npc-list__cell">{n.location}</span>
-          <span className="npc-list__cell">{n.faction}</span>
           <StatusPill status={n.status} />
         </div>
       ))}

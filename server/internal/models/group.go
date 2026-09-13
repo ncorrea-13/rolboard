@@ -19,3 +19,9 @@ type NPCGroupMember struct {
 	Name        string  `json:"name"`
 	RoleInGroup *string `json:"role_in_group,omitempty"`
 }
+
+type PCGroupMember struct {
+	PCID          int64   `json:"pc_id"`
+	CharacterName string  `json:"character_name"`
+	RoleInGroup   *string `json:"role_in_group,omitempty"`
+}
