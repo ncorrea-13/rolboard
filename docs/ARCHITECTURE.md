@@ -52,7 +52,7 @@ Razonamiento de cada elección: [`DECISIONS.md`](./DECISIONS.md).
 
 ## Despliegue
 
-- Corre como contenedor (Docker o Podman, ver [`README.md`](../README.md)), sin exposición pública — acceso restringido a red privada (justifica la ausencia de autenticación, ver [`API.md`](./API.md)).
+- Corre como contenedor (Docker o Podman, ver [`README.md`](../README.md)). Cada campaña tiene su propio código de acceso; rutas de gestión de instancia (crear campaña, listar vault dirs) se protegen aparte con `X-Admin-Token` (ver [`API.md`](./API.md)).
 - El **build estático del frontend** (`vite build`) se sirve desde un contenedor Caddy aparte (`client/Dockerfile` + `client/Caddyfile`), que además hace de reverse proxy de `/api/*` hacia `rolboard-server:8080` (ver `docker-compose.yml`).
 
 ## Vault de Obsidian
