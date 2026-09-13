@@ -57,11 +57,11 @@ func (r *CampaignRepository) Create(ctx context.Context, c *models.Campaign) err
 func (r *CampaignRepository) GetByID(ctx context.Context, id int64) (*models.Campaign, error) {
 	c := models.Campaign{}
 	err := r.db.QueryRowContext(ctx, `
-	SELECT id, name, system, description, status, vault_path, created_at, updated_at FROM campaigns
-		WHERE id = ? 
+	SELECT id, name, system, description, status, vault_path, created_at, updated_at, COALESCE(access_code_hash, '') FROM campaigns
+		WHERE id = ?
 		AND deleted_at IS NULL`,
 		id,
-	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.CreatedAt, &c.UpdatedAt)
+	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.CreatedAt, &c.UpdatedAt, &c.AccessCodeHash)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -84,6 +84,25 @@ func (r *CampaignRepository) Update(ctx context.Context, id int64, c *models.Cam
 		return ErrNotFound
 	}
 	return err
+}
+
+func (r *CampaignRepository) SetAccessCodeHash(ctx context.Context, id int64, hash string) error {
+	res, err := r.db.ExecContext(ctx, `
+              UPDATE campaigns SET access_code_hash = ?, updated_at = datetime('now')
+              WHERE id = ? AND deleted_at IS NULL`,
+		hash, id,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return ErrNotFound
+	}
+	return nil
 }
 
 func (r *CampaignRepository) Delete(ctx context.Context, id int64) error {

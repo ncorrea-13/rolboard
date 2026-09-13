@@ -19,6 +19,34 @@ func (h *Handlers) ListVaultDirs(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type SetAccessCodePayload struct {
+	Code string `json:"code"`
+}
+
+func (h *Handlers) SetAccessCode(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var payload SetAccessCodePayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(payload.Code) < 8 {
+		http.Error(w, "Code must be at least 8 characters", http.StatusBadRequest)
+		return
+	}
+
+	if err := h.auth.SetAccessCode(r.Context(), id, payload.Code); err != nil {
+		http.Error(w, "Error setting access code", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *Handlers) Reindex(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {

@@ -10,4 +10,6 @@ type Campaign struct {
 	VaultPath   string `json:"vault_path"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
+
+	AccessCodeHash string `json:"-"`
 }

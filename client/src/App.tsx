@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { apiFetch } from "./lib/api";
+import { apiFetch, ApiError, loginToCampaign } from "./lib/api";
+import { CampaignLoginForm } from "./components/CampaignLoginForm";
 import { AppShell } from "./components/AppShell";
 import { Modal } from "./components/Modal";
 import { Toast } from "./components/Toast";
@@ -56,6 +57,7 @@ export default function App() {
   }, []);
 
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
+  const [loginCampaignId, setLoginCampaignId] = useState<string | null>(null);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
   const [toast, setToast] = useState<{
@@ -116,9 +118,20 @@ export default function App() {
     goToEntitySection,
   } = useCampaignData(activeCampaignId, activeCampaign, setRoute, setNewSessionOpen, notify);
 
-  function selectCampaign(id: string) {
-    setActiveCampaignId(id);
-    setRoute({ name: "section", section: "resumen" });
+  async function selectCampaign(id: string) {
+    try {
+      // Probes for a valid session cookie before committing to the campaign —
+      // every other screen assumes it's already authenticated.
+      await apiFetch(`/campaigns/${id}/dashboard`);
+      setActiveCampaignId(id);
+      setRoute({ name: "section", section: "resumen" });
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setLoginCampaignId(id);
+      } else {
+        console.error("Error entrando a la campaña:", err);
+      }
+    }
   }
 
   function createCampaign(campaign: Omit<Campaign, "id">, vaultPath: string) {
@@ -629,6 +642,20 @@ export default function App() {
             nextNumber={nextSessionNumber}
             onConfirm={playSession}
             onCancel={() => setNewSessionOpen(false)}
+          />
+        </Modal>
+      )}
+
+      {loginCampaignId && (
+        <Modal title="Código de la campaña" onClose={() => setLoginCampaignId(null)}>
+          <CampaignLoginForm
+            onSubmit={async (code) => {
+              await loginToCampaign(loginCampaignId, code);
+              const id = loginCampaignId;
+              setLoginCampaignId(null);
+              await selectCampaign(id);
+            }}
+            onCancel={() => setLoginCampaignId(null)}
           />
         </Modal>
       )}
