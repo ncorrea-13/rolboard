@@ -16,7 +16,7 @@
 
 Vista estructurada y consultable del estado de una campaña de rol de mesa — NPCs, ubicaciones, quests, sesiones — pensada para convivir con un vault de Obsidian, no reemplazarlo. El vault sigue siendo la fuente de verdad para prosa y lore; este dashboard indexa su frontmatter YAML para dar una búsqueda rápida durante una sesión en vivo ("¿qué le prometí a este NPC?", "¿quién está en esta ciudad ahora?", "¿qué quests están activas?").
 
-Herramienta de uso exclusivo para el DM/GM, no algo que ven los jugadores. Corre en un nodo del homelab, accesible solo por Tailscale — sin exposición pública. Ver [`docs/DECISIONS.md`](docs/DECISIONS.md) para el razonamiento detrás de cada decisión de alcance.
+Herramienta de uso exclusivo para el DM/GM, no algo que ven los jugadores. Corre en un nodo del homelab. Cada campaña tiene su propio código de acceso; la gestión de instancia (crear campaña, listar vault dirs) se protege aparte con `ADMIN_TOKEN` (ver [`docs/API.md`](docs/API.md)). Ver [`docs/DECISIONS.md`](docs/DECISIONS.md) para el razonamiento detrás de cada decisión de alcance.
 
 ## Stack
 
@@ -39,7 +39,8 @@ Variables de entorno (vía `.env`, ver `.env.example`):
 
 | Variable | Descripción |
 | --- | --- |
-| `PORT` | Puerto del host donde exponer el server (el container escucha en `:8080`) |
+| `CLIENT_PORT` | Puerto del host donde exponer el cliente (default `8080`) |
+| `ADMIN_TOKEN` | Necesario para crear campañas / listar vault dirs (ver [`docs/API.md`](docs/API.md)) |
 | `DB_PATH` | Path de la base de datos dentro del container |
 | `VAULTS_ROOT_HOST` | Carpeta en el host que contiene el vault de cada campaña como subcarpeta |
 
@@ -63,7 +64,60 @@ El container incluye:
 - Migraciones de esquema automáticas al arrancar
 - Volumen de datos persistente (`campaign_data`)
 
-Ajustá `PORT` en `.env` para exponer en otro puerto del host.
+Ajustá `CLIENT_PORT` en `.env` para exponer en otro puerto del host.
+
+## Despliegue en producción
+
+El `docker-compose.yml` de dev builda desde código fuente y deja `ADMIN_TOKEN` como env var plana — sirve para uso local, no para un token expuesto a `docker inspect`/`ps` en un host compartido o con salida a internet. Para producción, usá las imágenes ya armadas de GHCR y pasá el admin token como secret en vez de env var.
+
+Este despliegue corre en **Podman**, donde un secret se puede crear y manejar sin Swarm (`podman secret create`) y referenciarlo como `external: true`. Docker Compose **no** soporta secrets `external: true` sin Swarm activo (`docker swarm init` — `docker secret create` es un comando scoped a Swarm) — en `docker compose` plano, usá un secret basado en `file:` en su lugar (se monta directo desde un archivo local, mismo resultado, sin necesitar un store manejado por el daemon).
+
+```yaml
+# compose.yaml
+secrets:
+  rolboard_admin_token:
+    external: true                     # Podman, sin Swarm
+    # file: ${ADMIN_TOKEN_FILE_HOST}   # Docker sin Swarm — usar esta forma en su lugar
+
+services:
+  server:
+    container_name: rolboard-server
+    image: ghcr.io/ncorrea-13/rolboard-server:main
+    env_file:
+      - .env
+    secrets:
+      - rolboard_admin_token
+    environment:
+      DB_PATH: /data/campaign.db
+      VAULTS_ROOT: /vaults
+      PORT: 8080
+      ADMIN_TOKEN_FILE: /run/secrets/rolboard_admin_token
+    volumes:
+      - ${DATA_PATH}:/data
+      - ${VAULTS_ROOT_HOST}:/vaults:ro
+    restart: unless-stopped
+
+  client:
+    container_name: rolboard-client
+    image: ghcr.io/ncorrea-13/rolboard-client:main
+    ports:
+      - "${CLIENT_PORT:-8080}:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+```
+
+```bash
+# Podman
+podman secret create rolboard_admin_token -
+# (pegá el token, después Ctrl-D)
+podman-compose -f compose.yaml up -d
+
+# Docker, sin Swarm — primero cambiá el secret a file: (ver línea comentada arriba)
+mkdir -p secrets && echo -n "tu-admin-token" > secrets/admin_token
+echo "ADMIN_TOKEN_FILE_HOST=./secrets/admin_token" >> .env
+docker compose -f compose.yaml up -d
+```
 
 ## API
 
