@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -20,6 +21,14 @@ func main() {
 	dbPath := os.Getenv("DB_PATH")
 	port := os.Getenv("PORT")
 	vaultsRoot := os.Getenv("VAULTS_ROOT")
+	adminToken := os.Getenv("ADMIN_TOKEN")
+	if path := os.Getenv("ADMIN_TOKEN_FILE"); path != "" {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			log.Fatalf("error leyendo ADMIN_TOKEN_FILE: %v", err)
+		}
+		adminToken = strings.TrimSpace(string(data))
+	}
 
 	defer stop()
 
@@ -67,11 +76,14 @@ func main() {
 	encounterParticipantRepo := repository.NewEncounterParticipantRepository(db)
 	encounterParticipantSvc := service.NewEncounterParticipantService(encounterParticipantRepo)
 
+	authSessionRepo := repository.NewAuthSessionRepository(db)
+	authSvc := service.NewAuthService(campaignRepo, authSessionRepo)
+
 	adminSvc := service.NewAdminService(db, campaignRepo, vaultsRoot)
 	dashboardSvc := service.NewDashboardService(questSvc, npcSvc, sessionSvc)
 	notesSvc := service.NewNotesService(campaignRepo, locationRepo, npcRepo, groupRepo, sessionRepo, arcRepo, pcRepo, vaultsRoot)
 
-	h := handlers.NewHandlers(campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
+	h := handlers.NewHandlers(db, adminToken, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
 
 	mux := handlers.NewRouter(h)
 
