@@ -56,7 +56,6 @@ const blankNpcDraft: Npc = {
   role: "",
   description: "",
   crystal: "npc",
-  crystalLabel: "NPC",
   status: "alive",
   detailLevel: "full",
   location: "",

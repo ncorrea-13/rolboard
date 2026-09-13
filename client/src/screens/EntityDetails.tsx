@@ -25,7 +25,7 @@ import {
   type PlayerCharacter,
   type Session,
 } from "../data/domain";
-import { useT } from "../lib/i18n";
+import { useT, useLang } from "../lib/i18n";
 
 interface EditableProps {
   onEdit: () => void;
@@ -344,6 +344,7 @@ export function LocationDetail({
   onBack: () => void;
 } & EditableProps) {
   const t = useT();
+  const lang = useLang();
   const breadcrumb: Location[] = [];
   let current: Location | undefined = location;
   while (current) {
@@ -359,7 +360,7 @@ export function LocationDetail({
       onBack={onBack}
       title={location.name}
       accentColor="var(--crystal-location)"
-      subtitle={locationTypeLabel[location.locationType]}
+      subtitle={locationTypeLabel[lang][location.locationType]}
       obsidianPath={location.obsidianPath}
       vaultName={vaultName}
       campaignId={campaignId}
@@ -380,7 +381,7 @@ export function LocationDetail({
                   <div key={c.id}>
                     {c.name}{" "}
                     <span style={{ color: "var(--text-secondary)" }}>
-                      · {locationTypeLabel[c.locationType]}
+                      · {locationTypeLabel[lang][c.locationType]}
                     </span>
                   </div>
                 ))}

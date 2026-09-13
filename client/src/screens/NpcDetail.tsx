@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import "./NpcDetail.css";
-import { crystalColor, type Npc, type Quest } from "../data/domain";
+import { crystalColor, crystalLabelFor, type Npc, type Quest } from "../data/domain";
 import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
 import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
-import { useT } from "../lib/i18n";
+import { useT, useLang } from "../lib/i18n";
 
 interface NpcDetailProps {
   npc: Npc;
@@ -31,6 +31,7 @@ export function NpcDetail({
   onDelete,
 }: NpcDetailProps) {
   const t = useT();
+  const lang = useLang();
   const color = crystalColor[npc.crystal];
   const [sheetOpen, setSheetOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -83,7 +84,7 @@ export function NpcDetail({
                 borderRadius: 2,
               }}
             />
-            {npc.crystalLabel}
+            {crystalLabelFor(npc.crystal, lang)}
           </span>
         </div>
         <div className="npc-detail__identity">

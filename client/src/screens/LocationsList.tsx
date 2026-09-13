@@ -1,6 +1,6 @@
 import "../styles/list.css";
 import { locationTypeLabel, type Location } from "../data/domain";
-import { useT } from "../lib/i18n";
+import { useT, useLang } from "../lib/i18n";
 
 function depthOf(loc: Location, all: Location[]): number {
   let depth = 0;
@@ -24,6 +24,7 @@ export function LocationsList({
   onCreate,
 }: LocationsListProps) {
   const t = useT();
+  const lang = useLang();
   return (
     <div className="card list-page">
       <div className="list-page__header">
@@ -60,7 +61,7 @@ export function LocationsList({
               </div>
             </div>
             <span className="list-page__badge">
-              {locationTypeLabel[l.locationType]}
+              {locationTypeLabel[lang][l.locationType]}
             </span>
           </div>
         ))}

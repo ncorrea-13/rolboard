@@ -1,13 +1,7 @@
 import { useState } from "react";
 import "./NpcEdit.css";
-import { type Arc, type ArcStatus } from "../data/domain";
-import { useT } from "../lib/i18n";
-
-const statusOptions: { value: ArcStatus; label: string }[] = [
-  { value: "planificado", label: "Planificado" },
-  { value: "en_curso", label: "En curso" },
-  { value: "cerrado", label: "Cerrado" },
-];
+import { arcStatusLabel, type Arc, type ArcStatus } from "../data/domain";
+import { useT, useLang } from "../lib/i18n";
 
 interface ArcEditProps {
   arc: Arc;
@@ -17,6 +11,10 @@ interface ArcEditProps {
 
 export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
   const t = useT();
+  const lang = useLang();
+  const statusOptions: { value: ArcStatus; label: string }[] = (
+    Object.entries(arcStatusLabel[lang]) as [ArcStatus, string][]
+  ).map(([value, label]) => ({ value, label }));
   const [label, setLabel] = useState(arc.label);
   const [summary, setSummary] = useState(arc.summary);
   const [order, setOrder] = useState(String(arc.order || ""));

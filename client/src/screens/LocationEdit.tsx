@@ -1,9 +1,7 @@
 import { useState } from "react";
 import "./NpcEdit.css";
 import { locationTypeLabel, type Location } from "../data/domain";
-import { useT } from "../lib/i18n";
-
-const typeOptions = Object.entries(locationTypeLabel) as [Location["locationType"], string][];
+import { useT, useLang } from "../lib/i18n";
 
 interface LocationEditProps {
   location: Location;
@@ -14,6 +12,8 @@ interface LocationEditProps {
 
 export function LocationEdit({ location, locations, onSave, onDiscard }: LocationEditProps) {
   const t = useT();
+  const lang = useLang();
+  const typeOptions = Object.entries(locationTypeLabel[lang]) as [Location["locationType"], string][];
   const [name, setName] = useState(location.name);
   const [locationType, setLocationType] = useState(location.locationType);
   const [parentId, setParentId] = useState(location.parentId ?? "");

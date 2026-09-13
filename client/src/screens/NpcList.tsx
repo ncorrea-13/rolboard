@@ -2,13 +2,14 @@ import { useMemo, useState } from "react";
 import "./NpcList.css";
 import {
   crystalColorFor,
+  crystalLabelFor,
   statusLabel,
   type Npc,
   type StatusKind,
 } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
-import { useT } from "../lib/i18n";
+import { useT, useLang } from "../lib/i18n";
 
 const statusFilters: StatusKind[] = ["alive", "dead", "missing", "paused"];
 
@@ -24,6 +25,7 @@ export function NpcList({
   onCreate: () => void;
 }) {
   const t = useT();
+  const lang = useLang();
   const [search, setSearch] = useState("");
   const [activeTypes, setActiveTypes] = useState<Set<string>>(new Set());
   const [activeStatuses, setActiveStatuses] = useState<Set<StatusKind>>(
@@ -32,12 +34,10 @@ export function NpcList({
   const [page, setPage] = useState(1);
 
   const typeFilters = useMemo(() => {
-    const seen = new Map<string, string>();
-    for (const n of npcs) {
-      if (!seen.has(n.crystal)) seen.set(n.crystal, n.crystalLabel);
-    }
-    return [...seen.entries()].map(([crystal, label]) => ({ crystal, label }));
-  }, [npcs]);
+    const seen = new Set<string>();
+    for (const n of npcs) seen.add(n.crystal);
+    return [...seen].map((crystal) => ({ crystal, label: crystalLabelFor(crystal, lang) }));
+  }, [npcs, lang]);
 
   function toggleType(crystal: string) {
     setActiveTypes((prev) => {
@@ -143,7 +143,7 @@ export function NpcList({
                 background: `var(--status-${s === "paused" ? "paused-dot" : s})`,
               }}
             />
-            {statusLabel[s]}
+            {statusLabel[lang][s]}
           </button>
         ))}
       </div>
@@ -178,7 +178,7 @@ export function NpcList({
               className="npc-list__type-mark"
               style={{ background: crystalColorFor(n.crystal) }}
             />
-            {n.crystalLabel}
+            {crystalLabelFor(n.crystal, lang)}
           </span>
           <span className="npc-list__cell">{n.location}</span>
           <StatusPill status={n.status} />

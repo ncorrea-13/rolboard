@@ -14,7 +14,7 @@ import {
 } from "../data/domain";
 import { apiFetch } from "../lib/api";
 import { SkillsEditor } from "../components/SkillsEditor";
-import { useT, type TranslationKey } from "../lib/i18n";
+import { useT, useLang, type TranslationKey } from "../lib/i18n";
 
 const typeOptions: { label: string; labelKey: TranslationKey; crystal: CrystalType }[] = [
   { label: "NPC", labelKey: "npcEdit.typeNpc", crystal: "npc" },
@@ -33,6 +33,7 @@ interface NpcEditProps {
 
 export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProps) {
   const t = useT();
+  const lang = useLang();
   const [name, setName] = useState(npc.name);
   const [description, setDescription] = useState(npc.description);
   const [status, setStatus] = useState<StatusKind>(npc.status);
@@ -90,8 +91,7 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
   }
 
   function handleSave() {
-    const crystalLabel = typeOptions.find((opt) => opt.crystal === crystal)?.label ?? npc.crystalLabel;
-    onSave({ name, description, status, detailLevel, crystal, crystalLabel, locationId: locationId || undefined, etnia, tipoSpren, attributes, skills });
+    onSave({ name, description, status, detailLevel, crystal, locationId: locationId || undefined, etnia, tipoSpren, attributes, skills });
     if (npc.id) syncLink(npc.id);
   }
 
@@ -134,7 +134,7 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
               >
                 {statusOptions.map((s) => (
                   <option key={s} value={s}>
-                    {statusLabel[s]}
+                    {statusLabel[lang][s]}
                   </option>
                 ))}
               </select>

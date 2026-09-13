@@ -9,7 +9,7 @@ import {
   type StatusKind,
 } from "../data/domain";
 import { SkillsEditor } from "../components/SkillsEditor";
-import { useT } from "../lib/i18n";
+import { useT, useLang } from "../lib/i18n";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
@@ -21,6 +21,7 @@ interface PlayerEditProps {
 
 export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
   const t = useT();
+  const lang = useLang();
   const [playerName, setPlayerName] = useState(player.playerName);
   const [characterName, setCharacterName] = useState(player.characterName);
   const [race, setRace] = useState(player.race);
@@ -91,7 +92,7 @@ export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
               >
                 {statusOptions.map((s) => (
                   <option key={s} value={s}>
-                    {statusLabel[s]}
+                    {statusLabel[lang][s]}
                   </option>
                 ))}
               </select>

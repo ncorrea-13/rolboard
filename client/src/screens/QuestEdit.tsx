@@ -1,14 +1,7 @@
 import { useState } from "react";
 import "./NpcEdit.css";
-import { type Quest, type QuestStatus } from "../data/domain";
-import { useT } from "../lib/i18n";
-
-const statusOptions: { value: QuestStatus; label: string }[] = [
-  { value: "active", label: "Activa" },
-  { value: "on_hold", label: "En pausa" },
-  { value: "completed", label: "Completada" },
-  { value: "failed", label: "Fallida" },
-];
+import { questStatusLabel, type Quest, type QuestStatus } from "../data/domain";
+import { useT, useLang } from "../lib/i18n";
 
 interface QuestEditProps {
   quest: Quest;
@@ -16,8 +9,14 @@ interface QuestEditProps {
   onDiscard: () => void;
 }
 
+const questStatusOrder: QuestStatus[] = ["active", "on_hold", "completed", "failed"];
+
 export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
   const t = useT();
+  const lang = useLang();
+  const statusOptions: { value: QuestStatus; label: string }[] = questStatusOrder.map(
+    (value) => ({ value, label: questStatusLabel[lang][value] }),
+  );
   const priorityOptions: { value: 1 | 2 | 3; label: string }[] = [
     { value: 1, label: t("questDetail.priorityHigh") },
     { value: 2, label: t("questDetail.priorityMedium") },
