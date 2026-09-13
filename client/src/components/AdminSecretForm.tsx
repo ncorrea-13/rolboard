@@ -1,25 +1,25 @@
 import { useState } from "react";
 import { useT } from "../lib/i18n";
 
-interface CampaignLoginFormProps {
-  onSubmit: (code: string) => Promise<void>;
+interface AdminSecretFormProps {
+  onSubmit: (secret: string) => Promise<void>;
   onCancel: () => void;
 }
 
-export function CampaignLoginForm({ onSubmit, onCancel }: CampaignLoginFormProps) {
+export function AdminSecretForm({ onSubmit, onCancel }: AdminSecretFormProps) {
   const t = useT();
-  const [code, setCode] = useState("");
+  const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   async function handleConfirm() {
-    if (!code.trim() || submitting) return;
+    if (!secret.trim() || submitting) return;
     setSubmitting(true);
     setError(null);
     try {
-      await onSubmit(code.trim());
+      await onSubmit(secret.trim());
     } catch {
-      setError(t("login.error"));
+      setError(t("adminSecret.error"));
     } finally {
       setSubmitting(false);
     }
@@ -28,13 +28,13 @@ export function CampaignLoginForm({ onSubmit, onCancel }: CampaignLoginFormProps
   return (
     <>
       <div>
-        <span className="label">{t("login.label")}</span>
+        <span className="label">{t("adminSecret.label")}</span>
         <input
           className="npc-edit__input"
           type="password"
           autoFocus
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
+          value={secret}
+          onChange={(e) => setSecret(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleConfirm()}
         />
         {error && (
@@ -52,14 +52,14 @@ export function CampaignLoginForm({ onSubmit, onCancel }: CampaignLoginFormProps
         }}
       >
         <button className="btn btn-secondary" onClick={onCancel}>
-          {t("login.cancel")}
+          {t("adminSecret.cancel")}
         </button>
         <button
           className="btn btn-primary"
           onClick={handleConfirm}
-          disabled={!code.trim() || submitting}
+          disabled={!secret.trim() || submitting}
         >
-          {t("login.confirm")}
+          {t("adminSecret.confirm")}
         </button>
       </div>
     </>

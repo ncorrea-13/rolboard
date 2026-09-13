@@ -1,6 +1,7 @@
 import "../styles/list.css";
 import { crystalColor, type Quest } from "../data/domain";
 import { QuestStatusPill } from "../components/StatusPill";
+import { useT } from "../lib/i18n";
 
 const priorityLabel = { 1: "P1", 2: "P2", 3: "P3" } as const;
 const priorityColor = {
@@ -16,17 +17,18 @@ interface QuestsListProps {
 }
 
 export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
+  const t = useT();
   return (
     <div className="card list-page">
       <div className="list-page__header">
         <div>
           <div className="display" style={{ fontSize: 21 }}>
-            Quests
+            {t("questsList.title")}
           </div>
-          <span className="list-page__count">{quests.length} quests</span>
+          <span className="list-page__count">{quests.length} {t("questsList.count")}</span>
         </div>
         <button className="btn btn-primary" onClick={onCreate}>
-          Nueva quest
+          {t("questsList.new")}
         </button>
       </div>
       <div className="list-page__rows">

@@ -7,6 +7,7 @@ import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
 import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 interface PlayerDetailProps {
   player: PlayerCharacter;
@@ -18,6 +19,7 @@ interface PlayerDetailProps {
 }
 
 export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, onDelete }: PlayerDetailProps) {
+  const t = useT();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState<{ title: string; fallback: string } | null>(null);
   const [noteHtml, setNoteHtml] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
     <div className="card npc-detail">
       <div className="npc-detail__header">
         <div className="npc-detail__breadcrumb">
-          <button className="npc-detail__breadcrumb-link" onClick={onBack}>JUGADORES</button>
+          <button className="npc-detail__breadcrumb-link" onClick={onBack}>{t("playerDetail.breadcrumb")}</button>
           <span>/</span>
           <span className="npc-detail__breadcrumb-type">{player.race}{player.class !== "—" ? ` · ${player.class}` : ""}</span>
         </div>
@@ -45,7 +47,7 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
           <EntityIdentity
             initials={player.characterName.slice(0, 2).toUpperCase()}
             name={player.characterName}
-            role={`Jugado por ${player.playerName}`}
+            role={`${t("playersList.playedBy")} ${player.playerName}`}
             color="var(--crystal-npc)"
             size="header"
           />
@@ -56,11 +58,11 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
             </span>
           )}
           <div className="npc-detail__header-actions">
-            <button className="btn btn-secondary" onClick={() => openInObsidian(vaultName, player.obsidianPath)}>Abrir en Obsidian</button>
-            <button className="btn btn-secondary" onClick={() => openNote(player.obsidianPath, player.characterName, "")}>Ver nota renderizada</button>
-            <button className="btn btn-secondary" onClick={() => setSheetOpen(true)}>Ver ficha</button>
-            <button className="btn btn-secondary" onClick={onDelete}>Dar de baja</button>
-            <button className="btn btn-primary" onClick={onEdit}>Editar</button>
+            <button className="btn btn-secondary" onClick={() => openInObsidian(vaultName, player.obsidianPath)}>{t("entityDetail.openInObsidian")}</button>
+            <button className="btn btn-secondary" onClick={() => openNote(player.obsidianPath, player.characterName, "")}>{t("entityDetail.viewRenderedNote")}</button>
+            <button className="btn btn-secondary" onClick={() => setSheetOpen(true)}>{t("npcDetail.viewSheet")}</button>
+            <button className="btn btn-secondary" onClick={onDelete}>{t("entityDetail.deactivate")}</button>
+            <button className="btn btn-primary" onClick={onEdit}>{t("common.edit")}</button>
           </div>
         </div>
       </div>
@@ -68,26 +70,26 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
       <div className="npc-detail__body">
         <div className="npc-detail__col npc-detail__col--main">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span className="label">Trasfondo</span>
+            <span className="label">{t("playerDetail.backstory")}</span>
             {player.historiaPath && (
               <button
                 className="btn btn-secondary"
-                onClick={() => openNote(player.historiaPath, `Historia — ${player.characterName}`, player.backstory)}
+                onClick={() => openNote(player.historiaPath, `${t("playerDetail.historyTitlePrefix")} — ${player.characterName}`, player.backstory)}
               >
-                Ver historia completa
+                {t("playerDetail.viewFullBackstory")}
               </button>
             )}
           </div>
           <p className="npc-detail__desc">{player.backstory}</p>
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 21 }}>
-            <span className="label">Notas de progresión</span>
+            <span className="label">{t("playerDetail.progressionNotes")}</span>
             {player.avancesPath && (
               <button
                 className="btn btn-secondary"
-                onClick={() => openNote(player.avancesPath, `Avances — ${player.characterName}`, player.progressionNotes)}
+                onClick={() => openNote(player.avancesPath, `${t("playerDetail.progressTitlePrefix")} — ${player.characterName}`, player.progressionNotes)}
               >
-                Ver avances
+                {t("playerDetail.viewProgression")}
               </button>
             )}
           </div>
@@ -96,10 +98,10 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
 
         <div className="npc-detail__col npc-detail__col--side">
           <div>
-            <span className="label">Nota de Obsidian</span>
+            <span className="label">{t("entityDetail.obsidianNote")}</span>
             <div className="entity-detail__obsidian">
               <span className="entity-detail__obsidian-path">{player.obsidianPath}</span>
-              <button className="btn btn-secondary" onClick={() => openInObsidian(vaultName, player.obsidianPath)}>Abrir en Obsidian</button>
+              <button className="btn btn-secondary" onClick={() => openInObsidian(vaultName, player.obsidianPath)}>{t("entityDetail.openInObsidian")}</button>
             </div>
           </div>
         </div>
@@ -119,7 +121,7 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
       )}
 
       {sheetOpen && (
-        <Modal title={`Ficha · ${player.characterName}`} onClose={() => setSheetOpen(false)} size="sheet">
+        <Modal title={`${t("npcDetail.sheetPrefix")} · ${player.characterName}`} onClose={() => setSheetOpen(false)} size="sheet">
           <CharacterSheet
             attributes={player.attributes}
             skills={player.skills}

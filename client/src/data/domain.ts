@@ -1,3 +1,5 @@
+import { getLang, type Lang } from "../lib/i18n";
+
 export type CrystalType =
   | "npc"
   | "spren"
@@ -14,12 +16,21 @@ export const crystalColor: Record<CrystalType, string> = {
   "entidad-cognitiva": "var(--crystal-entidad-cognitiva)",
 };
 
-export const crystalLabel: Record<CrystalType, string> = {
-  npc: "Humano",
-  spren: "Spren",
-  location: "Locación",
-  "faction-quest": "Facción",
-  "entidad-cognitiva": "Ent. cognitiva",
+export const crystalLabel: Record<Lang, Record<CrystalType, string>> = {
+  es: {
+    npc: "Humano",
+    spren: "Spren",
+    location: "Locación",
+    "faction-quest": "Facción",
+    "entidad-cognitiva": "Ent. cognitiva",
+  },
+  en: {
+    npc: "Human",
+    spren: "Spren",
+    location: "Location",
+    "faction-quest": "Faction",
+    "entidad-cognitiva": "Cog. entity",
+  },
 };
 
 const fallbackPalette = [
@@ -48,8 +59,11 @@ export function crystalColorFor(crystal: string): string {
 
 /** Label legible para cualquier crystal type — si no está en crystalLabel,
  * capitaliza el string crudo tal cual viene del backend. */
-export function crystalLabelFor(crystal: string): string {
-  return crystalLabel[crystal as CrystalType] ?? crystal.charAt(0).toUpperCase() + crystal.slice(1);
+export function crystalLabelFor(crystal: string, lang: Lang = getLang()): string {
+  return (
+    crystalLabel[lang][crystal as CrystalType] ??
+    crystal.charAt(0).toUpperCase() + crystal.slice(1)
+  );
 }
 
 export const statusColor: Record<StatusKind, string> = {
@@ -64,11 +78,19 @@ export const statusDotColor: Record<StatusKind, string> = {
   paused: "var(--status-paused-dot)",
 };
 
-export const statusLabel: Record<StatusKind, string> = {
-  alive: "Vivo",
-  missing: "Desaparecido",
-  dead: "Muerto",
-  paused: "En pausa",
+export const statusLabel: Record<Lang, Record<StatusKind, string>> = {
+  es: {
+    alive: "Vivo",
+    missing: "Desaparecido",
+    dead: "Muerto",
+    paused: "En pausa",
+  },
+  en: {
+    alive: "Alive",
+    missing: "Missing",
+    dead: "Dead",
+    paused: "Paused",
+  },
 };
 
 export type CampaignStatus = "active" | "paused" | "finished";
@@ -81,10 +103,17 @@ export const arcStatusColor: Record<ArcStatus, string> = {
   cerrado: "var(--status-dead)",
 };
 
-export const arcStatusLabel: Record<ArcStatus, string> = {
-  planificado: "Planificado",
-  en_curso: "En curso",
-  cerrado: "Cerrado",
+export const arcStatusLabel: Record<Lang, Record<ArcStatus, string>> = {
+  es: {
+    planificado: "Planificado",
+    en_curso: "En curso",
+    cerrado: "Cerrado",
+  },
+  en: {
+    planificado: "Planned",
+    en_curso: "In progress",
+    cerrado: "Closed",
+  },
 };
 
 export const campaignStatusColor: Record<CampaignStatus, string> = {
@@ -98,10 +127,17 @@ export const campaignStatusDotColor: Record<CampaignStatus, string> = {
   paused: "var(--status-paused-dot)",
 };
 
-export const campaignStatusLabel: Record<CampaignStatus, string> = {
-  active: "Activa",
-  paused: "En pausa",
-  finished: "Finalizada",
+export const campaignStatusLabel: Record<Lang, Record<CampaignStatus, string>> = {
+  es: {
+    active: "Activa",
+    paused: "En pausa",
+    finished: "Finalizada",
+  },
+  en: {
+    active: "Active",
+    paused: "Paused",
+    finished: "Finished",
+  },
 };
 
 export interface Campaign {
@@ -123,11 +159,19 @@ export const questStatusColor: Record<QuestStatus, string> = {
   on_hold: "var(--status-missing)",
 };
 
-export const questStatusLabel: Record<QuestStatus, string> = {
-  active: "Activa",
-  completed: "Completada",
-  failed: "Fallida",
-  on_hold: "En pausa",
+export const questStatusLabel: Record<Lang, Record<QuestStatus, string>> = {
+  es: {
+    active: "Activa",
+    completed: "Completada",
+    failed: "Fallida",
+    on_hold: "En pausa",
+  },
+  en: {
+    active: "Active",
+    completed: "Completed",
+    failed: "Failed",
+    on_hold: "On hold",
+  },
 };
 
 export interface Quest {
@@ -171,12 +215,21 @@ export function locationBreadcrumb(loc: Location, all: Location[]): string {
   return `${parent.name} · ${loc.name}`;
 }
 
-export const locationTypeLabel: Record<Location["locationType"], string> = {
-  planet: "Planeta",
-  region: "Región",
-  city: "Ciudad",
-  site: "Sitio",
-  plane: "Plano",
+export const locationTypeLabel: Record<Lang, Record<Location["locationType"], string>> = {
+  es: {
+    planet: "Planeta",
+    region: "Región",
+    city: "Ciudad",
+    site: "Sitio",
+    plane: "Plano",
+  },
+  en: {
+    planet: "Planet",
+    region: "Region",
+    city: "City",
+    site: "Site",
+    plane: "Plane",
+  },
 };
 
 export interface Npc {
@@ -189,7 +242,6 @@ export interface Npc {
   tipoSpren?: string;
   description: string;
   crystal: CrystalType;
-  crystalLabel: string;
   status: StatusKind;
   statusNote?: string;
   detailLevel: "full" | "minor";
@@ -276,10 +328,17 @@ export const encounterStatusColor: Record<EncounterStatus, string> = {
   cerrado: "var(--status-dead)",
 };
 
-export const encounterStatusLabel: Record<EncounterStatus, string> = {
-  planificado: "Planificado",
-  activo: "Activo",
-  cerrado: "Cerrado",
+export const encounterStatusLabel: Record<Lang, Record<EncounterStatus, string>> = {
+  es: {
+    planificado: "Planificado",
+    activo: "Activo",
+    cerrado: "Cerrado",
+  },
+  en: {
+    planificado: "Planned",
+    activo: "Active",
+    cerrado: "Closed",
+  },
 };
 
 export interface Encounter {
@@ -293,9 +352,15 @@ export interface Encounter {
 
 export type TurnType = "rapido" | "lento";
 
-export const turnTypeLabel: Record<TurnType, string> = {
-  rapido: "Rápido",
-  lento: "Lento",
+export const turnTypeLabel: Record<Lang, Record<TurnType, string>> = {
+  es: {
+    rapido: "Rápido",
+    lento: "Lento",
+  },
+  en: {
+    rapido: "Fast",
+    lento: "Slow",
+  },
 };
 
 export type StatMap = Record<string, string | number>;

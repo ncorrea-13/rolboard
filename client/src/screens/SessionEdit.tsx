@@ -4,6 +4,7 @@ import { sessionCode, type Arc, type Session } from "../data/domain";
 import { MarkdownText } from "../components/MarkdownText";
 import { Modal } from "../components/Modal";
 import { apiFetch } from "../lib/api";
+import { useT } from "../lib/i18n";
 
 interface SessionEditProps {
   arc?: Arc;
@@ -17,6 +18,7 @@ interface SessionEditProps {
 }
 
 export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, onDelete, autoConfirm }: SessionEditProps) {
+  const t = useT();
   const played = session.sessionType !== "planning";
   const [date, setDate] = useState(session.date);
   const [text, setText] = useState(session.summary);
@@ -58,14 +60,14 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
   function handleConfirmPlayed() {
     onSave({
       date: playDate,
-      summary: recap.trim() || "Sesión sin resumen todavía.",
+      summary: recap.trim() || t("newSessionForm.defaultSummary"),
       prepNotes: session.prepNotes || session.summary,
       sessionType: "session",
     });
   }
 
   const noteModal = noteOpen && (
-    <Modal title={`Sesión ${sessionCode(session)}`} onClose={() => setNoteOpen(false)} size="large">
+    <Modal title={`${t("sessionEdit.sessionPrefix")} ${sessionCode(session)}`} onClose={() => setNoteOpen(false)} size="large">
       {noteHtml ? (
         <div className="npc-detail__desc" dangerouslySetInnerHTML={{ __html: noteHtml }} />
       ) : (
@@ -81,42 +83,42 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
           <div className="npc-edit__bar-left">
             <span className="status-dot" style={{ background: "var(--status-alive)" }} />
             <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-              Confirmando como jugada · Sesión {sessionCode(session)} {arc ? `· ${arc.label}` : ""}
+              {t("sessionEdit.confirmingPlay")} · {t("sessionEdit.sessionPrefix")} {sessionCode(session)} {arc ? `· ${arc.label}` : ""}
             </span>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             <button className="btn btn-secondary" onClick={() => (autoConfirm ? onBack() : setConfirmingPlay(false))}>
-              Cancelar
+              {t("common.cancel")}
             </button>
             {session.obsidianPath && (
-              <button className="btn btn-secondary" onClick={openNote}>Ver nota renderizada</button>
+              <button className="btn btn-secondary" onClick={openNote}>{t("entityDetail.viewRenderedNote")}</button>
             )}
-            <button className="btn btn-primary" onClick={handleConfirmPlayed}>Confirmar como jugada</button>
+            <button className="btn btn-primary" onClick={handleConfirmPlayed}>{t("sessionEdit.confirmPlayed")}</button>
           </div>
         </div>
 
         <div className="npc-edit__body" style={{ gridTemplateColumns: "1fr 1fr" }}>
           <div className="npc-edit__col">
-            <span className="label">Planificado</span>
+            <span className="label">{t("sessionEdit.planned")}</span>
             <div className="npc-edit__grid-2" style={{ marginTop: 10 }}>
               <div>
-                <span className="label">Sesión</span>
+                <span className="label">{t("newSessionForm.session")}</span>
                 <div className="npc-edit__input">{sessionCode(session)}</div>
               </div>
               <div>
-                <span className="label">Fecha tentativa</span>
-                <div className="npc-edit__input">{session.date || "sin definir"}</div>
+                <span className="label">{t("sessionEdit.tentativeDateLabel")}</span>
+                <div className="npc-edit__input">{session.date || t("sessionEdit.notSet")}</div>
               </div>
             </div>
 
             <div style={{ marginTop: 16 }}>
-              <span className="label">Notas de preparación (admite Markdown)</span>
+              <span className="label">{t("planSession.prepNotesLabel")}</span>
               <MarkdownText className="npc-detail__desc" text={session.summary} />
             </div>
 
             {expectedNpcs.length > 0 && (
               <div style={{ marginTop: 16 }}>
-                <span className="label">NPCs esperados</span>
+                <span className="label">{t("planSession.expectedNpcs")}</span>
                 <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
                   {expectedNpcs.map((n) => (
                     <span key={n.npc_id} className="npc-edit__type-chip">{n.name}</span>
@@ -127,7 +129,7 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
 
             {expectedQuests.length > 0 && (
               <div style={{ marginTop: 16 }}>
-                <span className="label">Quests esperadas</span>
+                <span className="label">{t("planSession.expectedQuests")}</span>
                 <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
                   {expectedQuests.map((q) => (
                     <span key={q.quest_id} className="npc-edit__type-chip">{q.title}</span>
@@ -138,24 +140,24 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
           </div>
 
           <div className="npc-edit__col">
-            <span className="label">Lo que pasó</span>
+            <span className="label">{t("sessionEdit.whatHappened")}</span>
             <div className="npc-edit__grid-2" style={{ marginTop: 10 }}>
               <div>
-                <span className="label">Fecha real</span>
+                <span className="label">{t("sessionEdit.realDate")}</span>
                 <input type="date" className="npc-edit__input" value={playDate} onChange={(e) => setPlayDate(e.target.value)} />
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
-              <span className="label">Resumen de lo jugado (admite Markdown)</span>
+              <span className="label">{t("sessionEdit.recapLabel")}</span>
               <textarea
                 className="npc-edit__textarea"
                 style={{ minHeight: 220 }}
-                placeholder="Qué pasó realmente…"
+                placeholder={t("sessionEdit.recapPlaceholder")}
                 value={recap}
                 onChange={(e) => setRecap(e.target.value)}
               />
             </div>
-            <div className="npc-edit__note">Las notas de preparación quedan guardadas aparte, no se pisan.</div>
+            <div className="npc-edit__note">{t("sessionEdit.prepNotesKeptSeparate")}</div>
           </div>
         </div>
         {noteModal}
@@ -169,16 +171,16 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
         <div className="npc-edit__bar-left">
           <span className="status-dot" style={{ background: played ? "var(--status-alive)" : "var(--accent-sky)" }} />
           <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            Sesión {sessionCode(session)} {arc ? `· ${arc.label}` : ""} {played ? "· jugada" : "· planificada"}
+            {t("sessionEdit.sessionPrefix")} {sessionCode(session)} {arc ? `· ${arc.label}` : ""} {played ? t("sessionEdit.playedSuffix") : t("sessionEdit.plannedSuffix")}
           </span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onBack}>Volver</button>
+          <button className="btn btn-secondary" onClick={onBack}>{t("common.back")}</button>
           {session.obsidianPath && (
-            <button className="btn btn-secondary" onClick={openNote}>Ver nota renderizada</button>
+            <button className="btn btn-secondary" onClick={openNote}>{t("entityDetail.viewRenderedNote")}</button>
           )}
-          <button className="btn btn-secondary" onClick={onDelete}>Borrar sesión</button>
-          <button className="btn btn-primary" onClick={handleSave}>Guardar</button>
+          <button className="btn btn-secondary" onClick={onDelete}>{t("sessionEdit.deleteSession")}</button>
+          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
         </div>
       </div>
 
@@ -186,23 +188,23 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
         <div className="npc-edit__col">
           <div className="npc-edit__grid-2">
             <div>
-              <span className="label">Sesión</span>
+              <span className="label">{t("newSessionForm.session")}</span>
               <div className="npc-edit__input">{sessionCode(session)}</div>
             </div>
             <div>
-              <span className="label">Fecha</span>
+              <span className="label">{t("newSessionForm.date")}</span>
               <input className="npc-edit__input" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
           </div>
 
           <div>
-            <span className="label">Arco</span>
+            <span className="label">{t("sessionEdit.arc")}</span>
             <select
               className="npc-edit__select npc-edit__select--native"
               value={arcId}
               onChange={(e) => setArcId(e.target.value)}
             >
-              <option value="">Sin arco</option>
+              <option value="">{t("sessionsTimeline.noArc")}</option>
               {arcs.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.label}
@@ -212,13 +214,13 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
           </div>
 
           <div>
-            <span className="label">{played ? "Resumen" : "Notas de preparación"} (admite Markdown)</span>
+            <span className="label">{played ? t("common.summary") : t("sessionEdit.prepNotesOnly")} {t("common.supportsMarkdown")}</span>
             <textarea className="npc-edit__textarea" style={{ minHeight: 160 }} value={text} onChange={(e) => setText(e.target.value)} />
           </div>
 
           {played && session.prepNotes && (
             <div>
-              <span className="label" style={{ marginTop: 21, display: "block" }}>Notas de preparación originales</span>
+              <span className="label" style={{ marginTop: 21, display: "block" }}>{t("sessionEdit.originalPrepNotes")}</span>
               <MarkdownText className="npc-detail__desc" text={session.prepNotes} />
             </div>
           )}
@@ -227,7 +229,7 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
         <div className="npc-edit__col">
           {expectedNpcs.length > 0 && (
             <div>
-              <span className="label">NPCs esperados</span>
+              <span className="label">{t("planSession.expectedNpcs")}</span>
               <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
                 {expectedNpcs.map((n) => (
                   <span key={n.npc_id} className="npc-edit__type-chip">{n.name}</span>
@@ -238,7 +240,7 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
 
           {expectedQuests.length > 0 && (
             <div>
-              <span className="label">Quests esperadas</span>
+              <span className="label">{t("planSession.expectedQuests")}</span>
               <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
                 {expectedQuests.map((q) => (
                   <span key={q.quest_id} className="npc-edit__type-chip">{q.title}</span>
@@ -248,7 +250,7 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
           )}
 
           {!played && (
-            <button className="btn btn-primary" onClick={() => setConfirmingPlay(true)}>Marcar como jugada</button>
+            <button className="btn btn-primary" onClick={() => setConfirmingPlay(true)}>{t("sessionEdit.markAsPlayed")}</button>
           )}
         </div>
       </div>

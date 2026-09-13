@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useT } from "../lib/i18n";
 
 interface NewSessionFormProps {
   nextNumber: number;
@@ -11,27 +12,28 @@ export function NewSessionForm({
   onConfirm,
   onCancel,
 }: NewSessionFormProps) {
+  const t = useT();
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [text, setText] = useState("");
 
   function handleConfirm() {
     onConfirm({
       date,
-      summary: text.trim() || "Sesión sin resumen todavía.",
+      summary: text.trim() || t("newSessionForm.defaultSummary"),
     });
   }
 
   return (
     <>
       <div>
-        <span className="label">Sesión</span>
+        <span className="label">{t("newSessionForm.session")}</span>
         <div
           className="npc-edit__input"
           style={{ marginTop: 6 }}
         >{`S${String(nextNumber).padStart(2, "0")}`}</div>
       </div>
       <div>
-        <span className="label">Fecha</span>
+        <span className="label">{t("newSessionForm.date")}</span>
         <input
           type="date"
           className="npc-edit__input"
@@ -40,12 +42,10 @@ export function NewSessionForm({
         />
       </div>
       <div>
-        <span className="label">
-          Resumen (opcional, se completa después de jugar — admite Markdown)
-        </span>
+        <span className="label">{t("newSessionForm.summaryLabel")}</span>
         <textarea
           className="npc-edit__textarea"
-          placeholder="Qué pasó en la sesión…"
+          placeholder={t("newSessionForm.summaryPlaceholder")}
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
@@ -59,10 +59,10 @@ export function NewSessionForm({
         }}
       >
         <button className="btn btn-secondary" onClick={onCancel}>
-          Cancelar
+          {t("common.cancel")}
         </button>
         <button className="btn btn-primary" onClick={handleConfirm}>
-          Jugar sesión
+          {t("newSessionForm.confirm")}
         </button>
       </div>
     </>

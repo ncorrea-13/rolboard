@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./AppShell.css";
 import { Sidebar } from "./Sidebar";
 import type { DashboardSection } from "../screens/CampaignDashboard";
+import { useT } from "../lib/i18n";
 
 interface AppShellProps {
   campaignName: string;
@@ -18,6 +19,7 @@ export function AppShell({
   onBackToCampaigns,
   children,
 }: AppShellProps) {
+  const t = useT();
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
@@ -27,7 +29,7 @@ export function AppShell({
           className="app-shell__toggle"
           onClick={() => setSidebarOpen((v) => !v)}
           aria-label={
-            sidebarOpen ? "Ocultar barra lateral" : "Mostrar barra lateral"
+            sidebarOpen ? t("appShell.hideSidebar") : t("appShell.showSidebar")
           }
           aria-expanded={sidebarOpen}
         >

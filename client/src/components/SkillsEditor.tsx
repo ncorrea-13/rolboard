@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, X } from "lucide-react";
 import "./SkillsEditor.css";
 import type { StatMap } from "../data/domain";
+import { useT } from "../lib/i18n";
 
 function parseValue(raw: string): string | number {
   if (raw.trim() !== "" && !Number.isNaN(Number(raw))) return Number(raw);
@@ -15,6 +16,7 @@ interface SkillsEditorProps {
 }
 
 export function SkillsEditor({ label, value, onChange }: SkillsEditorProps) {
+  const t = useT();
   const [newKey, setNewKey] = useState("");
   const entries = Object.entries(value);
 
@@ -68,13 +70,13 @@ export function SkillsEditor({ label, value, onChange }: SkillsEditorProps) {
         <div className="skills-editor__row">
           <input
             className="skills-editor__key"
-            placeholder="Nuevo campo…"
+            placeholder={t("skillsEditor.newField")}
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addEntry()}
           />
           <button className="skills-editor__add" onClick={addEntry}>
-            <Plus size={12} /> Agregar
+            <Plus size={12} /> {t("skillsEditor.add")}
           </button>
         </div>
       </div>

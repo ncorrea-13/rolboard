@@ -6,10 +6,29 @@ export class ApiError extends Error {
   }
 }
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+let adminSecret = "";
+
+export function setAdminSecret(secret: string) {
+  adminSecret = secret;
+}
+
+export function hasAdminSecret() {
+  return adminSecret !== "";
+}
+
+interface ApiFetchInit extends RequestInit {
+  admin?: boolean;
+}
+
+export async function apiFetch<T>(path: string, init?: ApiFetchInit): Promise<T> {
+  const { admin, headers, ...rest } = init ?? {};
   const res = await fetch(`/api${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
+    ...rest,
+    headers: {
+      "Content-Type": "application/json",
+      ...(admin ? { "X-Admin-Token": adminSecret } : {}),
+      ...headers,
+    },
   });
   if (!res.ok) {
     throw new ApiError(res.status, `${init?.method ?? "GET"} ${path} failed: ${res.status}`);

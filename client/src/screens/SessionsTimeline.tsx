@@ -1,6 +1,7 @@
 import "./SessionsTimeline.css";
 import { arcStatusColor, formatDate, sessionCode, type Arc, type Session } from "../data/domain";
 import { MarkdownText } from "../components/MarkdownText";
+import { useT } from "../lib/i18n";
 
 interface SessionsTimelineProps {
   arcs: Arc[];
@@ -12,6 +13,7 @@ interface SessionsTimelineProps {
 }
 
 export function SessionsTimeline({ arcs, sessions, nextSessionNumber, onPlanSession, onPlaySession, onOpenSession }: SessionsTimelineProps) {
+  const t = useT();
   const unassigned = sessions.filter((s) => !s.arcId);
   const groups: { arc?: Arc; sessions: Session[] }[] = [
     ...(unassigned.length ? [{ arc: undefined, sessions: unassigned }] : []),
@@ -22,12 +24,12 @@ export function SessionsTimeline({ arcs, sessions, nextSessionNumber, onPlanSess
     <div className="card sessions-timeline">
       <header className="sessions-timeline__header">
         <div>
-          <div className="display" style={{ fontSize: 21 }}>Sesiones</div>
-          <div className="sessions-timeline__subtitle">{sessions.length} sesiones en {arcs.length} arcos</div>
+          <div className="display" style={{ fontSize: 21 }}>{t("sessionsTimeline.title")}</div>
+          <div className="sessions-timeline__subtitle">{sessions.length} {t("sessionsTimeline.sessionsWord")} {t("sessionsTimeline.in")} {arcs.length} {t("arcsList.count")}</div>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onPlanSession}>Planificar sesión</button>
-          <button className="btn btn-primary" onClick={onPlaySession}>Jugar sesión {nextSessionNumber}</button>
+          <button className="btn btn-secondary" onClick={onPlanSession}>{t("sessionsTimeline.plan")}</button>
+          <button className="btn btn-primary" onClick={onPlaySession}>{t("sessionsTimeline.play")} {nextSessionNumber}</button>
         </div>
       </header>
 
@@ -36,7 +38,7 @@ export function SessionsTimeline({ arcs, sessions, nextSessionNumber, onPlanSess
           <div key={arc?.id ?? "sin-arco"}>
             <div className="sessions-timeline__arc-head">
               <span className="status-dot" style={{ background: arc ? arcStatusColor[arc.status] : "var(--text-secondary)" }} />
-              <span className="display" style={{ fontSize: 17.5 }}>{arc?.label ?? "Sin arco"}</span>
+              <span className="display" style={{ fontSize: 17.5 }}>{arc?.label ?? t("sessionsTimeline.noArc")}</span>
               <span className="sessions-timeline__arc-rule" />
             </div>
             <div className="sessions-timeline__list">
@@ -49,11 +51,11 @@ export function SessionsTimeline({ arcs, sessions, nextSessionNumber, onPlanSess
                 >
                   <div className="sessions-timeline__item-n">
                     <div className="sessions-timeline__item-code">{sessionCode(s)}</div>
-                    <div className="sessions-timeline__item-date">{s.date ? formatDate(s.date) : "sin fecha"}</div>
+                    <div className="sessions-timeline__item-date">{s.date ? formatDate(s.date) : t("sessionsTimeline.noDate")}</div>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div className="sessions-timeline__item-text sessions-timeline__item-text--clamp">
-                      {s.sessionType === "planning" && <span className="npc-detail__appearance-chip" style={{ marginRight: 8 }}>Planificada</span>}
+                      {s.sessionType === "planning" && <span className="npc-detail__appearance-chip" style={{ marginRight: 8 }}>{t("sessionsTimeline.planned")}</span>}
                       <MarkdownText inline text={s.summary} />
                     </div>
                   </div>

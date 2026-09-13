@@ -21,6 +21,7 @@ import {
   type StatMap,
   type TurnType,
 } from "../data/domain";
+import { useT, type TranslationKey } from "../lib/i18n";
 
 type AddKind = "npc" | "pc" | "custom";
 
@@ -36,11 +37,11 @@ interface EncounterDetailProps {
   onSyncPlayerHp: (pcId: string, patch: { currentHp?: number; maxHp?: number }) => void;
 }
 
-const phases: { key: TurnType; isPc: boolean; title: string; Icon: typeof Zap }[] = [
-  { key: "rapido", isPc: true, title: "Rápidos · PJs", Icon: Zap },
-  { key: "rapido", isPc: false, title: "Rápidos · PNJs", Icon: Zap },
-  { key: "lento", isPc: true, title: "Lentos · PJs", Icon: Timer },
-  { key: "lento", isPc: false, title: "Lentos · PNJs", Icon: Timer },
+const phases: { key: TurnType; isPc: boolean; titleKey: TranslationKey; Icon: typeof Zap }[] = [
+  { key: "rapido", isPc: true, titleKey: "encounterDetail.fastPcs", Icon: Zap },
+  { key: "rapido", isPc: false, titleKey: "encounterDetail.fastNpcs", Icon: Zap },
+  { key: "lento", isPc: true, titleKey: "encounterDetail.slowPcs", Icon: Timer },
+  { key: "lento", isPc: false, titleKey: "encounterDetail.slowNpcs", Icon: Timer },
 ];
 
 function hpColor(current?: number, max?: number): string {
@@ -62,6 +63,7 @@ export function EncounterDetail({
   onDelete,
   onSyncPlayerHp,
 }: EncounterDetailProps) {
+  const t = useT();
   const [participants, setParticipants] = useState<EncounterParticipant[]>([]);
   const [acted, setActed] = useState<Set<string>>(new Set());
   // "Jugó su turno" y "rápido/lento" son estado de la ronda — se resetean al cambiar de ronda.
@@ -181,9 +183,9 @@ export function EncounterDetail({
   }
 
   function nameFor(p: EncounterParticipant): string {
-    if (p.pcId) return playerCharacters.find((pc) => pc.id === p.pcId)?.characterName ?? "PJ";
+    if (p.pcId) return playerCharacters.find((pc) => pc.id === p.pcId)?.characterName ?? t("encounterDetail.kindPc");
     if (p.npcId) return npcs.find((n) => n.id === p.npcId)?.name ?? "NPC";
-    return p.displayName ?? "Sin nombre";
+    return p.displayName ?? t("encounterDetail.noName");
   }
 
   function identityColor(p: EncounterParticipant): string {
@@ -196,7 +198,7 @@ export function EncounterDetail({
   }
 
   function kindLabel(p: EncounterParticipant): string {
-    if (p.pcId) return "PJ";
+    if (p.pcId) return t("encounterDetail.kindPc");
     if (p.npcId) return "NPC";
     return "Ad-hoc";
   }
@@ -216,7 +218,7 @@ export function EncounterDetail({
           <button
             className="encounter-card__check"
             onClick={() => toggleActed(p.id)}
-            title="Jugó su turno esta ronda"
+            title={t("encounterDetail.actedTitle")}
           >
             {isActed && <Check size={13} strokeWidth={3} />}
           </button>
@@ -228,7 +230,7 @@ export function EncounterDetail({
           <button
             className="encounter-card__remove"
             onClick={() => removeParticipant(p.id)}
-            title="Sacar del encuentro"
+            title={t("encounterDetail.removeTitle")}
           >
             <X size={13} />
           </button>
@@ -308,7 +310,7 @@ export function EncounterDetail({
                 })
               }
             >
-              <Zap size={11} /> Rápido
+              <Zap size={11} /> {t("encounterDetail.fast")}
             </button>
             <button
               className={`encounter-card__toggle-btn${p.turnType === "lento" ? " encounter-card__toggle-btn--active" : ""}`}
@@ -318,24 +320,24 @@ export function EncounterDetail({
                 })
               }
             >
-              <Timer size={11} /> Lento
+              <Timer size={11} /> {t("encounterDetail.slow")}
             </button>
           </div>
           {linkedSheet(p) ? (
             <button
               className="encounter-card__sheet-toggle"
               onClick={() => setSheetModalId(p.id)}
-              title="Ver ficha completa"
+              title={t("encounterDetail.viewFullSheet")}
             >
-              <ScrollText size={13} /> Ver ficha
+              <ScrollText size={13} /> {t("npcDetail.viewSheet")}
             </button>
           ) : (
             <button
               className={`encounter-card__sheet-toggle${openSheets.has(p.id) ? " encounter-card__sheet-toggle--active" : ""}`}
               onClick={() => toggleSheet(p.id)}
-              title="Ficha (atributos y habilidades)"
+              title={t("encounterDetail.sheetTitle")}
             >
-              <ScrollText size={13} /> Ficha
+              <ScrollText size={13} /> {t("npcDetail.sheetPrefix")}
             </button>
           )}
         </div>
@@ -343,12 +345,12 @@ export function EncounterDetail({
         {!linkedSheet(p) && openSheets.has(p.id) && (
           <div className="encounter-card__sheet">
             <SkillsEditor
-              label="Atributos"
+              label={t("characterSheet.attributes")}
               value={p.attributes}
               onChange={(next: StatMap) => updateParticipant(p.id, { attributes: next })}
             />
             <SkillsEditor
-              label="Habilidades"
+              label={t("characterSheet.skills")}
               value={p.skills}
               onChange={(next: StatMap) => updateParticipant(p.id, { skills: next })}
             />
@@ -369,26 +371,26 @@ export function EncounterDetail({
   return (
     <>
     <EntityDetail
-      eyebrow="ENCUENTROS"
-      backLabel="ENCUENTROS"
+      eyebrow={t("encounterDetail.breadcrumb")}
+      backLabel={t("encounterDetail.breadcrumb")}
       onBack={onBack}
-      title={`Ronda ${encounter.round}`}
+      title={`${t("encountersList.round")} ${encounter.round}`}
       status={<EncounterStatusPill status={encounter.status} />}
       extraActions={
         <>
           {encounter.status !== "cerrado" && (
             <button className="btn btn-secondary" onClick={handleNextRound}>
-              +1 ronda
+              {t("encounterDetail.addRound")}
             </button>
           )}
           {encounter.status === "planificado" && (
             <button className="btn btn-success" onClick={onStart}>
-              Iniciar combate
+              {t("encounterDetail.startCombat")}
             </button>
           )}
           {encounter.status === "activo" && (
             <button className="btn btn-danger" onClick={onClose}>
-              Cerrar combate
+              {t("encounterDetail.closeCombat")}
             </button>
           )}
         </>
@@ -396,13 +398,13 @@ export function EncounterDetail({
       onDelete={onDelete}
       fields={[
         {
-          label: `Participantes (${participants.length})`,
+          label: `${t("encounterDetail.participants")} (${participants.length})`,
           value: (
             <div className="encounter-tracker">
               {unassigned.length > 0 && (
                 <div>
                   <div className="encounter-phase__header">
-                    <span className="encounter-phase__title">Sin turno asignado</span>
+                    <span className="encounter-phase__title">{t("encounterDetail.noTurnAssigned")}</span>
                     <span className="encounter-phase__count">({unassigned.length})</span>
                   </div>
                   <div className="encounter-phase__rows">
@@ -417,10 +419,10 @@ export function EncounterDetail({
                   .sort(byInitiativeDesc);
                 if (rows.length === 0) return null;
                 return (
-                  <div key={phase.title}>
+                  <div key={phase.titleKey}>
                     <div className="encounter-phase__header">
                       <phase.Icon size={13} className="encounter-phase__icon" style={{ color: "var(--accent-obsidian)" }} />
-                      <span className="encounter-phase__title">{phase.title}</span>
+                      <span className="encounter-phase__title">{t(phase.titleKey)}</span>
                       <span className="encounter-phase__count">({rows.length})</span>
                     </div>
                     <div className="encounter-phase__rows">
@@ -432,13 +434,13 @@ export function EncounterDetail({
 
               {participants.length === 0 && (
                 <span style={{ color: "var(--text-secondary)" }}>
-                  Sin participantes todavía.
+                  {t("encounterDetail.noParticipantsYet")}
                 </span>
               )}
 
               {!addOpen && (
                 <button className="encounter-add-trigger" onClick={() => setAddOpen(true)}>
-                  <Plus size={14} /> Agregar peleador
+                  <Plus size={14} /> {t("encounterDetail.addFighter")}
                 </button>
               )}
 
@@ -454,8 +456,8 @@ export function EncounterDetail({
                     }}
                   >
                     <option value="npc">NPC</option>
-                    <option value="pc">Personaje</option>
-                    <option value="custom">Enemigo genérico</option>
+                    <option value="pc">{t("encounterDetail.optPc")}</option>
+                    <option value="custom">{t("encounterDetail.optCustom")}</option>
                   </select>
                   {addKind === "npc" && (
                     <select
@@ -463,7 +465,7 @@ export function EncounterDetail({
                       value={addRefId}
                       onChange={(e) => setAddRefId(e.target.value)}
                     >
-                      <option value="">Elegir NPC…</option>
+                      <option value="">{t("encounterDetail.chooseNpc")}</option>
                       {npcs.map((n) => (
                         <option key={n.id} value={n.id}>
                           {n.name}
@@ -477,7 +479,7 @@ export function EncounterDetail({
                       value={addRefId}
                       onChange={(e) => setAddRefId(e.target.value)}
                     >
-                      <option value="">Elegir personaje…</option>
+                      <option value="">{t("encounterDetail.choosePc")}</option>
                       {playerCharacters.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.characterName}
@@ -488,7 +490,7 @@ export function EncounterDetail({
                   {addKind === "custom" && (
                     <input
                       className="npc-edit__input"
-                      placeholder="Nombre (ej. Bandido 3)"
+                      placeholder={t("encounterDetail.customNamePlaceholder")}
                       value={addName}
                       onChange={(e) => setAddName(e.target.value)}
                     />
@@ -500,10 +502,10 @@ export function EncounterDetail({
                       setAddOpen(false);
                     }}
                   >
-                    Agregar
+                    {t("common.add")}
                   </button>
                   <button className="btn btn-secondary" onClick={() => setAddOpen(false)}>
-                    Cancelar
+                    {t("common.cancel")}
                   </button>
                 </div>
               )}
@@ -513,7 +515,7 @@ export function EncounterDetail({
       ]}
     />
     {sheetModalParticipant && sheetModalSheet && (
-      <Modal title={`Ficha · ${nameFor(sheetModalParticipant)}`} onClose={() => setSheetModalId(null)} size="sheet">
+      <Modal title={`${t("npcDetail.sheetPrefix")} · ${nameFor(sheetModalParticipant)}`} onClose={() => setSheetModalId(null)} size="sheet">
         <CharacterSheet
           attributes={sheetModalSheet.attributes}
           skills={sheetModalSheet.skills}

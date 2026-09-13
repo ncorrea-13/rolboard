@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./NpcEdit.css";
 import type { Arc, Npc, Quest } from "../data/domain";
+import { useT } from "../lib/i18n";
 
 interface PlanSessionProps {
   nextNumber: number;
@@ -17,6 +18,7 @@ interface PlanSessionProps {
 }
 
 export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, onCancel }: PlanSessionProps) {
+  const t = useT();
   const [date, setDate] = useState("");
   const [text, setText] = useState("");
   const [expectedNpcIds, setExpectedNpcIds] = useState<Set<string>>(new Set());
@@ -45,7 +47,7 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
   function handleConfirm() {
     onConfirm({
       date,
-      summary: text.trim() || "Sin notas de preparación todavía.",
+      summary: text.trim() || t("planSession.defaultSummary"),
       expectedNpcIds: [...expectedNpcIds],
       expectedQuestIds: [...expectedQuestIds],
     });
@@ -57,12 +59,12 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
         <div className="npc-edit__bar-left">
           <span className="status-dot" style={{ background: "var(--accent-sky)" }} />
           <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            Planificando · {sessionCode}{currentArc ? ` · ${currentArc.label}` : ""}
+            {t("planSession.planning")} · {sessionCode}{currentArc ? ` · ${currentArc.label}` : ""}
           </span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onCancel}>Cancelar</button>
-          <button className="btn btn-primary" onClick={handleConfirm}>Planificar sesión</button>
+          <button className="btn btn-secondary" onClick={onCancel}>{t("common.cancel")}</button>
+          <button className="btn btn-primary" onClick={handleConfirm}>{t("sessionsTimeline.plan")}</button>
         </div>
       </div>
 
@@ -70,21 +72,21 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
         <div className="npc-edit__col">
           <div className="npc-edit__grid-2">
             <div>
-              <span className="label">Sesión</span>
+              <span className="label">{t("newSessionForm.session")}</span>
               <div className="npc-edit__input">{sessionCode}</div>
             </div>
             <div>
-              <span className="label">Fecha tentativa (opcional)</span>
+              <span className="label">{t("planSession.tentativeDate")}</span>
               <input type="date" className="npc-edit__input" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
           </div>
 
           <div>
-            <span className="label">Notas de preparación (admite Markdown)</span>
+            <span className="label">{t("planSession.prepNotesLabel")}</span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 160 }}
-              placeholder="Qué querés que pase, ganchos preparados, escenas planeadas…"
+              placeholder={t("planSession.prepPlaceholder")}
               value={text}
               onChange={(e) => setText(e.target.value)}
             />
@@ -93,7 +95,7 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
 
         <div className="npc-edit__col">
           <div>
-            <span className="label">NPCs esperados</span>
+            <span className="label">{t("planSession.expectedNpcs")}</span>
             {npcs.length > 0 ? (
               <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
                 {npcs.map((n) => (
@@ -108,12 +110,12 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
                 ))}
               </div>
             ) : (
-              <div className="npc-edit__hint">Sin NPCs cargados todavía en esta campaña.</div>
+              <div className="npc-edit__hint">{t("planSession.noNpcsYet")}</div>
             )}
           </div>
 
           <div>
-            <span className="label">Quests esperadas</span>
+            <span className="label">{t("planSession.expectedQuests")}</span>
             {quests.length > 0 ? (
               <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
                 {quests.map((q) => (
@@ -128,13 +130,12 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
                 ))}
               </div>
             ) : (
-              <div className="npc-edit__hint">Sin quests cargadas todavía en esta campaña.</div>
+              <div className="npc-edit__hint">{t("planSession.noQuestsYet")}</div>
             )}
           </div>
 
           <div className="npc-edit__note">
-            La sesión queda marcada como "planificada" hasta que la abras y la confirmes como jugada, con fecha real
-            y resumen.
+            {t("planSession.note")}
           </div>
         </div>
       </div>
