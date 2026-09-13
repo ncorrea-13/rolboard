@@ -1,6 +1,7 @@
 import "./CharacterSheet.css";
 import { Heart, Sparkles, BookOpen, Swords, Shield, ShieldPlus, Gem, type LucideIcon } from "lucide-react";
 import type { StatMap } from "../data/domain";
+import { useT } from "../lib/i18n";
 
 interface CharacterSheetProps {
   attributes: StatMap;
@@ -32,6 +33,7 @@ function attrGrid(entries: [string, string | number][], icons: LucideIcon[]) {
 }
 
 export function CharacterSheet({ attributes, skills, hp }: CharacterSheetProps) {
+  const t = useT();
   const attrEntries = Object.entries(attributes);
   // Los primeros 6 campos cargados son los atributos "core" (Fuerza, Destreza...);
   // lo que se agrega después son extras de mesa (armadura, defensa, etc.) — no hay
@@ -53,9 +55,9 @@ export function CharacterSheet({ attributes, skills, hp }: CharacterSheetProps) 
       )}
 
       <div>
-        <span className="label">Atributos</span>
+        <span className="label">{t("characterSheet.attributes")}</span>
         {coreAttrs.length === 0 ? (
-          <p className="character-sheet__empty">Sin atributos cargados.</p>
+          <p className="character-sheet__empty">{t("characterSheet.noAttributes")}</p>
         ) : (
           attrGrid(coreAttrs, coreIcons)
         )}
@@ -63,15 +65,15 @@ export function CharacterSheet({ attributes, skills, hp }: CharacterSheetProps) 
 
       {extraAttrs.length > 0 && (
         <div>
-          <span className="label">Otros (armadura, defensa, etc.)</span>
+          <span className="label">{t("characterSheet.others")}</span>
           {attrGrid(extraAttrs, extraIcons)}
         </div>
       )}
 
       <div>
-        <span className="label">Habilidades</span>
+        <span className="label">{t("characterSheet.skills")}</span>
         {skillEntries.length === 0 ? (
-          <p className="character-sheet__empty">Sin habilidades cargadas.</p>
+          <p className="character-sheet__empty">{t("characterSheet.noSkills")}</p>
         ) : (
           <table className="character-sheet__skills">
             <tbody>

@@ -3,6 +3,7 @@ import "./App.css";
 import { apiFetch, ApiError, loginToCampaign, setAdminSecret, hasAdminSecret } from "./lib/api";
 import { CampaignLoginForm } from "./components/CampaignLoginForm";
 import { AdminSecretForm } from "./components/AdminSecretForm";
+import { useT } from "./lib/i18n";
 import { AppShell } from "./components/AppShell";
 import { Modal } from "./components/Modal";
 import { Toast } from "./components/Toast";
@@ -48,6 +49,7 @@ import type { Route } from "./types";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 export default function App() {
+  const t = useT();
   const [route, setRoute] = useState<Route>({ name: "campaigns" });
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
 
@@ -648,7 +650,7 @@ export default function App() {
       )}
 
       {newSessionOpen && (
-        <Modal title="Jugar sesión" onClose={() => setNewSessionOpen(false)}>
+        <Modal title={t("app.modal.newSession")} onClose={() => setNewSessionOpen(false)}>
           <NewSessionForm
             nextNumber={nextSessionNumber}
             onConfirm={playSession}
@@ -658,7 +660,7 @@ export default function App() {
       )}
 
       {adminGateOpen && (
-        <Modal title="Confirmar" onClose={() => setAdminGateOpen(false)}>
+        <Modal title={t("app.modal.confirm")} onClose={() => setAdminGateOpen(false)}>
           <AdminSecretForm
             onSubmit={async (secret) => {
               setAdminSecret(secret);
@@ -677,7 +679,7 @@ export default function App() {
       )}
 
       {loginCampaignId && (
-        <Modal title="Código de la campaña" onClose={() => setLoginCampaignId(null)}>
+        <Modal title={t("app.modal.campaignCode")} onClose={() => setLoginCampaignId(null)}>
           <CampaignLoginForm
             onSubmit={async (code) => {
               await loginToCampaign(loginCampaignId, code);
@@ -691,7 +693,7 @@ export default function App() {
       )}
 
       {newCampaignOpen && (
-        <Modal title="Nueva campaña" onClose={() => setNewCampaignOpen(false)}>
+        <Modal title={t("app.modal.newCampaign")} onClose={() => setNewCampaignOpen(false)}>
           <NewCampaignForm
             onConfirm={createCampaign}
             onCancel={() => setNewCampaignOpen(false)}

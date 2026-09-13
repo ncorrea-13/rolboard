@@ -17,6 +17,7 @@ import {
   type ArcStatus,
   type EncounterStatus,
 } from "../data/domain";
+import { useLang } from "../lib/i18n";
 
 export function StatusPill({
   status,
@@ -25,55 +26,60 @@ export function StatusPill({
   status: StatusKind;
   label?: string;
 }) {
+  const lang = useLang();
   return (
     <span className="status-pill" style={{ color: statusColor[status] }}>
       <span
         className="status-dot"
         style={{ background: statusDotColor[status] }}
       />
-      {label ?? statusLabel[status]}
+      {label ?? statusLabel[lang][status]}
     </span>
   );
 }
 
 export function QuestStatusPill({ status }: { status: QuestStatus }) {
+  const lang = useLang();
   const color = questStatusColor[status];
   return (
     <span className="status-pill" style={{ color }}>
       <span className="status-dot" style={{ background: color }} />
-      {questStatusLabel[status]}
+      {questStatusLabel[lang][status]}
     </span>
   );
 }
 
 export function ArcStatusPill({ status }: { status: ArcStatus }) {
+  const lang = useLang();
   const color = arcStatusColor[status];
   return (
     <span className="status-pill" style={{ color }}>
       <span className="status-dot" style={{ background: color }} />
-      {arcStatusLabel[status]}
+      {arcStatusLabel[lang][status]}
     </span>
   );
 }
 
 export function EncounterStatusPill({ status }: { status: EncounterStatus }) {
+  const lang = useLang();
   const color = encounterStatusColor[status];
   return (
     <span className="status-pill" style={{ color }}>
       <span className="status-dot" style={{ background: color }} />
-      {encounterStatusLabel[status]}
+      {encounterStatusLabel[lang][status]}
     </span>
   );
 }
 
 export function CampaignStatusPill({ status }: { status: CampaignStatus }) {
+  const lang = useLang();
   return (
     <span className="status-pill" style={{ color: campaignStatusColor[status] }}>
       <span
         className="status-dot"
         style={{ background: campaignStatusDotColor[status] }}
       />
-      {campaignStatusLabel[status]}
+      {campaignStatusLabel[lang][status]}
     </span>
   );
 }

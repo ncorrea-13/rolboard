@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useT } from "../lib/i18n";
 
 interface AdminSecretFormProps {
   onSubmit: (secret: string) => Promise<void>;
@@ -6,6 +7,7 @@ interface AdminSecretFormProps {
 }
 
 export function AdminSecretForm({ onSubmit, onCancel }: AdminSecretFormProps) {
+  const t = useT();
   const [secret, setSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -17,7 +19,7 @@ export function AdminSecretForm({ onSubmit, onCancel }: AdminSecretFormProps) {
     try {
       await onSubmit(secret.trim());
     } catch {
-      setError("Clave incorrecta");
+      setError(t("adminSecret.error"));
     } finally {
       setSubmitting(false);
     }
@@ -26,7 +28,7 @@ export function AdminSecretForm({ onSubmit, onCancel }: AdminSecretFormProps) {
   return (
     <>
       <div>
-        <span className="label">Clave</span>
+        <span className="label">{t("adminSecret.label")}</span>
         <input
           className="npc-edit__input"
           type="password"
@@ -50,14 +52,14 @@ export function AdminSecretForm({ onSubmit, onCancel }: AdminSecretFormProps) {
         }}
       >
         <button className="btn btn-secondary" onClick={onCancel}>
-          Cancelar
+          {t("adminSecret.cancel")}
         </button>
         <button
           className="btn btn-primary"
           onClick={handleConfirm}
           disabled={!secret.trim() || submitting}
         >
-          Confirmar
+          {t("adminSecret.confirm")}
         </button>
       </div>
     </>

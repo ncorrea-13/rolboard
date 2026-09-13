@@ -4,6 +4,7 @@ import "../screens/NpcDetail.css";
 import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
 import { Modal } from "./Modal";
+import { useT } from "../lib/i18n";
 
 export interface DetailField {
   label: string;
@@ -43,6 +44,7 @@ export function EntityDetail({
   onEdit,
   onDelete,
 }: EntityDetailProps) {
+  const t = useT();
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteHtml, setNoteHtml] = useState<string | null>(null);
 
@@ -88,12 +90,12 @@ export function EntityDetail({
               {extraActions}
               {onEdit && (
                 <button className="btn btn-secondary" onClick={onEdit}>
-                  Editar
+                  {t("common.edit")}
                 </button>
               )}
               {onDelete && (
                 <button className="btn btn-secondary" onClick={onDelete}>
-                  Dar de baja
+                  {t("entityDetail.deactivate")}
                 </button>
               )}
             </div>
@@ -110,7 +112,7 @@ export function EntityDetail({
         ))}
         {obsidianPath && (
           <div>
-            <span className="label">Nota de Obsidian</span>
+            <span className="label">{t("entityDetail.obsidianNote")}</span>
             <div className="entity-detail__obsidian">
               <span className="entity-detail__obsidian-path">
                 {obsidianPath}
@@ -120,11 +122,11 @@ export function EntityDetail({
                   className="btn btn-secondary"
                   onClick={() => openInObsidian(vaultName ?? "", obsidianPath)}
                 >
-                  Abrir en Obsidian
+                  {t("entityDetail.openInObsidian")}
                 </button>
                 {campaignId && (
                   <button className="btn btn-secondary" onClick={openNote}>
-                    Ver nota renderizada
+                    {t("entityDetail.viewRenderedNote")}
                   </button>
                 )}
               </div>
@@ -137,7 +139,7 @@ export function EntityDetail({
           {noteHtml ? (
             <div className="npc-detail__desc" dangerouslySetInnerHTML={{ __html: noteHtml }} />
           ) : (
-            <p className="npc-detail__desc">Sin contenido para mostrar.</p>
+            <p className="npc-detail__desc">{t("entityDetail.noContent")}</p>
           )}
         </Modal>
       )}

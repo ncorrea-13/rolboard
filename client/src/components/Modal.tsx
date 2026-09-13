@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import "./Modal.css";
+import { useT } from "../lib/i18n";
 
 export function Modal({
   title,
@@ -12,6 +13,7 @@ export function Modal({
   children: ReactNode;
   size?: "large" | "sheet";
 }) {
+  const t = useT();
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
@@ -25,7 +27,7 @@ export function Modal({
           <button
             className="modal-panel__close"
             onClick={onClose}
-            aria-label="Cerrar"
+            aria-label={t("common.close")}
           >
             ✕
           </button>

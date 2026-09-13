@@ -1,8 +1,7 @@
 import { useState } from "react";
 import "./NpcEdit.css";
 import { locationTypeLabel, type Location } from "../data/domain";
-
-const typeOptions = Object.entries(locationTypeLabel) as [Location["locationType"], string][];
+import { useT, useLang } from "../lib/i18n";
 
 interface LocationEditProps {
   location: Location;
@@ -12,6 +11,9 @@ interface LocationEditProps {
 }
 
 export function LocationEdit({ location, locations, onSave, onDiscard }: LocationEditProps) {
+  const t = useT();
+  const lang = useLang();
+  const typeOptions = Object.entries(locationTypeLabel[lang]) as [Location["locationType"], string][];
   const [name, setName] = useState(location.name);
   const [locationType, setLocationType] = useState(location.locationType);
   const [parentId, setParentId] = useState(location.parentId ?? "");
@@ -33,22 +35,22 @@ export function LocationEdit({ location, locations, onSave, onDiscard }: Locatio
         <div className="npc-edit__bar-left">
           <span className="status-dot" style={{ background: "var(--crystal-location)" }} />
           <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {location.id ? `Editando · ${location.name}` : "Nueva locación"}
+            {location.id ? `${t("common.editing")} · ${location.name}` : t("locationEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>cambios sin guardar</span>
+            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>Descartar</button>
-          <button className="btn btn-primary" onClick={handleSave}>Guardar</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
+          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
         </div>
       </div>
 
       <div className="npc-edit__body">
         <div className="npc-edit__col">
           <div>
-            <span className="label">Nombre</span>
+            <span className="label">{t("common.name")}</span>
             <input
               className="npc-edit__input npc-edit__input--focus"
               value={name}
@@ -56,7 +58,7 @@ export function LocationEdit({ location, locations, onSave, onDiscard }: Locatio
             />
           </div>
           <div>
-            <span className="label">Descripción</span>
+            <span className="label">{t("common.description")}</span>
             <textarea
               className="npc-edit__textarea"
               value={description}
@@ -67,7 +69,7 @@ export function LocationEdit({ location, locations, onSave, onDiscard }: Locatio
 
         <div className="npc-edit__col">
           <div>
-            <span className="label">Tipo</span>
+            <span className="label">{t("common.type")}</span>
             <select
               className="npc-edit__select npc-edit__select--native"
               value={locationType}
@@ -81,13 +83,13 @@ export function LocationEdit({ location, locations, onSave, onDiscard }: Locatio
             </select>
           </div>
           <div>
-            <span className="label">Ubicación padre</span>
+            <span className="label">{t("locationEdit.parentLocation")}</span>
             <select
               className="npc-edit__select npc-edit__select--native"
               value={parentId}
               onChange={(e) => setParentId(e.target.value)}
             >
-              <option value="">— sin padre —</option>
+              <option value="">{t("locationEdit.noParent")}</option>
               {locations
                 .filter((l) => l.id !== location.id)
                 .map((l) => (

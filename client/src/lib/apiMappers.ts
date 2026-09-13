@@ -1,5 +1,4 @@
 import {
-  crystalLabelFor,
   type Arc,
   type ArcStatus,
   type Campaign,
@@ -93,7 +92,6 @@ export function mapNpc(n: ApiNpc): Npc {
     tipoSpren: n.tipo_spren,
     description: n.description,
     crystal,
-    crystalLabel: crystalLabelFor(crystal),
     detailLevel: n.detail_level === "minor" ? "minor" : "full",
     status: apiStatusToStatusKind[n.status] ?? "alive",
     statusNote: canonicalApiStatus.has(n.status) ? undefined : n.status,

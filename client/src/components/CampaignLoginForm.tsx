@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useT } from "../lib/i18n";
 
 interface CampaignLoginFormProps {
   onSubmit: (code: string) => Promise<void>;
@@ -6,6 +7,7 @@ interface CampaignLoginFormProps {
 }
 
 export function CampaignLoginForm({ onSubmit, onCancel }: CampaignLoginFormProps) {
+  const t = useT();
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -17,7 +19,7 @@ export function CampaignLoginForm({ onSubmit, onCancel }: CampaignLoginFormProps
     try {
       await onSubmit(code.trim());
     } catch {
-      setError("Código incorrecto");
+      setError(t("login.error"));
     } finally {
       setSubmitting(false);
     }
@@ -26,7 +28,7 @@ export function CampaignLoginForm({ onSubmit, onCancel }: CampaignLoginFormProps
   return (
     <>
       <div>
-        <span className="label">Código de acceso</span>
+        <span className="label">{t("login.label")}</span>
         <input
           className="npc-edit__input"
           type="password"
@@ -50,14 +52,14 @@ export function CampaignLoginForm({ onSubmit, onCancel }: CampaignLoginFormProps
         }}
       >
         <button className="btn btn-secondary" onClick={onCancel}>
-          Cancelar
+          {t("login.cancel")}
         </button>
         <button
           className="btn btn-primary"
           onClick={handleConfirm}
           disabled={!code.trim() || submitting}
         >
-          Entrar
+          {t("login.confirm")}
         </button>
       </div>
     </>

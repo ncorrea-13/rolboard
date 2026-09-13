@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import "./NpcDetail.css";
-import { crystalColor, type Npc, type Quest } from "../data/domain";
+import { crystalColor, crystalLabelFor, type Npc, type Quest } from "../data/domain";
 import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
 import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
+import { useT, useLang } from "../lib/i18n";
 
 interface NpcDetailProps {
   npc: Npc;
@@ -29,6 +30,8 @@ export function NpcDetail({
   onBack,
   onDelete,
 }: NpcDetailProps) {
+  const t = useT();
+  const lang = useLang();
   const color = crystalColor[npc.crystal];
   const [sheetOpen, setSheetOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -81,7 +84,7 @@ export function NpcDetail({
                 borderRadius: 2,
               }}
             />
-            {npc.crystalLabel}
+            {crystalLabelFor(npc.crystal, lang)}
           </span>
         </div>
         <div className="npc-detail__identity">
@@ -98,22 +101,22 @@ export function NpcDetail({
               className="btn btn-secondary"
               onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
             >
-              Abrir en Obsidian
+              {t("entityDetail.openInObsidian")}
             </button>
             <button
               className="btn btn-secondary"
               onClick={openNote}
             >
-              Ver nota renderizada
+              {t("entityDetail.viewRenderedNote")}
             </button>
             <button className="btn btn-secondary" onClick={() => setSheetOpen(true)}>
-              Ver ficha
+              {t("npcDetail.viewSheet")}
             </button>
             <button className="btn btn-secondary" onClick={onDelete}>
-              Dar de baja
+              {t("entityDetail.deactivate")}
             </button>
             <button className="btn btn-primary" onClick={onEdit}>
-              Editar
+              {t("common.edit")}
             </button>
           </div>
         </div>
@@ -121,16 +124,16 @@ export function NpcDetail({
 
       <div className="npc-detail__body">
         <div className="npc-detail__col npc-detail__col--main">
-          <span className="label">Descripción</span>
+          <span className="label">{t("common.description")}</span>
           <p className="npc-detail__desc">{npc.description}</p>
           {appearances.length > 0 && (
             <div className="npc-detail__stats">
               <div className="card npc-detail__stat">
-                <span className="label">Primera aparición</span>
+                <span className="label">{t("npcDetail.firstAppearance")}</span>
                 <div className="npc-detail__stat-value">{appearances[0]}</div>
               </div>
               <div className="card npc-detail__stat">
-                <span className="label">Visto por última vez</span>
+                <span className="label">{t("npcDetail.lastSeen")}</span>
                 <div className="npc-detail__stat-value">
                   {appearances[appearances.length - 1]}
                 </div>
@@ -144,7 +147,7 @@ export function NpcDetail({
                 className="label"
                 style={{ marginTop: 21, display: "block" }}
               >
-                Vínculos
+                {t("npcDetail.links")}
               </span>
               <div className="npc-detail__links">
                 {links.map((l) => (
@@ -172,7 +175,7 @@ export function NpcDetail({
 
         <div className="npc-detail__col npc-detail__col--side">
           <div>
-            <span className="label">Ubicación actual</span>
+            <span className="label">{t("npcList.colLocation")}</span>
             <div className="npc-detail__location">
               {locationParts.map((part, i) => (
                 <span key={part}>
@@ -196,7 +199,7 @@ export function NpcDetail({
           </div>
           {appearances.length > 0 && (
             <div>
-              <span className="label">Apariciones</span>
+              <span className="label">{t("npcDetail.appearances")}</span>
               <div className="npc-detail__appearances">
                 {appearances.map((a, i) => (
                   <span
@@ -211,7 +214,7 @@ export function NpcDetail({
           )}
           {relatedQuests.length > 0 && (
             <div>
-              <span className="label">Quests relacionadas</span>
+              <span className="label">{t("npcDetail.relatedQuests")}</span>
               {relatedQuests.map((q) => (
                 <div key={q.id} className="card npc-detail__quest">
                   <span className="title-underline" style={{ flex: 1 }}>
@@ -232,7 +235,7 @@ export function NpcDetail({
             </div>
           )}
           <div>
-            <span className="label">Nota de Obsidian</span>
+            <span className="label">{t("entityDetail.obsidianNote")}</span>
             <div className="entity-detail__obsidian">
               <span className="entity-detail__obsidian-path">
                 {npc.obsidianPath}
@@ -241,7 +244,7 @@ export function NpcDetail({
                 className="btn btn-secondary"
                 onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
               >
-                Abrir en Obsidian
+                {t("entityDetail.openInObsidian")}
               </button>
             </div>
           </div>
@@ -262,7 +265,7 @@ export function NpcDetail({
       )}
 
       {sheetOpen && (
-        <Modal title={`Ficha · ${npc.name}`} onClose={() => setSheetOpen(false)} size="sheet">
+        <Modal title={`${t("npcDetail.sheetPrefix")} · ${npc.name}`} onClose={() => setSheetOpen(false)} size="sheet">
           <CharacterSheet attributes={npc.attributes} skills={npc.skills} />
         </Modal>
       )}
