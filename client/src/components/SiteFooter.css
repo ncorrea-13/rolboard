@@ -1,0 +1,31 @@
+.site-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  line-height: 1.6;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--bg-canvas);
+  border-top: 1px solid var(--border-subtle);
+  pointer-events: none;
+}
+
+.site-footer a,
+.site-footer__icon {
+  pointer-events: auto;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+}
+
+.site-footer a:hover {
+  color: var(--text-body-strong);
+}
+
