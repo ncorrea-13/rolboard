@@ -1,5 +1,14 @@
 import "./CharacterSheet.css";
-import { Heart, Sparkles, BookOpen, Swords, Shield, ShieldPlus, Gem, type LucideIcon } from "lucide-react";
+import {
+  Heart,
+  Sparkles,
+  BookOpen,
+  Swords,
+  Shield,
+  ShieldPlus,
+  Gem,
+  type LucideIcon,
+} from "lucide-react";
 import type { StatMap } from "../data/domain";
 import { useT } from "../lib/i18n";
 
@@ -9,8 +18,6 @@ interface CharacterSheetProps {
   hp?: { current?: number; max?: number };
 }
 
-// Ciclo fijo de 3 íconos por sección — no hace falta que el orden de carga
-// coincida con nada, es solo variedad visual, no significado por ícono.
 const coreIcons: LucideIcon[] = [Sparkles, Swords, Gem];
 const extraIcons: LucideIcon[] = [Shield, ShieldPlus, Gem];
 const skillIcons: LucideIcon[] = [Sparkles, BookOpen, Swords];
@@ -32,15 +39,18 @@ function attrGrid(entries: [string, string | number][], icons: LucideIcon[]) {
   );
 }
 
-export function CharacterSheet({ attributes, skills, hp }: CharacterSheetProps) {
+export function CharacterSheet({
+  attributes,
+  skills,
+  hp,
+}: CharacterSheetProps) {
   const t = useT();
   const attrEntries = Object.entries(attributes);
-  // Los primeros 6 campos cargados son los atributos "core" (Fuerza, Destreza...);
-  // lo que se agrega después son extras de mesa (armadura, defensa, etc.) — no hay
-  // un tercer campo en el schema para esto, se distingue solo por orden de carga.
   const coreAttrs = attrEntries.slice(0, 6);
   const extraAttrs = attrEntries.slice(6, 12);
-  const skillEntries = Object.entries(skills).sort((a, b) => a[0].localeCompare(b[0]));
+  const skillEntries = Object.entries(skills).sort((a, b) =>
+    a[0].localeCompare(b[0]),
+  );
 
   return (
     <div className="character-sheet">
@@ -57,7 +67,9 @@ export function CharacterSheet({ attributes, skills, hp }: CharacterSheetProps) 
       <div>
         <span className="label">{t("characterSheet.attributes")}</span>
         {coreAttrs.length === 0 ? (
-          <p className="character-sheet__empty">{t("characterSheet.noAttributes")}</p>
+          <p className="character-sheet__empty">
+            {t("characterSheet.noAttributes")}
+          </p>
         ) : (
           attrGrid(coreAttrs, coreIcons)
         )}
@@ -73,7 +85,9 @@ export function CharacterSheet({ attributes, skills, hp }: CharacterSheetProps) 
       <div>
         <span className="label">{t("characterSheet.skills")}</span>
         {skillEntries.length === 0 ? (
-          <p className="character-sheet__empty">{t("characterSheet.noSkills")}</p>
+          <p className="character-sheet__empty">
+            {t("characterSheet.noSkills")}
+          </p>
         ) : (
           <table className="character-sheet__skills">
             <tbody>

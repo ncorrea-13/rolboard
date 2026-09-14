@@ -137,7 +137,10 @@ export function EntityDetail({
       {noteOpen && (
         <Modal title={title} onClose={() => setNoteOpen(false)} size="large">
           {noteHtml ? (
-            <div className="npc-detail__desc" dangerouslySetInnerHTML={{ __html: noteHtml }} />
+            <div
+              className="npc-detail__desc"
+              dangerouslySetInnerHTML={{ __html: noteHtml }}
+            />
           ) : (
             <p className="npc-detail__desc">{t("entityDetail.noContent")}</p>
           )}
