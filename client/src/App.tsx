@@ -5,6 +5,7 @@ import { CampaignLoginForm } from "./components/CampaignLoginForm";
 import { AdminSecretForm } from "./components/AdminSecretForm";
 import { useT } from "./lib/i18n";
 import { AppShell } from "./components/AppShell";
+import { SiteFooter } from "./components/SiteFooter";
 import { Modal } from "./components/Modal";
 import { Toast } from "./components/Toast";
 import { NewSessionForm } from "./components/NewSessionForm";
@@ -709,6 +710,8 @@ export default function App() {
           durationMs={toast.type === "error" ? 3000 : 2000}
         />
       )}
+
+      <SiteFooter />
     </div>
   );
 }
