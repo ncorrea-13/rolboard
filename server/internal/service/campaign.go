@@ -3,10 +3,15 @@ package service
 
 import (
 	"context"
+	"errors"
+	"path/filepath"
+	"strings"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
+
+var ErrInvalidVaultPath = errors.New("invalid vault_path")
 
 type CampaignService struct {
 	repo *repository.CampaignRepository
@@ -14,6 +19,17 @@ type CampaignService struct {
 
 func NewCampaignService(repo *repository.CampaignRepository) *CampaignService {
 	return &CampaignService{repo: repo}
+}
+
+func safeVaultPath(vaultPath string) bool {
+	if vaultPath == "" {
+		return false
+	}
+	clean := filepath.Clean(vaultPath)
+	if filepath.IsAbs(clean) || clean == "." || clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
+		return false
+	}
+	return true
 }
 
 func (s *CampaignService) List(ctx context.Context) ([]models.Campaign, error) {
@@ -26,6 +42,9 @@ func (s *CampaignService) List(ctx context.Context) ([]models.Campaign, error) {
 }
 
 func (s *CampaignService) Create(ctx context.Context, campaign *models.Campaign) error {
+	if !safeVaultPath(campaign.VaultPath) {
+		return ErrInvalidVaultPath
+	}
 	return s.repo.Create(ctx, campaign)
 }
 
@@ -34,6 +53,9 @@ func (s *CampaignService) GetByID(ctx context.Context, id int64) (*models.Campai
 }
 
 func (s *CampaignService) Update(ctx context.Context, id int64, campaign *models.Campaign) error {
+	if !safeVaultPath(campaign.VaultPath) {
+		return ErrInvalidVaultPath
+	}
 	return s.repo.Update(ctx, id, campaign)
 }
 
