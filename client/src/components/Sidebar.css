@@ -5,7 +5,7 @@
   overflow-y: auto;
   background: var(--bg-canvas);
   border-right: 1px solid var(--border-subtle);
-  padding: 16px 11px;
+  padding: 16px 11px 48px;
   display: flex;
   flex-direction: column;
   gap: 2px;
