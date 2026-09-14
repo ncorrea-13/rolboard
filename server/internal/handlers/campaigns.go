@@ -9,6 +9,7 @@ import (
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
+	"github.com/ncorrea-13/rolboard/server/internal/service"
 )
 
 type CreateCampaignPayload struct {
@@ -63,6 +64,10 @@ func (h *Handlers) CreateCampaign(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.campaigns.Create(r.Context(), &campaign)
+	if errors.Is(err, service.ErrInvalidVaultPath) {
+		http.Error(w, "Invalid vault_path", http.StatusBadRequest)
+		return
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -129,6 +134,10 @@ func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 
 	if errors.Is(err, repository.ErrNotFound) {
 		http.Error(w, "Campaign not found", http.StatusNotFound)
+		return
+	}
+	if errors.Is(err, service.ErrInvalidVaultPath) {
+		http.Error(w, "Invalid vault_path", http.StatusBadRequest)
 		return
 	}
 	if err != nil {
