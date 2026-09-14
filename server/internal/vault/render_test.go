@@ -51,3 +51,16 @@ func TestRenderNoteEscapesRawHTMLOutsideWikilinks(t *testing.T) {
 		t.Errorf("Expected resolved wikilink to still render as entity link, got %q", out)
 	}
 }
+
+func TestRenderNoteStripsJavascriptLinks(t *testing.T) {
+	idx := NewNameIndex()
+	content := []byte("---\ntipo: npc\n---\n[click me](javascript:alert(1))")
+
+	out, err := RenderNote(content, idx)
+	if err != nil {
+		t.Fatalf("RenderNote failed: %v", err)
+	}
+	if strings.Contains(out, "javascript:") {
+		t.Errorf("Expected javascript: URL scheme to be stripped, got %q", out)
+	}
+}

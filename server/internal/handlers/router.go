@@ -2,16 +2,19 @@ package handlers
 
 import (
 	"net/http"
+	"time"
 )
 
 func NewRouter(h *Handlers) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", h.Health)
 
+	loginLimiter := newRateLimiter(5, time.Minute)
+
 	mux.Handle("GET /api/campaigns", http.HandlerFunc(h.ListCampaigns))
 	mux.HandleFunc("POST /api/campaigns", h.requireAdmin(h.CreateCampaign))
 	mux.HandleFunc("POST /api/campaigns/{id}/access-code", h.requireAdmin(h.SetAccessCode))
-	mux.HandleFunc("POST /api/campaigns/{id}/login", h.Login)
+	mux.HandleFunc("POST /api/campaigns/{id}/login", h.rateLimit(loginLimiter, h.Login))
 	mux.HandleFunc("POST /api/campaigns/{id}/logout", h.Logout)
 
 	mux.Handle("GET /api/campaigns/{id}", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.GetCampaign)))

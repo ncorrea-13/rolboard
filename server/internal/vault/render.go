@@ -7,10 +7,18 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/extension"
 	goldmarkhtml "github.com/yuin/goldmark/renderer/html"
 )
+
+var htmlSanitizer = func() *bluemonday.Policy {
+	p := bluemonday.UGCPolicy()
+	p.AllowAttrs("class", "data-callout").OnElements("blockquote", "p")
+	p.AllowAttrs("data-entity-type", "data-entity-id").OnElements("a")
+	return p
+}()
 
 var wikilinkFullRe = regexp.MustCompile(`!?\[\[([^\]|]+)(?:\|([^\]]+))?\]\]`)
 
@@ -93,5 +101,5 @@ func RenderNote(content []byte, idx *NameIndex) (string, error) {
 	if err := markdown.Convert([]byte(rewritten), &buf); err != nil {
 		return "", err
 	}
-	return renderCallouts(buf.String()), nil
+	return htmlSanitizer.Sanitize(renderCallouts(buf.String())), nil
 }
