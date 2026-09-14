@@ -9,6 +9,7 @@ import (
 type Handlers struct {
 	db                    *sql.DB
 	adminToken            string
+	cookieSecure          bool
 	auth                  *service.AuthService
 	campaigns             *service.CampaignService
 	arcs                  *service.ArcService
@@ -28,6 +29,7 @@ type Handlers struct {
 func NewHandlers(
 	db *sql.DB,
 	adminToken string,
+	cookieSecure bool,
 	auth *service.AuthService,
 	campaigns *service.CampaignService,
 	arcs *service.ArcService,
@@ -46,6 +48,7 @@ func NewHandlers(
 	return &Handlers{
 		db:                    db,
 		adminToken:            adminToken,
+		cookieSecure:          cookieSecure,
 		auth:                  auth,
 		campaigns:             campaigns,
 		arcs:                  arcs,

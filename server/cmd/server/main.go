@@ -22,6 +22,7 @@ func main() {
 	port := os.Getenv("PORT")
 	vaultsRoot := os.Getenv("VAULTS_ROOT")
 	adminToken := os.Getenv("ADMIN_TOKEN")
+	cookieSecure := os.Getenv("COOKIE_SECURE") != "false"
 	if path := os.Getenv("ADMIN_TOKEN_FILE"); path != "" {
 		data, err := os.ReadFile(path)
 		if err != nil {
@@ -83,7 +84,7 @@ func main() {
 	dashboardSvc := service.NewDashboardService(questSvc, npcSvc, sessionSvc)
 	notesSvc := service.NewNotesService(campaignRepo, locationRepo, npcRepo, groupRepo, sessionRepo, arcRepo, pcRepo, vaultsRoot)
 
-	h := handlers.NewHandlers(db, adminToken, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
+	h := handlers.NewHandlers(db, adminToken, cookieSecure, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
 
 	mux := handlers.NewRouter(h)
 
