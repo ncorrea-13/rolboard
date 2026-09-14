@@ -5,21 +5,24 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
 const sessionCookieName = "rolboard_session"
 
+var adminTokenLimiter = newRateLimiter(5, time.Minute)
+
 func (h *Handlers) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return h.rateLimit(adminTokenLimiter, func(w http.ResponseWriter, r *http.Request) {
 		got := r.Header.Get("X-Admin-Token")
 		if h.adminToken == "" || subtle.ConstantTimeCompare([]byte(got), []byte(h.adminToken)) != 1 {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 		next(w, r)
-	}
+	})
 }
 
 func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error), next http.HandlerFunc) http.HandlerFunc {
