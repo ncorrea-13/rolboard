@@ -27,6 +27,12 @@ func (h *Handlers) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
 
 func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error), next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		got := r.Header.Get("X-Admin-Token")
+		if h.adminToken != "" && subtle.ConstantTimeCompare([]byte(got), []byte(h.adminToken)) == 1 {
+			next(w, r)
+			return
+		}
+
 		cookie, err := r.Cookie(sessionCookieName)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)

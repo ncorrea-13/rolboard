@@ -23,7 +23,7 @@ func NewCampaignService(repo *repository.CampaignRepository) *CampaignService {
 
 func safeVaultPath(vaultPath string) bool {
 	if vaultPath == "" {
-		return false
+		return true
 	}
 	clean := filepath.Clean(vaultPath)
 	if filepath.IsAbs(clean) || clean == "." || clean == ".." || strings.HasPrefix(clean, ".."+string(filepath.Separator)) {
