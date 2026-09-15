@@ -13,6 +13,7 @@ func NewRouter(h *Handlers) *http.ServeMux {
 
 	mux.HandleFunc("POST /api/admin/login", h.AdminLogin)
 	mux.HandleFunc("POST /api/admin/logout", h.AdminLogout)
+	mux.HandleFunc("GET /api/admin/session", h.requireAdmin(h.AdminSession))
 
 	mux.Handle("GET /api/campaigns", http.HandlerFunc(h.ListCampaigns))
 	mux.HandleFunc("POST /api/campaigns", h.requireAdmin(h.CreateCampaign))
@@ -94,7 +95,7 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("DELETE /api/encounter-participants/{id}", http.HandlerFunc(h.requireCampaign(h.resolveEncounterParticipant, h.DeleteEncounterParticipant)))
 
 	mux.Handle("POST /api/campaigns/{id}/reindex", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.Reindex)))
-	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.requireAdmin(h.ListVaultDirs)))
+	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.requireCampaign(resolveCampaignIDFromQuery, h.ListVaultDirs)))
 
 	return mux
 }

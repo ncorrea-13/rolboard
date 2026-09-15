@@ -14,7 +14,7 @@ import (
 
 var ErrInvalidAccessCode = errors.New("invalid access code")
 
-const sessionTTL = 7 * 24 * time.Hour
+const sessionTTL = 24 * time.Hour
 
 type AuthService struct {
 	campaignRepo *repository.CampaignRepository

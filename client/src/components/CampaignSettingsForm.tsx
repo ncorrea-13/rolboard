@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Campaign, CampaignStatus } from "../data/domain";
-import { apiFetch } from "../lib/api";
+import { apiFetch, hasAdminSecret } from "../lib/api";
 import { useT } from "../lib/i18n";
 
 interface CampaignSettingsFormProps {
@@ -35,10 +35,10 @@ export function CampaignSettingsForm({
   const [codeError, setCodeError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiFetch<string[]>("/admin/vault-dirs")
+    apiFetch<string[]>(`/admin/vault-dirs?campaignId=${campaign.id}`)
       .then(setVaultDirs)
       .catch((err) => console.error("Error listando directorios del vault:", err));
-  }, []);
+  }, [campaign.id]);
 
   async function handleSave() {
     if (!name.trim() || saving) return;
@@ -102,6 +102,7 @@ export function CampaignSettingsForm({
           className="npc-edit__input"
           value={vaultPath}
           onChange={(e) => setVaultPath(e.target.value)}
+          disabled={!hasAdminSecret()}
         >
           <option value="">{t("newCampaignForm.noVault")}</option>
           {vaultDirs.map((dir) => (

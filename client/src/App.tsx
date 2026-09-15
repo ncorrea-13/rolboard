@@ -7,6 +7,7 @@ import {
   loginAsAdmin,
   logoutAdmin,
   hasAdminSecret,
+  checkAdminSession,
 } from "./lib/api";
 import { CampaignLoginForm } from "./components/CampaignLoginForm";
 import { AdminSecretForm } from "./components/AdminSecretForm";
@@ -65,12 +66,6 @@ export default function App() {
   const [route, setRoute] = useState<Route>({ name: "campaigns" });
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
 
-  useEffect(() => {
-    apiFetch<ApiCampaign[]>("/campaigns")
-      .then((data) => setCampaigns((data ?? []).map(mapCampaign)))
-      .catch((err) => console.error("Error cargando campañas:", err));
-  }, []);
-
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
   const [loginCampaignId, setLoginCampaignId] = useState<string | null>(null);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
@@ -81,6 +76,14 @@ export default function App() {
     null,
   );
   const [, forceAdminRerender] = useState(0);
+
+  useEffect(() => {
+    apiFetch<ApiCampaign[]>("/campaigns")
+      .then((data) => setCampaigns((data ?? []).map(mapCampaign)))
+      .catch((err) => console.error("Error cargando campañas:", err));
+    checkAdminSession().then(() => forceAdminRerender((v) => v + 1));
+  }, []);
+
   const [toast, setToast] = useState<{
     id: number;
     message: string;
@@ -292,9 +295,7 @@ export default function App() {
           activeNav={activeNav}
           onNavigate={(section) => setRoute({ name: "section", section })}
           onBackToCampaigns={() => setRoute({ name: "campaigns" })}
-          onOpenSettings={
-            hasAdminSecret() ? () => setSettingsOpen(true) : undefined
-          }
+          onOpenSettings={() => setSettingsOpen(true)}
           onAdminLogout={
             hasAdminSecret()
               ? async () => {

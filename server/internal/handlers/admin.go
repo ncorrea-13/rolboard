@@ -7,7 +7,8 @@ import (
 )
 
 func (h *Handlers) ListVaultDirs(w http.ResponseWriter, r *http.Request) {
-	dirs, err := h.admin.ListVaultDirs(r.Context())
+	excludeCampaignID, _ := strconv.ParseInt(r.URL.Query().Get("campaignId"), 10, 64)
+	dirs, err := h.admin.ListVaultDirs(r.Context(), excludeCampaignID)
 	if err != nil {
 		http.Error(w, "Error listing vault directories", http.StatusInternalServerError)
 		return
