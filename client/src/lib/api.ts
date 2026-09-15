@@ -12,6 +12,16 @@ export function hasAdminSecret() {
   return adminAuthenticated;
 }
 
+export async function checkAdminSession() {
+  try {
+    await apiFetch<void>("/admin/session");
+    adminAuthenticated = true;
+  } catch {
+    adminAuthenticated = false;
+  }
+  return adminAuthenticated;
+}
+
 export async function apiFetch<T>(
   path: string,
   init?: RequestInit,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Campaign, CampaignStatus } from "../data/domain";
-import { apiFetch } from "../lib/api";
+import { apiFetch, hasAdminSecret } from "../lib/api";
 import { useT } from "../lib/i18n";
 
 interface CampaignSettingsFormProps {
@@ -102,6 +102,7 @@ export function CampaignSettingsForm({
           className="npc-edit__input"
           value={vaultPath}
           onChange={(e) => setVaultPath(e.target.value)}
+          disabled={!hasAdminSecret()}
         >
           <option value="">{t("newCampaignForm.noVault")}</option>
           {vaultDirs.map((dir) => (
