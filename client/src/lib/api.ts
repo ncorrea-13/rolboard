@@ -6,16 +6,16 @@ export class ApiError extends Error {
   }
 }
 
-// Tracks whether the admin session cookie was established this page load.
-// The cookie itself is httpOnly (not readable from JS); this flag only
-// drives which UI is shown, the server still enforces auth on every request.
 let adminAuthenticated = false;
 
 export function hasAdminSecret() {
   return adminAuthenticated;
 }
 
-export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+export async function apiFetch<T>(
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
   const res = await fetch(`/api${path}`, {
     ...init,
     headers: {
@@ -24,7 +24,10 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
     },
   });
   if (!res.ok) {
-    throw new ApiError(res.status, `${init?.method ?? "GET"} ${path} failed: ${res.status}`);
+    throw new ApiError(
+      res.status,
+      `${init?.method ?? "GET"} ${path} failed: ${res.status}`,
+    );
   }
   if (res.status === 204) return undefined as T;
   return res.json();

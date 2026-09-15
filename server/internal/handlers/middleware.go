@@ -14,14 +14,14 @@ import (
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
-const sessionCookieName = "rolboard_session"
-const adminSessionCookieName = "rolboard_admin_session"
-const adminSessionTTL = 24 * time.Hour
+const (
+	sessionCookieName      = "rolboard_session"
+	adminSessionCookieName = "rolboard_admin_session"
+	adminSessionTTL        = 24 * time.Hour
+)
 
-var adminLoginLimiter = newRateLimiter(5, time.Minute)
+var adminLoginLimiter = newRateLimiter(5, 15*time.Minute)
 
-// adminSessions is an in-memory, non-persisted store: a server restart logs
-// every admin out, which is an acceptable trade-off for a single-admin app.
 type adminSessionStore struct {
 	mu       sync.Mutex
 	expiries map[string]time.Time
@@ -38,7 +38,13 @@ func (s *adminSessionStore) issue() (string, error) {
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.expiries[token] = time.Now().Add(adminSessionTTL)
+	now := time.Now()
+	for existing, expiresAt := range s.expiries {
+		if now.After(expiresAt) {
+			delete(s.expiries, existing)
+		}
+	}
+	s.expiries[token] = now.Add(adminSessionTTL)
 	return token, nil
 }
 
@@ -67,6 +73,7 @@ func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
 		var payload struct {
 			Token string `json:"token"`
 		}
+		r.Body = http.MaxBytesReader(w, r.Body, 1024)
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
