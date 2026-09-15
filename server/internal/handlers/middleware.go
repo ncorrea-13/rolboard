@@ -1,28 +1,124 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"crypto/subtle"
+	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
 const sessionCookieName = "rolboard_session"
+const adminSessionCookieName = "rolboard_admin_session"
+const adminSessionTTL = 24 * time.Hour
 
-var adminTokenLimiter = newRateLimiter(5, time.Minute)
+var adminLoginLimiter = newRateLimiter(5, time.Minute)
+
+// adminSessions is an in-memory, non-persisted store: a server restart logs
+// every admin out, which is an acceptable trade-off for a single-admin app.
+type adminSessionStore struct {
+	mu       sync.Mutex
+	expiries map[string]time.Time
+}
+
+var adminSessions = &adminSessionStore{expiries: make(map[string]time.Time)}
+
+func (s *adminSessionStore) issue() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	token := hex.EncodeToString(b)
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.expiries[token] = time.Now().Add(adminSessionTTL)
+	return token, nil
+}
+
+func (s *adminSessionStore) valid(token string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	expiresAt, ok := s.expiries[token]
+	if !ok {
+		return false
+	}
+	if time.Now().After(expiresAt) {
+		delete(s.expiries, token)
+		return false
+	}
+	return true
+}
+
+func (s *adminSessionStore) revoke(token string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	delete(s.expiries, token)
+}
+
+func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
+	h.rateLimit(adminLoginLimiter, func(w http.ResponseWriter, r *http.Request) {
+		var payload struct {
+			Token string `json:"token"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if h.adminToken == "" || subtle.ConstantTimeCompare([]byte(payload.Token), []byte(h.adminToken)) != 1 {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		session, err := adminSessions.issue()
+		if err != nil {
+			http.Error(w, "Error creating session", http.StatusInternalServerError)
+			return
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:     adminSessionCookieName,
+			Value:    session,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   h.cookieSecure,
+			SameSite: http.SameSiteLaxMode,
+			MaxAge:   int(adminSessionTTL.Seconds()),
+		})
+		w.WriteHeader(http.StatusNoContent)
+	})(w, r)
+}
+
+func (h *Handlers) AdminLogout(w http.ResponseWriter, r *http.Request) {
+	if cookie, err := r.Cookie(adminSessionCookieName); err == nil {
+		adminSessions.revoke(cookie.Value)
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     adminSessionCookieName,
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   h.cookieSecure,
+		SameSite: http.SameSiteLaxMode,
+		MaxAge:   -1,
+	})
+	w.WriteHeader(http.StatusNoContent)
+}
 
 func (h *Handlers) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
-	return h.rateLimit(adminTokenLimiter, func(w http.ResponseWriter, r *http.Request) {
-		got := r.Header.Get("X-Admin-Token")
-		if h.adminToken == "" || subtle.ConstantTimeCompare([]byte(got), []byte(h.adminToken)) != 1 {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie(adminSessionCookieName)
+		if err != nil || !adminSessions.valid(cookie.Value) {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 		next(w, r)
-	})
+	}
 }
 
 func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error), next http.HandlerFunc) http.HandlerFunc {

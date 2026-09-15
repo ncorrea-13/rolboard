@@ -11,6 +11,9 @@ func NewRouter(h *Handlers) *http.ServeMux {
 
 	loginLimiter := newRateLimiter(5, time.Minute)
 
+	mux.HandleFunc("POST /api/admin/login", h.AdminLogin)
+	mux.HandleFunc("POST /api/admin/logout", h.AdminLogout)
+
 	mux.Handle("GET /api/campaigns", http.HandlerFunc(h.ListCampaigns))
 	mux.HandleFunc("POST /api/campaigns", h.requireAdmin(h.CreateCampaign))
 	mux.HandleFunc("POST /api/campaigns/{id}/access-code", h.requireAdmin(h.SetAccessCode))
