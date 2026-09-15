@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { apiFetch, ApiError, loginToCampaign, setAdminSecret, hasAdminSecret } from "./lib/api";
+import { apiFetch, ApiError, loginToCampaign, loginAsAdmin, logoutAdmin, hasAdminSecret } from "./lib/api";
 import { CampaignLoginForm } from "./components/CampaignLoginForm";
 import { AdminSecretForm } from "./components/AdminSecretForm";
 import { useT } from "./lib/i18n";
@@ -68,6 +68,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [adminGateOpen, setAdminGateOpen] = useState(false);
   const [adminGateAction, setAdminGateAction] = useState<(() => void) | null>(null);
+  const [, forceAdminRerender] = useState(0);
   const [toast, setToast] = useState<{
     id: number;
     message: string;
@@ -160,7 +161,6 @@ export default function App() {
   function createCampaign(campaign: Omit<Campaign, "id">, vaultPath: string) {
     apiFetch<ApiCampaign>("/campaigns", {
       method: "POST",
-      admin: true,
       body: JSON.stringify({
         name: campaign.name,
         system: campaign.system,
@@ -270,6 +270,17 @@ export default function App() {
           onNavigate={(section) => setRoute({ name: "section", section })}
           onBackToCampaigns={() => setRoute({ name: "campaigns" })}
           onOpenSettings={hasAdminSecret() ? () => setSettingsOpen(true) : undefined}
+          onAdminLogout={
+            hasAdminSecret()
+              ? async () => {
+                  await logoutAdmin();
+                  setSettingsOpen(false);
+                  setActiveCampaignId(null);
+                  setRoute({ name: "campaigns" });
+                  forceAdminRerender((v) => v + 1);
+                }
+              : undefined
+          }
         >
           {route.name === "section" && route.section === "resumen" && (
             <CampaignDashboard
@@ -714,13 +725,7 @@ export default function App() {
         <Modal title={t("app.modal.confirm")} onClose={() => setAdminGateOpen(false)}>
           <AdminSecretForm
             onSubmit={async (secret) => {
-              setAdminSecret(secret);
-              try {
-                await apiFetch("/admin/vault-dirs", { admin: true });
-              } catch (err) {
-                setAdminSecret("");
-                throw err;
-              }
+              await loginAsAdmin(secret);
               setAdminGateOpen(false);
               adminGateAction?.();
             }}

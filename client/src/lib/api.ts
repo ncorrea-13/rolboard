@@ -6,28 +6,21 @@ export class ApiError extends Error {
   }
 }
 
-let adminSecret = "";
-
-export function setAdminSecret(secret: string) {
-  adminSecret = secret;
-}
+// Tracks whether the admin session cookie was established this page load.
+// The cookie itself is httpOnly (not readable from JS); this flag only
+// drives which UI is shown, the server still enforces auth on every request.
+let adminAuthenticated = false;
 
 export function hasAdminSecret() {
-  return adminSecret !== "";
+  return adminAuthenticated;
 }
 
-interface ApiFetchInit extends RequestInit {
-  admin?: boolean;
-}
-
-export async function apiFetch<T>(path: string, init?: ApiFetchInit): Promise<T> {
-  const { admin: _admin, headers, ...rest } = init ?? {};
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`/api${path}`, {
-    ...rest,
+    ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(hasAdminSecret() ? { "X-Admin-Token": adminSecret } : {}),
-      ...headers,
+      ...init?.headers,
     },
   });
   if (!res.ok) {
@@ -35,6 +28,19 @@ export async function apiFetch<T>(path: string, init?: ApiFetchInit): Promise<T>
   }
   if (res.status === 204) return undefined as T;
   return res.json();
+}
+
+export async function loginAsAdmin(token: string) {
+  await apiFetch<void>("/admin/login", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+  adminAuthenticated = true;
+}
+
+export async function logoutAdmin() {
+  await apiFetch<void>("/admin/logout", { method: "POST" });
+  adminAuthenticated = false;
 }
 
 export function loginToCampaign(campaignId: string, code: string) {

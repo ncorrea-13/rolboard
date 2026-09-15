@@ -9,6 +9,7 @@ import {
   Swords,
   Skull,
   Settings,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 import "./Sidebar.css";
@@ -80,6 +81,7 @@ interface SidebarProps {
   onNavigate: (section: DashboardSection) => void;
   onBack: () => void;
   onOpenSettings?: () => void;
+  onAdminLogout?: () => void;
 }
 
 export function Sidebar({
@@ -88,6 +90,7 @@ export function Sidebar({
   onNavigate,
   onBack,
   onOpenSettings,
+  onAdminLogout,
 }: SidebarProps) {
   const t = useT();
   return (
@@ -142,6 +145,17 @@ export function Sidebar({
           </button>
         )}
         <LanguageToggle />
+        {onAdminLogout && (
+          <button
+            className="btn btn-secondary"
+            onClick={onAdminLogout}
+            title={t("adminSecret.logout")}
+            aria-label={t("adminSecret.logout")}
+            style={{ color: "#e5484d", borderColor: "#e5484d" }}
+          >
+            <LogOut size={15} strokeWidth={1.75} />
+          </button>
+        )}
       </div>
     </nav>
   );

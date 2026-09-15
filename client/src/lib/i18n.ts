@@ -16,6 +16,7 @@ const dict = {
     "adminSecret.error": "Clave incorrecta",
     "adminSecret.cancel": "Cancelar",
     "adminSecret.confirm": "Confirmar",
+    "adminSecret.logout": "Cerrar sesión de admin",
 
     "common.cancel": "Cancelar",
     "common.save": "Guardar",
@@ -366,6 +367,7 @@ const dict = {
     "adminSecret.error": "Incorrect key",
     "adminSecret.cancel": "Cancel",
     "adminSecret.confirm": "Confirm",
+    "adminSecret.logout": "Log out of admin",
 
     "common.cancel": "Cancel",
     "common.save": "Save",
