@@ -9,6 +9,8 @@ interface AppShellProps {
   activeNav: DashboardSection;
   onNavigate: (section: DashboardSection) => void;
   onBackToCampaigns: () => void;
+  onOpenSettings?: () => void;
+  onAdminLogout?: () => void;
   children: React.ReactNode;
 }
 
@@ -17,6 +19,8 @@ export function AppShell({
   activeNav,
   onNavigate,
   onBackToCampaigns,
+  onOpenSettings,
+  onAdminLogout,
   children,
 }: AppShellProps) {
   const t = useT();
@@ -44,6 +48,8 @@ export function AppShell({
           active={activeNav}
           onNavigate={onNavigate}
           onBack={onBackToCampaigns}
+          onOpenSettings={onOpenSettings}
+          onAdminLogout={onAdminLogout}
         />
       </div>
       <main className="app-shell__main">{children}</main>

@@ -6,35 +6,44 @@ export class ApiError extends Error {
   }
 }
 
-let adminSecret = "";
-
-export function setAdminSecret(secret: string) {
-  adminSecret = secret;
-}
+let adminAuthenticated = false;
 
 export function hasAdminSecret() {
-  return adminSecret !== "";
+  return adminAuthenticated;
 }
 
-interface ApiFetchInit extends RequestInit {
-  admin?: boolean;
-}
-
-export async function apiFetch<T>(path: string, init?: ApiFetchInit): Promise<T> {
-  const { admin, headers, ...rest } = init ?? {};
+export async function apiFetch<T>(
+  path: string,
+  init?: RequestInit,
+): Promise<T> {
   const res = await fetch(`/api${path}`, {
-    ...rest,
+    ...init,
     headers: {
       "Content-Type": "application/json",
-      ...(admin ? { "X-Admin-Token": adminSecret } : {}),
-      ...headers,
+      ...init?.headers,
     },
   });
   if (!res.ok) {
-    throw new ApiError(res.status, `${init?.method ?? "GET"} ${path} failed: ${res.status}`);
+    throw new ApiError(
+      res.status,
+      `${init?.method ?? "GET"} ${path} failed: ${res.status}`,
+    );
   }
   if (res.status === 204) return undefined as T;
   return res.json();
+}
+
+export async function loginAsAdmin(token: string) {
+  await apiFetch<void>("/admin/login", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+  adminAuthenticated = true;
+}
+
+export async function logoutAdmin() {
+  await apiFetch<void>("/admin/logout", { method: "POST" });
+  adminAuthenticated = false;
 }
 
 export function loginToCampaign(campaignId: string, code: string) {

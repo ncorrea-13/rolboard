@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-// rateLimiter is a per-key sliding-window counter, used to slow down brute
-// force attempts on the login/admin-token screens. Keyed by client IP.
 type rateLimiter struct {
 	mu       sync.Mutex
 	attempts map[string][]time.Time
@@ -40,9 +38,6 @@ func (rl *rateLimiter) allow(key string) bool {
 	return true
 }
 
-// clientIP prefers the IP Cloudflare reports for the real client, since the
-// app sits behind a Cloudflare Tunnel and otherwise only sees tunnel/proxy
-// addresses — see docs/DECISIONS.md.
 func clientIP(r *http.Request) string {
 	if ip := r.Header.Get("CF-Connecting-IP"); ip != "" {
 		return ip

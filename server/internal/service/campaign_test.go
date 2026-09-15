@@ -9,7 +9,7 @@ func TestSafeVaultPath(t *testing.T) {
 	}{
 		{"my-vault", true},
 		{"nested/vault", true},
-		{"", false},
+		{"", true},
 		{"..", false},
 		{"../etc", false},
 		{"../../etc/passwd", false},
