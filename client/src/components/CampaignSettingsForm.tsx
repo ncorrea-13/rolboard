@@ -35,10 +35,10 @@ export function CampaignSettingsForm({
   const [codeError, setCodeError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiFetch<string[]>("/admin/vault-dirs")
+    apiFetch<string[]>(`/admin/vault-dirs?campaignId=${campaign.id}`)
       .then(setVaultDirs)
       .catch((err) => console.error("Error listando directorios del vault:", err));
-  }, []);
+  }, [campaign.id]);
 
   async function handleSave() {
     if (!name.trim() || saving) return;

@@ -30,13 +30,13 @@ func (s *AdminService) Reindex(ctx context.Context, campaignID int64) (*vault.Re
 	return indexer.Reindex(ctx)
 }
 
-func (s *AdminService) ListVaultDirs(ctx context.Context) ([]string, error) {
+func (s *AdminService) ListVaultDirs(ctx context.Context, excludeCampaignID int64) ([]string, error) {
 	entries, err := os.ReadDir(s.vaultsRoot)
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := s.db.QueryContext(ctx, `SELECT vault_path FROM campaigns WHERE vault_path != '' AND deleted_at IS NULL`)
+	rows, err := s.db.QueryContext(ctx, `SELECT vault_path FROM campaigns WHERE vault_path != '' AND deleted_at IS NULL AND id != ?`, excludeCampaignID)
 	if err != nil {
 		return nil, err
 	}
