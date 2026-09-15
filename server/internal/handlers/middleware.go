@@ -117,6 +117,10 @@ func (h *Handlers) AdminLogout(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (h *Handlers) AdminSession(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *Handlers) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie(adminSessionCookieName)
@@ -126,6 +130,11 @@ func (h *Handlers) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next(w, r)
 	}
+}
+
+func isAdminRequest(r *http.Request) bool {
+	cookie, err := r.Cookie(adminSessionCookieName)
+	return err == nil && adminSessions.valid(cookie.Value)
 }
 
 func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error), next http.HandlerFunc) http.HandlerFunc {
@@ -166,6 +175,10 @@ func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error),
 
 func resolveCampaignFromPath(r *http.Request) (int64, error) {
 	return strconv.ParseInt(r.PathValue("id"), 10, 64)
+}
+
+func resolveCampaignIDFromQuery(r *http.Request) (int64, error) {
+	return strconv.ParseInt(r.URL.Query().Get("campaignId"), 10, 64)
 }
 
 func (h *Handlers) resolveViaTable(table string) func(*http.Request) (int64, error) {

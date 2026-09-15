@@ -123,6 +123,15 @@ func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !isAdminRequest(r) {
+		current, err := h.campaigns.GetByID(r.Context(), id)
+		if err != nil {
+			http.Error(w, "Campaign not found", http.StatusNotFound)
+			return
+		}
+		payload.VaultPath = current.VaultPath
+	}
+
 	campaign := models.Campaign{
 		Name:        payload.Name,
 		System:      payload.System,
