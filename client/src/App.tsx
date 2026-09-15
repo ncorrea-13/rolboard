@@ -12,6 +12,7 @@ import { NewSessionForm } from "./components/NewSessionForm";
 import { PlanSession } from "./screens/PlanSession";
 import { SessionEdit } from "./screens/SessionEdit";
 import { NewCampaignForm } from "./components/NewCampaignForm";
+import { CampaignSettingsForm } from "./components/CampaignSettingsForm";
 import { CampaignSelector } from "./screens/CampaignSelector";
 import { CampaignDashboard, type DashboardSection } from "./screens/CampaignDashboard";
 import { NpcList } from "./screens/NpcList";
@@ -64,7 +65,9 @@ export default function App() {
   const [loginCampaignId, setLoginCampaignId] = useState<string | null>(null);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [adminGateOpen, setAdminGateOpen] = useState(false);
+  const [adminGateAction, setAdminGateAction] = useState<(() => void) | null>(null);
   const [toast, setToast] = useState<{
     id: number;
     message: string;
@@ -143,8 +146,15 @@ export default function App() {
     if (hasAdminSecret()) {
       setNewCampaignOpen(true);
     } else {
+      setAdminGateAction(() => () => setNewCampaignOpen(true));
       setAdminGateOpen(true);
     }
+  }
+
+  function enterAsAdmin(id: string) {
+    setLoginCampaignId(null);
+    setAdminGateAction(() => () => selectCampaign(id));
+    setAdminGateOpen(true);
   }
 
   function createCampaign(campaign: Omit<Campaign, "id">, vaultPath: string) {
@@ -165,6 +175,45 @@ export default function App() {
         selectCampaign(mapped.id);
       })
       .catch((err) => console.error("Error creando campaña:", err));
+  }
+
+  function saveCampaignSettings(patch: {
+    name: string;
+    system: string;
+    status: Campaign["status"];
+    vaultPath: string;
+  }) {
+    if (!activeCampaignId) return Promise.resolve();
+    return apiFetch<ApiCampaign>(`/campaigns/${activeCampaignId}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        name: patch.name,
+        system: patch.system,
+        description: "",
+        status: patch.status,
+        vault_path: patch.vaultPath,
+      }),
+    })
+      .then((updated) => {
+        const mapped = mapCampaign(updated);
+        setCampaigns((prev) => prev.map((c) => (c.id === mapped.id ? mapped : c)));
+        setSettingsOpen(false);
+      })
+      .catch((err) => {
+        console.error("Error actualizando campaña:", err);
+        throw err;
+      });
+  }
+
+  function setCampaignAccessCode(code: string) {
+    if (!activeCampaignId) return Promise.resolve();
+    return apiFetch<void>(`/campaigns/${activeCampaignId}/access-code`, {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    }).catch((err) => {
+      console.error("Error actualizando código de acceso:", err);
+      throw err;
+    });
   }
 
   const selectedNpc =
@@ -220,6 +269,7 @@ export default function App() {
           activeNav={activeNav}
           onNavigate={(section) => setRoute({ name: "section", section })}
           onBackToCampaigns={() => setRoute({ name: "campaigns" })}
+          onOpenSettings={hasAdminSecret() ? () => setSettingsOpen(true) : undefined}
         >
           {route.name === "section" && route.section === "resumen" && (
             <CampaignDashboard
@@ -672,7 +722,7 @@ export default function App() {
                 throw err;
               }
               setAdminGateOpen(false);
-              setNewCampaignOpen(true);
+              adminGateAction?.();
             }}
             onCancel={() => setAdminGateOpen(false)}
           />
@@ -690,6 +740,22 @@ export default function App() {
             }}
             onCancel={() => setLoginCampaignId(null)}
           />
+          <div style={{ textAlign: "center", marginTop: 8 }}>
+            <button
+              onClick={() => enterAsAdmin(loginCampaignId)}
+              style={{
+                background: "none",
+                border: "none",
+                textDecoration: "underline",
+                cursor: "pointer",
+                padding: 0,
+                fontSize: 13,
+                color: "var(--text-secondary)",
+              }}
+            >
+              {t("login.enterAsAdmin")}
+            </button>
+          </div>
         </Modal>
       )}
 
@@ -698,6 +764,17 @@ export default function App() {
           <NewCampaignForm
             onConfirm={createCampaign}
             onCancel={() => setNewCampaignOpen(false)}
+          />
+        </Modal>
+      )}
+
+      {settingsOpen && activeCampaign && (
+        <Modal title={t("campaignSettings.title")} onClose={() => setSettingsOpen(false)}>
+          <CampaignSettingsForm
+            campaign={activeCampaign}
+            onSave={saveCampaignSettings}
+            onSetAccessCode={setCampaignAccessCode}
+            onCancel={() => setSettingsOpen(false)}
           />
         </Modal>
       )}

@@ -21,12 +21,12 @@ interface ApiFetchInit extends RequestInit {
 }
 
 export async function apiFetch<T>(path: string, init?: ApiFetchInit): Promise<T> {
-  const { admin, headers, ...rest } = init ?? {};
+  const { admin: _admin, headers, ...rest } = init ?? {};
   const res = await fetch(`/api${path}`, {
     ...rest,
     headers: {
       "Content-Type": "application/json",
-      ...(admin ? { "X-Admin-Token": adminSecret } : {}),
+      ...(hasAdminSecret() ? { "X-Admin-Token": adminSecret } : {}),
       ...headers,
     },
   });
