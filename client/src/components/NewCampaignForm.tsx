@@ -16,7 +16,7 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
   const [vaultDirs, setVaultDirs] = useState<string[]>([]);
 
   useEffect(() => {
-    apiFetch<string[]>("/admin/vault-dirs", { admin: true })
+    apiFetch<string[]>("/admin/vault-dirs")
       .then(setVaultDirs)
       .catch((err) => console.error("Error listando directorios del vault:", err));
   }, []);

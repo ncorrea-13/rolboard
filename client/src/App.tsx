@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { apiFetch, ApiError, loginToCampaign, setAdminSecret, hasAdminSecret } from "./lib/api";
+import {
+  apiFetch,
+  ApiError,
+  loginToCampaign,
+  loginAsAdmin,
+  logoutAdmin,
+  hasAdminSecret,
+} from "./lib/api";
 import { CampaignLoginForm } from "./components/CampaignLoginForm";
 import { AdminSecretForm } from "./components/AdminSecretForm";
 import { useT } from "./lib/i18n";
@@ -12,8 +19,12 @@ import { NewSessionForm } from "./components/NewSessionForm";
 import { PlanSession } from "./screens/PlanSession";
 import { SessionEdit } from "./screens/SessionEdit";
 import { NewCampaignForm } from "./components/NewCampaignForm";
+import { CampaignSettingsForm } from "./components/CampaignSettingsForm";
 import { CampaignSelector } from "./screens/CampaignSelector";
-import { CampaignDashboard, type DashboardSection } from "./screens/CampaignDashboard";
+import {
+  CampaignDashboard,
+  type DashboardSection,
+} from "./screens/CampaignDashboard";
 import { NpcList } from "./screens/NpcList";
 import { NpcDetail } from "./screens/NpcDetail";
 import { NpcEdit } from "./screens/NpcEdit";
@@ -64,7 +75,12 @@ export default function App() {
   const [loginCampaignId, setLoginCampaignId] = useState<string | null>(null);
   const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [adminGateOpen, setAdminGateOpen] = useState(false);
+  const [adminGateAction, setAdminGateAction] = useState<(() => void) | null>(
+    null,
+  );
+  const [, forceAdminRerender] = useState(0);
   const [toast, setToast] = useState<{
     id: number;
     message: string;
@@ -77,7 +93,10 @@ export default function App() {
 
   useEffect(() => {
     if (!toast) return;
-    const timer = setTimeout(() => setToast(null), toast.type === "error" ? 3000 : 2000);
+    const timer = setTimeout(
+      () => setToast(null),
+      toast.type === "error" ? 3000 : 2000,
+    );
     return () => clearTimeout(timer);
   }, [toast]);
 
@@ -121,12 +140,16 @@ export default function App() {
     playSession,
     startPlaySession,
     goToEntitySection,
-  } = useCampaignData(activeCampaignId, activeCampaign, setRoute, setNewSessionOpen, notify);
+  } = useCampaignData(
+    activeCampaignId,
+    activeCampaign,
+    setRoute,
+    setNewSessionOpen,
+    notify,
+  );
 
   async function selectCampaign(id: string) {
     try {
-      // Probes for a valid session cookie before committing to the campaign —
-      // every other screen assumes it's already authenticated.
       await apiFetch(`/campaigns/${id}/dashboard`);
       setActiveCampaignId(id);
       setRoute({ name: "section", section: "resumen" });
@@ -143,14 +166,20 @@ export default function App() {
     if (hasAdminSecret()) {
       setNewCampaignOpen(true);
     } else {
+      setAdminGateAction(() => () => setNewCampaignOpen(true));
       setAdminGateOpen(true);
     }
+  }
+
+  function enterAsAdmin(id: string) {
+    setLoginCampaignId(null);
+    setAdminGateAction(() => () => selectCampaign(id));
+    setAdminGateOpen(true);
   }
 
   function createCampaign(campaign: Omit<Campaign, "id">, vaultPath: string) {
     apiFetch<ApiCampaign>("/campaigns", {
       method: "POST",
-      admin: true,
       body: JSON.stringify({
         name: campaign.name,
         system: campaign.system,
@@ -165,6 +194,47 @@ export default function App() {
         selectCampaign(mapped.id);
       })
       .catch((err) => console.error("Error creando campaña:", err));
+  }
+
+  function saveCampaignSettings(patch: {
+    name: string;
+    system: string;
+    status: Campaign["status"];
+    vaultPath: string;
+  }) {
+    if (!activeCampaignId) return Promise.resolve();
+    return apiFetch<ApiCampaign>(`/campaigns/${activeCampaignId}`, {
+      method: "PUT",
+      body: JSON.stringify({
+        name: patch.name,
+        system: patch.system,
+        description: "",
+        status: patch.status,
+        vault_path: patch.vaultPath,
+      }),
+    })
+      .then((updated) => {
+        const mapped = mapCampaign(updated);
+        setCampaigns((prev) =>
+          prev.map((c) => (c.id === mapped.id ? mapped : c)),
+        );
+        setSettingsOpen(false);
+      })
+      .catch((err) => {
+        console.error("Error actualizando campaña:", err);
+        throw err;
+      });
+  }
+
+  function setCampaignAccessCode(code: string) {
+    if (!activeCampaignId) return Promise.resolve();
+    return apiFetch<void>(`/campaigns/${activeCampaignId}/access-code`, {
+      method: "POST",
+      body: JSON.stringify({ code }),
+    }).catch((err) => {
+      console.error("Error actualizando código de acceso:", err);
+      throw err;
+    });
   }
 
   const selectedNpc =
@@ -196,9 +266,11 @@ export default function App() {
                 ? "arcos"
                 : route.name === "quest-edit" || route.name === "quest-create"
                   ? "quests"
-                  : route.name === "faction-edit" || route.name === "faction-create"
+                  : route.name === "faction-edit" ||
+                      route.name === "faction-create"
                     ? "facciones"
-                    : route.name === "location-edit" || route.name === "location-create"
+                    : route.name === "location-edit" ||
+                        route.name === "location-create"
                       ? "locaciones"
                       : route.name === "encounter-detail"
                         ? "encuentros"
@@ -220,6 +292,20 @@ export default function App() {
           activeNav={activeNav}
           onNavigate={(section) => setRoute({ name: "section", section })}
           onBackToCampaigns={() => setRoute({ name: "campaigns" })}
+          onOpenSettings={
+            hasAdminSecret() ? () => setSettingsOpen(true) : undefined
+          }
+          onAdminLogout={
+            hasAdminSecret()
+              ? async () => {
+                  await logoutAdmin();
+                  setSettingsOpen(false);
+                  setActiveCampaignId(null);
+                  setRoute({ name: "campaigns" });
+                  forceAdminRerender((v) => v + 1);
+                }
+              : undefined
+          }
         >
           {route.name === "section" && route.section === "resumen" && (
             <CampaignDashboard
@@ -231,8 +317,12 @@ export default function App() {
               summary={
                 dashboardSummary
                   ? {
-                      activeQuests: (dashboardSummary.active_quests ?? []).map(mapQuest),
-                      recentNpcs: (dashboardSummary.recent_npcs ?? []).map(mapNpc),
+                      activeQuests: (dashboardSummary.active_quests ?? []).map(
+                        mapQuest,
+                      ),
+                      recentNpcs: (dashboardSummary.recent_npcs ?? []).map(
+                        mapNpc,
+                      ),
                       lastSession: dashboardSummary.last_session
                         ? mapSession(dashboardSummary.last_session)
                         : undefined,
@@ -248,7 +338,9 @@ export default function App() {
                 setRoute({ name: "entity-detail", kind: "arc", id })
               }
               onOpenSession={(sessionId) => {
-                const session = campaignSessions.find((s) => s.id === sessionId);
+                const session = campaignSessions.find(
+                  (s) => s.id === sessionId,
+                );
                 setRoute({
                   name: "session-edit",
                   sessionId,
@@ -363,7 +455,9 @@ export default function App() {
               campaignId={activeCampaignId!}
               onBack={() => goToEntitySection("faction")}
               onSelectNpc={(npcId) => setRoute({ name: "npc-detail", npcId })}
-              onSelectPlayer={(playerId) => setRoute({ name: "player-detail", playerId })}
+              onSelectPlayer={(playerId) =>
+                setRoute({ name: "player-detail", playerId })
+              }
               onEdit={() =>
                 setRoute({ name: "faction-edit", factionId: route.id })
               }
@@ -415,7 +509,9 @@ export default function App() {
 
           {route.name === "faction-edit" &&
             (() => {
-              const group = campaignGroups.find((g) => g.id === route.factionId);
+              const group = campaignGroups.find(
+                (g) => g.id === route.factionId,
+              );
               if (!group) return null;
               return (
                 <FactionEdit
@@ -424,10 +520,18 @@ export default function App() {
                   npcs={campaignNpcs}
                   onSave={(patch) => {
                     saveFaction(group.id, patch);
-                    setRoute({ name: "entity-detail", kind: "faction", id: group.id });
+                    setRoute({
+                      name: "entity-detail",
+                      kind: "faction",
+                      id: group.id,
+                    });
                   }}
                   onDiscard={() =>
-                    setRoute({ name: "entity-detail", kind: "faction", id: group.id })
+                    setRoute({
+                      name: "entity-detail",
+                      kind: "faction",
+                      id: group.id,
+                    })
                   }
                 />
               );
@@ -444,7 +548,9 @@ export default function App() {
 
           {route.name === "location-edit" &&
             (() => {
-              const location = campaignLocations.find((l) => l.id === route.locationId);
+              const location = campaignLocations.find(
+                (l) => l.id === route.locationId,
+              );
               if (!location) return null;
               return (
                 <LocationEdit
@@ -453,10 +559,18 @@ export default function App() {
                   locations={campaignLocations}
                   onSave={(patch) => {
                     saveLocation(location.id, patch);
-                    setRoute({ name: "entity-detail", kind: "location", id: location.id });
+                    setRoute({
+                      name: "entity-detail",
+                      kind: "location",
+                      id: location.id,
+                    });
                   }}
                   onDiscard={() =>
-                    setRoute({ name: "entity-detail", kind: "location", id: location.id })
+                    setRoute({
+                      name: "entity-detail",
+                      kind: "location",
+                      id: location.id,
+                    })
                   }
                 />
               );
@@ -481,7 +595,11 @@ export default function App() {
                   arc={arc}
                   onSave={(patch) => {
                     saveArc(arc.id, patch);
-                    setRoute({ name: "entity-detail", kind: "arc", id: arc.id });
+                    setRoute({
+                      name: "entity-detail",
+                      kind: "arc",
+                      id: arc.id,
+                    });
                   }}
                   onDiscard={() =>
                     setRoute({ name: "entity-detail", kind: "arc", id: arc.id })
@@ -508,10 +626,18 @@ export default function App() {
                   quest={quest}
                   onSave={(patch) => {
                     saveQuest(quest.id, patch);
-                    setRoute({ name: "entity-detail", kind: "quest", id: quest.id });
+                    setRoute({
+                      name: "entity-detail",
+                      kind: "quest",
+                      id: quest.id,
+                    });
                   }}
                   onDiscard={() =>
-                    setRoute({ name: "entity-detail", kind: "quest", id: quest.id })
+                    setRoute({
+                      name: "entity-detail",
+                      kind: "quest",
+                      id: quest.id,
+                    })
                   }
                 />
               );
@@ -593,7 +719,9 @@ export default function App() {
 
           {route.name === "encounter-detail" &&
             (() => {
-              const encounter = campaignEncounters.find((e) => e.id === route.encounterId);
+              const encounter = campaignEncounters.find(
+                (e) => e.id === route.encounterId,
+              );
               if (!encounter) return null;
               return (
                 <EncounterDetail
@@ -601,10 +729,18 @@ export default function App() {
                   encounter={encounter}
                   npcs={campaignNpcs}
                   playerCharacters={campaignPlayerCharacters}
-                  onBack={() => setRoute({ name: "section", section: "encuentros" })}
-                  onStart={() => saveEncounter(encounter.id, { status: "activo" })}
-                  onClose={() => saveEncounter(encounter.id, { status: "cerrado" })}
-                  onNextRound={() => saveEncounter(encounter.id, { round: encounter.round + 1 })}
+                  onBack={() =>
+                    setRoute({ name: "section", section: "encuentros" })
+                  }
+                  onStart={() =>
+                    saveEncounter(encounter.id, { status: "activo" })
+                  }
+                  onClose={() =>
+                    saveEncounter(encounter.id, { status: "cerrado" })
+                  }
+                  onNextRound={() =>
+                    saveEncounter(encounter.id, { round: encounter.round + 1 })
+                  }
                   onDelete={() => deleteEncounter(encounter.id)}
                   onSyncPlayerHp={(pcId, patch) => savePlayer(pcId, patch)}
                 />
@@ -651,7 +787,10 @@ export default function App() {
       )}
 
       {newSessionOpen && (
-        <Modal title={t("app.modal.newSession")} onClose={() => setNewSessionOpen(false)}>
+        <Modal
+          title={t("app.modal.newSession")}
+          onClose={() => setNewSessionOpen(false)}
+        >
           <NewSessionForm
             nextNumber={nextSessionNumber}
             onConfirm={playSession}
@@ -661,18 +800,15 @@ export default function App() {
       )}
 
       {adminGateOpen && (
-        <Modal title={t("app.modal.confirm")} onClose={() => setAdminGateOpen(false)}>
+        <Modal
+          title={t("app.modal.confirm")}
+          onClose={() => setAdminGateOpen(false)}
+        >
           <AdminSecretForm
             onSubmit={async (secret) => {
-              setAdminSecret(secret);
-              try {
-                await apiFetch("/admin/vault-dirs", { admin: true });
-              } catch (err) {
-                setAdminSecret("");
-                throw err;
-              }
+              await loginAsAdmin(secret);
               setAdminGateOpen(false);
-              setNewCampaignOpen(true);
+              adminGateAction?.();
             }}
             onCancel={() => setAdminGateOpen(false)}
           />
@@ -680,7 +816,10 @@ export default function App() {
       )}
 
       {loginCampaignId && (
-        <Modal title={t("app.modal.campaignCode")} onClose={() => setLoginCampaignId(null)}>
+        <Modal
+          title={t("app.modal.campaignCode")}
+          onClose={() => setLoginCampaignId(null)}
+        >
           <CampaignLoginForm
             onSubmit={async (code) => {
               await loginToCampaign(loginCampaignId, code);
@@ -690,14 +829,47 @@ export default function App() {
             }}
             onCancel={() => setLoginCampaignId(null)}
           />
+          <div style={{ textAlign: "center", marginTop: 8 }}>
+            <button
+              onClick={() => enterAsAdmin(loginCampaignId)}
+              style={{
+                background: "none",
+                border: "none",
+                textDecoration: "underline",
+                cursor: "pointer",
+                padding: 0,
+                fontSize: 13,
+                color: "var(--text-secondary)",
+              }}
+            >
+              {t("login.enterAsAdmin")}
+            </button>
+          </div>
         </Modal>
       )}
 
       {newCampaignOpen && (
-        <Modal title={t("app.modal.newCampaign")} onClose={() => setNewCampaignOpen(false)}>
+        <Modal
+          title={t("app.modal.newCampaign")}
+          onClose={() => setNewCampaignOpen(false)}
+        >
           <NewCampaignForm
             onConfirm={createCampaign}
             onCancel={() => setNewCampaignOpen(false)}
+          />
+        </Modal>
+      )}
+
+      {settingsOpen && activeCampaign && (
+        <Modal
+          title={t("campaignSettings.title")}
+          onClose={() => setSettingsOpen(false)}
+        >
+          <CampaignSettingsForm
+            campaign={activeCampaign}
+            onSave={saveCampaignSettings}
+            onSetAccessCode={setCampaignAccessCode}
+            onCancel={() => setSettingsOpen(false)}
           />
         </Modal>
       )}
