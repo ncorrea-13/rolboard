@@ -89,8 +89,6 @@ func (r *LocationRepository) GetByID(ctx context.Context, id int64) (*models.Loc
 	return &l, nil
 }
 
-// SetImagePath stays separate from Update — see the identical comment on
-// NPCRepository.
 func (r *LocationRepository) SetImagePath(ctx context.Context, id int64, path *string) (*models.Location, error) {
 	res, err := r.db.ExecContext(ctx, `
 		UPDATE locations SET image_path = ?, updated_at = datetime('now') WHERE id = ? AND deleted_at IS NULL`,
