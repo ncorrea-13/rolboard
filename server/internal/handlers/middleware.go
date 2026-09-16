@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"sync"
@@ -79,6 +80,7 @@ func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if h.adminToken == "" || subtle.ConstantTimeCompare([]byte(payload.Token), []byte(h.adminToken)) != 1 {
+			slog.Warn("admin login failed", "remote", r.RemoteAddr)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -88,6 +90,7 @@ func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error creating session", http.StatusInternalServerError)
 			return
 		}
+		slog.Info("admin login ok", "remote", r.RemoteAddr)
 		http.SetCookie(w, &http.Cookie{
 			Name:     adminSessionCookieName,
 			Value:    session,
@@ -114,6 +117,7 @@ func (h *Handlers) AdminLogout(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode,
 		MaxAge:   -1,
 	})
+	slog.Info("admin logout", "remote", r.RemoteAddr)
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -125,6 +129,11 @@ func (h *Handlers) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie(adminSessionCookieName)
 		if err != nil || !adminSessions.valid(cookie.Value) {
+			slog.Warn("admin auth failed",
+				"path", r.URL.Path,
+				"method", r.Method,
+				"remote", r.RemoteAddr,
+			)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -146,11 +155,21 @@ func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error),
 
 		cookie, err := r.Cookie(sessionCookieName)
 		if err != nil {
+			slog.Warn("campaign auth failed: no session cookie",
+				"path", r.URL.Path,
+				"method", r.Method,
+				"remote", r.RemoteAddr,
+			)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 		sessionCampaignID, err := h.auth.ValidateToken(r.Context(), cookie.Value)
 		if err != nil {
+			slog.Warn("campaign auth failed: invalid session",
+				"path", r.URL.Path,
+				"method", r.Method,
+				"remote", r.RemoteAddr,
+			)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
@@ -166,6 +185,12 @@ func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error),
 		}
 
 		if resourceCampaignID != sessionCampaignID {
+			slog.Warn("campaign auth failed: campaign mismatch",
+				"session_campaign_id", sessionCampaignID,
+				"resource_campaign_id", resourceCampaignID,
+				"path", r.URL.Path,
+				"remote", r.RemoteAddr,
+			)
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
