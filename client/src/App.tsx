@@ -375,6 +375,7 @@ export default function App() {
               onPlanSession={() => setRoute({ name: "session-plan" })}
               onReindex={handleReindex}
               reindexing={reindexing}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "section" && route.section === "npcs" && (
@@ -413,6 +414,7 @@ export default function App() {
                 setRoute({ name: "entity-detail", kind: "location", id })
               }
               onCreate={() => setRoute({ name: "location-create" })}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "section" && route.section === "facciones" && (
@@ -422,6 +424,7 @@ export default function App() {
                 setRoute({ name: "entity-detail", kind: "faction", id })
               }
               onCreate={() => setRoute({ name: "faction-create" })}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "section" && route.section === "quests" && (
@@ -440,6 +443,7 @@ export default function App() {
                 setRoute({ name: "player-detail", playerId })
               }
               onCreate={() => setRoute({ name: "player-create" })}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "section" && route.section === "encuentros" && (
@@ -784,6 +788,7 @@ export default function App() {
                   }
                   onDelete={() => deleteEncounter(encounter.id)}
                   onSyncPlayerHp={(pcId, patch) => savePlayer(pcId, patch)}
+                  imageVersion={imageVersion}
                 />
               );
             })()}
