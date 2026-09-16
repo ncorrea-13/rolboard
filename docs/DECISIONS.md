@@ -20,7 +20,9 @@ Se evaluaron: to-do básico, gestor de gastos personal, dashboard de hábitos, l
 
 **Por qué**: elimina la necesidad de autenticación multiusuario, WebSockets, y UI pensada para terceros — reduce drásticamente el alcance sin perder el valor central (el "pantallazo" de la mesa).
 
-**Consecuencia**: no hay tracker de combate en tiempo real compartido con jugadores en el MVP; si existe, es una vista de control personal del DM.
+**Precisión importante (no contradice lo anterior)**: "monousuario" describe *para quién es la herramienta*, no que no haya autenticación ni superficie de ataque. Sí hay auth: código de acceso por campaña (`rolboard_session`, migración `0016`) y token de instancia para gestión (`rolboard_admin_session`), ambos con rate limiting. Existen porque la DJ entra desde varios dispositivos por red, no porque haya varios usuarios. El servidor corre en un contenedor accesible por red y la SPA se sirve **desde el mismo origen** que la API (Caddy), así que cualquier feature que acepte contenido subido se diseña como si la superficie fuera hostil — ver "Seguridad" en `ROADMAP_V0.2.md`. Leer "monousuario" como "no hace falta validar nada" sería un error.
+
+**Consecuencia**: no hay, ni va a haber, tracker de combate en tiempo real compartido con jugadores — es alcance permanente del proyecto, no una limitación temporal del MVP. El tracker de combate (incluido el mapa de encuentro con tokens, ver `DATA_MODEL.md`) es y sigue siendo una vista de control personal del DM: no se juega desde la app, no hay usuarios además del DM.
 
 ---
 
@@ -75,6 +77,8 @@ Se evaluaron: to-do básico, gestor de gastos personal, dashboard de hábitos, l
 ---
 
 ## Relación con el vault de Obsidian: complementar, no migrar
+
+> **Superada parcialmente** — ver "Giro de rumbo: reducir el vault de forma incremental, entidad por entidad" más abajo. El razonamiento de esta entrada sigue válido para prosa larga (historias, lore, reglas), pero ya no es la dirección general del proyecto.
 
 **Decisión**: el dashboard no reemplaza el contenido del vault (757+ archivos de prosa, lore, reglas). Cada entidad indexada guarda solo un `obsidian_path` de referencia; el contenido narrativo largo se sigue editando y leyendo en Obsidian.
 
@@ -332,3 +336,47 @@ Migración `0007_player_characters_extend.sql`:
 - `GetMembers`/`GetPCMembers` filtran `source != 'removed'`.
 
 **`GET/POST/DELETE /api/groups/{id}/pc-members`**: con el bug de raíz resuelto, ya tiene sentido exponer alta/baja de PJ igual que NPC — se agregó `AddPCMember`/`RemovePCMember` (handler, service, repo) calcados de los de NPC, y la UI correspondiente en `FactionDetail` (antes solo mostraba PJs, ahora también permite agregar/sacar). La entrada anterior de este documento ("pc-members solo lectura, no tiene sentido un botón para un dato que el vault ya gobierna") queda superada por esto — la razón de fondo para no tener el botón era el bug del reindex, no que fuera conceptualmente incorrecto tener uno.
+
+---
+
+## Giro de rumbo: reducir el vault de forma incremental, entidad por entidad
+
+**Contexto**: la decisión original ("Relación con el vault de Obsidian: complementar, no migrar", más arriba) asumía que el vault seguiría siendo la fuente de verdad de todo el contenido narrativo indefinidamente. En la práctica, varias piezas del proyecto ya se apartaron de esa premisa sin que quedara declarado como dirección general:
+
+- `quests` nunca tuvo nota en Obsidian — vive 100% en la DB, sin `obsidian_path`, gestionada solo por API/dashboard (ver "Quests: sin nota propia en el vault" más arriba).
+- `player_characters.class`/`backstory`/`progression_notes` son dashboard-only, sin backing en el vault, desde el modelo original (`DATA_MODEL.md`).
+- El usuario confirmó que la dirección deseada es esa, generalizada: ir sacando contenido del vault hacia la DB de forma incremental, campo por campo o entidad por entidad, no todo de una vez.
+
+**Decisión**: se abandona la premisa de "el vault es la fuente de verdad permanente de la prosa". La nueva dirección es evaluar, por cada tipo de contenido nuevo o candidato a migrar, si conviene vivir en la DB (dashboard-only, sin `obsidian_path`) en vez de en el vault — usando `quests` y los campos dashboard-only de `player_characters` como precedente de que el patrón ya funciona en producción. La migración es incremental y sin fecha límite: no hay compromiso de vaciar el vault por completo, cada pieza se evalúa cuando aparece la necesidad concreta (el primer caso concreto de esta dirección: soporte de imágenes, ver entrada siguiente).
+
+**Qué NO cambia todavía**: el vault sigue siendo la fuente de verdad para lo que ya lee de ahí (frontmatter de NPCs/locations/groups/sessions/player_characters, prosa larga de sesiones/lore). Esta entrada habilita la dirección y da precedente — no dispara por sí sola una migración de esos campos. Cada migración concreta (ej. mover `description`/`notes` de NPC a dashboard-only) es su propia decisión, evaluada cuando se la necesite, no una consecuencia automática de esta entrada.
+
+**Por qué incremental y no un rediseño único**: el vault sigue teniendo valor real hoy (backlinks, grafo de notas, escritura de prosa larga en Obsidian) — tirarlo todo de una haría perder eso sin necesidad. Migrar solo lo que empieza a doler (falta de un tipo de dato que el vault no modela bien, como imágenes) es más barato y de menor riesgo que un rediseño total, y es consistente con el resto de las decisiones del proyecto (KISS, no resolver lo que no hace falta todavía).
+
+---
+
+## Imágenes por entidad: dos roles fijos, no galería
+
+**Decisión**: `npcs` y `player_characters` llevan dos columnas (`image_path` para el retrato del detalle, `token_path` para el ícono de listados y tracker de combate); `locations` y `groups` llevan solo `image_path`. El archivo vive en el filesystem bajo `UPLOADS_ROOT`, la columna guarda la ruta relativa. Plan completo en [`ROADMAP_V0.2.md`](./ROADMAP_V0.2.md).
+
+**Por qué dos columnas y no una tabla `*_images` 1:N**: los dos campos no son "dos fotos de lo mismo" sino dos usos distintos con consumidores distintos ya existentes en el código — el detalle (`NpcDetail`) y los listados/tracker (`NpcList`, `encounter_participants`). Una galería resolvería un problema diferente (varias imágenes del mismo rol), que hoy no existe: el vault nunca tuvo imágenes, así que no hay ni un caso real que la pida. Mismo criterio que se usó para no normalizar `attributes`/`skills` en tablas: se migra cuando aparece la necesidad, no antes.
+
+**Por qué no una tabla polimórfica** (`entity_type` + `entity_id`): sería la primera FK falsa del schema. Todo el resto del proyecto usa FKs reales con `ON DELETE RESTRICT` y refuerza invariantes en la base en vez de confiar en la app (ver "Convenciones transversales" en `DATA_MODEL.md`) — un `entity_id` sin constraint dependería de que el código nunca se equivoque con el `entity_type`.
+
+**Cuándo revisar**: si aparece la necesidad real de varias imágenes de un mismo rol (varias vistas de una misma ciudad, retratos de un NPC por arco), migra **solo esa tabla** a un `1:N` con `is_primary`, moviendo el valor de `image_path` como primera fila. Es un cambio acotado y reversible, no un rediseño.
+
+**Por qué filesystem y no BLOB en SQLite**: guardar binarios en la base infla `campaign.db` y encarece cada backup, a cambio de nada — no hay consultas que necesiten el contenido de la imagen, solo servirla.
+
+---
+
+## Imágenes: PNG/JPEG solamente, SVG rechazado
+
+**Decisión**: el endpoint de upload acepta únicamente PNG y JPEG, validados decodificando el encabezado del archivo (`image.DecodeConfig`, stdlib), nunca por extensión ni por el `Content-Type` que manda el cliente. La ruta en disco se construye a partir del ID de la entidad y un rol de un conjunto cerrado; el nombre del archivo subido se descarta.
+
+**Por qué se rechaza SVG**: un SVG es XML que puede contener `<script>`. La SPA y la API se sirven desde el mismo origen (Caddy sirve el build estático en `/` y proxea `/api/*`), así que un SVG malicioso servido por la app ejecutaría JavaScript con la sesión de la DJ. La cookie es `HttpOnly`, lo que impide robarla desde JS, pero no impide que ese script haga `fetch` autenticado contra la propia API — el navegador adjunta la cookie solo. El resultado sería lectura y escritura de la campaña completa. PNG y JPEG no tienen capacidad de ejecución.
+
+**Por qué no alcanza con validar la extensión**: la extensión y el `Content-Type` del multipart los elige quien sube. Decodificar el encabezado es lo único que prueba que el contenido es realmente una imagen, y de paso descarta archivos "polyglot" (HTML válido con nombre `.png`).
+
+**Por qué la ruta se construye en vez de sanitizarse**: sanitizar un nombre recibido es una carrera contra codificaciones y casos borde (`..%2f`, unicode, separadores de otra plataforma). No usar nunca ese nombre cierra el path traversal de raíz, y cuesta menos código.
+
+**Consecuencia aceptada**: WebP y AVIF quedan afuera por ahora — decodificarlos pediría una dependencia nueva (`golang.org/x/image`). Se agregan cuando haya una razón concreta, con la misma validación por decodificación.

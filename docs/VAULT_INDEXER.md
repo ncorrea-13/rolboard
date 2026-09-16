@@ -4,6 +4,8 @@
 
 El dashboard **no reemplaza** el vault de Obsidian — lo complementa. El vault sigue siendo la fuente de verdad para contenido narrativo largo (historias, lore, reglas); el dashboard indexa la **metadata estructurada** (frontmatter YAML) para dar una vista rápida, consultable y navegable que Obsidian no ofrece de fábrica (estado de NPCs, quién está dónde, qué quests están activas).
 
+> Esto describe el estado actual, no un compromiso permanente: la dirección del proyecto es reducir la dependencia del vault de forma incremental cuando aparece un caso de uso concreto (ver "Giro de rumbo: reducir el vault de forma incremental, entidad por entidad" en `DECISIONS.md`). `quests` ya vive así — sin nota en el vault, 100% dashboard/DB.
+
 Cada entidad indexada guarda un campo `obsidian_path` que permite volver a la nota original en cualquier momento (ver `DATA_MODEL.md` y `API.md`).
 
 ## Estado real del vault (auditado)

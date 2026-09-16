@@ -17,6 +17,8 @@ PUT    /api/campaigns/:id
 DELETE /api/campaigns/:id
 ```
 
+`GET /api/campaigns` es el único endpoint de datos sin auth (la pantalla de selección lo necesita antes de que exista sesión) — por eso devuelve un shape recortado, `{id, name, system, status}`, sin `vault_path` ni `description`. El resto de las rutas de campaña están detrás de sesión/admin y devuelven el registro completo. Razonamiento: `docs/ROADMAP_V0.2.md`, Fase 0.
+
 ## Arcs
 
 ```

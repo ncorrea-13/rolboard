@@ -60,6 +60,14 @@ Razonamiento de cada elección: [`DECISIONS.md`](./DECISIONS.md).
 
 Montado read-only dentro del contenedor. Sincronización, backup y detalle de lectura/procesamiento: [`VAULT_INDEXER.md`](./VAULT_INDEXER.md).
 
-## Por qué NO WebSockets (por ahora)
+La dependencia del vault se va reduciendo de forma incremental: contenido nuevo puede vivir directamente en la DB en vez de en una nota (ver `DECISIONS.md`, "Giro de rumbo: reducir el vault de forma incremental"). El vault nunca se escribe desde la app.
 
-Uso single-user (herramienta del DM, no algo que ven los jugadores en simultáneo) — no hay estado que sincronizar entre clientes. Razonamiento completo: [`DECISIONS.md`](./DECISIONS.md#alcance-para-el-dm-no-para-los-jugadores).
+## Archivos subidos (planificado, no implementado)
+
+Las imágenes de entidad de la V0.2 no van al vault (que es read-only) ni a SQLite como BLOB: van a un volumen propio read-write bajo `UPLOADS_ROOT`, con la DB guardando solo la ruta relativa. Diseño, reglas de validación y razonamiento de seguridad: [`ROADMAP_V0.2.md`](./ROADMAP_V0.2.md).
+
+Dato de despliegue relevante para cualquier feature que acepte contenido subido: Caddy sirve el build de la SPA y proxea `/api/*` al backend, o sea que **archivos servidos por la app comparten origen con la app**. Ver la sección "Seguridad" del roadmap antes de ampliar los formatos aceptados.
+
+## Por qué NO WebSockets
+
+Uso single-user (herramienta del DM, no algo que ven los jugadores en simultáneo) — no hay estado que sincronizar entre clientes. No es una limitación temporal del MVP: la herramienta no está pensada para que otros usuarios la usen en simultáneo ni para "jugar" en vivo desde la app (ver mapa de combate en `DATA_MODEL.md`/`DECISIONS.md`) — es soporte de preparación y referencia para el DM, no un tablero virtual multiusuario. Razonamiento completo: [`DECISIONS.md`](./DECISIONS.md#alcance-para-el-dm-no-para-los-jugadores).
