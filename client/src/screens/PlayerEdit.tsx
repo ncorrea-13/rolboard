@@ -9,6 +9,8 @@ import {
   type StatusKind,
 } from "../data/domain";
 import { SkillsEditor } from "../components/SkillsEditor";
+import { ImageUploadField } from "../components/ImageUploadField";
+import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
@@ -17,9 +19,19 @@ interface PlayerEditProps {
   player: PlayerCharacter;
   onSave: (patch: Partial<PlayerCharacter>) => void;
   onDiscard: () => void;
+  imageVersion?: number;
+  onUploadImage?: (file: File) => Promise<void>;
+  onRemoveImage?: () => Promise<void>;
 }
 
-export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
+export function PlayerEdit({
+  player,
+  onSave,
+  onDiscard,
+  imageVersion = 0,
+  onUploadImage,
+  onRemoveImage,
+}: PlayerEditProps) {
   const t = useT();
   const lang = useLang();
   const [playerName, setPlayerName] = useState(player.playerName);
@@ -130,6 +142,14 @@ export function PlayerEdit({ player, onSave, onDiscard }: PlayerEditProps) {
         </div>
 
         <div className="npc-edit__col">
+          {player.id && onUploadImage && onRemoveImage && (
+            <ImageUploadField
+              label={t("npcEdit.portrait")}
+              imageUrl={entityImageUrl("player-character", player.id, player.hasImage, imageVersion)}
+              onUpload={onUploadImage}
+              onRemove={onRemoveImage}
+            />
+          )}
           <div className="npc-edit__grid-2">
             <div>
               <span className="label">{t("playerEdit.currentHp")}</span>

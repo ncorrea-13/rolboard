@@ -76,7 +76,7 @@ func (h *Handlers) CreateNPCRelation(w http.ResponseWriter, r *http.Request) {
 
 	rel := models.NPCRelation{FromNPCID: npcID, ToNPCID: payload.ToNPCID, Role: payload.Role}
 	if err := h.npcs.CreateRelation(r.Context(), &rel); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating npc relation")
 		return
 	}
 
@@ -105,7 +105,7 @@ func (h *Handlers) DeleteNPCRelation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.npcs.DeleteRelation(r.Context(), npcID, toNPCID, role); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error deleting npc relation")
 		return
 	}
 

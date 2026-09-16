@@ -73,6 +73,21 @@ func (h *Handlers) CreateSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Date (except for planning sessions) and a valid session_type are required fields", http.StatusBadRequest)
 		return
 	}
+	if payload.ArcID != nil {
+		arc, err := h.arcs.GetByID(r.Context(), *payload.ArcID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Arc not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving arc", http.StatusInternalServerError)
+			return
+		}
+		if arc.CampaignID != campaignID {
+			http.Error(w, "Arc does not belong to the same campaign as the session", http.StatusBadRequest)
+			return
+		}
+	}
 
 	session := models.Session{
 		CampaignID:    campaignID,
@@ -87,7 +102,7 @@ func (h *Handlers) CreateSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.sessions.Create(r.Context(), &session); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating session")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -135,6 +150,30 @@ func (h *Handlers) UpdateSession(w http.ResponseWriter, r *http.Request) {
 	if (payload.Date == "" && payload.SessionType != "planning") || !validSessionTypes[payload.SessionType] {
 		http.Error(w, "Date (except for planning sessions) and a valid session_type are required fields", http.StatusBadRequest)
 		return
+	}
+	if payload.ArcID != nil {
+		current, err := h.sessions.GetByID(r.Context(), id)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Session not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving session", http.StatusInternalServerError)
+			return
+		}
+		arc, err := h.arcs.GetByID(r.Context(), *payload.ArcID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Arc not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving arc", http.StatusInternalServerError)
+			return
+		}
+		if arc.CampaignID != current.CampaignID {
+			http.Error(w, "Arc does not belong to the same campaign as the session", http.StatusBadRequest)
+			return
+		}
 	}
 
 	session := models.Session{

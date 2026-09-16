@@ -13,7 +13,9 @@ import {
   type Location,
 } from "../data/domain";
 import { apiFetch } from "../lib/api";
+import { entityImageUrl } from "../lib/images";
 import { SkillsEditor } from "../components/SkillsEditor";
+import { ImageUploadField } from "../components/ImageUploadField";
 import { useT, useLang, type TranslationKey } from "../lib/i18n";
 
 const typeOptions: { label: string; labelKey: TranslationKey; crystal: CrystalType }[] = [
@@ -29,9 +31,21 @@ interface NpcEditProps {
   locations: Location[];
   onSave: (patch: Partial<Npc>) => void;
   onDiscard: () => void;
+  imageVersion?: number;
+  onUploadImage?: (file: File) => Promise<void>;
+  onRemoveImage?: () => Promise<void>;
 }
 
-export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProps) {
+export function NpcEdit({
+  npc,
+  npcs,
+  locations,
+  onSave,
+  onDiscard,
+  imageVersion = 0,
+  onUploadImage,
+  onRemoveImage,
+}: NpcEditProps) {
   const t = useT();
   const lang = useLang();
   const [name, setName] = useState(npc.name);
@@ -229,6 +243,14 @@ export function NpcEdit({ npc, npcs, locations, onSave, onDiscard }: NpcEditProp
         </div>
 
         <div className="npc-edit__col">
+          {npc.id && onUploadImage && onRemoveImage && (
+            <ImageUploadField
+              label={t("npcEdit.portrait")}
+              imageUrl={entityImageUrl("npc", npc.id, npc.hasImage, imageVersion)}
+              onUpload={onUploadImage}
+              onRemove={onRemoveImage}
+            />
+          )}
           <div>
             <span className="label">{t("npcList.colLocation")}</span>
             <select

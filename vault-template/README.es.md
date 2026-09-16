@@ -2,80 +2,29 @@
 
 # Plantilla de vault
 
-Estructura mínima que el indexador (`server/internal/vault/`) reconoce sin
-tocar código. Copiá estas carpetas como base de una campaña nueva y reemplazá
-el contenido de ejemplo.
-
-## Carpetas (nombres exactos, con mayúscula inicial)
+Estructura mínima que reconoce el indexador. Copiá estas carpetas como base de una campaña nueva y reemplazá las notas de ejemplo.
 
 ```
-Arcos/
-NPC/
-Locaciones/
-Grupos/
-Jugadores/
-Sesiones/
+Arcos/        arcos
+NPC/          NPCs
+Locaciones/   locaciones
+Grupos/       facciones
+Jugadores/    personajes jugadores
+Sesiones/     sesiones
 ```
 
-Cualquier otra carpeta (`imágenes/`, `reglas/`, `templates/`, etc.) se ignora
-— no hace falta que no exista, solo que no se llame igual a las de arriba.
+Solo importa la carpeta de primer nivel; las subcarpetas se aceptan. Cualquier otra carpeta se ignora. El nombre de la entidad es siempre el nombre del archivo.
 
-## Reglas por tipo
+## Reglas clave
 
-### NPC/*.md
+- `NPC` → `tipo` tiene que ser `npc`, `spren`, `entidad-cognitiva` o `referencia`; `faccion` siempre es lista.
+- `Locaciones` → `tipo` tiene que ser `planeta`, `región`, `ciudad`, `estructura` o `shadesmar`.
+- `Sesiones` → `numero: 4.1` es un interludio de la sesión 4; `status: completada`/`jugada` la marca como jugada; los wikilinks a NPCs/PJs del cuerpo se vinculan a la sesión.
+- `Jugadores` → la ficha lleva `tipo: jugador`; el nombre del personaje es el nombre del archivo.
+- Los wikilinks en YAML van entre comillas: `"[[Nombre]]"`.
 
-- `tipo:` valor libre (no se valida, ej. `npc`).
-- `status:` uno de `vivo`, `muerto`, `desaparecido`, `activo`, `consolidado`
-  — sin género (`vivo`, no `viva`).
-- `faccion:` **siempre lista**, aunque sea una sola:
-  ```yaml
-  faccion:
-    - "[[Nombre del Grupo]]"
-  ```
-  Lista vacía (`faccion: []`) o ausente = sin facción.
+Referencia completa de claves: [`docs/VAULT_INDEXER.md`](../docs/VAULT_INDEXER.md).
 
-### Locaciones/*.md
+## Reindexar
 
-- `tipo:` uno de `planeta`, `región`, `ciudad`, `estructura`, `shadesmar`
-  (ojo el acento en `región`) — cualquier otro valor rompe el reindex.
-- `parent:` wikilink a otra location (opcional, jerarquía).
-
-### Grupos/*.md
-
-- Sin campos obligatorios más allá del nombre del archivo. `tipo`,
-  `alineacion`, `lider`, etc. se leen pero **no se persisten** en la DB
-  (deferral documentado en `AGENTS.md`) — poné lo que quieras, no rompe nada.
-
-### Jugadores/*.md
-
-- `jugador:` nombre de quién lo juega (persona real).
-- El nombre del **personaje** sale del nombre del archivo, no de un campo
-  frontmatter.
-
-### Arcos/*.md
-
-- `arco:` número (orden del arco).
-- `titulo:` nombre del arco.
-- `status:` libre, no se valida.
-
-### Sesiones/*.md
-
-- `numero:` decimal. Parte entera = número de sesión, parte decimal
-  (redondeada a 1 dígito) = sub-sesión — así `numero: 4.1` es un interludio
-  después de la sesión 4, sin chocar con ella.
-- `fecha:` fecha jugada (string libre, no se valida formato).
-- `status:` si vale `completada` o `jugada` (sin importar mayúsculas), la
-  sesión se marca como `session` (jugada). Cualquier otro valor →
-  `planning` (todavía no se jugó).
-- `tags:` si incluye `campaña/interludio`, el tipo se fuerza a `interlude`
-  sin importar el status — tiene prioridad sobre la regla de arriba.
-- `arco:` wikilink al arco al que pertenece (opcional).
-- Si el **nombre del archivo** contiene `ARCHIVADO`, la sesión se crea y
-  se da de baja automáticamente (soft-delete) — útil para notas viejas
-  reemplazadas por una versión nueva, sin borrar el archivo del vault.
-
-## Reindexado
-
-`POST /api/campaigns/{id}/reindex` es **upsert real**: crear, editar,
-mover o borrar una nota en el vault se refleja solo al volver a llamarlo.
-No hace falta tocar la base de datos a mano.
+`POST /api/campaigns/{id}/reindex` (botón "Reindexar"). Cada corrida refleja notas creadas, editadas y borradas.

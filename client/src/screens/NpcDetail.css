@@ -68,6 +68,16 @@
   gap: 17px;
 }
 
+.npc-detail__portrait {
+  width: 100%;
+  max-width: 200px;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-elevated);
+}
+
 .npc-detail__desc {
   font: 400 14px/1.75 var(--font-body);
   color: var(--text-body);

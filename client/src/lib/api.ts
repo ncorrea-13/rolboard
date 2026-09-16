@@ -62,3 +62,20 @@ export function loginToCampaign(campaignId: string, code: string) {
     body: JSON.stringify({ code }),
   });
 }
+
+export async function apiImageRequest<T>(
+  path: string,
+  method: "POST" | "DELETE",
+  file?: File,
+): Promise<T> {
+  let body: FormData | undefined;
+  if (file) {
+    body = new FormData();
+    body.append("file", file);
+  }
+  const res = await fetch(`/api${path}`, { method, body });
+  if (!res.ok) {
+    throw new ApiError(res.status, `${method} ${path} failed: ${res.status}`);
+  }
+  return res.json();
+}

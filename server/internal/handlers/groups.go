@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/ncorrea-13/rolboard/server/internal/imagestore"
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
@@ -63,6 +64,21 @@ func (h *Handlers) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name is a required field", http.StatusBadRequest)
 		return
 	}
+	if payload.LiderNPCID != nil {
+		npc, err := h.npcs.GetByID(r.Context(), *payload.LiderNPCID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Lider NPC not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving lider npc", http.StatusInternalServerError)
+			return
+		}
+		if npc.CampaignID != campaignID {
+			http.Error(w, "Lider NPC does not belong to the same campaign as the group", http.StatusBadRequest)
+			return
+		}
+	}
 
 	group := models.Group{
 		CampaignID:   campaignID,
@@ -75,7 +91,7 @@ func (h *Handlers) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.groups.Create(r.Context(), &group); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating group")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -162,6 +178,30 @@ func (h *Handlers) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name is a required field", http.StatusBadRequest)
 		return
 	}
+	if payload.LiderNPCID != nil {
+		current, err := h.groups.GetByID(r.Context(), id)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Group not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving group", http.StatusInternalServerError)
+			return
+		}
+		npc, err := h.npcs.GetByID(r.Context(), *payload.LiderNPCID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Lider NPC not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving lider npc", http.StatusInternalServerError)
+			return
+		}
+		if npc.CampaignID != current.CampaignID {
+			http.Error(w, "Lider NPC does not belong to the same campaign as the group", http.StatusBadRequest)
+			return
+		}
+	}
 
 	group := models.Group{
 		Name:         payload.Name,
@@ -205,4 +245,78 @@ func (h *Handlers) DeleteGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handlers) SetGroupImage(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	data, ok := readUploadedImage(w, r)
+	if !ok {
+		return
+	}
+
+	group, err := h.groups.SetImage(r.Context(), id, data)
+	switch {
+	case errors.Is(err, imagestore.ErrUnsupportedFormat):
+		http.Error(w, "Unsupported image format: use PNG or JPEG", http.StatusBadRequest)
+		return
+	case errors.Is(err, repository.ErrNotFound):
+		http.Error(w, "Group not found", http.StatusNotFound)
+		return
+	case err != nil:
+		http.Error(w, "Error saving image", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(group); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handlers) DeleteGroupImage(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	group, err := h.groups.DeleteImage(r.Context(), id)
+	switch {
+	case errors.Is(err, repository.ErrNotFound):
+		http.Error(w, "Group not found", http.StatusNotFound)
+		return
+	case err != nil:
+		http.Error(w, "Error deleting image", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(group); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handlers) GetGroupImage(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	absPath, contentType, err := h.groups.ImageFile(r.Context(), id)
+	switch {
+	case errors.Is(err, repository.ErrNotFound):
+		http.Error(w, "Image not found", http.StatusNotFound)
+		return
+	case err != nil:
+		http.Error(w, "Error retrieving image", http.StatusInternalServerError)
+		return
+	}
+
+	serveImage(w, r, absPath, contentType)
 }

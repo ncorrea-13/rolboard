@@ -1,6 +1,8 @@
 import { useState } from "react";
 import "./NpcEdit.css";
 import { locationTypeLabel, type Location } from "../data/domain";
+import { ImageUploadField } from "../components/ImageUploadField";
+import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 
 interface LocationEditProps {
@@ -8,9 +10,20 @@ interface LocationEditProps {
   locations: Location[];
   onSave: (patch: Partial<Location>) => void;
   onDiscard: () => void;
+  imageVersion?: number;
+  onUploadImage?: (file: File) => Promise<void>;
+  onRemoveImage?: () => Promise<void>;
 }
 
-export function LocationEdit({ location, locations, onSave, onDiscard }: LocationEditProps) {
+export function LocationEdit({
+  location,
+  locations,
+  onSave,
+  onDiscard,
+  imageVersion = 0,
+  onUploadImage,
+  onRemoveImage,
+}: LocationEditProps) {
   const t = useT();
   const lang = useLang();
   const typeOptions = Object.entries(locationTypeLabel[lang]) as [Location["locationType"], string][];
@@ -68,6 +81,14 @@ export function LocationEdit({ location, locations, onSave, onDiscard }: Locatio
         </div>
 
         <div className="npc-edit__col">
+          {location.id && onUploadImage && onRemoveImage && (
+            <ImageUploadField
+              label={t("locationEdit.image")}
+              imageUrl={entityImageUrl("location", location.id, location.hasImage, imageVersion)}
+              onUpload={onUploadImage}
+              onRemove={onRemoveImage}
+            />
+          )}
           <div>
             <span className="label">{t("common.type")}</span>
             <select

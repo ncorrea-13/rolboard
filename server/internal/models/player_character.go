@@ -18,6 +18,7 @@ type PlayerCharacter struct {
 	CurrentHp        *int64          `json:"current_hp,omitempty"`
 	MaxHp            *int64          `json:"max_hp,omitempty"`
 	ObsidianPath     *string         `json:"obsidian_path,omitempty"`
+	ImagePath        *string         `json:"image_path,omitempty"`
 	HistoriaPath     *string         `json:"historia_path,omitempty"`
 	AvancesPath      *string         `json:"avances_path,omitempty"`
 	CreatedAt        string          `json:"created_at"`

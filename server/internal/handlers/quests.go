@@ -79,7 +79,7 @@ func (h *Handlers) CreateQuest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.quests.Create(r.Context(), &quest); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating quest")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

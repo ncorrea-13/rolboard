@@ -9,6 +9,7 @@ services:
     environment:
       DB_PATH: /data/campaign.db
       VAULTS_ROOT: /vaults
+      UPLOADS_ROOT: /data/uploads
       PORT: 8080
     ports:
       - "${CLIENT_PORT:-8080}:80"

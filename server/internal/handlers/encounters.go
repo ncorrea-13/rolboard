@@ -67,6 +67,21 @@ func (h *Handlers) CreateEncounter(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "A valid Status is required", http.StatusBadRequest)
 		return
 	}
+	if payload.SessionID != nil {
+		sess, err := h.sessions.GetByID(r.Context(), *payload.SessionID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Session not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving session", http.StatusInternalServerError)
+			return
+		}
+		if sess.CampaignID != campaignId {
+			http.Error(w, "Session does not belong to the same campaign as the encounter", http.StatusBadRequest)
+			return
+		}
+	}
 
 	encounter := models.Encounter{
 		CampaignID: campaignId,
@@ -77,7 +92,7 @@ func (h *Handlers) CreateEncounter(w http.ResponseWriter, r *http.Request) {
 
 	err = h.encounters.Create(r.Context(), &encounter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating encounter")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -128,6 +143,30 @@ func (h *Handlers) UpdateEncounter(w http.ResponseWriter, r *http.Request) {
 	if !validEncounterStatuses[payload.Status] {
 		http.Error(w, "A valid Status is required", http.StatusBadRequest)
 		return
+	}
+	if payload.SessionID != nil {
+		current, err := h.encounters.GetByID(r.Context(), id)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Encounter not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving encounter", http.StatusInternalServerError)
+			return
+		}
+		sess, err := h.sessions.GetByID(r.Context(), *payload.SessionID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Session not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving session", http.StatusInternalServerError)
+			return
+		}
+		if sess.CampaignID != current.CampaignID {
+			http.Error(w, "Session does not belong to the same campaign as the encounter", http.StatusBadRequest)
+			return
+		}
 	}
 
 	encounter := models.Encounter{

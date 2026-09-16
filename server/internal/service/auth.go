@@ -30,7 +30,10 @@ func (s *AuthService) SetAccessCode(ctx context.Context, campaignID int64, code 
 	if err != nil {
 		return err
 	}
-	return s.campaignRepo.SetAccessCodeHash(ctx, campaignID, string(hash))
+	if err := s.campaignRepo.SetAccessCodeHash(ctx, campaignID, string(hash)); err != nil {
+		return err
+	}
+	return s.sessionRepo.DeleteByCampaign(ctx, campaignID)
 }
 
 func (s *AuthService) Login(ctx context.Context, campaignID int64, code string) (token string, expiresAt string, err error) {
