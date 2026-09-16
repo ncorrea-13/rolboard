@@ -18,6 +18,7 @@ interface EntityDetailProps {
   title: string;
   subtitle?: string;
   accentColor?: string;
+  imageUrl?: string;
   status?: ReactNode;
   fields: DetailField[];
   obsidianPath?: string;
@@ -35,6 +36,7 @@ export function EntityDetail({
   title,
   subtitle,
   accentColor,
+  imageUrl,
   status,
   fields,
   obsidianPath,
@@ -69,6 +71,9 @@ export function EntityDetail({
           <span>{eyebrow}</span>
         </div>
         <div className="entity-detail__title-row">
+          {imageUrl && (
+            <img className="entity-detail__portrait" src={imageUrl} alt="" />
+          )}
           {accentColor ? (
             <span className="title-underline">
               <span className="display" style={{ fontSize: 22 }}>

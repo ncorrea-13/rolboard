@@ -65,6 +65,7 @@ export interface ApiNpc {
   attributes?: StatMap;
   skills?: StatMap;
   obsidian_path?: string;
+  image_path?: string;
 }
 
 function initialsFromName(name: string): string {
@@ -111,6 +112,7 @@ export function mapNpc(n: ApiNpc): Npc {
     obsidianPath: n.obsidian_path ?? "",
     attributes: n.attributes ?? {},
     skills: n.skills ?? {},
+    hasImage: Boolean(n.image_path),
   };
 }
 
@@ -153,6 +155,7 @@ export interface ApiLocation {
   parent_location_id?: number;
   description: string;
   obsidian_path?: string;
+  image_path?: string;
 }
 
 export function mapLocation(l: ApiLocation): Location {
@@ -164,6 +167,7 @@ export function mapLocation(l: ApiLocation): Location {
     parentId: l.parent_location_id ? String(l.parent_location_id) : undefined,
     description: l.description,
     obsidianPath: l.obsidian_path ?? "",
+    hasImage: Boolean(l.image_path),
   };
 }
 
@@ -185,6 +189,7 @@ export interface ApiGroup {
   alineacion: string;
   lider_npc_id?: number;
   obsidian_path?: string;
+  image_path?: string;
   member_count: number;
 }
 
@@ -228,6 +233,7 @@ export function mapGroup(g: ApiGroup): Group {
     liderNpcId: g.lider_npc_id ? String(g.lider_npc_id) : undefined,
     memberCount: g.member_count,
     obsidianPath: g.obsidian_path ?? "",
+    hasImage: Boolean(g.image_path),
   };
 }
 
@@ -332,6 +338,7 @@ export interface ApiPlayerCharacter {
   current_hp?: number;
   max_hp?: number;
   obsidian_path?: string;
+  image_path?: string;
   historia_path?: string;
   avances_path?: string;
 }
@@ -354,6 +361,7 @@ export function mapPlayerCharacter(p: ApiPlayerCharacter): PlayerCharacter {
     skills: p.skills ?? {},
     currentHp: p.current_hp,
     maxHp: p.max_hp,
+    hasImage: Boolean(p.image_path),
   };
 }
 

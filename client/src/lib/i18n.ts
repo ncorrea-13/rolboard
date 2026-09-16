@@ -26,6 +26,10 @@ const dict = {
     "common.back": "Volver",
     "common.create": "Crear",
     "common.close": "Cerrar",
+    "common.remove": "Quitar",
+
+    "imageUpload.upload": "Subir imagen",
+    "imageUpload.replace": "Reemplazar",
 
     "app.modal.newSession": "Jugar sesión",
     "app.modal.confirm": "Confirmar",
@@ -226,15 +230,18 @@ const dict = {
     "arcEdit.obsidianPathLabel": "Ruta en Obsidian",
 
     "factionEdit.new": "Nueva facción",
+    "factionEdit.image": "Emblema",
     "factionEdit.noLeader": "Sin líder",
 
     "locationEdit.new": "Nueva locación",
+    "locationEdit.image": "Imagen",
     "locationEdit.parentLocation": "Ubicación padre",
     "locationEdit.noParent": "— sin padre —",
 
     "npcEdit.new": "Nuevo NPC",
     "npcEdit.focusHint": "Campo con foco: anillo ámbar de 1px, nunca glow.",
     "npcEdit.detailLevel": "Nivel de detalle",
+    "npcEdit.portrait": "Retrato",
     "npcEdit.detailFull": "Completo",
     "npcEdit.detailMinor": "Menor",
     "npcEdit.typeNpc": "NPC",
@@ -377,6 +384,10 @@ const dict = {
     "common.back": "Back",
     "common.create": "Create",
     "common.close": "Close",
+    "common.remove": "Remove",
+
+    "imageUpload.upload": "Upload image",
+    "imageUpload.replace": "Replace",
 
     "app.modal.newSession": "Play session",
     "app.modal.confirm": "Confirm",
@@ -577,15 +588,18 @@ const dict = {
     "arcEdit.obsidianPathLabel": "Obsidian path",
 
     "factionEdit.new": "New faction",
+    "factionEdit.image": "Emblem",
     "factionEdit.noLeader": "No leader",
 
     "locationEdit.new": "New location",
+    "locationEdit.image": "Image",
     "locationEdit.parentLocation": "Parent location",
     "locationEdit.noParent": "— no parent —",
 
     "npcEdit.new": "New NPC",
     "npcEdit.focusHint": "Focused field: 1px amber ring, never a glow.",
     "npcEdit.detailLevel": "Detail level",
+    "npcEdit.portrait": "Portrait",
     "npcEdit.detailFull": "Full",
     "npcEdit.detailMinor": "Minor",
     "npcEdit.typeNpc": "NPC",

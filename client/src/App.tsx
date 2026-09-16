@@ -145,6 +145,15 @@ export default function App() {
     playSession,
     startPlaySession,
     goToEntitySection,
+    imageVersion,
+    uploadNpcImage,
+    removeNpcImage,
+    uploadPlayerImage,
+    removePlayerImage,
+    uploadLocationImage,
+    removeLocationImage,
+    uploadGroupImage,
+    removeGroupImage,
   } = useCampaignData(
     activeCampaignId,
     activeCampaign,
@@ -373,6 +382,7 @@ export default function App() {
               npcs={campaignNpcs}
               onSelect={(npcId) => setRoute({ name: "npc-detail", npcId })}
               onCreate={() => setRoute({ name: "npc-create" })}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "section" && route.section === "sesiones" && (
@@ -477,6 +487,7 @@ export default function App() {
                 setRoute({ name: "faction-edit", factionId: route.id })
               }
               onDelete={() => deleteEntity("faction", route.id)}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "entity-detail" && route.kind === "location" && (
@@ -493,6 +504,7 @@ export default function App() {
                 setRoute({ name: "location-edit", locationId: route.id })
               }
               onDelete={() => deleteEntity("location", route.id)}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "entity-detail" && route.kind === "quest" && (
@@ -519,6 +531,7 @@ export default function App() {
               }
               onBack={() => setRoute({ name: "section", section: "npcs" })}
               onDelete={() => deleteNpc(selectedNpc.id)}
+              imageVersion={imageVersion}
             />
           )}
 
@@ -548,6 +561,9 @@ export default function App() {
                       id: group.id,
                     })
                   }
+                  imageVersion={imageVersion}
+                  onUploadImage={(file) => uploadGroupImage(group.id, file)}
+                  onRemoveImage={() => removeGroupImage(group.id)}
                 />
               );
             })()}
@@ -587,6 +603,9 @@ export default function App() {
                       id: location.id,
                     })
                   }
+                  imageVersion={imageVersion}
+                  onUploadImage={(file) => uploadLocationImage(location.id, file)}
+                  onRemoveImage={() => removeLocationImage(location.id)}
                 />
               );
             })()}
@@ -679,6 +698,9 @@ export default function App() {
               onDiscard={() =>
                 setRoute({ name: "npc-detail", npcId: selectedNpc.id })
               }
+              imageVersion={imageVersion}
+              onUploadImage={(file) => uploadNpcImage(selectedNpc.id, file)}
+              onRemoveImage={() => removeNpcImage(selectedNpc.id)}
             />
           )}
 
@@ -702,6 +724,7 @@ export default function App() {
               }
               onBack={() => setRoute({ name: "section", section: "jugadores" })}
               onDelete={() => deletePlayer(selectedPlayer.id)}
+              imageVersion={imageVersion}
             />
           )}
 
@@ -719,6 +742,9 @@ export default function App() {
               onDiscard={() =>
                 setRoute({ name: "player-detail", playerId: selectedPlayer.id })
               }
+              imageVersion={imageVersion}
+              onUploadImage={(file) => uploadPlayerImage(selectedPlayer.id, file)}
+              onRemoveImage={() => removePlayerImage(selectedPlayer.id)}
             />
           )}
 

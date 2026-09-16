@@ -7,6 +7,7 @@ import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
 import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
+import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 
 interface NpcDetailProps {
@@ -18,6 +19,7 @@ interface NpcDetailProps {
   onEdit: () => void;
   onBack: () => void;
   onDelete: () => void;
+  imageVersion?: number;
 }
 
 export function NpcDetail({
@@ -29,6 +31,7 @@ export function NpcDetail({
   onEdit,
   onBack,
   onDelete,
+  imageVersion = 0,
 }: NpcDetailProps) {
   const t = useT();
   const lang = useLang();
@@ -94,6 +97,7 @@ export function NpcDetail({
             role={npc.role}
             color={color}
             size="header"
+            imageUrl={entityImageUrl("npc", npc.id, npc.hasImage, imageVersion)}
           />
           <StatusPill status={npc.status} />
           <div className="npc-detail__header-actions">
@@ -174,6 +178,13 @@ export function NpcDetail({
         </div>
 
         <div className="npc-detail__col npc-detail__col--side">
+          {entityImageUrl("npc", npc.id, npc.hasImage, imageVersion) && (
+            <img
+              className="npc-detail__portrait"
+              src={entityImageUrl("npc", npc.id, npc.hasImage, imageVersion)}
+              alt=""
+            />
+          )}
           <div>
             <span className="label">{t("npcList.colLocation")}</span>
             <div className="npc-detail__location">

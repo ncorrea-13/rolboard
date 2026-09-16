@@ -9,6 +9,7 @@ import {
 } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
+import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 
 const statusFilters: StatusKind[] = ["alive", "dead", "missing", "paused"];
@@ -19,10 +20,12 @@ export function NpcList({
   npcs,
   onSelect,
   onCreate,
+  imageVersion = 0,
 }: {
   npcs: Npc[];
   onSelect: (id: string) => void;
   onCreate: () => void;
+  imageVersion?: number;
 }) {
   const t = useT();
   const lang = useLang();
@@ -172,6 +175,7 @@ export function NpcList({
             name={n.name}
             role={n.role}
             color={crystalColorFor(n.crystal)}
+            imageUrl={entityImageUrl("npc", n.id, n.hasImage, imageVersion)}
           />
           <span className="npc-list__type">
             <span

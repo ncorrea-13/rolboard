@@ -6,6 +6,7 @@ import { ArcStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
 import { apiFetch } from "../lib/api";
+import { entityImageUrl } from "../lib/images";
 import {
   mapGroupMember,
   mapPCGroupMember,
@@ -124,6 +125,7 @@ export function FactionDetail({
   onSelectPlayer,
   onEdit,
   onDelete,
+  imageVersion = 0,
 }: {
   group: Group;
   npcs: Npc[];
@@ -133,6 +135,7 @@ export function FactionDetail({
   onBack: () => void;
   onSelectNpc: (id: string) => void;
   onSelectPlayer: (id: string) => void;
+  imageVersion?: number;
 } & EditableProps) {
   const t = useT();
   const [memberIds, setMemberIds] = useState<string[]>([]);
@@ -206,6 +209,7 @@ export function FactionDetail({
       onBack={onBack}
       title={group.name}
       accentColor="var(--crystal-faction-quest)"
+      imageUrl={entityImageUrl("group", group.id, group.hasImage, imageVersion)}
       obsidianPath={group.obsidianPath}
       vaultName={vaultName}
       campaignId={campaignId}
@@ -234,6 +238,7 @@ export function FactionDetail({
                       name={n.name}
                       role={n.role}
                       color={crystalColor[n.crystal]}
+                      imageUrl={entityImageUrl("npc", n.id, n.hasImage, imageVersion)}
                     />
                   </div>
                   <StatusPill status={n.status} />
@@ -288,6 +293,7 @@ export function FactionDetail({
                       name={p.characterName}
                       role={`${t("playersList.playedBy")} ${p.playerName}`}
                       color="var(--crystal-npc)"
+                      imageUrl={entityImageUrl("player-character", p.id, p.hasImage, imageVersion)}
                     />
                   </div>
                   <StatusPill status={p.status} />
@@ -336,12 +342,14 @@ export function LocationDetail({
   onBack,
   onEdit,
   onDelete,
+  imageVersion = 0,
 }: {
   location: Location;
   allLocations: Location[];
   vaultName: string;
   campaignId: string;
   onBack: () => void;
+  imageVersion?: number;
 } & EditableProps) {
   const t = useT();
   const lang = useLang();
@@ -360,6 +368,7 @@ export function LocationDetail({
       onBack={onBack}
       title={location.name}
       accentColor="var(--crystal-location)"
+      imageUrl={entityImageUrl("location", location.id, location.hasImage, imageVersion)}
       subtitle={locationTypeLabel[lang][location.locationType]}
       obsidianPath={location.obsidianPath}
       vaultName={vaultName}
