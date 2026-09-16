@@ -38,6 +38,9 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("GET /api/locations/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("locations"), h.GetLocation)))
 	mux.Handle("PUT /api/locations/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("locations"), h.UpdateLocation)))
 	mux.Handle("DELETE /api/locations/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("locations"), h.DeleteLocation)))
+	mux.Handle("POST /api/locations/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("locations"), h.SetLocationImage)))
+	mux.Handle("DELETE /api/locations/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("locations"), h.DeleteLocationImage)))
+	mux.Handle("GET /api/locations/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("locations"), h.GetLocationImage)))
 
 	mux.Handle("GET /api/campaigns/{id}/npcs", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListNPCs)))
 	mux.Handle("POST /api/campaigns/{id}/npcs", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateNPC)))
@@ -47,12 +50,18 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("GET /api/npcs/{id}/relations", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.ListNPCRelations)))
 	mux.Handle("POST /api/npcs/{id}/relations", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.CreateNPCRelation)))
 	mux.Handle("DELETE /api/npcs/{id}/relations/{toId}/{role}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.DeleteNPCRelation)))
+	mux.Handle("POST /api/npcs/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.SetNPCImage)))
+	mux.Handle("DELETE /api/npcs/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.DeleteNPCImage)))
+	mux.Handle("GET /api/npcs/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.GetNPCImage)))
 
 	mux.Handle("GET /api/campaigns/{id}/player-characters", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListPlayerCharacters)))
 	mux.Handle("POST /api/campaigns/{id}/player-characters", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreatePlayerCharacter)))
 	mux.Handle("GET /api/player-characters/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), h.GetPlayerCharacter)))
 	mux.Handle("PUT /api/player-characters/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), h.UpdatePlayerCharacter)))
 	mux.Handle("DELETE /api/player-characters/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), h.DeletePlayerCharacter)))
+	mux.Handle("POST /api/player-characters/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), h.SetPlayerCharacterImage)))
+	mux.Handle("DELETE /api/player-characters/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), h.DeletePlayerCharacterImage)))
+	mux.Handle("GET /api/player-characters/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), h.GetPlayerCharacterImage)))
 
 	mux.Handle("GET /api/campaigns/{id}/quests", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListQuests)))
 	mux.Handle("POST /api/campaigns/{id}/quests", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateQuest)))
@@ -83,6 +92,9 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("DELETE /api/groups/{id}/members/{npcId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("groups"), h.RemoveGroupMember)))
 	mux.Handle("PUT /api/groups/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("groups"), h.UpdateGroup)))
 	mux.Handle("DELETE /api/groups/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("groups"), h.DeleteGroup)))
+	mux.Handle("POST /api/groups/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("groups"), h.SetGroupImage)))
+	mux.Handle("DELETE /api/groups/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("groups"), h.DeleteGroupImage)))
+	mux.Handle("GET /api/groups/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("groups"), h.GetGroupImage)))
 
 	mux.Handle("GET /api/campaigns/{id}/encounters", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListEncounters)))
 	mux.Handle("POST /api/campaigns/{id}/encounters", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateEncounter)))
