@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -279,6 +280,7 @@ func (h *Handlers) SetNPCImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "NPC not found", http.StatusNotFound)
 		return
 	case err != nil:
+		log.Printf("SetNPCImage: %v", err)
 		http.Error(w, "Error saving image", http.StatusInternalServerError)
 		return
 	}

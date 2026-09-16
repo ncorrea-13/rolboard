@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -238,6 +239,7 @@ func (h *Handlers) SetLocationImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Location not found", http.StatusNotFound)
 		return
 	case err != nil:
+		log.Printf("SetLocationImage: %v", err)
 		http.Error(w, "Error saving image", http.StatusInternalServerError)
 		return
 	}
