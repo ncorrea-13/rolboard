@@ -64,6 +64,21 @@ func (h *Handlers) CreateGroup(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name is a required field", http.StatusBadRequest)
 		return
 	}
+	if payload.LiderNPCID != nil {
+		npc, err := h.npcs.GetByID(r.Context(), *payload.LiderNPCID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Lider NPC not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving lider npc", http.StatusInternalServerError)
+			return
+		}
+		if npc.CampaignID != campaignID {
+			http.Error(w, "Lider NPC does not belong to the same campaign as the group", http.StatusBadRequest)
+			return
+		}
+	}
 
 	group := models.Group{
 		CampaignID:   campaignID,
@@ -162,6 +177,30 @@ func (h *Handlers) UpdateGroup(w http.ResponseWriter, r *http.Request) {
 	if payload.Name == "" {
 		http.Error(w, "Name is a required field", http.StatusBadRequest)
 		return
+	}
+	if payload.LiderNPCID != nil {
+		current, err := h.groups.GetByID(r.Context(), id)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Group not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving group", http.StatusInternalServerError)
+			return
+		}
+		npc, err := h.npcs.GetByID(r.Context(), *payload.LiderNPCID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Lider NPC not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving lider npc", http.StatusInternalServerError)
+			return
+		}
+		if npc.CampaignID != current.CampaignID {
+			http.Error(w, "Lider NPC does not belong to the same campaign as the group", http.StatusBadRequest)
+			return
+		}
 	}
 
 	group := models.Group{

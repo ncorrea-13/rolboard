@@ -72,6 +72,21 @@ func (h *Handlers) CreateLocation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name and a valid location_type are required fields", http.StatusBadRequest)
 		return
 	}
+	if payload.ParentLocationID != nil {
+		parent, err := h.locations.GetByID(r.Context(), *payload.ParentLocationID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Parent location not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving parent location", http.StatusInternalServerError)
+			return
+		}
+		if parent.CampaignID != campaignID {
+			http.Error(w, "Parent location does not belong to the same campaign", http.StatusBadRequest)
+			return
+		}
+	}
 
 	location := models.Location{
 		CampaignID:       campaignID,
@@ -132,6 +147,30 @@ func (h *Handlers) UpdateLocation(w http.ResponseWriter, r *http.Request) {
 	if payload.Name == "" || !validLocationTypes[payload.LocationType] {
 		http.Error(w, "Name and a valid location_type are required fields", http.StatusBadRequest)
 		return
+	}
+	if payload.ParentLocationID != nil {
+		current, err := h.locations.GetByID(r.Context(), id)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Location not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving location", http.StatusInternalServerError)
+			return
+		}
+		parent, err := h.locations.GetByID(r.Context(), *payload.ParentLocationID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Parent location not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving parent location", http.StatusInternalServerError)
+			return
+		}
+		if parent.CampaignID != current.CampaignID {
+			http.Error(w, "Parent location does not belong to the same campaign", http.StatusBadRequest)
+			return
+		}
 	}
 
 	location := models.Location{

@@ -99,6 +99,21 @@ func (h *Handlers) CreateNPC(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name, npc_kind, detail_level and status are required fields", http.StatusBadRequest)
 		return
 	}
+	if payload.LocationID != nil {
+		loc, err := h.locations.GetByID(r.Context(), *payload.LocationID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Location not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving location", http.StatusInternalServerError)
+			return
+		}
+		if loc.CampaignID != campaignID {
+			http.Error(w, "Location does not belong to the same campaign as the NPC", http.StatusBadRequest)
+			return
+		}
+	}
 
 	npc := models.NPC{
 		CampaignID:   campaignID,
@@ -166,6 +181,30 @@ func (h *Handlers) UpdateNPC(w http.ResponseWriter, r *http.Request) {
 	if payload.Name == "" || !validNPCKinds[payload.NPCKind] || !validNPCDetailLevels[payload.DetailLevel] || !validNPCStatuses[payload.Status] {
 		http.Error(w, "Name, npc_kind, detail_level and status are required fields", http.StatusBadRequest)
 		return
+	}
+	if payload.LocationID != nil {
+		current, err := h.npcs.GetByID(r.Context(), id)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "NPC not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving npc", http.StatusInternalServerError)
+			return
+		}
+		loc, err := h.locations.GetByID(r.Context(), *payload.LocationID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Location not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving location", http.StatusInternalServerError)
+			return
+		}
+		if loc.CampaignID != current.CampaignID {
+			http.Error(w, "Location does not belong to the same campaign as the NPC", http.StatusBadRequest)
+			return
+		}
 	}
 
 	npc := models.NPC{
