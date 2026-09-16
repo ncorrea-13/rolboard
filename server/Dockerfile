@@ -10,6 +10,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/server
 
 FROM alpine:3.24
 
+RUN addgroup -g 1000 -S rolboard && adduser -u 1000 -S rolboard -G rolboard
+
 WORKDIR /app
 
 COPY --from=builder /build/server .
@@ -18,5 +20,7 @@ ENV DB_PATH=/data/campaign.db
 ENV PORT=8080
 
 EXPOSE 8080
+
+USER rolboard
 
 CMD ["./server"]
