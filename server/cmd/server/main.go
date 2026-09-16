@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,6 +18,10 @@ import (
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 
+	if os.Getenv("LOG_JSON") == "true" {
+		slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+	}
+
 	dbPath := os.Getenv("DB_PATH")
 	port := os.Getenv("PORT")
 	vaultsRoot := os.Getenv("VAULTS_ROOT")
@@ -28,7 +32,8 @@ func main() {
 	if path := os.Getenv("ADMIN_TOKEN_FILE"); path != "" {
 		data, err := os.ReadFile(path)
 		if err != nil {
-			log.Fatalf("error leyendo ADMIN_TOKEN_FILE: %v", err)
+			slog.Error("error leyendo ADMIN_TOKEN_FILE", "err", err)
+			os.Exit(1)
 		}
 		adminToken = strings.TrimSpace(string(data))
 	}
@@ -37,16 +42,18 @@ func main() {
 
 	db, err := repository.Open(dbPath)
 	if err != nil {
-		log.Fatalf("error abriendo la base de datos: %v", err)
+		slog.Error("error abriendo la base de datos", "err", err)
+		os.Exit(1)
 	}
 	defer func() {
 		if err := db.Close(); err != nil {
-			log.Printf("error cerrando DB: %v", err)
+			slog.Error("error cerrando DB", "err", err)
 		}
 	}()
 
 	if err := repository.Migrate(db); err != nil {
-		log.Fatalf("error al realizar migraciones: %v", err)
+		slog.Error("error al realizar migraciones", "err", err)
+		os.Exit(1)
 	}
 
 	campaignRepo := repository.NewCampaignRepository(db)
@@ -92,22 +99,24 @@ func main() {
 
 	srv := &http.Server{
 		Addr:    ":" + port,
-		Handler: mux,
+		Handler: handlers.RequestLogger(mux),
 	}
 	go func() {
-		log.Println("Listening on :" + port)
+		slog.Info("listening", "port", port)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
+			slog.Error("server error", "err", err)
+			os.Exit(1)
 		}
 	}()
 	<-ctx.Done()
 
-	log.Println("shutting down")
+	slog.Info("shutting down")
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		log.Fatal("Server forced to shutdown:", err)
+		slog.Error("forced shutdown", "err", err)
+		os.Exit(1)
 	}
 }
