@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -28,6 +29,10 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 
 	token, _, err := h.auth.Login(r.Context(), campaignID, payload.Code)
 	if errors.Is(err, service.ErrInvalidAccessCode) {
+		slog.Warn("login failed: invalid access code",
+			"campaign_id", campaignID,
+			"remote", r.RemoteAddr,
+		)
 		http.Error(w, "Invalid access code", http.StatusUnauthorized)
 		return
 	}
@@ -36,6 +41,10 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	slog.Info("login ok",
+		"campaign_id", campaignID,
+		"remote", r.RemoteAddr,
+	)
 	http.SetCookie(w, &http.Cookie{
 		Name:     sessionCookieName,
 		Value:    token,
@@ -52,6 +61,10 @@ func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(sessionCookieName); err == nil {
 		_ = h.auth.Logout(r.Context(), cookie.Value)
 	}
+	slog.Info("logout",
+		"campaign_id", r.PathValue("id"),
+		"remote", r.RemoteAddr,
+	)
 	http.SetCookie(w, &http.Cookie{
 		Name:     sessionCookieName,
 		Value:    "",

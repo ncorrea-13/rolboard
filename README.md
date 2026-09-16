@@ -124,6 +124,7 @@ Open `http://localhost:${CLIENT_PORT}`, log in as admin with the token, create a
 | `ADMIN_TOKEN_FILE` | server | File with the admin token (secret). Takes precedence over `ADMIN_TOKEN` |
 | `ADMIN_TOKEN`      | server | Admin token as plain env var (dev only) |
 | `COOKIE_SECURE`    | server | Set `false` only for local HTTP. Default: secure cookies |
+| `LOG_JSON`            | server | Structured JSON logs (`log/slog`). Default: human-readable text |
 | `TRUST_PROXY_HEADERS` | server | Trust `CF-Connecting-IP` for rate limiting. Only if every request passes through Cloudflare — otherwise spoofable. Default: `false` |
 | `BACKEND_HOST`     | client | Backend hostname for the `/api` proxy. Default: `localhost` |
 

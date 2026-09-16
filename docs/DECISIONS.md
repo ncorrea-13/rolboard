@@ -86,3 +86,9 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - Máx. 5 MiB y `X-Content-Type-Options: nosniff` al servir.
 - Compresión: el cliente reduce a 1600 px y JPEG antes de subir (canvas, sin dependencias). Sin procesamiento en el servidor.
 - Al dar de baja una entidad, su archivo queda en disco (deuda aceptada).
+
+## Logging
+
+- `log/slog` estructurado; `LOG_JSON=true` para JSON en producción.
+- Middleware de request log: `method, path, status, duración, remote`.
+- Eventos de auth en `Warn`: login fallido, sesión inválida, mismatch de campaña, admin rechazado. Nunca se loguean códigos ni tokens.

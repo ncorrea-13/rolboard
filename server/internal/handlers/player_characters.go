@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -222,6 +223,7 @@ func (h *Handlers) SetPlayerCharacterImage(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Player character not found", http.StatusNotFound)
 		return
 	case err != nil:
+		log.Printf("SetPlayerCharacterImage: %v", err)
 		http.Error(w, "Error saving image", http.StatusInternalServerError)
 		return
 	}
