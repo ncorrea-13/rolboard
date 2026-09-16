@@ -21,6 +21,7 @@ func main() {
 	dbPath := os.Getenv("DB_PATH")
 	port := os.Getenv("PORT")
 	vaultsRoot := os.Getenv("VAULTS_ROOT")
+	uploadsRoot := os.Getenv("UPLOADS_ROOT")
 	adminToken := os.Getenv("ADMIN_TOKEN")
 	cookieSecure := os.Getenv("COOKIE_SECURE") != "false"
 	if path := os.Getenv("ADMIN_TOKEN_FILE"); path != "" {
@@ -54,13 +55,13 @@ func main() {
 	arcSvc := service.NewArcService(arcRepo)
 
 	locationRepo := repository.NewLocationRepository(db)
-	locationSvc := service.NewLocationService(locationRepo)
+	locationSvc := service.NewLocationService(locationRepo, uploadsRoot)
 
 	npcRepo := repository.NewNPCRepository(db)
-	npcSvc := service.NewNPCService(npcRepo)
+	npcSvc := service.NewNPCService(npcRepo, uploadsRoot)
 
 	pcRepo := repository.NewPlayerCharacterRepository(db)
-	pcSvc := service.NewPlayerCharacterService(pcRepo)
+	pcSvc := service.NewPlayerCharacterService(pcRepo, uploadsRoot)
 
 	questRepo := repository.NewQuestRepository(db)
 	questSvc := service.NewQuestService(questRepo)
@@ -69,7 +70,7 @@ func main() {
 	sessionSvc := service.NewSessionService(sessionRepo)
 
 	groupRepo := repository.NewGroupRepository(db)
-	groupSvc := service.NewGroupService(groupRepo)
+	groupSvc := service.NewGroupService(groupRepo, uploadsRoot)
 
 	encounterRepo := repository.NewEncounterRepository(db)
 	encounterSvc := service.NewEncounterService(encounterRepo)
