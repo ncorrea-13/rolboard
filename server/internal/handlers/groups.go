@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -268,6 +269,7 @@ func (h *Handlers) SetGroupImage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Group not found", http.StatusNotFound)
 		return
 	case err != nil:
+		log.Printf("SetGroupImage: %v", err)
 		http.Error(w, "Error saving image", http.StatusInternalServerError)
 		return
 	}
