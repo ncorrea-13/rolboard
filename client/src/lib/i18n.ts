@@ -103,6 +103,7 @@ const dict = {
     "arcsList.title": "Arcos",
     "arcsList.count": "arcos",
     "arcsList.new": "Nuevo arco",
+    "arcsList.searchPlaceholder": "Buscar arco…",
 
     "encountersList.title": "Encuentros",
     "encountersList.count": "encuentros",
@@ -115,10 +116,12 @@ const dict = {
     "factionsList.count": "facciones",
     "factionsList.new": "Nueva facción",
     "factionsList.members": "miembros",
+    "factionsList.searchPlaceholder": "Buscar facción…",
 
     "locationsList.title": "Locaciones",
     "locationsList.count": "locaciones",
     "locationsList.new": "Nueva locación",
+    "locationsList.searchPlaceholder": "Buscar locación…",
 
     "npcList.searchPlaceholder": "Buscar nombre, locación…",
     "npcList.new": "Nuevo NPC",
@@ -138,10 +141,12 @@ const dict = {
     "playersList.count": "personajes",
     "playersList.new": "Nuevo personaje",
     "playersList.playedBy": "Jugado por",
+    "playersList.searchPlaceholder": "Buscar personaje…",
 
     "questsList.title": "Quests",
     "questsList.count": "quests",
     "questsList.new": "Nueva quest",
+    "questsList.searchPlaceholder": "Buscar quest…",
 
     "common.description": "Descripción",
     "common.summary": "Resumen",
@@ -461,6 +466,7 @@ const dict = {
     "arcsList.title": "Arcs",
     "arcsList.count": "arcs",
     "arcsList.new": "New arc",
+    "arcsList.searchPlaceholder": "Search arc…",
 
     "encountersList.title": "Encounters",
     "encountersList.count": "encounters",
@@ -473,10 +479,12 @@ const dict = {
     "factionsList.count": "factions",
     "factionsList.new": "New faction",
     "factionsList.members": "members",
+    "factionsList.searchPlaceholder": "Search faction…",
 
     "locationsList.title": "Locations",
     "locationsList.count": "locations",
     "locationsList.new": "New location",
+    "locationsList.searchPlaceholder": "Search location…",
 
     "npcList.searchPlaceholder": "Search name, location…",
     "npcList.new": "New NPC",
@@ -496,10 +504,12 @@ const dict = {
     "playersList.count": "characters",
     "playersList.new": "New character",
     "playersList.playedBy": "Played by",
+    "playersList.searchPlaceholder": "Search character…",
 
     "questsList.title": "Quests",
     "questsList.count": "quests",
     "questsList.new": "New quest",
+    "questsList.searchPlaceholder": "Search quest…",
 
     "common.description": "Description",
     "common.summary": "Summary",

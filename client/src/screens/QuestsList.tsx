@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "../styles/list.css";
 import { crystalColor, type Quest } from "../data/domain";
 import { QuestStatusPill } from "../components/StatusPill";
@@ -18,6 +19,15 @@ interface QuestsListProps {
 
 export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
   const t = useT();
+  const [search, setSearch] = useState("");
+  const q2 = search.trim().toLowerCase();
+  const filtered = q2
+    ? quests.filter(
+        (q) =>
+          q.name.toLowerCase().includes(q2) ||
+          q.hook.toLowerCase().includes(q2),
+      )
+    : quests;
   return (
     <div className="card list-page">
       <div className="list-page__header">
@@ -27,12 +37,20 @@ export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
           </div>
           <span className="list-page__count">{quests.length} {t("questsList.count")}</span>
         </div>
-        <button className="btn btn-primary" onClick={onCreate}>
-          {t("questsList.new")}
-        </button>
+        <div className="list-page__header-actions">
+          <input
+            className="list-page__search"
+            placeholder={t("questsList.searchPlaceholder")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button className="btn btn-primary" onClick={onCreate}>
+            {t("questsList.new")}
+          </button>
+        </div>
       </div>
       <div className="list-page__rows">
-        {quests.map((q) => (
+        {filtered.map((q) => (
           <div
             key={q.id}
             className="list-page__row list-page__row--clickable"
