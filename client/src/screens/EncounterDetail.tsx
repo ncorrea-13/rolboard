@@ -31,6 +31,7 @@ import {
   type TurnType,
 } from "../data/domain";
 import { useT, type TranslationKey } from "../lib/i18n";
+import { entityImageUrl } from "../lib/images";
 
 type AddKind = "npc" | "pc" | "custom";
 
@@ -47,6 +48,7 @@ interface EncounterDetailProps {
     pcId: string,
     patch: { currentHp?: number; maxHp?: number },
   ) => void;
+  imageVersion?: number;
 }
 
 const phases: {
@@ -94,6 +96,7 @@ export function EncounterDetail({
   onNextRound,
   onDelete,
   onSyncPlayerHp,
+  imageVersion = 0,
 }: EncounterDetailProps) {
   const t = useT();
   const [participants, setParticipants] = useState<EncounterParticipant[]>([]);
@@ -241,6 +244,18 @@ export function EncounterDetail({
     return "var(--text-secondary)";
   }
 
+  function participantImageUrl(p: EncounterParticipant): string | undefined {
+    if (p.pcId) {
+      const pc = playerCharacters.find((c) => c.id === p.pcId);
+      return entityImageUrl("player-character", p.pcId, pc?.hasImage, imageVersion);
+    }
+    if (p.npcId) {
+      const npc = npcs.find((n) => n.id === p.npcId);
+      return entityImageUrl("npc", p.npcId, npc?.hasImage, imageVersion);
+    }
+    return undefined;
+  }
+
   function kindLabel(p: EncounterParticipant): string {
     if (p.pcId) return t("encounterDetail.kindPc");
     if (p.npcId) return "NPC";
@@ -271,10 +286,18 @@ export function EncounterDetail({
           >
             {isActed && <Check size={13} strokeWidth={3} />}
           </button>
-          <span
-            className="status-dot"
-            style={{ background: color, flex: "none" }}
-          />
+          {participantImageUrl(p) ? (
+            <img
+              className="encounter-card__avatar"
+              src={participantImageUrl(p)}
+              alt=""
+            />
+          ) : (
+            <span
+              className="status-dot"
+              style={{ background: color, flex: "none" }}
+            />
+          )}
           <span className="encounter-card__name">{nameFor(p)}</span>
           <span className="encounter-card__kind" style={{ color }}>
             {kindLabel(p)}
