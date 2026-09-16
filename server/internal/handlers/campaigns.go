@@ -173,6 +173,11 @@ func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) DeleteCampaign(w http.ResponseWriter, r *http.Request) {
+	if !isAdminRequest(r) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid id", http.StatusBadRequest)
