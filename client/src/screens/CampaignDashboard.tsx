@@ -14,6 +14,7 @@ import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
 import { openInObsidian } from "../lib/obsidian";
 import { useT } from "../lib/i18n";
+import { entityImageUrl } from "../lib/images";
 
 export type DashboardSection =
   | "resumen"
@@ -48,6 +49,7 @@ interface CampaignDashboardProps {
   onPlanSession: () => void;
   onReindex: () => void;
   reindexing: boolean;
+  imageVersion?: number;
 }
 
 export function CampaignDashboard({
@@ -66,6 +68,7 @@ export function CampaignDashboard({
   onPlanSession,
   onReindex,
   reindexing,
+  imageVersion = 0,
 }: CampaignDashboardProps) {
   const t = useT();
   const recentNpcs = summary?.recentNpcs ?? npcs.slice(0, 4);
@@ -269,6 +272,7 @@ export function CampaignDashboard({
                   name={n.name}
                   role={n.statusNote ?? n.role}
                   color={crystalColor[n.crystal]}
+                  imageUrl={entityImageUrl("npc", n.id, n.hasImage, imageVersion)}
                 />
               </div>
               <StatusPill status={n.status} />

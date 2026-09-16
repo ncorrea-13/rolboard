@@ -15,6 +15,26 @@
   color: var(--text-secondary);
 }
 
+.list-page__header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.list-page__search {
+  width: 230px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 7px 11px;
+  font: 400 12.5px var(--font-body);
+  color: var(--text-body-strong);
+}
+
+.list-page__search::placeholder {
+  color: var(--text-secondary);
+}
+
 .list-page__rows {
   display: flex;
   flex-direction: column;
@@ -43,6 +63,14 @@
 .list-page__row-main {
   flex: 1;
   min-width: 0;
+}
+
+.list-page__thumbnail {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex: none;
 }
 
 .list-page__row-title {
