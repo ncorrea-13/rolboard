@@ -10,6 +10,7 @@ type Handlers struct {
 	db                    *sql.DB
 	adminToken            string
 	cookieSecure          bool
+	trustProxyHeaders     bool
 	auth                  *service.AuthService
 	campaigns             *service.CampaignService
 	arcs                  *service.ArcService
@@ -30,6 +31,7 @@ func NewHandlers(
 	db *sql.DB,
 	adminToken string,
 	cookieSecure bool,
+	trustProxyHeaders bool,
 	auth *service.AuthService,
 	campaigns *service.CampaignService,
 	arcs *service.ArcService,
@@ -49,6 +51,7 @@ func NewHandlers(
 		db:                    db,
 		adminToken:            adminToken,
 		cookieSecure:          cookieSecure,
+		trustProxyHeaders:     trustProxyHeaders,
 		auth:                  auth,
 		campaigns:             campaigns,
 		arcs:                  arcs,
