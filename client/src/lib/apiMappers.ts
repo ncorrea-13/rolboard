@@ -20,23 +20,33 @@ import {
   type TurnType,
 } from "../data/domain";
 
-export interface ApiCampaign {
+export interface ApiCampaignSummary {
   id: number;
   name: string;
   system: string;
   status: CampaignStatus;
+}
+
+export interface ApiCampaign extends ApiCampaignSummary {
   vault_path: string;
 }
 
-export function mapCampaign(c: ApiCampaign): Campaign {
+export function mapCampaignSummary(c: ApiCampaignSummary): Campaign {
   return {
     id: String(c.id),
     name: c.name,
     system: c.system,
     status: c.status,
-    vaultPath: c.vault_path,
+    vaultPath: "",
     meta: "",
     last: "",
+  };
+}
+
+export function mapCampaign(c: ApiCampaign): Campaign {
+  return {
+    ...mapCampaignSummary(c),
+    vaultPath: c.vault_path,
   };
 }
 
@@ -445,7 +455,9 @@ export interface ApiEncounterParticipant {
   skills?: StatMap;
 }
 
-export function mapEncounterParticipant(p: ApiEncounterParticipant): EncounterParticipant {
+export function mapEncounterParticipant(
+  p: ApiEncounterParticipant,
+): EncounterParticipant {
   return {
     id: String(p.id),
     encounterId: String(p.encounter_id),

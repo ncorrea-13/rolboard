@@ -53,10 +53,12 @@ import type { Campaign } from "./data/domain";
 import { entityKindSection } from "./data/entityForms";
 import {
   mapCampaign,
+  mapCampaignSummary,
   mapNpc,
   mapQuest,
   mapSession,
   type ApiCampaign,
+  type ApiCampaignSummary,
 } from "./lib/apiMappers";
 import type { Route } from "./types";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
@@ -78,8 +80,8 @@ export default function App() {
   const [, forceAdminRerender] = useState(0);
 
   useEffect(() => {
-    apiFetch<ApiCampaign[]>("/campaigns")
-      .then((data) => setCampaigns((data ?? []).map(mapCampaign)))
+    apiFetch<ApiCampaignSummary[]>("/campaigns")
+      .then((data) => setCampaigns((data ?? []).map(mapCampaignSummary)))
       .catch((err) => console.error("Error cargando campañas:", err));
     checkAdminSession().then(() => forceAdminRerender((v) => v + 1));
   }, []);
@@ -162,7 +164,19 @@ export default function App() {
       } else {
         console.error("Error entrando a la campaña:", err);
       }
+      return;
     }
+
+    apiFetch<ApiCampaign>(`/campaigns/${id}`)
+      .then((full) => {
+        const mapped = mapCampaign(full);
+        setCampaigns((prev) =>
+          prev.map((c) => (c.id === mapped.id ? mapped : c)),
+        );
+      })
+      .catch((err) =>
+        console.error("Error cargando datos completos de campaña:", err),
+      );
   }
 
   function openNewCampaign() {
