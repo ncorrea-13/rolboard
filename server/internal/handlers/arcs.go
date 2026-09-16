@@ -80,7 +80,7 @@ func (h *Handlers) CreateArc(w http.ResponseWriter, r *http.Request) {
 
 	err = h.arcs.Create(r.Context(), &arc)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating arc")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

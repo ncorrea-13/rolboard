@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -50,6 +51,34 @@ func validateParticipantPayload(p CreateEncounterParticipantPayload) string {
 	return ""
 }
 
+func (h *Handlers) checkParticipantCampaign(ctx context.Context, campaignID int64, pcID, npcID *int64) (msg string, status int) {
+	if pcID != nil {
+		pc, err := h.playerCharacters.GetByID(ctx, *pcID)
+		if errors.Is(err, repository.ErrNotFound) {
+			return "Player character not found", http.StatusNotFound
+		}
+		if err != nil {
+			return "Error retrieving player character", http.StatusInternalServerError
+		}
+		if pc.CampaignID != campaignID {
+			return "Player character does not belong to the same campaign as the encounter", http.StatusBadRequest
+		}
+	}
+	if npcID != nil {
+		npc, err := h.npcs.GetByID(ctx, *npcID)
+		if errors.Is(err, repository.ErrNotFound) {
+			return "NPC not found", http.StatusNotFound
+		}
+		if err != nil {
+			return "Error retrieving npc", http.StatusInternalServerError
+		}
+		if npc.CampaignID != campaignID {
+			return "NPC does not belong to the same campaign as the encounter", http.StatusBadRequest
+		}
+	}
+	return "", 0
+}
+
 func (h *Handlers) ListEncounterParticipants(w http.ResponseWriter, r *http.Request) {
 	encounterId, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
@@ -83,6 +112,19 @@ func (h *Handlers) CreateEncounterParticipant(w http.ResponseWriter, r *http.Req
 		http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
+	encounter, err := h.encounters.GetByID(r.Context(), encounterId)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "Encounter not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving encounter", http.StatusInternalServerError)
+		return
+	}
+	if msg, status := h.checkParticipantCampaign(r.Context(), encounter.CampaignID, payload.PcID, payload.NpcID); msg != "" {
+		http.Error(w, msg, status)
+		return
+	}
 
 	participant := models.EncounterParticipant{
 		EncounterID: encounterId,
@@ -100,7 +142,7 @@ func (h *Handlers) CreateEncounterParticipant(w http.ResponseWriter, r *http.Req
 
 	err = h.encounterParticipants.Create(r.Context(), &participant)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating encounter participant")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -125,6 +167,26 @@ func (h *Handlers) UpdateEncounterParticipant(w http.ResponseWriter, r *http.Req
 	if msg := validateParticipantPayload(payload); msg != "" {
 		http.Error(w, msg, http.StatusBadRequest)
 		return
+	}
+	if payload.PcID != nil || payload.NpcID != nil {
+		current, err := h.encounterParticipants.GetByID(r.Context(), id)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Participant not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving participant", http.StatusInternalServerError)
+			return
+		}
+		encounter, err := h.encounters.GetByID(r.Context(), current.EncounterID)
+		if err != nil {
+			http.Error(w, "Error retrieving encounter", http.StatusInternalServerError)
+			return
+		}
+		if msg, status := h.checkParticipantCampaign(r.Context(), encounter.CampaignID, payload.PcID, payload.NpcID); msg != "" {
+			http.Error(w, msg, status)
+			return
+		}
 	}
 
 	participant := models.EncounterParticipant{

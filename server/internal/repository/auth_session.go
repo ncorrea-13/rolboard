@@ -22,6 +22,10 @@ func NewAuthSessionRepository(db *sql.DB) *AuthSessionRepository {
 }
 
 func (r *AuthSessionRepository) Create(ctx context.Context, campaignID int64, tokenHash string, ttl time.Duration) (*models.AuthSession, error) {
+	if _, err := r.db.ExecContext(ctx, `DELETE FROM auth_sessions WHERE expires_at <= ?`, time.Now().UTC().Format(sqliteTimeLayout)); err != nil {
+		return nil, err
+	}
+
 	s := models.AuthSession{
 		CampaignID: campaignID,
 		TokenHash:  tokenHash,
@@ -57,5 +61,10 @@ func (r *AuthSessionRepository) GetValidByTokenHash(ctx context.Context, tokenHa
 
 func (r *AuthSessionRepository) Delete(ctx context.Context, tokenHash string) error {
 	_, err := r.db.ExecContext(ctx, `DELETE FROM auth_sessions WHERE token_hash = ?`, tokenHash)
+	return err
+}
+
+func (r *AuthSessionRepository) DeleteByCampaign(ctx context.Context, campaignID int64) error {
+	_, err := r.db.ExecContext(ctx, `DELETE FROM auth_sessions WHERE campaign_id = ?`, campaignID)
 	return err
 }

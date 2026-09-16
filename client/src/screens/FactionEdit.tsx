@@ -1,6 +1,8 @@
 import { useState } from "react";
 import "./NpcEdit.css";
 import { type Group, type Npc } from "../data/domain";
+import { ImageUploadField } from "../components/ImageUploadField";
+import { entityImageUrl } from "../lib/images";
 import { useT } from "../lib/i18n";
 
 interface FactionEditProps {
@@ -8,9 +10,20 @@ interface FactionEditProps {
   npcs: Npc[];
   onSave: (patch: Partial<Group>) => void;
   onDiscard: () => void;
+  imageVersion?: number;
+  onUploadImage?: (file: File) => Promise<void>;
+  onRemoveImage?: () => Promise<void>;
 }
 
-export function FactionEdit({ group, npcs, onSave, onDiscard }: FactionEditProps) {
+export function FactionEdit({
+  group,
+  npcs,
+  onSave,
+  onDiscard,
+  imageVersion = 0,
+  onUploadImage,
+  onRemoveImage,
+}: FactionEditProps) {
   const t = useT();
   const [name, setName] = useState(group.name);
   const [description, setDescription] = useState(group.description);
@@ -66,6 +79,14 @@ export function FactionEdit({ group, npcs, onSave, onDiscard }: FactionEditProps
         </div>
 
         <div className="npc-edit__col">
+          {group.id && onUploadImage && onRemoveImage && (
+            <ImageUploadField
+              label={t("factionEdit.image")}
+              imageUrl={entityImageUrl("group", group.id, group.hasImage, imageVersion)}
+              onUpload={onUploadImage}
+              onRemove={onRemoveImage}
+            />
+          )}
           <div>
             <span className="label">{t("factionDetail.alignment")}</span>
             <input

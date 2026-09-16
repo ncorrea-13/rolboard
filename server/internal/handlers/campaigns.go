@@ -12,6 +12,13 @@ import (
 	"github.com/ncorrea-13/rolboard/server/internal/service"
 )
 
+type CampaignSummary struct {
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	System string `json:"system"`
+	Status string `json:"status"`
+}
+
 type CreateCampaignPayload struct {
 	Name        string `json:"name"`
 	System      string `json:"system"`
@@ -40,8 +47,13 @@ func (h *Handlers) ListCampaigns(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	summaries := make([]CampaignSummary, len(campaigns))
+	for i, c := range campaigns {
+		summaries[i] = CampaignSummary{ID: c.ID, Name: c.Name, System: c.System, Status: c.Status}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(campaigns); err != nil {
+	if err := json.NewEncoder(w).Encode(summaries); err != nil {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
 }
@@ -69,7 +81,7 @@ func (h *Handlers) CreateCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating campaign")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -161,6 +173,11 @@ func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) DeleteCampaign(w http.ResponseWriter, r *http.Request) {
+	if !isAdminRequest(r) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid id", http.StatusBadRequest)

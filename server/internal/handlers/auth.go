@@ -42,7 +42,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   h.cookieSecure,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteStrictMode,
 		MaxAge:   int(h.auth.SessionTTL().Seconds()),
 	})
 	w.WriteHeader(http.StatusNoContent)
@@ -58,7 +58,7 @@ func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   h.cookieSecure,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteStrictMode,
 		MaxAge:   -1,
 	})
 	w.WriteHeader(http.StatusNoContent)

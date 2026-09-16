@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/ncorrea-13/rolboard/server/internal/imagestore"
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
@@ -98,6 +99,21 @@ func (h *Handlers) CreateNPC(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Name, npc_kind, detail_level and status are required fields", http.StatusBadRequest)
 		return
 	}
+	if payload.LocationID != nil {
+		loc, err := h.locations.GetByID(r.Context(), *payload.LocationID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Location not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving location", http.StatusInternalServerError)
+			return
+		}
+		if loc.CampaignID != campaignID {
+			http.Error(w, "Location does not belong to the same campaign as the NPC", http.StatusBadRequest)
+			return
+		}
+	}
 
 	npc := models.NPC{
 		CampaignID:   campaignID,
@@ -117,7 +133,7 @@ func (h *Handlers) CreateNPC(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.npcs.Create(r.Context(), &npc); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating npc")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -165,6 +181,30 @@ func (h *Handlers) UpdateNPC(w http.ResponseWriter, r *http.Request) {
 	if payload.Name == "" || !validNPCKinds[payload.NPCKind] || !validNPCDetailLevels[payload.DetailLevel] || !validNPCStatuses[payload.Status] {
 		http.Error(w, "Name, npc_kind, detail_level and status are required fields", http.StatusBadRequest)
 		return
+	}
+	if payload.LocationID != nil {
+		current, err := h.npcs.GetByID(r.Context(), id)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "NPC not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving npc", http.StatusInternalServerError)
+			return
+		}
+		loc, err := h.locations.GetByID(r.Context(), *payload.LocationID)
+		if errors.Is(err, repository.ErrNotFound) {
+			http.Error(w, "Location not found", http.StatusNotFound)
+			return
+		}
+		if err != nil {
+			http.Error(w, "Error retrieving location", http.StatusInternalServerError)
+			return
+		}
+		if loc.CampaignID != current.CampaignID {
+			http.Error(w, "Location does not belong to the same campaign as the NPC", http.StatusBadRequest)
+			return
+		}
 	}
 
 	npc := models.NPC{
@@ -216,4 +256,76 @@ func (h *Handlers) DeleteNPC(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handlers) SetNPCImage(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	data, ok := readUploadedImage(w, r)
+	if !ok {
+		return
+	}
+
+	npc, err := h.npcs.SetImage(r.Context(), id, data)
+	switch {
+	case errors.Is(err, imagestore.ErrUnsupportedFormat):
+		http.Error(w, "Unsupported image format: use PNG or JPEG", http.StatusBadRequest)
+		return
+	case errors.Is(err, repository.ErrNotFound):
+		http.Error(w, "NPC not found", http.StatusNotFound)
+		return
+	case err != nil:
+		http.Error(w, "Error saving image", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(npc); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handlers) DeleteNPCImage(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+	npc, err := h.npcs.DeleteImage(r.Context(), id)
+	switch {
+	case errors.Is(err, repository.ErrNotFound):
+		http.Error(w, "NPC not found", http.StatusNotFound)
+		return
+	case err != nil:
+		http.Error(w, "Error deleting image", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(npc); err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
+}
+
+func (h *Handlers) GetNPCImage(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+	absPath, contentType, err := h.npcs.ImageFile(r.Context(), id)
+	switch {
+	case errors.Is(err, repository.ErrNotFound):
+		http.Error(w, "Image not found", http.StatusNotFound)
+		return
+	case err != nil:
+		http.Error(w, "Error retrieving image", http.StatusInternalServerError)
+		return
+	}
+
+	serveImage(w, r, absPath, contentType)
 }

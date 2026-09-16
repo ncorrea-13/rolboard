@@ -196,6 +196,7 @@ export interface Group {
   liderNpcId?: string;
   memberCount: number;
   obsidianPath: string;
+  hasImage?: boolean;
 }
 
 export interface Location {
@@ -207,6 +208,7 @@ export interface Location {
   parentId?: string;
   description: string;
   obsidianPath: string;
+  hasImage?: boolean;
 }
 
 export function locationBreadcrumb(loc: Location, all: Location[]): string {
@@ -253,6 +255,7 @@ export interface Npc {
   relatedQuestIds?: string[];
   attributes: StatMap;
   skills: StatMap;
+  hasImage?: boolean;
 }
 
 export interface PlayerCharacter {
@@ -273,6 +276,7 @@ export interface PlayerCharacter {
   skills: StatMap;
   currentHp?: number;
   maxHp?: number;
+  hasImage?: boolean;
 }
 
 export type SessionType = "session" | "interlude" | "planning";

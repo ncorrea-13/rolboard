@@ -27,6 +27,14 @@
   cursor: pointer;
 }
 
+.entity-detail__portrait {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex: none;
+}
+
 .entity-detail__breadcrumb-link:hover {
   color: var(--text-body-strong);
 }

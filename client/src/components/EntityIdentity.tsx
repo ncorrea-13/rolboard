@@ -6,6 +6,7 @@ interface EntityIdentityProps {
   role: string;
   color: string;
   size?: "row" | "header";
+  imageUrl?: string;
 }
 
 export function EntityIdentity({
@@ -14,6 +15,7 @@ export function EntityIdentity({
   role,
   color,
   size = "row",
+  imageUrl,
 }: EntityIdentityProps) {
   return (
     <div className={`entity-identity entity-identity--${size}`}>
@@ -21,7 +23,11 @@ export function EntityIdentity({
         className="entity-identity__tile"
         style={{ borderColor: color, color }}
       >
-        {initials}
+        {imageUrl ? (
+          <img className="entity-identity__image" src={imageUrl} alt="" />
+        ) : (
+          initials
+        )}
       </div>
       <div className="entity-identity__text">
         <span className="entity-identity__name-wrap">

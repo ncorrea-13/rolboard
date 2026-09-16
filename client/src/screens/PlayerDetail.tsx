@@ -7,6 +7,7 @@ import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
 import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
+import { entityImageUrl } from "../lib/images";
 import { useT } from "../lib/i18n";
 
 interface PlayerDetailProps {
@@ -16,9 +17,10 @@ interface PlayerDetailProps {
   onEdit: () => void;
   onBack: () => void;
   onDelete: () => void;
+  imageVersion?: number;
 }
 
-export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, onDelete }: PlayerDetailProps) {
+export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, onDelete, imageVersion = 0 }: PlayerDetailProps) {
   const t = useT();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState<{ title: string; fallback: string } | null>(null);
@@ -50,6 +52,7 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
             role={`${t("playersList.playedBy")} ${player.playerName}`}
             color="var(--crystal-npc)"
             size="header"
+            imageUrl={entityImageUrl("player-character", player.id, player.hasImage, imageVersion)}
           />
           <StatusPill status={player.status} />
           {(player.currentHp != null || player.maxHp != null) && (
@@ -97,6 +100,13 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
         </div>
 
         <div className="npc-detail__col npc-detail__col--side">
+          {entityImageUrl("player-character", player.id, player.hasImage, imageVersion) && (
+            <img
+              className="npc-detail__portrait"
+              src={entityImageUrl("player-character", player.id, player.hasImage, imageVersion)}
+              alt=""
+            />
+          )}
           <div>
             <span className="label">{t("entityDetail.obsidianNote")}</span>
             <div className="entity-detail__obsidian">

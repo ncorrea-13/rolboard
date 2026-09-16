@@ -2,17 +2,52 @@ package service
 
 import (
 	"context"
+	"path/filepath"
 
+	"github.com/ncorrea-13/rolboard/server/internal/imagestore"
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
 type NPCService struct {
-	repo *repository.NPCRepository
+	repo        *repository.NPCRepository
+	uploadsRoot string
 }
 
-func NewNPCService(repo *repository.NPCRepository) *NPCService {
-	return &NPCService{repo: repo}
+func NewNPCService(repo *repository.NPCRepository, uploadsRoot string) *NPCService {
+	return &NPCService{repo: repo, uploadsRoot: uploadsRoot}
+}
+
+func (s *NPCService) SetImage(ctx context.Context, id int64, data []byte) (*models.NPC, error) {
+	relPath, err := imagestore.Store(s.uploadsRoot, "npcs", id, data)
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.SetImagePath(ctx, id, &relPath)
+}
+
+func (s *NPCService) DeleteImage(ctx context.Context, id int64) (*models.NPC, error) {
+	current, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if current.ImagePath != nil {
+		if err := imagestore.Delete(s.uploadsRoot, *current.ImagePath); err != nil {
+			return nil, err
+		}
+	}
+	return s.repo.SetImagePath(ctx, id, nil)
+}
+
+func (s *NPCService) ImageFile(ctx context.Context, id int64) (absPath, contentType string, err error) {
+	current, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return "", "", err
+	}
+	if current.ImagePath == nil {
+		return "", "", repository.ErrNotFound
+	}
+	return filepath.Join(s.uploadsRoot, *current.ImagePath), imagestore.ContentType(*current.ImagePath), nil
 }
 
 func (s *NPCService) List(ctx context.Context, campaignID int64) ([]models.NPC, error) {

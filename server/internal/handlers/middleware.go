@@ -94,7 +94,7 @@ func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
 			Path:     "/",
 			HttpOnly: true,
 			Secure:   h.cookieSecure,
-			SameSite: http.SameSiteLaxMode,
+			SameSite: http.SameSiteStrictMode,
 			MaxAge:   int(adminSessionTTL.Seconds()),
 		})
 		w.WriteHeader(http.StatusNoContent)
@@ -111,7 +111,7 @@ func (h *Handlers) AdminLogout(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   h.cookieSecure,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteStrictMode,
 		MaxAge:   -1,
 	})
 	w.WriteHeader(http.StatusNoContent)

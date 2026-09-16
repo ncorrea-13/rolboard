@@ -145,3 +145,59 @@ func TestNPCDelete(t *testing.T) {
 		t.Errorf("Expected ErrNotFound after delete, got %v", err)
 	}
 }
+
+func TestNPCSetImagePath(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+
+	repo := NewNPCRepository(db)
+	created := &models.NPC{CampaignID: campaignID, Name: "Shallan", NPCKind: "npc", DetailLevel: "minor", Status: "vivo"}
+	if err := repo.Create(ctx, created); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	if created.ImagePath != nil {
+		t.Fatal("Expected image_path to be nil right after Create")
+	}
+
+	imagePath := "npcs/1-portrait.png"
+	updated, err := repo.SetImagePath(ctx, created.ID, &imagePath)
+	if err != nil {
+		t.Fatalf("SetImagePath failed: %v", err)
+	}
+	if updated.ImagePath == nil || *updated.ImagePath != imagePath {
+		t.Errorf("expected ImagePath %q, got %v", imagePath, updated.ImagePath)
+	}
+
+	if err := repo.Update(ctx, created.ID, &models.NPC{Name: "Shallan Davar", NPCKind: "npc", DetailLevel: "minor", Status: "vivo"}); err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+	afterUpdate, err := repo.GetByID(ctx, created.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if afterUpdate.ImagePath == nil || *afterUpdate.ImagePath != imagePath {
+		t.Error("expected ImagePath to survive an unrelated Update")
+	}
+
+	if _, err := repo.SetImagePath(ctx, created.ID, nil); err != nil {
+		t.Fatalf("SetImagePath(nil) failed: %v", err)
+	}
+	cleared, err := repo.GetByID(ctx, created.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if cleared.ImagePath != nil {
+		t.Error("expected ImagePath to be nil after clearing")
+	}
+}
+
+func TestNPCSetImagePathNotFound(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	repo := NewNPCRepository(db)
+	path := "npcs/999-portrait.png"
+	if _, err := repo.SetImagePath(ctx, 999, &path); err != ErrNotFound {
+		t.Errorf("expected ErrNotFound, got %v", err)
+	}
+}

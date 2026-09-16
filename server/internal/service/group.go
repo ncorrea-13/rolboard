@@ -2,17 +2,52 @@ package service
 
 import (
 	"context"
+	"path/filepath"
 
+	"github.com/ncorrea-13/rolboard/server/internal/imagestore"
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
 type GroupService struct {
-	repo *repository.GroupRepository
+	repo        *repository.GroupRepository
+	uploadsRoot string
 }
 
-func NewGroupService(repo *repository.GroupRepository) *GroupService {
-	return &GroupService{repo: repo}
+func NewGroupService(repo *repository.GroupRepository, uploadsRoot string) *GroupService {
+	return &GroupService{repo: repo, uploadsRoot: uploadsRoot}
+}
+
+func (s *GroupService) SetImage(ctx context.Context, id int64, data []byte) (*models.Group, error) {
+	relPath, err := imagestore.Store(s.uploadsRoot, "groups", id, data)
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.SetImagePath(ctx, id, &relPath)
+}
+
+func (s *GroupService) DeleteImage(ctx context.Context, id int64) (*models.Group, error) {
+	current, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if current.ImagePath != nil {
+		if err := imagestore.Delete(s.uploadsRoot, *current.ImagePath); err != nil {
+			return nil, err
+		}
+	}
+	return s.repo.SetImagePath(ctx, id, nil)
+}
+
+func (s *GroupService) ImageFile(ctx context.Context, id int64) (absPath, contentType string, err error) {
+	current, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return "", "", err
+	}
+	if current.ImagePath == nil {
+		return "", "", repository.ErrNotFound
+	}
+	return filepath.Join(s.uploadsRoot, *current.ImagePath), imagestore.ContentType(*current.ImagePath), nil
 }
 
 func (s *GroupService) List(ctx context.Context, campaignID int64) ([]models.Group, error) {

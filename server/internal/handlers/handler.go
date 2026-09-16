@@ -2,14 +2,22 @@ package handlers
 
 import (
 	"database/sql"
+	"log"
+	"net/http"
 
 	"github.com/ncorrea-13/rolboard/server/internal/service"
 )
+
+func internalError(w http.ResponseWriter, err error, msg string) {
+	log.Printf("%s: %v", msg, err)
+	http.Error(w, msg, http.StatusInternalServerError)
+}
 
 type Handlers struct {
 	db                    *sql.DB
 	adminToken            string
 	cookieSecure          bool
+	trustProxyHeaders     bool
 	auth                  *service.AuthService
 	campaigns             *service.CampaignService
 	arcs                  *service.ArcService
@@ -30,6 +38,7 @@ func NewHandlers(
 	db *sql.DB,
 	adminToken string,
 	cookieSecure bool,
+	trustProxyHeaders bool,
 	auth *service.AuthService,
 	campaigns *service.CampaignService,
 	arcs *service.ArcService,
@@ -49,6 +58,7 @@ func NewHandlers(
 		db:                    db,
 		adminToken:            adminToken,
 		cookieSecure:          cookieSecure,
+		trustProxyHeaders:     trustProxyHeaders,
 		auth:                  auth,
 		campaigns:             campaigns,
 		arcs:                  arcs,

@@ -148,6 +148,31 @@ func TestAuthServiceValidateTokenExpired(t *testing.T) {
 	}
 }
 
+func TestAuthServiceSetAccessCodeRevokesExistingSessions(t *testing.T) {
+	db := setupAuthTestDB(t)
+	campaignRepo := repository.NewCampaignRepository(db)
+	sessionRepo := repository.NewAuthSessionRepository(db)
+	auth := NewAuthService(campaignRepo, sessionRepo)
+	ctx := context.Background()
+
+	campaignID := newTestCampaign(t, campaignRepo, "Campaign A")
+	if err := auth.SetAccessCode(ctx, campaignID, "old-code"); err != nil {
+		t.Fatalf("SetAccessCode failed: %v", err)
+	}
+	token, _, err := auth.Login(ctx, campaignID, "old-code")
+	if err != nil {
+		t.Fatalf("Login failed: %v", err)
+	}
+
+	if err := auth.SetAccessCode(ctx, campaignID, "new-code"); err != nil {
+		t.Fatalf("SetAccessCode (rotation) failed: %v", err)
+	}
+
+	if _, err := auth.ValidateToken(ctx, token); !errors.Is(err, repository.ErrSessionNotFound) {
+		t.Errorf("expected old session to be revoked after code rotation, got %v", err)
+	}
+}
+
 func TestAuthServiceCrossCampaignIsolation(t *testing.T) {
 	db := setupAuthTestDB(t)
 	campaignRepo := repository.NewCampaignRepository(db)

@@ -1,36 +1,30 @@
-# AGENTS.md — campaign-dashboard
+# AGENTS.md — rolboard
 
-## Rol de Claude en este proyecto
+## Rol del agente
 
-Este es un proyecto de **aprendizaje deliberado de Go**, no un encargo para resolver rápido. El objetivo del usuario no es únicamente tener el dashboard funcionando — es entender y escribir el código de Go él mismo, con guía.
-
-Aplica el mismo enfoque que en la migración de `homelab-status-api` (Python/FastAPI → Go).
+Proyecto de **aprendizaje deliberado de Go**. El objetivo no es solo tener el dashboard andando: el usuario quiere entender y escribir el código Go él mismo, con guía.
 
 ## Reglas de trabajo
 
-1. **No completes archivos enteros de código Go sin que se pida explícitamente.** Guía paso a paso: explicá el siguiente paso, mostrá el fragmento mínimo necesario, y dejá que el usuario lo escriba o lo pegue él mismo. Si el usuario pide explícitamente "dame el archivo completo" o "generalo vos", ahí sí hacelo — pero no por default.
+1. **No escribas archivos Go completos salvo pedido explícito** ("hacelo vos", "dame el archivo"). Por default: explicá el paso, mostrá el fragmento mínimo y dejá que el usuario lo escriba.
+2. **Explicá el porqué.** El usuario viene de Python/PHP y Rust; las elecciones idiomáticas de Go (errores, `database/sql`, punteros para nullables, etc.) tienen razones que vale la pena entender.
+3. **Preguntá lo que el usuario puede responder por experiencia** en vez de asumir. Lo que ya está en `docs/DECISIONS.md` no se vuelve a preguntar.
+4. **No inventes APIs.** Solo dependencias que estén en `go.mod`; si no estás seguro de una firma, decilo.
+5. **`net/http` stdlib**, sin routers ni frameworks de terceros salvo pedido explícito.
+6. **Una capa por vez** en features nuevas: migración → modelo → repository → service → handler → cliente, verificando cada paso.
+7. **Nunca edites una migración ya aplicada**: agregá una nueva.
+8. Doc comments de Go en inglés; el resto del proyecto en español.
 
-2. **Explicá el porqué, no solo el qué.** Cuando propongas una construcción de Go (un patrón de error handling, una elección entre `sql.DB` directo vs. un wrapper, un tipo de índice), explicá la razón — el usuario viene de Python/PHP y Rust (TUI), y estas decisiones de Go tienen razones idiomáticas que vale la pena que entienda, no solo copie.
+## Documentación
 
-3. **Preferí preguntas de una a las que el usuario ya pueda responder por experiencia previa**, en vez de asumir. Si algo ya está decidido en `docs/DECISIONS.md`, no lo vuelvas a preguntar — leelo primero.
+Leer antes de proponer cambios de arquitectura, modelo o alcance. Si la doc y el código no coinciden, manda el código y se corrige la doc.
 
-4. **No inventes código de librerías que no estén ya en `go.mod`.** Confirmá versiones y APIs reales antes de sugerir una función o método específico de una dependencia (`modernc.org/sqlite`, `yaml.v3`, `goldmark`, etc.) — si no estás seguro de la firma exacta, decilo en vez de inventar una plausible.
-
-5. **Priorizá `net/http` stdlib sobre frameworks/routers de terceros**, salvo que el usuario pida explícitamente lo contrario (ver `docs/DECISIONS.md`).
-
-6. **No implementes de una todas las capas de una feature.** Si se está armando el endpoint de NPCs, andá handler → service → repository en pasos separados, verificando en cada paso que el usuario entendió antes de seguir — no tires las tres capas juntas.
-
-## Contexto del proyecto
-
-Toda la documentación vive en `docs/`. Antes de proponer cambios de arquitectura, modelo de datos, o alcance, **leé estos archivos**:
-
-- `README.md` — qué es el proyecto y por qué existe
-- `docs/ARCHITECTURE.md` — stack, despliegue, decisiones de infra
-- `docs/DATA_MODEL.md` — entidades y esquema
-- `docs/API.md` — endpoints REST definidos
-- `docs/VAULT_INDEXER.md` — cómo se lee e indexa el vault de Obsidian
-- `docs/DECISIONS.md` — registro de decisiones ya tomadas, con su razonamiento
-
+- `README.md` — qué es, cómo se instala y configura
+- `docs/ARCHITECTURE.md` — estructura, stack, auth, despliegue
+- `docs/DATA_MODEL.md` — tablas y convenciones
+- `docs/API.md` — endpoints
+- `docs/VAULT_INDEXER.md` — cómo se lee el vault de Obsidian
+- `docs/DECISIONS.md` — decisiones vigentes y su porqué
 ## Tono
 
-Rioplatense, directo, sin relleno. El usuario prefiere que se le explique el razonamiento técnico detrás de una decisión antes de ejecutarla, y que se le pregunte cuando algo es ambiguo en vez de asumir un default por su cuenta.
+Rioplatense, directo, sin relleno. Explicar el razonamiento antes de ejecutar y preguntar cuando algo es ambiguo.

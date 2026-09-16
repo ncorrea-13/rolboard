@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { apiFetch } from "../lib/api";
+import { apiFetch, apiImageRequest } from "../lib/api";
 import {
   locationBreadcrumb,
   type Campaign,
@@ -12,7 +12,11 @@ import {
   type PlayerCharacter,
   type Session,
 } from "../data/domain";
-import { type EntityKind, entityKindLabel, entityKindSection } from "../data/entityForms";
+import {
+  type EntityKind,
+  entityKindLabel,
+  entityKindSection,
+} from "../data/entityForms";
 import {
   mapNpc,
   npcToApiPayload,
@@ -196,7 +200,9 @@ export function useCampaignData(
       .catch((err) => console.error("Error cargando quests:", err));
   }, [activeCampaignId]);
 
-  const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>([]);
+  const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
+    [],
+  );
 
   useEffect(() => {
     if (!activeCampaignId) return;
@@ -225,7 +231,8 @@ export function useCampaignData(
       .catch((err) => console.error("Error cargando encuentros:", err));
   }, [activeCampaignId]);
 
-  const [dashboardSummary, setDashboardSummary] = useState<ApiDashboardSummary | null>(null);
+  const [dashboardSummary, setDashboardSummary] =
+    useState<ApiDashboardSummary | null>(null);
 
   useEffect(() => {
     if (!activeCampaignId) return;
@@ -306,10 +313,15 @@ export function useCampaignData(
       method: "PUT",
       body: JSON.stringify(npcToApiPayload(merged)),
     })
-      .then(() => setNpcs((prev) => prev.map((n) => (n.id === id ? merged : n))))
+      .then(() =>
+        setNpcs((prev) => prev.map((n) => (n.id === id ? merged : n))),
+      )
       .catch((err) => {
         console.error("Error guardando NPC:", err);
-        notify(`${t("common.toastErrorSaving")} ${t("common.nounNpc")}`, "error");
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounNpc")}`,
+          "error",
+        );
       });
   }
 
@@ -332,7 +344,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error creando NPC:", err);
-        notify(`${t("common.toastErrorCreating")} ${t("common.nounNpc")}`, "error");
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounNpc")}`,
+          "error",
+        );
       });
   }
 
@@ -348,7 +363,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error borrando NPC:", err);
-        notify(`${t("common.toastErrorDeleting")} ${t("common.nounNpc")}`, "error");
+        notify(
+          `${t("common.toastErrorDeleting")} ${t("common.nounNpc")}`,
+          "error",
+        );
       });
   }
 
@@ -361,11 +379,16 @@ export function useCampaignData(
       body: JSON.stringify(playerCharacterToApiPayload(merged)),
     })
       .then(() =>
-        setPlayerCharacters((prev) => prev.map((p) => (p.id === id ? merged : p))),
+        setPlayerCharacters((prev) =>
+          prev.map((p) => (p.id === id ? merged : p)),
+        ),
       )
       .catch((err) => {
         console.error("Error guardando personaje:", err);
-        notify(`${t("common.toastErrorSaving")} ${t("common.nounCharacter")}`, "error");
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounCharacter")}`,
+          "error",
+        );
       });
   }
 
@@ -392,17 +415,25 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error creando personaje:", err);
-        notify(`${t("common.toastErrorCreating")} ${t("common.nounCharacter")}`, "error");
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounCharacter")}`,
+          "error",
+        );
       });
   }
 
   function deletePlayer(id: string) {
     if (!window.confirm(t("confirm.deactivateCharacter"))) return;
     apiFetch(`/player-characters/${id}`, { method: "DELETE" })
-      .then(() => setPlayerCharacters((prev) => prev.filter((p) => p.id !== id)))
+      .then(() =>
+        setPlayerCharacters((prev) => prev.filter((p) => p.id !== id)),
+      )
       .catch((err) => {
         console.error("Error borrando personaje:", err);
-        notify(`${t("common.toastErrorDeleting")} ${t("common.nounCharacter")}`, "error");
+        notify(
+          `${t("common.toastErrorDeleting")} ${t("common.nounCharacter")}`,
+          "error",
+        );
       });
     setRoute({ name: "section", section: "jugadores" });
   }
@@ -422,7 +453,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error guardando sesión:", err);
-        notify(`${t("common.toastErrorSaving")} ${t("common.nounSession")}`, "error");
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounSession")}`,
+          "error",
+        );
       });
   }
 
@@ -435,7 +469,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error borrando sesión:", err);
-        notify(`${t("common.toastErrorDeleting")} ${t("common.nounSession")}`, "error");
+        notify(
+          `${t("common.toastErrorDeleting")} ${t("common.nounSession")}`,
+          "error",
+        );
       });
   }
 
@@ -484,7 +521,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error creando sesión:", err);
-        notify(`${t("common.toastErrorCreating")} ${t("common.nounSession")}`, "error");
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounSession")}`,
+          "error",
+        );
       });
   }
 
@@ -536,7 +576,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error guardando facción:", err);
-        notify(`${t("common.toastErrorSaving")} ${t("common.nounFaction")}`, "error");
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounFaction")}`,
+          "error",
+        );
       });
   }
 
@@ -558,7 +601,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error creando facción:", err);
-        notify(`${t("common.toastErrorCreating")} ${t("common.nounFaction")}`, "error");
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounFaction")}`,
+          "error",
+        );
       });
   }
 
@@ -576,7 +622,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error guardando locación:", err);
-        notify(`${t("common.toastErrorSaving")} ${t("common.nounLocation")}`, "error");
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounLocation")}`,
+          "error",
+        );
       });
   }
 
@@ -598,7 +647,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error creando locación:", err);
-        notify(`${t("common.toastErrorCreating")} ${t("common.nounLocation")}`, "error");
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounLocation")}`,
+          "error",
+        );
       });
   }
 
@@ -616,7 +668,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error guardando arco:", err);
-        notify(`${t("common.toastErrorSaving")} ${t("common.nounArc")}`, "error");
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounArc")}`,
+          "error",
+        );
       });
   }
 
@@ -638,7 +693,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error creando arco:", err);
-        notify(`${t("common.toastErrorCreating")} ${t("common.nounArc")}`, "error");
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounArc")}`,
+          "error",
+        );
       });
   }
 
@@ -656,7 +714,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error guardando quest:", err);
-        notify(`${t("common.toastErrorSaving")} ${t("common.nounQuest")}`, "error");
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounQuest")}`,
+          "error",
+        );
       });
   }
 
@@ -677,7 +738,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error creando quest:", err);
-        notify(`${t("common.toastErrorCreating")} ${t("common.nounQuest")}`, "error");
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounQuest")}`,
+          "error",
+        );
       });
   }
 
@@ -695,7 +759,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error guardando encuentro:", err);
-        notify(`${t("common.toastErrorSaving")} ${t("common.nounEncounter")}`, "error");
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounEncounter")}`,
+          "error",
+        );
       });
   }
 
@@ -716,7 +783,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error creando encuentro:", err);
-        notify(`${t("common.toastErrorCreating")} ${t("common.nounEncounter")}`, "error");
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounEncounter")}`,
+          "error",
+        );
       });
   }
 
@@ -729,7 +799,10 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error borrando encuentro:", err);
-        notify(`${t("common.toastErrorDeleting")} ${t("common.nounEncounter")}`, "error");
+        notify(
+          `${t("common.toastErrorDeleting")} ${t("common.nounEncounter")}`,
+          "error",
+        );
       });
   }
 
@@ -746,7 +819,9 @@ export function useCampaignData(
       }
     }
     if (kind === "location") {
-      const children = campaignLocations.filter((l) => l.parentId === id).length;
+      const children = campaignLocations.filter(
+        (l) => l.parentId === id,
+      ).length;
       const npcsHere = campaignNpcs.filter((n) => n.locationId === id).length;
       warning = locationDependentsWarning(lang, children, npcsHere);
     }
@@ -761,7 +836,10 @@ export function useCampaignData(
         .then(() => setLocations((prev) => prev.filter((l) => l.id !== id)))
         .catch((err) => {
           console.error("Error borrando locación:", err);
-          notify(`${t("common.toastErrorDeleting")} ${t("common.nounLocation")}`, "error");
+          notify(
+            `${t("common.toastErrorDeleting")} ${t("common.nounLocation")}`,
+            "error",
+          );
         });
       goToEntitySection(kind);
       return;
@@ -771,7 +849,10 @@ export function useCampaignData(
         .then(() => setGroups((prev) => prev.filter((g) => g.id !== id)))
         .catch((err) => {
           console.error("Error borrando facción:", err);
-          notify(`${t("common.toastErrorDeleting")} ${t("common.nounFaction")}`, "error");
+          notify(
+            `${t("common.toastErrorDeleting")} ${t("common.nounFaction")}`,
+            "error",
+          );
         });
       goToEntitySection(kind);
       return;
@@ -781,7 +862,10 @@ export function useCampaignData(
         .then(() => setArcs((prev) => prev.filter((a) => a.id !== id)))
         .catch((err) => {
           console.error("Error borrando arco:", err);
-          notify(`${t("common.toastErrorDeleting")} ${t("common.nounArc")}`, "error");
+          notify(
+            `${t("common.toastErrorDeleting")} ${t("common.nounArc")}`,
+            "error",
+          );
         });
       goToEntitySection(kind);
       return;
@@ -790,9 +874,137 @@ export function useCampaignData(
       .then(() => setQuests((prev) => prev.filter((q) => q.id !== id)))
       .catch((err) => {
         console.error("Error borrando quest:", err);
-        notify(`${t("common.toastErrorDeleting")} ${t("common.nounQuest")}`, "error");
+        notify(
+          `${t("common.toastErrorDeleting")} ${t("common.nounQuest")}`,
+          "error",
+        );
       });
     goToEntitySection(kind);
+  }
+
+  const [imageVersion, setImageVersion] = useState(0);
+
+  function uploadNpcImage(id: string, file: File) {
+    return apiImageRequest<ApiNpc>(`/npcs/${id}/image`, "POST", file)
+      .then((updated) => {
+        const mapped = mapNpc(updated);
+        setNpcs((prev) => prev.map((n) => (n.id === id ? mapped : n)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        console.error("Error subiendo imagen de NPC:", err);
+        notify(t("common.toastErrorSaving"), "error");
+        throw err;
+      });
+  }
+
+  function removeNpcImage(id: string) {
+    return apiImageRequest<ApiNpc>(`/npcs/${id}/image`, "DELETE")
+      .then((updated) => {
+        const mapped = mapNpc(updated);
+        setNpcs((prev) => prev.map((n) => (n.id === id ? mapped : n)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        console.error("Error borrando imagen de NPC:", err);
+        notify(t("common.toastErrorDeleting"), "error");
+        throw err;
+      });
+  }
+
+  function uploadPlayerImage(id: string, file: File) {
+    return apiImageRequest<ApiPlayerCharacter>(
+      `/player-characters/${id}/image`,
+      "POST",
+      file,
+    )
+      .then((updated) => {
+        const mapped = mapPlayerCharacter(updated);
+        setPlayerCharacters((prev) =>
+          prev.map((p) => (p.id === id ? mapped : p)),
+        );
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        console.error("Error subiendo imagen de personaje:", err);
+        notify(t("common.toastErrorSaving"), "error");
+        throw err;
+      });
+  }
+
+  function removePlayerImage(id: string) {
+    return apiImageRequest<ApiPlayerCharacter>(
+      `/player-characters/${id}/image`,
+      "DELETE",
+    )
+      .then((updated) => {
+        const mapped = mapPlayerCharacter(updated);
+        setPlayerCharacters((prev) =>
+          prev.map((p) => (p.id === id ? mapped : p)),
+        );
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        console.error("Error borrando imagen de personaje:", err);
+        notify(t("common.toastErrorDeleting"), "error");
+        throw err;
+      });
+  }
+
+  function uploadLocationImage(id: string, file: File) {
+    return apiImageRequest<ApiLocation>(`/locations/${id}/image`, "POST", file)
+      .then((updated) => {
+        const mapped = mapLocation(updated);
+        setLocations((prev) => prev.map((l) => (l.id === id ? mapped : l)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        console.error("Error subiendo imagen de locación:", err);
+        notify(t("common.toastErrorSaving"), "error");
+        throw err;
+      });
+  }
+
+  function removeLocationImage(id: string) {
+    return apiImageRequest<ApiLocation>(`/locations/${id}/image`, "DELETE")
+      .then((updated) => {
+        const mapped = mapLocation(updated);
+        setLocations((prev) => prev.map((l) => (l.id === id ? mapped : l)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        console.error("Error borrando imagen de locación:", err);
+        notify(t("common.toastErrorDeleting"), "error");
+        throw err;
+      });
+  }
+
+  function uploadGroupImage(id: string, file: File) {
+    return apiImageRequest<ApiGroup>(`/groups/${id}/image`, "POST", file)
+      .then((updated) => {
+        const mapped = mapGroup(updated);
+        setGroups((prev) => prev.map((g) => (g.id === id ? mapped : g)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        console.error("Error subiendo imagen de facción:", err);
+        notify(t("common.toastErrorSaving"), "error");
+        throw err;
+      });
+  }
+
+  function removeGroupImage(id: string) {
+    return apiImageRequest<ApiGroup>(`/groups/${id}/image`, "DELETE")
+      .then((updated) => {
+        const mapped = mapGroup(updated);
+        setGroups((prev) => prev.map((g) => (g.id === id ? mapped : g)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        console.error("Error borrando imagen de facción:", err);
+        notify(t("common.toastErrorDeleting"), "error");
+        throw err;
+      });
   }
 
   return {
@@ -835,5 +1047,14 @@ export function useCampaignData(
     playSession,
     startPlaySession,
     goToEntitySection,
+    imageVersion,
+    uploadNpcImage,
+    removeNpcImage,
+    uploadPlayerImage,
+    removePlayerImage,
+    uploadLocationImage,
+    removeLocationImage,
+    uploadGroupImage,
+    removeGroupImage,
   };
 }

@@ -14,9 +14,9 @@
 
 ---
 
-View of a tabletop RPG campaign's state. It is built to seat next to an Obsidian Vault, not to replace it. It works more as a Dashboard while the vault works more as the original database for long-form prose and lore. This app indexes the YAML frontmatter as metadata for fast lookup during a live session. 
+Structured view of a tabletop RPG campaign — NPCs, locations, factions, player characters, quests, sessions, arcs and a combat tracker. It sits next to an Obsidian vault instead of replacing it: the vault keeps the long-form prose, Rolboard indexes its YAML frontmatter for quick lookup during a live session, and holds dashboard-only data (quests, prep notes, character sheets, images).
 
-This is a personal project and tool for the DM/GM. Runs on a homelab to learn Go, infrastructure and CI/CD. It is thought to scale to be used as an emulated cloud service. See [`docs/DECISIONS.md`](docs/DECISIONS.md) for the reasoning behind every scope call.
+Personal tool for the DM/GM, not something players use. Runs on a homelab. Each campaign has its own access code; instance management (creating campaigns, setting access codes) needs the admin token. Reasoning behind scope calls: [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ## Stack
 
@@ -25,59 +25,22 @@ This is a personal project and tool for the DM/GM. Runs on a homelab to learn Go
 | Backend    | Go 1.27, `net/http` stdlib (no router framework) |
 | Database   | SQLite (`modernc.org/sqlite`, no cgo)            |
 | Migrations | Versioned SQL files, embedded with `go:embed`    |
-| Frontend   | React + TypeScript + Vite                        |
+| Frontend   | React + TypeScript + Vite, served by Caddy       |
 
-Full rationale for each choice: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Migrations run automatically on startup. One backend serves many campaigns — each campaign stores its own `vault_path`, a subfolder under `VAULTS_ROOT`. [`vault-template/`](vault-template/) has a vault layout the indexer recognizes out of the box.
 
-SQLite migrations run automatically on startup.
+More: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-One backend instance serves multiple campaigns — each `campaigns` row stores its own `vault_path`, a subfolder under a shared `VAULTS_ROOT` mount. See [`vault-template/`](vault-template/) for a ready-to-copy vault structure the indexer recognizes out of the box.
+## Quick start
 
-## Configuration
+Prebuilt images from GHCR. Works with Docker and Podman.
 
-Environment variables (via `.env`, see `.env.example`):
-
-| Variable            | Description                                                        |
-| ------------------- | ------------------------------------------------------------------ |
-| `CLIENT_PORT`        | Host port to expose the client on (defaults to `8080`)             |
-| `ADMIN_TOKEN`        | Required to create campaigns / list vault dirs (see [`docs/API.md`](docs/API.md)) |
-| `DB_PATH`           | Database path inside the container                                 |
-| `VAULTS_ROOT_HOST`  | Host folder holding every campaign's Obsidian vault as a subfolder |
-
-## Docker / Podman
-
-Run with **Docker** or **Podman** (no differences in commands):
-
-```bash
-# Copy environment template
-cp .env.example .env
-
-# Build and run
-docker-compose up --build
-
-# Or with Podman
-podman-compose up --build
-```
-
-The container includes:
-- SQLite 
-- Automatic schema migrations on startup
-- Persistent data volume (`campaign_data`)
-
-Adjust `CLIENT_PORT` in `.env` to expose on a different host port.
-
-## Production deployment
-
-The dev `docker-compose.yml` builds from source and keeps `ADMIN_TOKEN` as a plain env var — fine for local use, not for a token exposed to `docker inspect`/`ps` on a shared or internet-facing host. For production, pull the prebuilt images from GHCR and pass the admin token as a secret instead of an env var.
-
-This deployment currently runs on **Podman**, where a secret can be created and managed outside Swarm (`podman secret create`) and referenced as `external: true`. Docker Compose does **not** support `external: true` secrets without Swarm mode active (`docker swarm init` — `docker secret create` is a Swarm-scoped command) — on plain `docker compose`, use a `file:`-based secret instead (mounts straight from a local file, same result, no daemon-managed store required).
+`compose.yaml`:
 
 ```yaml
-# compose.yaml
 secrets:
   rolboard_admin_token:
-    external: true                     # Podman, no Swarm needed
-    # file: ${ADMIN_TOKEN_FILE_HOST}   # Docker without Swarm — use this form instead
+    external: true
 
 services:
   server:
@@ -90,45 +53,99 @@ services:
     environment:
       DB_PATH: /data/campaign.db
       VAULTS_ROOT: /vaults
+      UPLOADS_ROOT: /data/uploads
       PORT: 8080
       ADMIN_TOKEN_FILE: /run/secrets/rolboard_admin_token
     volumes:
       - ${DATA_PATH}:/data
       - ${VAULTS_ROOT_HOST}:/vaults:ro
+    logging:
+      driver: journald
+      options:
+        tag: "rolboard-server"
     restart: unless-stopped
 
   client:
     container_name: rolboard-client
     image: ghcr.io/ncorrea-13/rolboard-client:main
+    environment:
+      BACKEND_HOST: rolboard-server
     ports:
-      - "${CLIENT_PORT:-8080}:80"
+      - "${CLIENT_PORT}:80"
     depends_on:
       - server
+    logging:
+      driver: journald
+      options:
+        tag: "rolboard-client"
     restart: unless-stopped
 ```
 
+`.env`:
+
+```bash
+CLIENT_PORT=8080
+DATA_PATH=./data
+VAULTS_ROOT_HOST=/path/to/vaults
+```
+
+The server image runs as UID 1000 — `mkdir -p ./data` and `podman unshare chown -R 1000:1000 ./data` (Docker: plain `chown` instead of `podman unshare chown`) before the first start.
+
+Create the admin token secret and start:
+
 ```bash
 # Podman
-podman secret create rolboard_admin_token -
-# (paste the token, then Ctrl-D)
-podman-compose -f compose.yaml up -d
+printf '%s' 'your-admin-token' | podman secret create rolboard_admin_token -
+podman compose up -d
 
-# Docker, without Swarm — switch the secret to file: first (see commented line above)
-mkdir -p secrets && echo -n "your-admin-token" > secrets/admin_token
-echo "ADMIN_TOKEN_FILE_HOST=./secrets/admin_token" >> .env
-docker compose -f compose.yaml up -d
+# Docker (external secrets need Swarm mode)
+docker swarm init
+printf '%s' 'your-admin-token' | docker secret create rolboard_admin_token -
+docker compose up -d
+```
+
+On Docker without Swarm, replace `external: true` with `file: ./secrets/admin_token` and put the token in that file.
+
+`logging: journald` needs a systemd host; drop those blocks otherwise.
+
+Open `http://localhost:${CLIENT_PORT}`, log in as admin with the token, create a campaign and set its access code.
+
+## Configuration
+
+| Variable           | Where  | Description |
+| ------------------ | ------ | ----------- |
+| `CLIENT_PORT`      | host   | Host port for the web client |
+| `DATA_PATH`        | host   | Host folder for the database and uploaded images |
+| `VAULTS_ROOT_HOST` | host   | Host folder holding every campaign's vault as a subfolder (mounted read-only) |
+| `DB_PATH`          | server | SQLite file path |
+| `VAULTS_ROOT`      | server | Vaults mount path |
+| `UPLOADS_ROOT`     | server | Image storage path. No default — set it inside the data volume |
+| `PORT`             | server | Listen port (the client proxies to `8080`) |
+| `ADMIN_TOKEN_FILE` | server | File with the admin token (secret). Takes precedence over `ADMIN_TOKEN` |
+| `ADMIN_TOKEN`      | server | Admin token as plain env var (dev only) |
+| `COOKIE_SECURE`    | server | Set `false` only for local HTTP. Default: secure cookies |
+| `TRUST_PROXY_HEADERS` | server | Trust `CF-Connecting-IP` for rate limiting. Only if every request passes through Cloudflare — otherwise spoofable. Default: `false` |
+| `BACKEND_HOST`     | client | Backend hostname for the `/api` proxy. Default: `localhost` |
+
+## Development
+
+`docker-compose.yml` builds both images from source, runs the client in the server's network namespace and uses `ADMIN_TOKEN` from `.env`:
+
+```bash
+cp .env.example .env
+docker compose up --build   # or: podman compose up --build
 ```
 
 ## API
 
-Full CRUD over the core entities, plus dashboard, vault reindex and Markdown note rendering. Full endpoint list: [`docs/API.md`](docs/API.md).
+REST + JSON under `/api`. Full list: [`docs/API.md`](docs/API.md).
 
 ## Project Structure
 
-`server/` (Go backend) and `client/` (React/TS frontend), each with its own `internal`/`src` layout. Full tree and layer breakdown: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+`server/` (Go) and `client/` (React/TS). Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## About
 
-Personal project, built as a deliberate Go-learning exercise no shortcuts, no code-generation of the backend logic. See [`AGENTS.md`](AGENTS.md) for how AI assistance is scoped on this repo.
+Personal project, built as a deliberate Go-learning exercise. [`AGENTS.md`](AGENTS.md) describes how AI assistance is scoped on this repo.
 
 **Nicolás Correa** — [github.com/ncorrea-13](https://github.com/ncorrea-13)
