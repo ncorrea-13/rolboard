@@ -3,9 +3,13 @@ package handlers
 import (
 	"net/http"
 	"time"
+
+	"github.com/ncorrea-13/rolboard/server/internal/imagestore"
 )
 
-func NewRouter(h *Handlers) *http.ServeMux {
+const maxRequestBodyBytes = imagestore.MaxUploadBytes
+
+func NewRouter(h *Handlers) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", h.Health)
 
@@ -109,5 +113,8 @@ func NewRouter(h *Handlers) *http.ServeMux {
 	mux.Handle("POST /api/campaigns/{id}/reindex", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.Reindex)))
 	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.requireCampaign(resolveCampaignIDFromQuery, h.ListVaultDirs)))
 
-	return mux
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodyBytes)
+		mux.ServeHTTP(w, r)
+	})
 }
