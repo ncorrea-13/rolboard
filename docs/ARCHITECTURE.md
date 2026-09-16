@@ -3,71 +3,73 @@
 ## Visión general
 
 ```
-┌──────────────────────────┐         ┌───────────────────────────┐
-│   client/ (SPA)            │  HTTP   │   server/ (Go)              │
-│   React + TypeScript + Vite │◄──────►│   net/http (stdlib)         │
-└──────────────────────────┘  JSON   └───────────────────────────┘
-                                              │            │
-                                              ▼            ▼
-                                     ┌────────────┐  ┌───────────────┐
-                                     │  SQLite      │  │  Vault Obsidian │
-                                     │  campaign.db │  │  (montado RO)   │
-                                     └────────────┘  └───────────────┘
+navegador ──HTTP──► client (Caddy :80)
+                     ├── /       → SPA estática (React + TS + Vite)
+                     └── /api/*  → server (Go, :8080)
+                                     ├── SQLite      (DB_PATH, read-write)
+                                     ├── uploads/    (UPLOADS_ROOT, read-write)
+                                     └── vaults/     (VAULTS_ROOT, read-only)
 ```
 
-## Monorepo
+SPA y API comparten origen (Caddy sirve ambas). Cualquier archivo que sirva la app corre con la sesión del DM — de ahí las reglas de upload en `DECISIONS.md`.
+
+## Repositorio
 
 ```
-campaign-dashboard/
-├── server/          -- backend Go
-│   ├── cmd/server/  -- entrypoint (main.go)
-│   ├── internal/
-│   │   ├── handlers/    -- HTTP handlers (API REST)
-│   │   ├── service/     -- lógica de negocio
-│   │   ├── repository/  -- acceso a SQLite
-│   │   ├── models/      -- structs compartidos
-│   │   └── vault/       -- indexador del vault de Obsidian
-│   ├── data/         -- archivo SQLite (gitignored)
-│   ├── go.mod
-│   └── go.sum
-├── client/          -- frontend React/TS
+rolboard/
+├── server/
+│   ├── cmd/server/         entrypoint: env vars, wiring, graceful shutdown
+│   └── internal/
+│       ├── handlers/       HTTP: router, auth middleware, rate limit, payloads
+│       ├── service/        lógica de negocio, manejo de archivos
+│       ├── repository/     SQL crudo sobre database/sql + migraciones embebidas
+│       ├── models/         structs compartidos
+│       ├── imagestore/     validación y guardado de imágenes
+│       └── vault/          indexador y render de notas de Obsidian
+├── client/
 │   ├── src/
-│   ├── package.json
-│   └── vite.config.ts
-└── docs/            -- esta documentación
+│   │   ├── screens/        pantallas
+│   │   ├── components/     componentes compartidos
+│   │   ├── hooks/          useCampaignData (estado y llamadas a la API)
+│   │   ├── lib/            api, mappers, i18n (es/en), imágenes, obsidian://
+│   │   ├── data/           tipos de dominio
+│   │   └── styles/         tokens CSS
+│   └── Caddyfile
+├── vault-template/         estructura de vault que reconoce el indexador
+└── docs/
 ```
 
-No hay tooling de monorepo (Turborepo/Nx) — el proyecto es lo bastante chico como para no justificarlo. Dos carpetas independientes alcanzan.
+Capas del backend: `handlers → service → repository`. El handler solo traduce HTTP; el service tiene la lógica (validación de imágenes, reindex); el repository solo SQL.
 
 ## Stack
 
-| Capa             | Elección                               |
-| ---------------- | --------------------------------------- |
-| Backend          | Go, `net/http` stdlib (sin framework)  |
-| Base de datos    | SQLite (`modernc.org/sqlite`, sin cgo) |
-| Frontend         | React + TypeScript + Vite              |
-| Comunicación     | REST + JSON                            |
+| Capa          | Elección                                       |
+| ------------- | ---------------------------------------------- |
+| Backend       | Go 1.27, `net/http` stdlib                     |
+| Base de datos | SQLite, `modernc.org/sqlite` (sin cgo)         |
+| Markdown      | `goldmark` + sanitizado con `bluemonday`       |
+| Frontmatter   | `gopkg.in/yaml.v3`                             |
+| Auth          | `golang.org/x/crypto/bcrypt` para códigos      |
+| Frontend      | React 19 + TypeScript + Vite, CSS plano        |
+| Servidor web  | Caddy (estáticos + reverse proxy)              |
 
-Razonamiento de cada elección: [`DECISIONS.md`](./DECISIONS.md).
+## Autenticación
+
+- **Admin**: `POST /api/admin/login` con el token de instancia (`ADMIN_TOKEN_FILE` o `ADMIN_TOKEN`). Emite cookie `rolboard_admin_session` (24 h, sesiones en memoria — se pierden al reiniciar). Da acceso a todo.
+- **Campaña**: `POST /api/campaigns/{id}/login` con el código de acceso (bcrypt en `campaigns.access_code_hash`). Emite cookie `rolboard_session` (24 h, hash del token en `auth_sessions`). Solo da acceso a recursos de esa campaña: cada ruta resuelve a qué campaña pertenece el recurso y lo compara con la sesión.
+- Cookies `HttpOnly`, `SameSite=Lax`, `Secure` salvo `COOKIE_SECURE=false`. Logins con rate limit.
 
 ## Despliegue
 
-- Corre como contenedor (Docker o Podman). Dos compose distintos: `docker-compose.yml` en el repo builda desde código fuente para dev (`ADMIN_TOKEN` como env var plana alcanza); el compose de producción (documentado en [`README.md`](../README.md), no versionado como archivo) usa las imágenes de GHCR y pasa el admin token como secret. En Podman, secret nativo sin Swarm (`podman secret create` + `external: true`); en Docker plano sin Swarm, `external: true` no funciona (es scoped a Swarm) — ahí el secret va como `file:` en su lugar, mismo resultado sin store manejado por el daemon.
-- Cada campaña tiene su propio código de acceso; rutas de gestión de instancia (crear campaña, listar vault dirs) se protegen aparte con `X-Admin-Token` (ver [`API.md`](./API.md)).
-- El **build estático del frontend** (`vite build`) se sirve desde un contenedor Caddy aparte (`client/Dockerfile` + `client/Caddyfile`), que además hace de reverse proxy de `/api/*` hacia `rolboard-server:8080` — puerto interno fijo, desacoplado del `CLIENT_PORT` que expone el host.
+- CI (`.github/workflows/ci.yml`): build, lint, vet y tests; en push publica `rolboard-server` y `rolboard-client` en GHCR con tag de rama y de commit.
+- Producción: compose del README con imágenes de GHCR y el token como secret.
+- Desarrollo: `docker-compose.yml` buildea desde código, cliente en el namespace de red del servidor (`BACKEND_HOST=localhost`), volumen `campaign_data`.
+- El proxy de Caddy apunta a `{BACKEND_HOST}:8080`; el backend tiene que escuchar en `8080`.
 
 ## Vault de Obsidian
 
-Montado read-only dentro del contenedor. Sincronización, backup y detalle de lectura/procesamiento: [`VAULT_INDEXER.md`](./VAULT_INDEXER.md).
+Montado read-only; la app nunca lo escribe. Se sincroniza por fuera (Syncthing). Detalle del indexador: [`VAULT_INDEXER.md`](./VAULT_INDEXER.md).
 
-La dependencia del vault se va reduciendo de forma incremental: contenido nuevo puede vivir directamente en la DB en vez de en una nota (ver `DECISIONS.md`, "Giro de rumbo: reducir el vault de forma incremental"). El vault nunca se escribe desde la app.
+## Imágenes
 
-## Archivos subidos (planificado, no implementado)
-
-Las imágenes de entidad de la V0.2 no van al vault (que es read-only) ni a SQLite como BLOB: van a un volumen propio read-write bajo `UPLOADS_ROOT`, con la DB guardando solo la ruta relativa. Diseño, reglas de validación y razonamiento de seguridad: [`ROADMAP_V0.2.md`](./ROADMAP_V0.2.md).
-
-Dato de despliegue relevante para cualquier feature que acepte contenido subido: Caddy sirve el build de la SPA y proxea `/api/*` al backend, o sea que **archivos servidos por la app comparten origen con la app**. Ver la sección "Seguridad" del roadmap antes de ampliar los formatos aceptados.
-
-## Por qué NO WebSockets
-
-Uso single-user (herramienta del DM, no algo que ven los jugadores en simultáneo) — no hay estado que sincronizar entre clientes. No es una limitación temporal del MVP: la herramienta no está pensada para que otros usuarios la usen en simultáneo ni para "jugar" en vivo desde la app (ver mapa de combate en `DATA_MODEL.md`/`DECISIONS.md`) — es soporte de preparación y referencia para el DM, no un tablero virtual multiusuario. Razonamiento completo: [`DECISIONS.md`](./DECISIONS.md#alcance-para-el-dm-no-para-los-jugadores).
+Una imagen por NPC, PJ, locación y facción. Se guardan en `UPLOADS_ROOT/<entidad>/<id>-portrait.<png|jpg>`; la DB guarda la ruta relativa en `image_path`. El cliente reduce la imagen a 1600 px (JPEG) antes de subirla; el servidor acepta solo PNG/JPEG reales, máx. 5 MiB.

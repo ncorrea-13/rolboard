@@ -1,198 +1,153 @@
-# Vault de Obsidian — Indexador
+# Indexador del vault de Obsidian
 
-## Relación entre el dashboard y el vault
+Código: `server/internal/vault/`. Se dispara con `POST /api/campaigns/{id}/reindex` sobre `VAULTS_ROOT/<vault_path>`. El vault se monta read-only; el indexador nunca lo escribe.
 
-El dashboard **no reemplaza** el vault de Obsidian — lo complementa. El vault sigue siendo la fuente de verdad para contenido narrativo largo (historias, lore, reglas); el dashboard indexa la **metadata estructurada** (frontmatter YAML) para dar una vista rápida, consultable y navegable que Obsidian no ofrece de fábrica (estado de NPCs, quién está dónde, qué quests están activas).
+## Qué hace
 
-> Esto describe el estado actual, no un compromiso permanente: la dirección del proyecto es reducir la dependencia del vault de forma incremental cuando aparece un caso de uso concreto (ver "Giro de rumbo: reducir el vault de forma incremental, entidad por entidad" en `DECISIONS.md`). `quests` ya vive así — sin nota en el vault, 100% dashboard/DB.
-
-Cada entidad indexada guarda un campo `obsidian_path` que permite volver a la nota original en cualquier momento (ver `DATA_MODEL.md` y `API.md`).
-
-## Estado real del vault (auditado)
-
-Un audit de frontmatter (ver `DECISIONS.md`) sobre 166 archivos con contenido indexable arrojó:
-
-- **97% de cobertura de frontmatter** antes de cualquier normalización.
-- **0 inconsistencias críticas** de keys o valores.
-- Tras dos fases de trabajo con Claude Code (normalización de keys + completado de campos deducibles desde prosa/nombre de archivo): **115 archivos modificados**, quedando **41 pendientes** de resolución manual (casos genuinamente ambiguos: NPCs sin ubicación clara por estar muertos/desaparecidos/infiltrados, sesiones sin fecha documentada).
-
-Esto significa que el indexador puede confiar en el frontmatter como fuente primaria de datos estructurados, sin depender de parseo pesado de prosa — con una excepción puntual: `session_npcs`/`session_pcs` sí escanean el body de las sesiones en busca de wikilinks sueltos (ver sección "Sessions" más abajo), porque ahí no hay campo de frontmatter que los reemplace.
-
-## Ubicación del código
-
-Todo el indexador vive en `server/internal/vault/`:
+Lee el frontmatter YAML de las notas y crea/actualiza entidades. La prosa queda en Obsidian: el dashboard guarda `obsidian_path` para abrir la nota (`obsidian://`) o renderizarla.
 
 ```
-vault/
-├── walker.go       -- recorre el filesystem, filtra .md
-├── frontmatter.go  -- separa YAML del cuerpo, parsea a struct
-├── wikilinks.go    -- extrae [[wikilinks]] del cuerpo
-├── nameindex.go    -- índice nombre de archivo → entidad, detección de duplicados
-├── mapper.go       -- mapea carpeta → tipo de entidad; YAML → struct Go
-├── resolver.go     -- segunda pasada: resuelve wikilinks a IDs reales
-└── indexer.go      -- orquesta el flujo completo
+walker.go       recorre el vault, solo .md, saltea excluidos
+frontmatter.go  separa YAML y cuerpo
+mapper.go       carpeta → tipo de entidad; structs de frontmatter
+wikilinks.go    extrae [[wikilinks]] (soporta [[Nombre|Alias]])
+nameindex.go    nombre de archivo → entidades
+resolver.go     resuelve un wikilink a un ID filtrando por tipo
+indexer.go      orquesta el reindex
+render.go       Markdown → HTML sanitizado
 ```
 
-Es un paquete separado de `handlers`/`service` porque el indexado es un proceso batch, no un flujo de request/response típico — se dispara desde `POST /api/admin/reindex` (ver `API.md`), no responde a cada request del dashboard.
+## Flujo
 
-## Flujo de indexado
+1. **Lectura.** Por cada nota: detectar tipo por carpeta, parsear frontmatter, upsert por `(campaign_id, obsidian_path)`, registrar en el índice de nombres y guardar lo que hay que resolver después.
+2. **Resolución.** Con todas las notas ya en el índice, resolver wikilinks: padre de locación, ubicación/facciones/vínculo de NPC, spren/facciones de PJ, arco y menciones de sesión, líder de facción, notas de historia/avances.
+3. **Limpieza.** Entidades con `obsidian_path` que ya no existe en el vault → baja lógica (y se borra su `vault_file_state`).
 
-El proceso corre en **dos pasadas**, no una sola:
+Se hace en dos pasadas porque una nota puede referenciar otra que todavía no se leyó.
 
-```
-1. Primera pasada — lectura y staging
-   Por cada .md (filtrando excluidos):
-   a. Leer contenido
-   b. Separar frontmatter YAML del cuerpo
-   c. Parsear YAML → struct tipado según carpeta
-   d. Extraer wikilinks del cuerpo con regex
-   e. Guardar en staging + registrar en el índice de nombres
+**Incremental:** para NPCs, locaciones, facciones y PJs se guarda el SHA-256 de la nota en `vault_file_state`. Si no cambió, se saltea (solo se agrega al índice). Así una edición hecha en el dashboard no se pisa mientras la nota no cambie. Sesiones y arcos se procesan siempre.
 
-2. Segunda pasada — resolución de relaciones
-   Ahora que TODO está indexado por nombre:
-   a. Resolver cada wikilink (ej. current_location: [[Tashikk]]) a un ID real
-   b. Poblar tablas puente (npc_groups, session_npcs, etc.)
-   c. Poblar location.parent_location_id
-```
+**Resultado:** `{Processed, UnresolvedWikilinks, Conflicts, Errors}`. Un error en una nota no corta el reindex.
 
-**Por qué dos pasadas**: si se resolviera cada wikilink al vuelo durante la primera lectura, se rompería en cualquier caso donde el archivo referenciado todavía no fue procesado (ej. un NPC que aparece antes que la ubicación que referencia, según el orden de recorrido del filesystem).
+## Carpetas
 
-## Mapeo carpeta → tipo de entidad
+Solo cuenta la carpeta de primer nivel; las subcarpetas se aceptan.
 
-```go
-var folderToEntityType = map[string]string{
-    "NPC":        "npc",         // incluye subcarpetas Humanos, Astillas, Animales, Oyentes
-    "Locaciones": "location",    // incluye Ciudades, Extras
-    "Grupos":     "group",
-    "Sesiones":   "session",     // incluye Arco-N/
-    "Jugadores":  "player_character",
-    "Arcos":      "arc",
-}
-```
+| Carpeta      | Entidad |
+| ------------ | ------- |
+| `NPC/`        | npcs |
+| `Locaciones/` | locations |
+| `Grupos/`     | groups |
+| `Sesiones/`   | sessions |
+| `Jugadores/`  | player_characters |
+| `Arcos/`      | arcs |
 
-**Caso especial — Jugadores**: la estructura real es `Jugadores/<NombreJugador>/<archivos>`, con varios archivos por carpeta (`Historia.md`, `Avances.md`, y la ficha del personaje con nombre propio). No toda la carpeta mapea 1:1 a una `player_character` — se identifica la ficha real por coincidencia entre el nombre de archivo y el wikilink declarado en el campo `personaje:` del frontmatter del jugador. El resto de los archivos de esa carpeta son contenido narrativo asociado, no entidades separadas.
+Cualquier otra carpeta se ignora. Archivos excluidos: `CLAUDE.md`, `FORMAT.md`, `Primer Ideal.md`, `Método para crear NPCs.md`.
 
-## Archivos excluidos del indexado
+El **nombre** de la entidad es siempre el nombre del archivo sin `.md`, que es también como Obsidian resuelve los wikilinks.
 
-```
-CLAUDE.md
-FORMAT.md
-Primer Ideal.md
-Método para crear NPCs.md
-```
+## Frontmatter por carpeta
 
-Son guías/plantillas/referencia interna, no entidades de campaña.
-
-## Esquema de frontmatter por entidad (post-normalización)
+Los wikilinks van entre comillas en YAML: `"[[Nombre]]"`.
 
 ### NPC
 
-```yaml
-tipo: npc | spren | entidad-cognitiva | referencia
-status: vivo | muerto | desaparecido | activo | consolidado
-etnia: string, opcional
-rol: string, opcional
-faccion: string, opcional        -- alimenta npc_groups en la resolución
-vinculo_con: string, opcional     -- relevante para spren
-tipo_spren: string, opcional
-current_location: [[Wikilink]], opcional
-tags: [...]
-```
+| Clave              | Uso |
+| ------------------ | --- |
+| `tipo`             | `npc_kind`: `npc` \| `spren` \| `entidad-cognitiva` \| `referencia`. Otro valor → error en esa nota |
+| `status`           | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` |
+| `etnia`, `rol`, `tipo_spren` | texto |
+| `current_location` | wikilink a locación → `location_id` |
+| `faccion`          | **lista** de wikilinks a grupos → `npc_groups` |
+| `vinculo_con`      | wikilink a NPC → `npc_relations` con rol `vinculado_a` |
 
-### Locations
+Los NPCs del vault se crean con `detail_level = full`.
 
-```yaml
-tipo: ciudad | región | planeta | estructura | shadesmar
-relevancia: string
-region: string, opcional
-facciones_presentes: [[Wikilink], ...], opcional
-parent: [[Wikilink]], opcional     -- jerarquía; inferible desde prosa en varios casos
-tags: [...]
-```
+### Locaciones
 
-### Groups
+| Clave    | Uso |
+| -------- | --- |
+| `tipo`   | `planeta` → planet, `región` → region, `ciudad` → city, `estructura` → site, `shadesmar` → plane. Otro valor → error |
+| `parent` | wikilink a locación → `parent_location_id` |
 
-```yaml
-tipo: faccion | grupo | ...
-alineacion: string                -- ojo: renombrado desde "alineamiento" (typo original)
-alcance: string, opcional
-astilla: string, opcional
-investidura: string, opcional
-lider: [[Wikilink]], opcional
-tags: [...]
-```
+### Grupos
 
-> `miembros_conocidos` **no se usa como fuente** — se calcula programáticamente desde `npc_groups` en la resolución (ver `DATA_MODEL.md`).
+| Clave        | Uso |
+| ------------ | --- |
+| `alineacion` | texto |
+| `lider`      | wikilink a NPC → `lider_npc_id` |
 
-### Sessions
+`tipo`, `alcance`, `astilla`, `investidura` se leen pero no se guardan.
 
-```yaml
-tipo: sesion
-numero: integer                   -- admite 0
-arco: [[Wikilink]], opcional      -- sesiones de planificación pueden no tenerlo
-date: YYYY-MM-DD (ISO 8601)
-estado: string
-titulo: string, opcional
-pov: string, opcional
-```
+### Sesiones
 
-> `session_npcs`/`session_pcs` **no vienen de un campo de frontmatter** — NPCs y PJs se mencionan como wikilinks sueltos en el **cuerpo** de la nota (`[[Yashin]] negocia con [[Threnn]]`), confirmado contra Ses. 12-14 del vault real. El indexer escanea el body completo con `ExtractWikilinks`, resuelve cada nombre contra el `NameIndex` y filtra por `Type` (`npc`/`player_character`) — cualquier otro wikilink en el body (locations, facciones, arcos, otras sesiones) se ignora a propósito. `quest_npcs`/`session_quests` no se resuelven así: Quests no tiene nota propia en el vault (ver más abajo), así que esas dos tablas puente se manejan solo por API/dashboard.
+| Clave              | Uso |
+| ------------------ | --- |
+| `numero`           | decimal. Parte entera → `session_number`, primer decimal → `sub_number` (`4.1` = interludio de la 4) |
+| `fecha`            | → `date` |
+| `status` / `estado`| si es `completada` o `jugada` → `session`; si no → `planning` |
+| `tags`             | si incluye `campaña/interludio` → `interlude` (tiene prioridad) |
+| `titulo`           | → `summary` |
+| `arco`             | wikilink a arco → `arc_id` |
 
-### Jugadores (Player Characters)
+Además, cada wikilink del **cuerpo** que apunte a un NPC o PJ se agrega a `session_npcs` / `session_pcs` (se reemplazan en cada reindex). Otros wikilinks del cuerpo se ignoran.
 
-```yaml
-tipo: jugador
-jugador: string                   -- nombre real del jugador IRL
-spren: [[Wikilink]], opcional     -- renombrado desde "spren_futuro"
-origen: [[Wikilink]], opcional
-estado: string, opcional
-```
+Si el nombre del archivo contiene `ARCHIVADO`, la sesión se crea con `sub_number = 99` y queda dada de baja.
 
-> El nombre del PJ (`character_name`) **no** viene de un campo `personaje` — no existe en ninguna nota real del vault (confirmado contra las 5 fichas actuales de `Jugadores/`). Es directamente el nombre del archivo: `Jugadores/<Jugador>/<Personaje>.md` → `<Personaje>`, que además es como se lo linkea desde la prosa de las sesiones (`[[Yashin]]`, nunca `[[Ficha de Yashin]]`).
+### Jugadores
+
+Según `tipo`:
+
+- `jugador` (sin `personaje`): ficha del PJ.
+  | Clave       | Uso |
+  | ----------- | --- |
+  | `jugador`   | → `player_name` |
+  | `raza`      | → `race` |
+  | `status`    | `vivo` \| `muerto` \| `desaparecido` \| `activo`; otro → `activo` |
+  | `spren`     | wikilink a NPC → `spren_npc_id` |
+  | `facciones` | lista de wikilinks a grupos → `pc_groups` |
+- `historia-jugador` / `avances` con `personaje: "[[PJ]]"`: se guarda su ruta en `historia_path` / `avances_path` del PJ.
+- Cualquier otra nota (incluida `tipo: jugador` con `personaje`) se ignora.
+
+### Arcos
+
+| Clave              | Uso |
+| ------------------ | --- |
+| `arco`             | → `order` |
+| `subarco`          | → `subarc_order` |
+| `titulo`           | → `title` |
+| `status`           | `planificado` \| `en curso` \| `cerrado`; otro → `planificado` |
+| `mision_principal` | → `summary` |
 
 ### Quests
 
-No existe como nota de Obsidian — no hay carpeta `Quests/` ni ninguna nota con `tipo: quest`/`mision` en el vault real (confirmado). `quests` vive solo en la DB vía API/dashboard, por eso no tiene columna `obsidian_path` en el schema (ver `DATA_MODEL.md`) ni pasa por el indexer.
+No existen en el vault. Viven solo en la DB.
 
 ## Resolución de wikilinks
 
-```go
-var wikilinkRe = regexp.MustCompile(`\[\[([^\]|]+)(?:\|[^\]]+)?\]\]`)
-```
+Un wikilink se busca por nombre y se filtra por el tipo esperado según el campo (`current_location` → locación, `lider` → NPC, etc.). Así dos archivos con el mismo nombre en carpetas distintas no chocan.
 
-Contempla el alias de Obsidian (`[[Nombre Real|Alias mostrado]]`).
+- 0 coincidencias, o más de 1 del mismo tipo (ambiguo) → no se resuelve y va a `UnresolvedWikilinks`. Nunca se adivina.
 
-Obsidian resuelve links por **nombre de archivo**, no por ruta completa — el índice de nombres (`nameindex.go`) usa esa misma convención:
+`Conflicts` existe en el resultado pero hoy no se llena.
 
-```go
-type IndexEntry struct {
-    ID      int64
-    Name    string // nombre sin extensión, ej. "Tashikk"
-    Type    string // "npc", "location", "group", etc.
-    RawPath string
-}
-```
+## Membresías y ediciones manuales
 
-### Problema conocido: nombres duplicados
+`npc_groups` / `pc_groups` distinguen origen (`source`): el reindex solo reescribe lo que vino del vault y respeta lo agregado o sacado desde el dashboard. Ver `DATA_MODEL.md`.
 
-El vault tiene casos de archivos con el mismo nombre en carpetas distintas (ej. `Luz de plata.md` existe tanto en `Grupos/Planetas/` como en `Locaciones/Extras/`). Un índice plano por nombre colisiona en estos casos.
+## Render de notas
 
-**Estrategia de resolución** (a implementar en `resolver.go`): desambiguar por el tipo de entidad esperado según el campo que contiene el wikilink (ej. si el campo es `current_location`, buscar solo entre entidades tipo `location`); si aun así hay ambigüedad, marcar como conflicto en el reporte de resultado del reindexado, para revisión manual — nunca resolver a ciegas.
+`GET /api/campaigns/{id}/notes/render?path=...`:
 
-## Render de notas individuales
+- quita el frontmatter;
+- wikilinks con una única coincidencia → `<a data-entity-type data-entity-id>`; el resto → texto;
+- Markdown con `goldmark` (tablas GFM), callouts `[!NOTE]` etc. → `blockquote` con clase;
+- HTML sanitizado con `bluemonday` antes de devolverlo.
 
-`GET /api/campaigns/:id/notes/render?path=<ruta>` (ver `API.md`). Usa `goldmark` con la extensión de tablas GFM. Wikilinks (`[[link]]`) se resuelven a anchors reales contra el `NameIndex` de la campaña; los que no matchean un único resultado quedan como texto plano. Callouts de Obsidian (`[!NOTE]`, `[!WARNING]`, etc.) se post-procesan a HTML con clase propia. El HTML se sanitiza contra XSS antes de devolverse (`server/internal/vault/render.go`).
+## Abrir en Obsidian
 
-## Link de apertura directa en Obsidian
+El cliente arma `obsidian://open?vault=<vault_path>&file=<obsidian_path sin .md>` (`client/src/lib/obsidian.ts`). Funciona porque Obsidian nombra el vault igual que su carpeta.
 
-```
-obsidian://open?vault=<nombre-del-vault>&file=<ruta-relativa-sin-extensión>
-```
+## Sincronización
 
-Armado client-side (`client/src/lib/obsidian.ts`), no por el backend. El **nombre del vault** es la columna `campaigns.vault_path` de esa campaña (no una variable de entorno global) — funciona porque Obsidian, por default, nombra el vault igual que la carpeta raíz que se abre como tal.
-
-## Sincronización del vault con el servidor
-
-- El vault vive en una carpeta mantenida sincronizada externamente al contenedor (ver [`DECISIONS.md`](./DECISIONS.md) para el porqué de filesystem sync en vez de clonar desde el repo remoto).
-- El contenedor del dashboard monta esa carpeta como **volumen read-only** — el indexador nunca escribe sobre el vault.
-- Si el vault también es un repo Git, excluir `.git/` de la herramienta de sincronización usada — sincronizar objetos internos de Git a nivel de bytes puede corromperlos si hay commits hechos desde distintos dispositivos.
+El vault se sincroniza al servidor por fuera (Syncthing). Si además es un repo git, excluir `.git/` de la sincronización.
