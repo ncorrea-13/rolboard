@@ -91,7 +91,7 @@ func (h *Handlers) CreateGroup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.groups.Create(r.Context(), &group); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating group")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

@@ -2,9 +2,16 @@ package handlers
 
 import (
 	"database/sql"
+	"log"
+	"net/http"
 
 	"github.com/ncorrea-13/rolboard/server/internal/service"
 )
+
+func internalError(w http.ResponseWriter, err error, msg string) {
+	log.Printf("%s: %v", msg, err)
+	http.Error(w, msg, http.StatusInternalServerError)
+}
 
 type Handlers struct {
 	db                    *sql.DB

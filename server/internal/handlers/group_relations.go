@@ -54,7 +54,7 @@ func (h *Handlers) AddGroupMember(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.groups.AddMember(r.Context(), groupID, payload.NPCID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error adding group member")
 		return
 	}
 
@@ -74,7 +74,7 @@ func (h *Handlers) RemoveGroupMember(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.groups.RemoveMember(r.Context(), groupID, npcID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error removing group member")
 		return
 	}
 
@@ -126,7 +126,7 @@ func (h *Handlers) AddGroupPCMember(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.groups.AddPCMember(r.Context(), groupID, payload.PCID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error adding group PC member")
 		return
 	}
 
@@ -146,7 +146,7 @@ func (h *Handlers) RemoveGroupPCMember(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.groups.RemovePCMember(r.Context(), groupID, pcID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error removing group PC member")
 		return
 	}
 

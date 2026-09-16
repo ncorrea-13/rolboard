@@ -81,7 +81,7 @@ func (h *Handlers) CreateCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating campaign")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

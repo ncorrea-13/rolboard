@@ -133,7 +133,7 @@ func (h *Handlers) CreateNPC(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.npcs.Create(r.Context(), &npc); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating npc")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

@@ -99,7 +99,7 @@ func (h *Handlers) CreateLocation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.locations.Create(r.Context(), &location); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating location")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

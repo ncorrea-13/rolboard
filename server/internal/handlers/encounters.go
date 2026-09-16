@@ -92,7 +92,7 @@ func (h *Handlers) CreateEncounter(w http.ResponseWriter, r *http.Request) {
 
 	err = h.encounters.Create(r.Context(), &encounter)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating encounter")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

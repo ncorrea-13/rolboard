@@ -101,7 +101,7 @@ func (h *Handlers) CreatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := h.playerCharacters.Create(r.Context(), &pc); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating player character")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

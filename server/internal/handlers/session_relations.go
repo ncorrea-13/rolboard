@@ -77,7 +77,7 @@ func (h *Handlers) AddSessionNpc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.sessions.AddNpc(r.Context(), sessionID, payload.NPCID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error adding session npc")
 		return
 	}
 
@@ -97,7 +97,7 @@ func (h *Handlers) RemoveSessionNpc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.sessions.RemoveNpc(r.Context(), sessionID, npcID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error removing session npc")
 		return
 	}
 
@@ -164,7 +164,7 @@ func (h *Handlers) AddSessionQuest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.sessions.AddQuest(r.Context(), sessionID, payload.QuestID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error adding session quest")
 		return
 	}
 
@@ -184,7 +184,7 @@ func (h *Handlers) RemoveSessionQuest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.sessions.RemoveQuest(r.Context(), sessionID, questID); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error removing session quest")
 		return
 	}
 

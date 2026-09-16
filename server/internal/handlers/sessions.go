@@ -102,7 +102,7 @@ func (h *Handlers) CreateSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.sessions.Create(r.Context(), &session); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating session")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

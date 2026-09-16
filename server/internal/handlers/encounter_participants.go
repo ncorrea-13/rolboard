@@ -142,7 +142,7 @@ func (h *Handlers) CreateEncounterParticipant(w http.ResponseWriter, r *http.Req
 
 	err = h.encounterParticipants.Create(r.Context(), &participant)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		internalError(w, err, "Error creating encounter participant")
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
