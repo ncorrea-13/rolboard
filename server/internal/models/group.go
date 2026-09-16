@@ -9,6 +9,7 @@ type Group struct {
 	Alineacion   string  `json:"alineacion"`
 	LiderNPCID   *int64  `json:"lider_npc_id,omitempty"`
 	ObsidianPath *string `json:"obsidian_path,omitempty"`
+	ImagePath    *string `json:"image_path,omitempty"`
 	MemberCount  int64   `json:"member_count"`
 	CreatedAt    string  `json:"created_at"`
 	UpdatedAt    string  `json:"updated_at"`

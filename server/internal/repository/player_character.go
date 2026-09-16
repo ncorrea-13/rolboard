@@ -17,7 +17,7 @@ func NewPlayerCharacterRepository(db *sql.DB) *PlayerCharacterRepository {
 }
 
 func (r *PlayerCharacterRepository) List(ctx context.Context, campaignID int64) ([]models.PlayerCharacter, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, created_at, updated_at
+	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, image_path, historia_path, avances_path, created_at, updated_at
 		FROM player_characters WHERE campaign_id = ? AND deleted_at IS NULL ORDER BY character_name`,
 		campaignID,
 	)
@@ -33,13 +33,14 @@ func (r *PlayerCharacterRepository) List(ctx context.Context, campaignID int64) 
 	var pcs []models.PlayerCharacter
 	for rows.Next() {
 		p := models.PlayerCharacter{}
-		var obsidianPath, historiaPath, avancesPath sql.NullString
+		var obsidianPath, imagePath, historiaPath, avancesPath sql.NullString
 		var sprenNPCID, currentHp, maxHp sql.NullInt64
 		var attributes, skills string
-		if err := rows.Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &imagePath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, err
 		}
 		p.ObsidianPath = fromNullString(obsidianPath)
+		p.ImagePath = fromNullString(imagePath)
 		p.HistoriaPath = fromNullString(historiaPath)
 		p.AvancesPath = fromNullString(avancesPath)
 		p.SprenNPCID = fromNullInt64(sprenNPCID)
@@ -85,14 +86,14 @@ func (r *PlayerCharacterRepository) Create(ctx context.Context, p *models.Player
 
 func (r *PlayerCharacterRepository) GetByID(ctx context.Context, id int64) (*models.PlayerCharacter, error) {
 	p := models.PlayerCharacter{}
-	var obsidianPath, historiaPath, avancesPath sql.NullString
+	var obsidianPath, imagePath, historiaPath, avancesPath sql.NullString
 	var sprenNPCID, currentHp, maxHp sql.NullInt64
 	var attributes, skills string
 	err := r.db.QueryRowContext(ctx, `
-		SELECT id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, created_at, updated_at
+		SELECT id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, image_path, historia_path, avances_path, created_at, updated_at
 		FROM player_characters WHERE id = ? AND deleted_at IS NULL`,
 		id,
-	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt)
+	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &imagePath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -100,6 +101,7 @@ func (r *PlayerCharacterRepository) GetByID(ctx context.Context, id int64) (*mod
 		return nil, err
 	}
 	p.ObsidianPath = fromNullString(obsidianPath)
+	p.ImagePath = fromNullString(imagePath)
 	p.HistoriaPath = fromNullString(historiaPath)
 	p.AvancesPath = fromNullString(avancesPath)
 	p.SprenNPCID = fromNullInt64(sprenNPCID)
@@ -108,6 +110,22 @@ func (r *PlayerCharacterRepository) GetByID(ctx context.Context, id int64) (*mod
 	p.CurrentHp = fromNullInt64(currentHp)
 	p.MaxHp = fromNullInt64(maxHp)
 	return &p, nil
+}
+
+func (r *PlayerCharacterRepository) SetImagePath(ctx context.Context, id int64, path *string) (*models.PlayerCharacter, error) {
+	query := `UPDATE player_characters SET image_path = ?, updated_at = datetime('now') WHERE id = ? AND deleted_at IS NULL`
+	res, err := r.db.ExecContext(ctx, query, toNullString(path), id)
+	if err != nil {
+		return nil, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if affected == 0 {
+		return nil, ErrNotFound
+	}
+	return r.GetByID(ctx, id)
 }
 
 func (r *PlayerCharacterRepository) Update(ctx context.Context, id int64, p *models.PlayerCharacter) error {
