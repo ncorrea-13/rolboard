@@ -10,6 +10,21 @@
   border-bottom: 1px solid var(--border-subtle);
 }
 
+@media (max-width: 640px) {
+  .sessions-timeline {
+    padding: 16px;
+  }
+
+  .sessions-timeline__header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .sessions-timeline__item {
+    margin-left: 0;
+  }
+}
+
 .sessions-timeline__subtitle {
   font: 400 13px var(--font-body);
   color: var(--text-secondary);
