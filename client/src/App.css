@@ -19,6 +19,6 @@
 
 @media (max-width: 640px) {
   .app__stage {
-    padding: 12px;
+    padding: 12px 12px 60px;
   }
 }

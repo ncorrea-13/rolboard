@@ -64,7 +64,18 @@
   .entity-detail__actions {
     margin-left: 0;
     width: 100%;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .entity-detail__obsidian {
+    flex-wrap: nowrap;
+  }
+
+  .entity-detail__obsidian-actions .btn {
+    padding: 6px 10px;
+    font-size: 11.5px;
+    min-height: auto;
   }
 }
 
@@ -102,4 +113,15 @@
 .entity-detail__obsidian-path {
   font: 400 12px var(--font-mono);
   color: var(--text-secondary);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entity-detail__obsidian-actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
 }

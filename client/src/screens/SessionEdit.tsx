@@ -86,7 +86,7 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
               {t("sessionEdit.confirmingPlay")} · {t("sessionEdit.sessionPrefix")} {sessionCode(session)} {arc ? `· ${arc.label}` : ""}
             </span>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="npc-edit__bar-actions">
             <button className="btn btn-secondary" onClick={() => (autoConfirm ? onBack() : setConfirmingPlay(false))}>
               {t("common.cancel")}
             </button>
@@ -174,7 +174,7 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
             {t("sessionEdit.sessionPrefix")} {sessionCode(session)} {arc ? `· ${arc.label}` : ""} {played ? t("sessionEdit.playedSuffix") : t("sessionEdit.plannedSuffix")}
           </span>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="npc-edit__bar-actions">
           <button className="btn btn-secondary" onClick={onBack}>{t("common.back")}</button>
           {session.obsidianPath && (
             <button className="btn btn-secondary" onClick={openNote}>{t("entityDetail.viewRenderedNote")}</button>
