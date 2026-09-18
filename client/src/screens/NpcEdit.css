@@ -28,6 +28,10 @@
   grid-template-columns: 1.5fr 1fr;
 }
 
+.npc-edit__body--even {
+  grid-template-columns: 1fr 1fr;
+}
+
 .npc-edit__col {
   padding: 20px 24px;
   display: flex;
