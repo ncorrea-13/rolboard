@@ -104,3 +104,11 @@ body {
   height: 2px;
   border-radius: 1px;
 }
+
+@media (max-width: 640px) {
+  .btn {
+    font-size: 13.5px;
+    padding: 10px 16px;
+    min-height: 40px;
+  }
+}

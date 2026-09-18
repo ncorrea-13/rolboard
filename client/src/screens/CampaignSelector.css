@@ -37,6 +37,21 @@
   margin-top: 18px;
 }
 
+@media (max-width: 640px) {
+  .campaign-selector {
+    padding: 16px;
+  }
+
+  .campaign-selector__header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .campaign-selector__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .campaign-card {
   border-radius: var(--radius-md);
   padding: 16px 18px;

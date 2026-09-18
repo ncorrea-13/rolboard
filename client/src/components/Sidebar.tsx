@@ -82,6 +82,7 @@ interface SidebarProps {
   onBack: () => void;
   onOpenSettings?: () => void;
   onAdminLogout?: () => void;
+  onBackdropClick?: () => void;
 }
 
 export function Sidebar({
@@ -91,10 +92,11 @@ export function Sidebar({
   onBack,
   onOpenSettings,
   onAdminLogout,
+  onBackdropClick,
 }: SidebarProps) {
   const t = useT();
   return (
-    <nav className="sidebar">
+    <nav className="sidebar" onClick={onBackdropClick}>
       <button
         className="sidebar__brand"
         onClick={onBack}
@@ -133,7 +135,10 @@ export function Sidebar({
           </div>
         );
       })}
-      <div style={{ display: "flex", gap: 8, padding: "8px 12px", marginTop: "auto" }}>
+      <div
+        className="sidebar__footer-actions"
+        onClick={(e) => e.stopPropagation()}
+      >
         {onOpenSettings && (
           <button
             className="btn btn-secondary"

@@ -91,7 +91,7 @@ export function EntityDetail({
           )}
           {status}
           {(extraActions || onEdit || onDelete) && (
-            <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+            <div className="entity-detail__actions">
               {extraActions}
               {onEdit && (
                 <button className="btn btn-secondary" onClick={onEdit}>

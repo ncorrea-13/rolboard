@@ -24,11 +24,24 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const t = useT();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => window.innerWidth > 640,
+  );
+
+  function handleNavigate(section: DashboardSection) {
+    onNavigate(section);
+    if (window.innerWidth <= 640) setSidebarOpen(false);
+  }
+
+  function handleBackdropClick() {
+    if (window.innerWidth <= 640) setSidebarOpen(false);
+  }
 
   return (
     <div className="app-shell">
-      <div className="app-shell__toggle-zone">
+      <div
+        className={`app-shell__toggle-zone${sidebarOpen ? " app-shell__toggle-zone--open" : ""}`}
+      >
         <button
           className="app-shell__toggle"
           onClick={() => setSidebarOpen((v) => !v)}
@@ -46,10 +59,11 @@ export function AppShell({
         <Sidebar
           campaignName={campaignName}
           active={activeNav}
-          onNavigate={onNavigate}
+          onNavigate={handleNavigate}
           onBack={onBackToCampaigns}
           onOpenSettings={onOpenSettings}
           onAdminLogout={onAdminLogout}
+          onBackdropClick={handleBackdropClick}
         />
       </div>
       <main className="app-shell__main">{children}</main>

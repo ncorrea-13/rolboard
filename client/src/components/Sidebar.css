@@ -86,3 +86,35 @@
   height: 12px;
   border-radius: 2px;
 }
+
+.sidebar__footer-actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-top: auto;
+}
+
+@media (max-width: 640px) {
+  .sidebar {
+    padding: 16px 16px 48px;
+    gap: 6px;
+  }
+
+  .sidebar__brand {
+    padding: 0 9px 16px;
+  }
+
+  .sidebar__name {
+    font-size: 18px;
+  }
+
+  .sidebar__item {
+    padding: 13px 12px;
+    font-size: 15.5px;
+    min-height: 44px;
+  }
+
+  .sidebar__footer-actions {
+    justify-content: center;
+  }
+}
