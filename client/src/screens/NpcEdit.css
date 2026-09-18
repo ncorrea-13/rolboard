@@ -18,6 +18,11 @@
   gap: 11px;
 }
 
+.npc-edit__bar-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .npc-edit__body {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
@@ -44,6 +49,12 @@
   .npc-edit__bar {
     flex-wrap: wrap;
     padding: 13px 16px;
+  }
+
+  .npc-edit__bar-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
   }
 
   .npc-edit__body {

@@ -122,7 +122,7 @@ export function EntityDetail({
               <span className="entity-detail__obsidian-path">
                 {obsidianPath}
               </span>
-              <div style={{ display: "flex", gap: 8 }}>
+              <div className="entity-detail__obsidian-actions">
                 <button
                   className="btn btn-secondary"
                   onClick={() => openInObsidian(vaultName ?? "", obsidianPath)}
