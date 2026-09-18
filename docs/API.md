@@ -1,54 +1,56 @@
 # API
 
-REST + JSON bajo `/api`. Router: `net/http` stdlib (`ServeMux` con métodos y path params). Fuente de verdad: `server/internal/handlers/router.go`.
+[Español](API.es.md)
 
-## Convenciones
+REST + JSON under `/api`. Router: `net/http` stdlib (`ServeMux` with methods and path params). Source of truth: `server/internal/handlers/router.go`.
 
-- Entidades de una campaña se listan y crean bajo `/api/campaigns/{id}/...`; se leen, editan y borran por su propio ID (`/api/npcs/{id}`).
-- `DELETE` de entidades es baja lógica (`deleted_at`). Responde `204`.
-- `POST` de creación responde `201` con la entidad; `PUT` responde la entidad actualizada.
-- Enums inválidos → `400`. Recurso inexistente → `404`.
+## Conventions
 
-## Autenticación
+- A campaign's entities are listed and created under `/api/campaigns/{id}/...`; read, updated and deleted by their own ID (`/api/npcs/{id}`).
+- `DELETE` on entities is a soft delete (`deleted_at`). Responds `204`.
+- `POST` create responds `201` with the entity; `PUT` responds with the updated entity.
+- Invalid enums → `400`. Nonexistent resource → `404`.
 
-| Nivel    | Cómo                                   | Cookie                   |
+## Authentication
+
+| Level    | How                                   | Cookie                   |
 | -------- | -------------------------------------- | ------------------------ |
-| Pública  | sin cookie                             | —                        |
+| Public   | no cookie                              | —                        |
 | Admin    | `POST /api/admin/login`                | `rolboard_admin_session` |
-| Campaña  | `POST /api/campaigns/{id}/login`       | `rolboard_session`       |
+| Campaign | `POST /api/campaigns/{id}/login`       | `rolboard_session`       |
 
-La sesión de admin pasa cualquier chequeo de campaña. La de campaña solo accede a recursos de esa campaña (el middleware resuelve la campaña del recurso y compara; si no coincide → `401`).
+An admin session passes any campaign check. A campaign session only accesses resources from that campaign (middleware resolves the resource's campaign and compares; mismatch → `401`).
 
 ```
 POST /api/admin/login              {"token": "..."}      rate limit 5 / 15 min
 POST /api/admin/logout
-GET  /api/admin/session            admin — 204 si la sesión es válida
+GET  /api/admin/session            admin — 204 if the session is valid
 POST /api/campaigns/{id}/login     {"code": "..."}       rate limit 5 / min
 POST /api/campaigns/{id}/logout
-POST /api/campaigns/{id}/access-code   admin — {"code": "..."}, mínimo 8 caracteres
+POST /api/campaigns/{id}/access-code   admin — {"code": "..."}, minimum 8 characters
 ```
 
-Todas las rutas de abajo requieren sesión de campaña (o admin), salvo las marcadas.
+All routes below require a campaign session (or admin), except those marked.
 
 ## Health
 
 ```
-GET /api/health          pública — {"status":"ok"}
+GET /api/health          public — {"status":"ok"}
 ```
 
 ## Campaigns
 
 ```
-GET    /api/campaigns          pública — [{id, name, system, status}]
+GET    /api/campaigns          public — [{id, name, system, status}]
 POST   /api/campaigns          admin
 GET    /api/campaigns/{id}
 PUT    /api/campaigns/{id}
 DELETE /api/campaigns/{id}
 ```
 
-Body: `name`, `system`, `description`, `vault_path`, y `status` (`active` | `paused` | `finished`) en `PUT`.
+Body: `name`, `system`, `description`, `vault_path`, and `status` (`active` | `paused` | `finished`) on `PUT`.
 
-La lista pública va recortada a propósito: la pantalla de selección la necesita antes de haber sesión, y no debe exponer `vault_path`. El detalle devuelve el registro completo.
+The public list is deliberately trimmed: the selection screen needs it before there's a session, and it must not expose `vault_path`. The detail endpoint returns the full record.
 
 ## Dashboard
 
@@ -56,7 +58,7 @@ La lista pública va recortada a propósito: la pantalla de selección la necesi
 GET /api/campaigns/{id}/dashboard
 ```
 
-`{active_quests, on_hold_quests, recent_npcs, last_session}` — `recent_npcs` son los 5 con `updated_at` más reciente.
+`{active_quests, on_hold_quests, recent_npcs, last_session}` — `recent_npcs` are the 5 with the most recent `updated_at`.
 
 ## Arcs
 
@@ -68,7 +70,7 @@ PUT    /api/arcs/{id}
 DELETE /api/arcs/{id}
 ```
 
-Body: `name` (se guarda como `title`), `order`, `status` (`planificado` | `en_curso` | `cerrado`), `subarc_order`, `summary`, `obsidian_path`.
+Body: `name` (stored as `title`), `order`, `status` (`planificado` | `en_curso` | `cerrado`), `subarc_order`, `summary`, `obsidian_path`.
 
 ## Sessions
 
@@ -88,7 +90,7 @@ DELETE /api/sessions/{id}/quests/{questId}
 
 Body: `arc_id`, `session_number`, `sub_number`, `session_type` (`session` | `interlude` | `planning`), `date`, `summary`, `prep_notes`, `obsidian_path`.
 
-`session_npcs` también lo escribe el reindex (lo reemplaza con los wikilinks del cuerpo de la nota). `session_quests` solo se maneja desde acá.
+`session_npcs` is also written by the reindex (it replaces them with the wikilinks from the note's body). `session_quests` is only managed from here.
 
 ## Locations
 
@@ -123,7 +125,7 @@ GET    /api/npcs/{id}/image
 
 Body: `name`, `npc_kind` (`npc` | `spren` | `entidad-cognitiva` | `referencia`), `detail_level` (`full` | `minor`), `status` (`vivo` | `muerto` | `desaparecido` | `activo` | `consolidado` | `paused`), `location_id`, `etnia`, `rol`, `tipo_spren`, `description`, `notes`, `attributes`, `skills`, `obsidian_path`.
 
-Relaciones: dirigidas (`{id}` es el origen), `role` es texto libre. `GET` devuelve las relaciones donde el NPC es origen o destino.
+Relations: directed (`{id}` is the origin), `role` is free text. `GET` returns relations where the NPC is either origin or destination.
 
 ## Player Characters
 
@@ -140,9 +142,9 @@ GET    /api/player-characters/{id}/image
 
 Body: `player_name`, `character_name`, `race`, `class`, `status` (`vivo` | `muerto` | `desaparecido` | `activo`), `backstory`, `progression_notes`, `attributes`, `skills`, `current_hp`, `max_hp`, `obsidian_path`.
 
-`spren_npc_id`, `historia_path` y `avances_path` solo los escribe el reindex.
+`spren_npc_id`, `historia_path` and `avances_path` are only written by the reindex.
 
-## Groups (facciones)
+## Groups (factions)
 
 ```
 GET    /api/campaigns/{id}/groups
@@ -163,7 +165,7 @@ GET    /api/groups/{id}/image
 
 Body: `name`, `description`, `notes`, `alineacion`, `lider_npc_id`, `obsidian_path`.
 
-Lista y detalle incluyen `member_count` (calculado). Sacar un miembro es baja lógica (`source = 'removed'`) para que el reindex no lo vuelva a agregar.
+List and detail include `member_count` (computed). Removing a member is a soft delete (`source = 'removed'`) so the reindex doesn't add it back.
 
 ## Quests
 
@@ -177,7 +179,7 @@ DELETE /api/quests/{id}
 
 Body: `title`, `description`, `status` (`active` | `completed` | `failed` | `on_hold`), `priority`, `notes`.
 
-## Encounters (tracker de combate)
+## Encounters (combat tracker)
 
 ```
 GET    /api/campaigns/{id}/encounters
@@ -193,34 +195,34 @@ DELETE /api/encounter-participants/{id}
 
 Encounter: `session_id`, `round` (default 1), `status` (`planificado` | `activo` | `cerrado`, default `planificado`).
 
-Participante: `pc_id`, `npc_id`, `display_name`, `current_hp`, `max_hp`, `initiative_value`, `turn_type` (`rapido` | `lento`), `notes`, `attributes`, `skills`. A lo sumo uno de `pc_id` / `npc_id` / `display_name` (`400` si no).
+Participant: `pc_id`, `npc_id`, `display_name`, `current_hp`, `max_hp`, `initiative_value`, `turn_type` (`rapido` | `lento`), `notes`, `attributes`, `skills`. At most one of `pc_id` / `npc_id` / `display_name` (`400` otherwise).
 
-## Imágenes
+## Images
 
 ```
-POST   /api/{entidad}/{id}/image    multipart/form-data, campo "file"
-DELETE /api/{entidad}/{id}/image
-GET    /api/{entidad}/{id}/image
+POST   /api/{entity}/{id}/image    multipart/form-data, field "file"
+DELETE /api/{entity}/{id}/image
+GET    /api/{entity}/{id}/image
 ```
 
-Entidades: `npcs`, `player-characters`, `locations`, `groups`.
+Entities: `npcs`, `player-characters`, `locations`, `groups`.
 
-- `POST`: solo PNG/JPEG (detectado por contenido), máx. 5 MiB. Reemplaza la anterior. Devuelve la entidad.
-- `DELETE`: borra archivo y limpia `image_path`. Devuelve la entidad.
-- `GET`: sirve el archivo con `X-Content-Type-Options: nosniff`. `404` si no hay imagen.
+- `POST`: PNG/JPEG only (detected by content), max 5 MiB. Replaces the previous image. Returns the entity.
+- `DELETE`: deletes the file and clears `image_path`. Returns the entity.
+- `GET`: serves the file with `X-Content-Type-Options: nosniff`. `404` if there's no image.
 
-`image_path` no viaja en `POST`/`PUT` de la entidad.
+`image_path` is never accepted in an entity's `POST`/`PUT`.
 
 ## Vault
 
 ```
 POST /api/campaigns/{id}/reindex
-GET  /api/campaigns/{id}/notes/render?path=<ruta relativa>
+GET  /api/campaigns/{id}/notes/render?path=<relative path>
 GET  /api/admin/vault-dirs[?campaignId=N]
 ```
 
-- `reindex`: reindexa el vault de la campaña de forma síncrona. Devuelve `{Processed, UnresolvedWikilinks, Conflicts, Errors}`.
-- `notes/render`: `{"html": "..."}` con la nota renderizada y sanitizada; wikilinks resueltos a links de entidad.
-- `vault-dirs`: carpetas bajo `VAULTS_ROOT` sin campaña asignada (la carpeta de `campaignId` se incluye, para poder reasignarla). Admin sin parámetro, o sesión de la campaña `campaignId`.
+- `reindex`: reindexes the campaign's vault synchronously. Returns `{Processed, UnresolvedWikilinks, Conflicts, Errors}`.
+- `notes/render`: `{"html": "..."}` with the rendered, sanitized note; wikilinks resolved to entity links.
+- `vault-dirs`: folders under `VAULTS_ROOT` with no campaign assigned (the `campaignId` folder is included, so it can be reassigned). Admin with no parameter, or a session from the `campaignId` campaign.
 
-Detalle: [`VAULT_INDEXER.md`](./VAULT_INDEXER.md).
+Details: [`VAULT_INDEXER.md`](./VAULT_INDEXER.md).

@@ -1,94 +1,95 @@
-# Decisiones
+# Decisions
 
-Decisiones vigentes y su porqué. Si una cambia, se reescribe acá; el historial queda en git.
+[Español](DECISIONS.es.md)
+
+Current decisions and the reasoning behind them. If one changes, it gets rewritten here; history stays in git.
 
 ---
 
-## Alcance: herramienta del DM, no de los jugadores
+## Scope: a DM tool, not a player tool
 
-Un solo usuario (el DM), sin vistas para jugadores, sin estado compartido en vivo. Por eso no hay WebSockets, ni multiusuario, ni mapa de combate con tokens (se evaluó y se descartó: no aporta en una mesa donde nadie más mira la pantalla).
+A single user (the DM), no player-facing views, no live shared state. Hence no WebSockets, no multi-user, no combat map with tokens (evaluated and dropped: no value at a table where nobody else looks at the screen).
 
-"Un usuario" no significa "sin seguridad": el DM entra desde varios dispositivos por red, así que hay auth por campaña, token de admin y rate limit, y todo contenido subido se trata como hostil.
+"Single user" doesn't mean "no security": the DM logs in from several devices over the network, so there's per-campaign auth, an admin token and rate limiting, and all uploaded content is treated as hostile.
 
 ## Stack
 
-- **Go + `net/http` stdlib.** `ServeMux` ya tiene métodos y path params; un router de terceros no aporta nada para este tamaño. Además es un proyecto de aprendizaje de Go.
-- **SQL crudo con `database/sql`**, sin ORM.
-- **SQLite (`modernc.org/sqlite`, sin cgo).** Un usuario, pocos cientos de entidades, sin servidor de base que mantener. Binario estático.
-- **React + TypeScript + Vite (SPA).** La UI es interactiva (tracker, formularios, modales); no hace falta SSR ni SEO, así que Next.js sobra.
-- **CSS plano con tokens** (`client/src/styles/tokens.css`), sin Tailwind ni CSS-in-JS.
-- **Caddy** sirve la SPA y proxea `/api`, así SPA y API comparten origen y no hace falta CORS.
-- Carpetas `server/` y `client/`, sin tooling de monorepo.
+- **Go + `net/http` stdlib.** `ServeMux` already has methods and path params; a third-party router adds nothing at this size. It's also a Go-learning project.
+- **Raw SQL with `database/sql`**, no ORM.
+- **SQLite (`modernc.org/sqlite`, no cgo).** One user, a few hundred entities, no DB server to maintain. Static binary.
+- **React + TypeScript + Vite (SPA).** The UI is interactive (tracker, forms, modals); no need for SSR or SEO, so Next.js is overkill.
+- **Plain CSS with tokens** (`client/src/styles/tokens.css`), no Tailwind or CSS-in-JS.
+- **Caddy** serves the SPA and proxies `/api`, so SPA and API share an origin and CORS isn't needed.
+- `server/` and `client/` folders, no monorepo tooling.
 
-## Multi-campaña
+## Multi-campaign
 
-Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULTS_ROOT`), su código de acceso y sus datos aislados: el middleware verifica que cada recurso pertenezca a la campaña de la sesión.
+One backend, several campaigns. Each with its own `vault_path` (subfolder of `VAULTS_ROOT`), its own access code and isolated data: middleware verifies each resource belongs to the session's campaign.
 
-## Autenticación
+## Authentication
 
-- Código de acceso por campaña (bcrypt), sesión en cookie `HttpOnly` con el hash del token en `auth_sessions`.
-- Token de admin de instancia, preferentemente como secret (`ADMIN_TOKEN_FILE`). Su sesión vive en memoria: reiniciar el server obliga a volver a entrar, y está bien.
-- `SameSite=Lax` es la protección CSRF. No relajarlo.
-- `GET /api/campaigns` es público pero recortado (`id, name, system, status`): la pantalla de selección lo necesita antes de haber sesión, y no debe filtrar `vault_path`.
+- Per-campaign access code (bcrypt), session in an `HttpOnly` cookie with the token hash in `auth_sessions`.
+- Instance admin token, preferably as a secret (`ADMIN_TOKEN_FILE`). Its session lives in memory: restarting the server forces a re-login, and that's fine.
+- `SameSite=Lax` is the CSRF protection. Don't relax it.
+- `GET /api/campaigns` is public but trimmed (`id, name, system, status`): the selection screen needs it before there's a session, and it must not leak `vault_path`.
 
-## Vault de Obsidian: fuente de la prosa, no de todo
+## Obsidian vault: source of the prose, not of everything
 
-- El vault se monta read-only y se sincroniza por Syncthing (no se clona de git: sin dependencia de red).
-- El dashboard indexa frontmatter y guarda `obsidian_path` para abrir o renderizar la nota. Abrir en Obsidian (`obsidian://`) es una función de primera clase.
-- Lo que el vault no modela bien vive solo en la DB: quests, notas de preparación, `class`/`backstory` de PJs, fichas, HP, imágenes. Se mueve más contenido a la DB solo cuando aparece una necesidad concreta.
-- Quests no tienen nota en el vault; `session_quests` se maneja solo desde el dashboard.
+- The dashboard indexes frontmatter and stores `obsidian_path` to open or render the note. Opening in Obsidian (`obsidian://`) is a first-class feature.
+- What the vault doesn't model well lives only in the DB: quests, prep notes, PC `class`/`backstory`, sheets, HP, images. More content moves to the DB only when a concrete need shows up.
+- Quests have no note in the vault; `session_quests` is only managed from the dashboard.
 
 ## Reindex
 
-- Endpoint HTTP por campaña, síncrono (un botón). Con este volumen tarda segundos; una cola de jobs sería sobreingeniería.
-- Upsert por `(campaign_id, obsidian_path)`; notas borradas → baja lógica.
-- Notas sin cambios (hash en `vault_file_state`) no se reprocesan, para no pisar ediciones hechas en el dashboard. Si la nota cambió, gana el vault. No hay UI de conflictos.
-- Membresías con `source` (`vault` / `dashboard` / `removed`) para que el reindex no borre lo agregado a mano ni reviva lo sacado a mano.
-- `session_npcs` / `session_pcs` salen de los wikilinks del cuerpo de la sesión: así se escriben naturalmente las notas, sin campos extra.
-- Wikilinks se resuelven por nombre + tipo esperado; si hay ambigüedad no se adivina.
+- One HTTP endpoint per campaign, synchronous.
+- Upsert by `(campaign_id, obsidian_path)`; deleted notes → soft delete.
+- Unchanged notes (hash in `vault_file_state`) aren't reprocessed, so dashboard edits aren't overwritten. If the note changed, the vault wins. No conflict UI.
+- Memberships carry `source` (`vault` / `dashboard` / `removed`) so the reindex doesn't delete what was added by hand or revive what was removed by hand.
+- `session_npcs` / `session_pcs` come from the wikilinks in the session's body: notes get written naturally, no extra fields needed.
+- Wikilinks resolve by name + expected type; ambiguity is never guessed.
 
-## Modelo de datos
+## Data model
 
-- Migraciones SQL versionadas y embebidas. Nunca se edita una ya aplicada.
-- Baja lógica (`deleted_at`) y `ON DELETE RESTRICT`: perder datos por un borrado en cascada es peor que desvincular a mano.
-- Enums con `CHECK` en la base, no solo en Go.
-- Timestamps `TEXT` ISO 8601: legibles con `sqlite3`, el costo de performance no importa acá.
-- PK compuesta en tablas puente.
-- Sin índices sobre FKs todavía: con este volumen un scan es instantáneo.
-- `groups` y `player_characters` son entidades propias desde el principio.
-- `npc_relations` dirigida con rol libre, en lugar de un campo fijo de vínculo.
-- `attributes` / `skills` como JSON libre: cada sistema de juego (Cosmere, D&D) define los suyos; no hay caso que necesite filtrar por atributo.
-- NPC importante con ficha completa = `detail_level = full`, no una entidad aparte.
+- Versioned, embedded SQL migrations. An applied one is never edited.
+- Soft delete (`deleted_at`) and `ON DELETE RESTRICT`: losing data to a cascade delete is worse than unlinking by hand.
+- Enums with `CHECK` at the DB level, not just in Go.
+- ISO 8601 `TEXT` timestamps: readable with `sqlite3`, performance cost doesn't matter here.
+- Composite PK on bridge tables.
+- No indexes on FKs yet: at this volume a scan is instant.
+- `groups` and `player_characters` are first-class entities from the start.
+- `npc_relations` is directed with a free-text role, instead of a fixed relationship field.
+- `attributes` / `skills` as free-form JSON: each game system (Cosmere, D&D) defines its own; no case needs filtering by attribute.
+- An important NPC with a full sheet = `detail_level = full`, not a separate entity.
 
-## Tracker de combate
+## Combat tracker
 
-- Vista de control del DM, en lista. Sin mapa.
-- Participante = PJ, NPC o enemigo suelto (`display_name`), exclusivo por `CHECK`. Los enemigos sueltos tienen ficha propia en el participante; PJ/NPC usan la de su entidad (solo lectura en el tracker).
-- Orden: `initiative_value` para D&D; `turn_type` rápido/lento para Cosmere (fases por ronda, sin iniciativa numérica). Al avanzar de ronda se limpia `turn_type`.
-- HP del PJ persiste en `player_characters` y se sincroniza desde el tracker; HP de NPC es efímero.
-- "Ya jugó" es estado local del navegador, no se guarda.
+- A DM control view, list-based. No map.
+- Participant = PC, NPC or loose enemy (`display_name`), mutually exclusive via `CHECK`. Loose enemies carry their own sheet on the participant; PC/NPC use their entity's (read-only in the tracker).
+- Order: `initiative_value` for D&D; `turn_type` fast/slow for Cosmere (phases per round, no numeric initiative). `turn_type` clears when the round advances.
+- PC HP persists in `player_characters` and syncs from the tracker; NPC HP is ephemeral.
+- "Already acted" is local browser state, never persisted.
 
 ## Frontend
 
-- `CrystalType` (color por tipo de entidad) y `StatusKind` (semáforo de estado) nunca se mezclan en el mismo elemento.
-- NPCs `referencia` (notas índice del vault) se filtran en el cliente: no son personajes.
-- `activo` → alive, `consolidado` → dead en el semáforo.
-- La membresía a facciones se gestiona solo desde la facción (un PJ/NPC puede estar en varias).
-- i18n español/inglés propio (`lib/i18n.ts`), sin librería.
+- `CrystalType` (color by entity type) and `StatusKind` (status traffic light) never mix on the same element.
+- `referencia` NPCs (vault index notes) are filtered client-side: they're not characters.
+- `activo` → alive, `consolidado` → dead in the traffic light.
+- Faction membership is managed only from the faction (a PC/NPC can belong to several).
+- Custom Spanish/English i18n (`lib/i18n.ts`), no library.
 
-## Imágenes
+## Images
 
-- Una imagen por NPC, PJ, locación y facción (`image_path`). La misma sirve para el retrato grande y el ícono chico (CSS). Sin galería ni tabla polimórfica.
-- En filesystem bajo `UPLOADS_ROOT`, no BLOB: la base y los backups quedan livianos. Fuera del vault.
-- Se escribe solo por su endpoint, nunca por el `PUT` de la entidad (un save del formulario no la pisa) ni por el reindex.
-- **Solo PNG y JPEG**, detectados decodificando el contenido. SVG rechazado: se serviría desde el mismo origen y podría ejecutar JS con la sesión del DM. WebP/AVIF requerirían una dependencia nueva.
-- La ruta en disco se construye (`<entidad>/<id>-portrait.<ext>`); el nombre subido nunca se usa. Cierra path traversal.
-- Máx. 5 MiB y `X-Content-Type-Options: nosniff` al servir.
-- Compresión: el cliente reduce a 1600 px y JPEG antes de subir (canvas, sin dependencias). Sin procesamiento en el servidor.
-- Al dar de baja una entidad, su archivo queda en disco (deuda aceptada).
+- One image per NPC, PC, location and faction (`image_path`). The same file serves both the large portrait and the small icon (CSS). No gallery or polymorphic table.
+- On the filesystem under `UPLOADS_ROOT`, not a BLOB: the DB and backups stay light. Outside the vault.
+- Written only by its own endpoint, never by the entity's `PUT` (a form save doesn't overwrite it) or by the reindex.
+- **PNG and JPEG only**, detected by decoding the content. SVG rejected: it would be served from the same origin and could run JS with the DM's session. WebP/AVIF would need a new dependency.
+- The on-disk path is built server-side (`<entity>/<id>-portrait.<ext>`); the uploaded filename is never used. Closes path traversal.
+- Max 5 MiB and `X-Content-Type-Options: nosniff` when serving.
+- Compression: the client downsizes to 1600 px and JPEG before upload (canvas, no dependencies). No server-side processing.
+- When an entity is soft-deleted, its file stays on disk (accepted debt).
 
 ## Logging
 
-- `log/slog` estructurado; `LOG_JSON=true` para JSON en producción.
-- Middleware de request log: `method, path, status, duración, remote`.
-- Eventos de auth en `Warn`: login fallido, sesión inválida, mismatch de campaña, admin rechazado. Nunca se loguean códigos ni tokens.
+- Structured `log/slog`; `LOG_JSON=true` for JSON in production.
+- Request log middleware: `method, path, status, duration, remote`.
+- Auth events at `Warn`: failed login, invalid session, campaign mismatch, admin rejected. Codes and tokens are never logged.
