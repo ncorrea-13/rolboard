@@ -97,7 +97,7 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
           </div>
         </div>
 
-        <div className="npc-edit__body" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <div className="npc-edit__body npc-edit__body--even">
           <div className="npc-edit__col">
             <span className="label">{t("sessionEdit.planned")}</span>
             <div className="npc-edit__grid-2" style={{ marginTop: 10 }}>

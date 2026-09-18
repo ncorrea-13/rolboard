@@ -97,7 +97,7 @@ export function CampaignDashboard({
             {currentArc ? ` · ${currentArc.label} · ${currentArc.meta}` : ""}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="campaign-dashboard__actions">
           {currentArc?.obsidianPath && (
             <button
               className="btn btn-secondary"
