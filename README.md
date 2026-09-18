@@ -14,20 +14,17 @@
 
 ---
 
-Structured view of a tabletop RPG campaign — NPCs, locations, factions, player characters, quests, sessions, arcs and a combat tracker. It sits next to an Obsidian vault instead of replacing it: the vault keeps the long-form prose, Rolboard indexes its YAML frontmatter for quick lookup during a live session, and holds dashboard-only data (quests, prep notes, character sheets, images).
+Web app for managing tabletop RPG campaigns. Covers sessions, players, NPCs, arcs, locations, groups, quests and a combat tracker built for Cosmere RPG and D&D 5e. Stays system-agnostic, no single ruleset baked in.
 
-Personal tool for the DM/GM, not something players use. Runs on a homelab. Each campaign has its own access code; instance management (creating campaigns, setting access codes) needs the admin token. Reasoning behind scope calls: [`docs/DECISIONS.md`](docs/DECISIONS.md).
+Started as a move away from Obsidian, for faster management, while still including a frontmatter indexer to pull that data in and coexist with the vault. Keeps the vault structure and lets you navigate back to it. Each campaign stores its own `vault_path`, a subfolder under `VAULTS_ROOT`. [`vault-template/`](vault-template/) has a vault layout the indexer recognizes out of the box.
 
 ## Stack
 
-| Layer      | Tech                                             |
-| ---------- | ------------------------------------------------ |
-| Backend    | Go 1.27, `net/http` stdlib (no router framework) |
-| Database   | SQLite (`modernc.org/sqlite`, no cgo)            |
-| Migrations | Versioned SQL files, embedded with `go:embed`    |
-| Frontend   | React + TypeScript + Vite, served by Caddy       |
-
-Migrations run automatically on startup. One backend serves many campaigns — each campaign stores its own `vault_path`, a subfolder under `VAULTS_ROOT`. [`vault-template/`](vault-template/) has a vault layout the indexer recognizes out of the box.
+| Layer    | Tech                          |
+| -------- | ------------------------------ |
+| Server   | Go 1.27, `net/http` stdlib     |
+| Database | SQLite (`modernc.org/sqlite`)  |
+| Client   | React + TypeScript + Vite, served by Caddy |
 
 More: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -144,9 +141,14 @@ REST + JSON under `/api`. Full list: [`docs/API.md`](docs/API.md).
 ## Project Structure
 
 `server/` (Go) and `client/` (React/TS). Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Reasoning behind each scope call: [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ## About
 
 Personal project, built as a deliberate Go-learning exercise. [`AGENTS.md`](AGENTS.md) describes how AI assistance is scoped on this repo.
+
+## License
+
+MIT - see [LICENSE](LICENSE) for details.
 
 **Nicolás Correa** — [github.com/ncorrea-13](https://github.com/ncorrea-13)
