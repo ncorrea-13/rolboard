@@ -16,3 +16,9 @@
   width: 100%;
   max-width: 1200px;
 }
+
+@media (max-width: 640px) {
+  .app__stage {
+    padding: 12px;
+  }
+}
