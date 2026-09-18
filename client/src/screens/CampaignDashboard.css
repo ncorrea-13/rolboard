@@ -6,10 +6,26 @@
   padding-bottom: 15px;
 }
 
+.campaign-dashboard__actions {
+  display: flex;
+  gap: 8px;
+}
+
 @media (max-width: 640px) {
   .campaign-dashboard__header {
     flex-wrap: wrap;
     gap: 10px;
+  }
+
+  .campaign-dashboard__header > :first-child {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .campaign-dashboard__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
   }
 }
 
@@ -28,7 +44,7 @@
 
 @media (max-width: 640px) {
   .campaign-dashboard__row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
