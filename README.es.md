@@ -14,20 +14,17 @@
 
 ---
 
-Vista estructurada de una campaña de rol — NPCs, locaciones, facciones, personajes jugadores, quests, sesiones, arcos y un tracker de combate. Convive con un vault de Obsidian en vez de reemplazarlo: el vault guarda la prosa larga, Rolboard indexa su frontmatter YAML para consultas rápidas durante la sesión, y guarda los datos que viven solo en el dashboard (quests, notas de preparación, fichas, imágenes).
+App web para la gestión y manejo de campañas de rol de mesa. Incluye el manejo de sesiones, jugadores, NPCs, arcos, locaciones, grupos, quests y un tracker de combate pensado para Cosmere RPG y DND 5e. Se mantiene agnóstico sin definir un solo sistema.
 
-Herramienta personal del DM/GM, no algo que usan los jugadores. Corre en un homelab. Cada campaña tiene su código de acceso; la gestión de instancia (crear campañas, asignar códigos) pide el token de admin. Razonamiento detrás de cada decisión de alcance: [`docs/DECISIONS.md`](docs/DECISIONS.md).
+Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gestión más rápida con lo que incluye un indexador del frontmatter para poder traer esta información y poder convivir con la vault. Mantiene la estructura del vault y permite la navegación para allá. Cada campaña guarda su `vault_path`, una subcarpeta dentro de `VAULTS_ROOT`. [`vault-template/`](vault-template/) tiene una estructura de vault que el indexador reconoce sin tocar código.
 
 ## Stack
 
-| Capa | Tecnología |
-| --- | --- |
-| Backend | Go 1.27, `net/http` stdlib (sin router de terceros) |
-| Base de datos | SQLite (`modernc.org/sqlite`, sin cgo) |
-| Migraciones | Archivos SQL versionados, embebidos con `go:embed` |
-| Frontend | React + TypeScript + Vite, servido por Caddy |
-
-Las migraciones corren solas al arrancar. Un backend sirve varias campañas — cada una guarda su `vault_path`, una subcarpeta dentro de `VAULTS_ROOT`. [`vault-template/`](vault-template/) tiene una estructura de vault que el indexador reconoce sin tocar código.
+| Capa          | Tecnología                                   |
+| ------------- | -------------------------------------------- |
+| Servidor      | Go 1.27, `net/http` stdlib ()                |
+| Base de datos | SQLite (`modernc.org/sqlite`)                |
+| Cliente       | React + TypeScript + Vite, servido por Caddy |
 
 Más: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -112,21 +109,21 @@ Abrí `http://localhost:${CLIENT_PORT}`, entrá como admin con el token, creá u
 
 ## Configuración
 
-| Variable           | Dónde    | Descripción |
-| ------------------ | -------- | ----------- |
-| `CLIENT_PORT`      | host     | Puerto del host para el cliente web |
-| `DATA_PATH`        | host     | Carpeta del host para la base y las imágenes subidas |
-| `VAULTS_ROOT_HOST` | host     | Carpeta del host con el vault de cada campaña como subcarpeta (montada read-only) |
-| `DB_PATH`          | servidor | Ruta del archivo SQLite |
-| `VAULTS_ROOT`      | servidor | Ruta del mount de vaults |
-| `UPLOADS_ROOT`     | servidor | Ruta de imágenes. Sin default — ponela dentro del volumen de datos |
-| `PORT`             | servidor | Puerto de escucha (el cliente proxea a `8080`) |
-| `ADMIN_TOKEN_FILE` | servidor | Archivo con el token de admin (secret). Tiene prioridad sobre `ADMIN_TOKEN` |
-| `ADMIN_TOKEN`      | servidor | Token de admin como env var plana (solo dev) |
-| `COOKIE_SECURE`    | servidor | `false` solo para HTTP local. Default: cookies seguras |
-| `LOG_JSON`            | servidor | Logs estructurados JSON (`log/slog`). Default: texto legible |
+| Variable              | Dónde    | Descripción                                                                                                                             |
+| --------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLIENT_PORT`         | host     | Puerto del host para el cliente web                                                                                                     |
+| `DATA_PATH`           | host     | Carpeta del host para la base y las imágenes subidas                                                                                    |
+| `VAULTS_ROOT_HOST`    | host     | Carpeta del host con el vault de cada campaña como subcarpeta (montada read-only)                                                       |
+| `DB_PATH`             | servidor | Ruta del archivo SQLite                                                                                                                 |
+| `VAULTS_ROOT`         | servidor | Ruta del mount de vaults                                                                                                                |
+| `UPLOADS_ROOT`        | servidor | Ruta de imágenes. Sin default — ponela dentro del volumen de datos                                                                      |
+| `PORT`                | servidor | Puerto de escucha (el cliente proxea a `8080`)                                                                                          |
+| `ADMIN_TOKEN_FILE`    | servidor | Archivo con el token de admin (secret). Tiene prioridad sobre `ADMIN_TOKEN`                                                             |
+| `ADMIN_TOKEN`         | servidor | Token de admin como env var plana (solo dev)                                                                                            |
+| `COOKIE_SECURE`       | servidor | `false` solo para HTTP local. Default: cookies seguras                                                                                  |
+| `LOG_JSON`            | servidor | Logs estructurados JSON (`log/slog`). Default: texto legible                                                                            |
 | `TRUST_PROXY_HEADERS` | servidor | Confía en `CF-Connecting-IP` para el rate limit. Solo si todo el tráfico pasa por Cloudflare — si no, es falsificable. Default: `false` |
-| `BACKEND_HOST`     | cliente  | Host del backend para el proxy de `/api`. Default: `localhost` |
+| `BACKEND_HOST`        | cliente  | Host del backend para el proxy de `/api`. Default: `localhost`                                                                          |
 
 ## Desarrollo
 
@@ -144,9 +141,14 @@ REST + JSON bajo `/api`. Lista completa: [`docs/API.md`](docs/API.md).
 ## Estructura del Proyecto
 
 `server/` (Go) y `client/` (React/TS). Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Razonamiento detrás de cada decisión de alcance: [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ## Sobre el proyecto
 
 Proyecto personal, pensado como ejercicio deliberado de aprendizaje de Go. [`AGENTS.md`](AGENTS.md) describe el alcance de la asistencia de IA en este repo.
+
+## Licencia
+
+MIT - [LICENSE](LICENSE) para más información.
 
 **Nicolás Correa** — [github.com/ncorrea-13](https://github.com/ncorrea-13)
