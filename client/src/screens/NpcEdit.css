@@ -40,6 +40,42 @@
   gap: 12px;
 }
 
+@media (max-width: 640px) {
+  .npc-edit__bar {
+    flex-wrap: wrap;
+    padding: 13px 16px;
+  }
+
+  .npc-edit__body {
+    grid-template-columns: 1fr;
+  }
+
+  .npc-edit__col {
+    padding: 16px;
+  }
+
+  .npc-edit__col:first-child {
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .npc-edit__grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .npc-edit__input,
+  .npc-edit__select,
+  .npc-edit__textarea {
+    font-size: 16px;
+    padding: 11px 12px;
+  }
+
+  .npc-edit__type-chip {
+    padding: 9px 13px;
+    font-size: 13.5px;
+  }
+}
+
 .npc-edit__input,
 .npc-edit__select,
 .npc-edit__textarea {

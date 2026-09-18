@@ -106,3 +106,44 @@
   border-radius: 4px;
   flex: none;
 }
+
+@media (max-width: 640px) {
+  .list-page {
+    padding: 16px;
+  }
+
+  .list-page__header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .list-page__header-actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .list-page__search {
+    width: 100%;
+    font-size: 16px;
+    padding: 10px 12px;
+  }
+
+  .list-page__row {
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .list-page__row-title {
+    font-size: 15px;
+  }
+
+  .list-page__row-sub {
+    font-size: 13px;
+  }
+
+  .list-page__thumbnail {
+    width: 32px;
+    height: 32px;
+  }
+}

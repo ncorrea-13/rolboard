@@ -6,6 +6,13 @@
   padding-bottom: 15px;
 }
 
+@media (max-width: 640px) {
+  .campaign-dashboard__header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
 .campaign-dashboard__meta {
   font: 400 13px var(--font-body);
   color: var(--text-secondary);
@@ -17,6 +24,12 @@
   grid-template-columns: 1.45fr 1fr;
   gap: 12px;
   margin-top: 12px;
+}
+
+@media (max-width: 640px) {
+  .campaign-dashboard__row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .campaign-dashboard__row:first-of-type {

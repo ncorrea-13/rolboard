@@ -46,6 +46,28 @@
   margin-top: 11px;
 }
 
+.entity-detail__actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+  .entity-detail {
+    padding: 16px;
+  }
+
+  .entity-detail__title-row {
+    flex-wrap: wrap;
+  }
+
+  .entity-detail__actions {
+    margin-left: 0;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
 .entity-detail__subtitle {
   font: 400 13px var(--font-body);
   color: var(--text-secondary);
