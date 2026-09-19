@@ -59,13 +59,21 @@
 
   .npc-detail__header-actions {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .npc-detail__header-actions > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 }
 
 .npc-detail__body {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
+}
+
+.npc-detail__col {
+  min-width: 0;
 }
 
 .npc-detail__col--main {
@@ -79,7 +87,7 @@
   }
 
   .npc-detail__body {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .npc-detail__col--main {
