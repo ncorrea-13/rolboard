@@ -72,30 +72,27 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
 
       <div className="npc-detail__body">
         <div className="npc-detail__col npc-detail__col--main">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span className="label">{t("playerDetail.backstory")}</span>
-            {player.historiaPath && (
-              <button
-                className="btn btn-secondary"
-                onClick={() => openNote(player.historiaPath, `${t("playerDetail.historyTitlePrefix")} — ${player.characterName}`, player.backstory)}
-              >
-                {t("playerDetail.viewFullBackstory")}
-              </button>
-            )}
-          </div>
+          {(player.historiaPath || player.avancesPath) && (
+            <div className="npc-detail__header-actions">
+              {player.historiaPath && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => openNote(player.historiaPath, `${t("playerDetail.historyTitlePrefix")} — ${player.characterName}`, player.backstory)}
+                >
+                  {t("playerDetail.viewFullBackstory")}
+                </button>
+              )}
+              {player.avancesPath && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => openNote(player.avancesPath, `${t("playerDetail.progressTitlePrefix")} — ${player.characterName}`, player.progressionNotes)}
+                >
+                  {t("playerDetail.viewProgression")}
+                </button>
+              )}
+            </div>
+          )}
           <p className="npc-detail__desc">{player.backstory}</p>
-
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 21 }}>
-            <span className="label">{t("playerDetail.progressionNotes")}</span>
-            {player.avancesPath && (
-              <button
-                className="btn btn-secondary"
-                onClick={() => openNote(player.avancesPath, `${t("playerDetail.progressTitlePrefix")} — ${player.characterName}`, player.progressionNotes)}
-              >
-                {t("playerDetail.viewProgression")}
-              </button>
-            )}
-          </div>
           <p className="npc-detail__desc">{player.progressionNotes}</p>
         </div>
 
@@ -111,7 +108,9 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
             <span className="label">{t("entityDetail.obsidianNote")}</span>
             <div className="entity-detail__obsidian">
               <span className="entity-detail__obsidian-path">{player.obsidianPath}</span>
-              <button className="btn btn-secondary" onClick={() => openInObsidian(vaultName, player.obsidianPath)}>{t("entityDetail.openInObsidian")}</button>
+              <div className="entity-detail__obsidian-actions">
+                <button className="btn btn-secondary" onClick={() => openInObsidian(vaultName, player.obsidianPath)}>{t("entityDetail.openInObsidian")}</button>
+              </div>
             </div>
           </div>
         </div>
