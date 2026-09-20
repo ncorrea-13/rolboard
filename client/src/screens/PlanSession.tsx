@@ -64,15 +64,9 @@ export function PlanSession({
 
   return (
     <div className="card npc-edit">
-      <div
-        className="npc-edit__bar"
-        style={{ boxShadow: "inset 4px 0 0 var(--accent-sky)" }}
-      >
+      <div className="npc-edit__bar npc-edit__bar--planned">
         <div className="npc-edit__bar-left">
-          <span
-            className="status-dot"
-            style={{ background: "var(--accent-sky)" }}
-          />
+          <span className="status-dot" />
           <span
             style={{
               fontWeight: 500,

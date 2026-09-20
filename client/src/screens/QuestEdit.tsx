@@ -48,15 +48,9 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
 
   return (
     <div className="card npc-edit">
-      <div
-        className="npc-edit__bar"
-        style={{ boxShadow: "inset 4px 0 0 var(--crystal-faction-quest)" }}
-      >
+      <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
-          <span
-            className="status-dot"
-            style={{ background: "var(--crystal-faction-quest)" }}
-          />
+          <span className="status-dot" />
           <span
             style={{
               fontWeight: 500,
@@ -95,7 +89,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
           <div>
             <span className="label">{t("questEdit.title")}</span>
             <input
-              className="npc-edit__input npc-edit__input--focus"
+              className="npc-edit__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />

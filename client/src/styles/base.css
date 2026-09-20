@@ -20,6 +20,11 @@ body {
   color-scheme: dark;
 }
 
+::selection {
+  background: var(--accent-obsidian-soft);
+  color: var(--text-primary);
+}
+
 .label {
   font: 500 10px/1 var(--font-mono);
   letter-spacing: 0.11em;

@@ -3,7 +3,6 @@ import "./NpcEdit.css";
 import {
   statusLabel,
   statusColor,
-  statusDotColor,
   type PlayerCharacter,
   type StatMap,
   type StatusKind,
@@ -83,15 +82,9 @@ export function PlayerEdit({
 
   return (
     <div className="card npc-edit">
-      <div
-        className="npc-edit__bar"
-        style={{ boxShadow: "inset 4px 0 0 var(--accent-flame)" }}
-      >
+      <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
-          <span
-            className="status-dot"
-            style={{ background: "var(--accent-flame)" }}
-          />
+          <span className="status-dot" />
           <span
             style={{
               fontWeight: 500,
@@ -131,7 +124,7 @@ export function PlayerEdit({
             <div>
               <span className="label">{t("playerEdit.characterName")}</span>
               <input
-                className="npc-edit__input npc-edit__input--focus"
+                className="npc-edit__input"
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
               />
@@ -268,22 +261,13 @@ export function PlayerEdit({
             </div>
           </div>
           {(status === "dead" || missingRace) && (
-            <div
-              className="card npc-edit__warning"
-              style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}
-            >
-              <div className="npc-edit__warning-title">
-                <span
-                  className="status-dot"
-                  style={{ background: statusDotColor[status] }}
-                />
+            <div className="callout callout-warning">
+              <p className="callout-title">
                 {status === "dead"
                   ? t("playerEdit.markedDead")
                   : t("playerEdit.missingRace")}
-              </div>
-              <div className="npc-edit__warning-body">
-                {t("npcEdit.warningBody")}
-              </div>
+              </p>
+              <p>{t("npcEdit.warningBody")}</p>
             </div>
           )}
         </div>

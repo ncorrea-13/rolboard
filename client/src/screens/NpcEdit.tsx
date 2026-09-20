@@ -4,7 +4,6 @@ import {
   crystalColor,
   statusLabel,
   statusColor,
-  statusDotColor,
   locationBreadcrumb,
   type CrystalType,
   type Npc,
@@ -144,15 +143,9 @@ export function NpcEdit({
 
   return (
     <div className="card npc-edit">
-      <div
-        className="npc-edit__bar"
-        style={{ boxShadow: "inset 4px 0 0 var(--accent-flame)" }}
-      >
+      <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
-          <span
-            className="status-dot"
-            style={{ background: "var(--accent-flame)" }}
-          />
+          <span className="status-dot" />
           <span
             style={{
               fontWeight: 500,
@@ -190,7 +183,7 @@ export function NpcEdit({
             <div>
               <span className="label">{t("common.name")}</span>
               <input
-                className="npc-edit__input npc-edit__input--focus"
+                className="npc-edit__input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -365,22 +358,13 @@ export function NpcEdit({
             </div>
           </div>
           {(status === "dead" || missingOrigin) && (
-            <div
-              className="card npc-edit__warning"
-              style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}
-            >
-              <div className="npc-edit__warning-title">
-                <span
-                  className="status-dot"
-                  style={{ background: statusDotColor[status] }}
-                />
+            <div className="callout callout-warning">
+              <p className="callout-title">
                 {status === "dead"
                   ? t("npcEdit.markedDead")
                   : t("npcEdit.missingOrigin")}
-              </div>
-              <div className="npc-edit__warning-body">
-                {t("npcEdit.warningBody")}
-              </div>
+              </p>
+              <p>{t("npcEdit.warningBody")}</p>
             </div>
           )}
         </div>

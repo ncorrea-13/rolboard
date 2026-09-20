@@ -45,15 +45,9 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
 
   return (
     <div className="card npc-edit">
-      <div
-        className="npc-edit__bar"
-        style={{ boxShadow: "inset 4px 0 0 var(--accent-obsidian)" }}
-      >
+      <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
-          <span
-            className="status-dot"
-            style={{ background: "var(--accent-obsidian)" }}
-          />
+          <span className="status-dot" />
           <span
             style={{
               fontWeight: 500,
@@ -93,7 +87,7 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
             <div>
               <span className="label">{t("arcEdit.nameLabel")}</span>
               <input
-                className="npc-edit__input npc-edit__input--focus"
+                className="npc-edit__input"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder={t("arcEdit.namePlaceholder")}

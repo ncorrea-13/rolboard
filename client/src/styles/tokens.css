@@ -16,6 +16,7 @@
   --accent-obsidian: #9b7bea;
   --accent-obsidian-deep: #7457c9;
   --accent-obsidian-soft: rgba(155, 123, 234, 0.16);
+  --border-hover: color-mix(in srgb, var(--accent-obsidian) 45%, var(--border));
 
   --accent-sky: #5fa8d3;
   --accent-wardail: #d46a9f;

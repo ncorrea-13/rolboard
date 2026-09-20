@@ -116,15 +116,9 @@ export function SessionEdit({
   if (confirmingPlay) {
     return (
       <div className="card npc-edit">
-        <div
-          className="npc-edit__bar"
-          style={{ boxShadow: "inset 4px 0 0 var(--status-alive)" }}
-        >
-          <div className="npc-edit__bar-left">
-            <span
-              className="status-dot"
-              style={{ background: "var(--status-alive)" }}
-            />
+        <div className="npc-edit__bar npc-edit__bar--played">
+        <div className="npc-edit__bar-left">
+          <span className="status-dot" />
             <span
               style={{
                 fontWeight: 500,
@@ -264,18 +258,10 @@ export function SessionEdit({
   return (
     <div className="card npc-edit">
       <div
-        className="npc-edit__bar"
-        style={{
-          boxShadow: `inset 4px 0 0 var(--${played ? "status-alive" : "accent-sky"})`,
-        }}
+        className={`npc-edit__bar ${played ? "npc-edit__bar--played" : "npc-edit__bar--planned"}`}
       >
         <div className="npc-edit__bar-left">
-          <span
-            className="status-dot"
-            style={{
-              background: played ? "var(--status-alive)" : "var(--accent-sky)",
-            }}
-          />
+          <span className="status-dot" />
           <span
             style={{
               fontWeight: 500,

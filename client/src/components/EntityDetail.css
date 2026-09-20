@@ -36,7 +36,7 @@
 }
 
 .entity-detail__breadcrumb-link:hover {
-  color: var(--text-body-strong);
+  color: var(--accent-obsidian);
 }
 
 .entity-detail__title-row {

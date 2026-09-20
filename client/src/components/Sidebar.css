@@ -94,7 +94,7 @@
 }
 
 .sidebar__item--active {
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--accent-obsidian) 12%, var(--bg-canvas));
   font-weight: 600;
   color: var(--text-primary);
 }

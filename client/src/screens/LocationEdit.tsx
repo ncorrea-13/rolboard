@@ -52,15 +52,9 @@ export function LocationEdit({
 
   return (
     <div className="card npc-edit">
-      <div
-        className="npc-edit__bar"
-        style={{ boxShadow: "inset 4px 0 0 var(--crystal-location)" }}
-      >
+      <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
-          <span
-            className="status-dot"
-            style={{ background: "var(--crystal-location)" }}
-          />
+          <span className="status-dot" />
           <span
             style={{
               fontWeight: 500,
@@ -99,7 +93,7 @@ export function LocationEdit({
           <div>
             <span className="label">{t("common.name")}</span>
             <input
-              className="npc-edit__input npc-edit__input--focus"
+              className="npc-edit__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />

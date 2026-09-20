@@ -32,7 +32,7 @@
 }
 
 .npc-detail__breadcrumb-link:hover {
-  color: var(--text-body-strong);
+  color: var(--accent-obsidian);
 }
 
 .npc-detail__identity {
