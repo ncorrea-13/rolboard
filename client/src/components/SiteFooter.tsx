@@ -1,13 +1,26 @@
+import { CircleHelp } from "lucide-react";
 import "./SiteFooter.css";
 import { useT } from "../lib/i18n";
 
 const GITHUB_URL = "https://github.com/ncorrea-13/rolboard";
 const PORTFOLIO_URL = "https://ncorrea.com.ar";
 
-export function SiteFooter() {
+export function SiteFooter({ onHelp }: { onHelp: () => void }) {
   const t = useT();
   return (
     <footer className="site-footer">
+      <a
+        href="/help"
+        onClick={(e) => {
+          e.preventDefault();
+          onHelp();
+        }}
+        aria-label={t("footer.help")}
+        title={t("footer.help")}
+        className="site-footer__icon"
+      >
+        <CircleHelp size={16} strokeWidth={1.6} />
+      </a>
       <a
         href={GITHUB_URL}
         target="_blank"

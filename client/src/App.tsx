@@ -44,6 +44,7 @@ import { PlayersList } from "./screens/PlayersList";
 import { EncountersList } from "./screens/EncountersList";
 import { EncounterDetail } from "./screens/EncounterDetail";
 import { Wardails } from "./screens/Wardails";
+import { Help } from "./screens/Help";
 import type { NpcTypesApi } from "./components/NpcTypesManager";
 import {
   ArcDetail,
@@ -80,6 +81,29 @@ export default function App() {
     null,
   );
   const [, forceAdminRerender] = useState(0);
+
+  // /help is a static screen: the URL is the only routing the app uses (Caddy serves index.html for it).
+  const [helpOpen, setHelpOpen] = useState(
+    () => window.location.pathname === "/help",
+  );
+
+  useEffect(() => {
+    const onPop = () => setHelpOpen(window.location.pathname === "/help");
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  function openHelp() {
+    window.history.pushState({ help: true }, "", "/help");
+    window.scrollTo(0, 0);
+    setHelpOpen(true);
+  }
+
+  function closeHelp() {
+    if (window.history.state?.help) window.history.back();
+    else window.history.replaceState(null, "", "/");
+    setHelpOpen(false);
+  }
 
   const campaignsLoadFailed = useEffectEvent((err: unknown) => {
     console.error("Error cargando campañas:", err);
@@ -310,6 +334,17 @@ export default function App() {
                       : route.name === "encounter-detail"
                         ? "encuentros"
                         : "resumen";
+
+  if (helpOpen) {
+    return (
+      <div className="app">
+        <div className="app__stage">
+          <Help onBack={closeHelp} />
+        </div>
+        <SiteFooter onHelp={openHelp} />
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -948,7 +983,7 @@ export default function App() {
         />
       )}
 
-      <SiteFooter />
+      <SiteFooter onHelp={openHelp} />
     </div>
   );
 }

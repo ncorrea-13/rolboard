@@ -354,6 +354,11 @@ const dict = {
     "wardails.errorSaving": "Error guardando los wardails",
     "footer.github": "Repositorio en GitHub",
     "footer.portfolio": "Portfolio de Nicolás Correa",
+    "footer.help": "Ayuda",
+    "help.title": "Ayuda",
+    "help.back": "Volver",
+    "help.contents": "Contenido",
+    "help.docs": "Documentación técnica en GitHub",
 
     "confirm.deactivateNpc":
       "¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.",
@@ -722,6 +727,11 @@ const dict = {
     "wardails.errorSaving": "Error saving the wardails",
     "footer.github": "GitHub repository",
     "footer.portfolio": "Nicolás Correa's portfolio",
+    "footer.help": "Help",
+    "help.title": "Help",
+    "help.back": "Back",
+    "help.contents": "Contents",
+    "help.docs": "Technical docs on GitHub",
 
     "confirm.deactivateNpc":
       "Deactivate this NPC? It stops showing in the campaign, it isn't deleted.",
