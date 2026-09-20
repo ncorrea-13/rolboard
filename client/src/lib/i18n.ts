@@ -244,7 +244,6 @@ const dict = {
     "locationEdit.noParent": "— sin padre —",
 
     "npcEdit.new": "Nuevo NPC",
-    "npcEdit.focusHint": "Campo con foco: anillo ámbar de 1px, nunca glow.",
     "npcEdit.detailLevel": "Nivel de detalle",
     "npcEdit.portrait": "Retrato",
     "npcEdit.detailFull": "Completo",
@@ -258,17 +257,13 @@ const dict = {
     "npcEdit.linkWithNpc": "Vínculo con otro NPC",
     "npcEdit.linkRolePlaceholder": "Rol (ej. VINCULADO)",
     "npcEdit.noLink": "— sin vínculo —",
-    "npcEdit.linkHint":
-      "El selector hereda el color de cristal del tipo elegido — se ve que el vínculo es con un spren sin leer la etiqueta.",
     "npcEdit.noLocation": "— sin ubicación —",
     "npcEdit.markedDead": "NPC marcado como muerto",
     "npcEdit.missingOrigin": "Falta la ubicación de origen",
     "npcEdit.warningBody":
       "Podés guardar igual; el campo queda marcado como incompleto en la ficha.",
-    "npcEdit.note1":
-      "Decisión: edición en la misma vista, no modal. Un modal taparía la ficha justo cuando estás copiando datos de ella en vivo, y los vínculos necesitan el ancho completo.",
     "npcEdit.note2":
-      'La facción se gestiona desde la ficha de la facción ("Agregar NPC"), no acá — evita tener dos lugares que puedan decir cosas distintas sobre a qué grupo pertenece.',
+      'La facción se gestiona desde la ficha de la facción ("Agregar NPC").',
 
     "playerEdit.new": "Nuevo personaje",
     "playerEdit.characterName": "Nombre del personaje",
@@ -280,7 +275,7 @@ const dict = {
     "playerEdit.markedDead": "Personaje marcado como muerto",
     "playerEdit.missingRace": "Falta definir la raza",
     "playerEdit.note":
-      "La facción de este PJ se lee del vault (`facciones:` en su ficha), no se edita acá — ver la ficha de la facción para consultarla.",
+      "La facción de este PJ viene del vault y no se edita acá. Consultala en la ficha de la facción.",
 
     "questEdit.new": "Nueva quest",
     "questEdit.title": "Título",
@@ -610,7 +605,6 @@ const dict = {
     "locationEdit.noParent": "— no parent —",
 
     "npcEdit.new": "New NPC",
-    "npcEdit.focusHint": "Focused field: 1px amber ring, never a glow.",
     "npcEdit.detailLevel": "Detail level",
     "npcEdit.portrait": "Portrait",
     "npcEdit.detailFull": "Full",
@@ -624,17 +618,13 @@ const dict = {
     "npcEdit.linkWithNpc": "Link with another NPC",
     "npcEdit.linkRolePlaceholder": "Role (e.g. LINKED)",
     "npcEdit.noLink": "— no link —",
-    "npcEdit.linkHint":
-      "The selector inherits the crystal color of the chosen type — you can tell the link is to a spren without reading the label.",
     "npcEdit.noLocation": "— no location —",
     "npcEdit.markedDead": "NPC marked as dead",
     "npcEdit.missingOrigin": "Missing origin location",
     "npcEdit.warningBody":
       "You can still save; the field is flagged as incomplete on the sheet.",
-    "npcEdit.note1":
-      "Decision: edit in the same view, not a modal. A modal would cover the sheet right when you're copying data from it live, and the links need the full width.",
     "npcEdit.note2":
-      'The faction is managed from the faction\'s sheet ("Add NPC"), not here — avoids having two places that could say different things about which group it belongs to.',
+      'The faction is managed from the faction\'s sheet ("Add NPC").',
 
     "playerEdit.new": "New character",
     "playerEdit.characterName": "Character name",
@@ -646,7 +636,7 @@ const dict = {
     "playerEdit.markedDead": "Character marked as dead",
     "playerEdit.missingRace": "Race not set",
     "playerEdit.note":
-      "This PC's faction is read from the vault (`facciones:` in its sheet), not edited here — see the faction's sheet to check it.",
+      "This PC's faction comes from the vault and isn't edited here. Check it in the faction's sheet.",
 
     "questEdit.new": "New quest",
     "questEdit.title": "Title",

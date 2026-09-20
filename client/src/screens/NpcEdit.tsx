@@ -194,7 +194,6 @@ export function NpcEdit({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
-              <div className="npc-edit__hint">{t("npcEdit.focusHint")}</div>
             </div>
             <div>
               <span className="label">{t("common.status")}</span>
@@ -312,7 +311,6 @@ export function NpcEdit({
                   ))}
               </select>
             </div>
-            <div className="npc-edit__hint">{t("npcEdit.linkHint")}</div>
           </div>
 
           <SkillsEditor
@@ -385,7 +383,6 @@ export function NpcEdit({
               </div>
             </div>
           )}
-          <div className="npc-edit__note">{t("npcEdit.note1")}</div>
           <div className="npc-edit__note">{t("npcEdit.note2")}</div>
         </div>
       </div>
