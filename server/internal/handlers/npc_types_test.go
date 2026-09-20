@@ -42,14 +42,12 @@ func TestNPCTypeLifecycle(t *testing.T) {
 	h, c := setupNPCTypeHandlers(t)
 	cid := strconv.FormatInt(c.ID, 10)
 
-	// a new campaign starts with the default types
 	rec := call(t, h.ListNPCTypes, http.MethodGet, cid, nil)
 	var types []models.NPCType
 	if err := json.Unmarshal(rec.Body.Bytes(), &types); err != nil || len(types) != len(repository.DefaultNPCTypes) {
 		t.Fatalf("expected %d default types, got %d (%v)", len(repository.DefaultNPCTypes), len(types), err)
 	}
 
-	// create: the key comes from the label, a repeated label gets a suffix
 	rec = call(t, h.CreateNPCType, http.MethodPost, cid, NPCTypePayload{Label: "Monstruo Élite", Color: "#aa3344"})
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("create expected 201, got %d: %s", rec.Code, rec.Body.String())
@@ -66,7 +64,6 @@ func TestNPCTypeLifecycle(t *testing.T) {
 		t.Errorf("expected key monstruo-elite-2, got %q", dup.Key)
 	}
 
-	// invalid input
 	if rec := call(t, h.CreateNPCType, http.MethodPost, cid, NPCTypePayload{Label: "", Color: "#aa3344"}); rec.Code != http.StatusBadRequest {
 		t.Errorf("empty label expected 400, got %d", rec.Code)
 	}
@@ -77,7 +74,6 @@ func TestNPCTypeLifecycle(t *testing.T) {
 		t.Errorf("reserved key expected 400, got %d", rec.Code)
 	}
 
-	// update keeps the key
 	tid := strconv.FormatInt(created.ID, 10)
 	rec = call(t, h.UpdateNPCType, http.MethodPut, tid, NPCTypePayload{Label: "Jefe", Color: "#112233"})
 	var updated models.NPCType
@@ -86,7 +82,6 @@ func TestNPCTypeLifecycle(t *testing.T) {
 		t.Errorf("update wrong: %d %+v", rec.Code, updated)
 	}
 
-	// NPCs may only use the campaign's own types (or the reserved reference kind)
 	npc := func(kind string) int {
 		return call(t, h.CreateNPC, http.MethodPost, cid, CreateNPCPayload{Name: "N", NPCKind: kind, DetailLevel: "minor", Status: "vivo"}).Code
 	}
@@ -100,7 +95,6 @@ func TestNPCTypeLifecycle(t *testing.T) {
 		t.Errorf("referencia expected 201, got %d", code)
 	}
 
-	// a type in use cannot be deleted; an unused one can
 	if rec := call(t, h.DeleteNPCType, http.MethodDelete, tid, nil); rec.Code != http.StatusConflict {
 		t.Errorf("delete in use expected 409, got %d", rec.Code)
 	}

@@ -7,7 +7,6 @@ import { MarkdownText } from "../components/MarkdownText";
 import { apiFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
 
-// Keep in sync with maxWardailsLen in the server's handlers/campaigns.go.
 const MAX_LENGTH = 20000;
 
 interface WardailsProps {
@@ -60,7 +59,11 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
     <div className="card list-page">
       <div className="list-page__header">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Cross size={22} strokeWidth={1.75} style={{ color: "var(--accent-wardail)" }} />
+          <Cross
+            size={22}
+            strokeWidth={1.75}
+            style={{ color: "var(--accent-wardail)" }}
+          />
           <div>
             <div className="display" style={{ fontSize: 21 }}>
               {t("wardails.title")}
@@ -70,10 +73,18 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
         </div>
         {editing ? (
           <div className="list-page__header-actions">
-            <button className="btn btn-secondary" onClick={() => setEditing(false)} disabled={saving}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setEditing(false)}
+              disabled={saving}
+            >
               {t("common.cancel")}
             </button>
-            <button className="btn btn-primary" onClick={save} disabled={saving}>
+            <button
+              className="btn btn-primary"
+              onClick={save}
+              disabled={saving}
+            >
               {t("common.save")}
             </button>
           </div>
@@ -85,25 +96,27 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
       </div>
 
       <div className="list-page__rows">
-      {editing ? (
-        <>
-          <span className="label">
-            {t("wardails.title")} {t("common.supportsMarkdown")}
+        {editing ? (
+          <>
+            <span className="label">
+              {t("wardails.title")} {t("common.supportsMarkdown")}
+            </span>
+            <textarea
+              className="npc-edit__textarea"
+              style={{ minHeight: 260 }}
+              maxLength={MAX_LENGTH}
+              placeholder={t("wardails.placeholder")}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+            />
+          </>
+        ) : saved.trim() ? (
+          <MarkdownText className="npc-detail__desc" text={saved} />
+        ) : (
+          <span style={{ color: "var(--text-secondary)" }}>
+            {t("wardails.empty")}
           </span>
-          <textarea
-            className="npc-edit__textarea"
-            style={{ minHeight: 260 }}
-            maxLength={MAX_LENGTH}
-            placeholder={t("wardails.placeholder")}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-          />
-        </>
-      ) : saved.trim() ? (
-        <MarkdownText className="npc-detail__desc" text={saved} />
-      ) : (
-        <span style={{ color: "var(--text-secondary)" }}>{t("wardails.empty")}</span>
-      )}
+        )}
       </div>
     </div>
   );

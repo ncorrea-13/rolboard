@@ -175,7 +175,6 @@ export function useCampaignData(
   }, [activeCampaignId]);
 
   const [npcTypes, setNpcTypes] = useState<NpcType[]>([]);
-  // Render-phase on purpose: children read the registry while rendering, so it must match this state.
   setNpcTypeRegistry(npcTypes);
 
   useEffect(() => {

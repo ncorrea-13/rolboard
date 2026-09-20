@@ -55,7 +55,7 @@ func renderCallouts(rendered string) string {
 		}
 		return fmt.Sprintf(
 			`<blockquote class="callout callout-%s" data-callout="%s"><p class="callout-title">%s</p><p>`,
-			kind, kind, title, // already escaped by goldmark: escaping again would double-escape
+			kind, kind, title,
 		)
 	})
 }
@@ -68,7 +68,6 @@ var markdown = goldmark.New(
 func RenderNote(content []byte, idx *NameIndex) (string, error) {
 	_, body, err := Split(content)
 	if err != nil {
-		// Split only fails when there is no frontmatter; plain notes render whole.
 		body = bytes.TrimSpace(content)
 	}
 

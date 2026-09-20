@@ -43,7 +43,6 @@ function hashString(s: string): number {
   return Math.abs(h);
 }
 
-/** A per-campaign NPC category. `key` is what NPCs store in `npc_kind` and the vault writes in `tipo`. */
 export interface NpcType {
   id: string;
   key: string;
@@ -52,8 +51,6 @@ export interface NpcType {
   position: number;
 }
 
-// The campaign's NPC types, keyed by `key`. crystalColorFor/crystalLabelFor read it so any component
-// can resolve an NPC's type without threading the list through every prop; useCampaignData keeps it in sync.
 let npcTypeRegistry = new Map<string, NpcType>();
 
 export function setNpcTypeRegistry(types: NpcType[]) {

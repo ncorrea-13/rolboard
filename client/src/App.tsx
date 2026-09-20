@@ -82,7 +82,6 @@ export default function App() {
   );
   const [, forceAdminRerender] = useState(0);
 
-  // /help is a static screen: the URL is the only routing the app uses (Caddy serves index.html for it).
   const [helpOpen, setHelpOpen] = useState(
     () => window.location.pathname === "/help",
   );

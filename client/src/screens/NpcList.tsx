@@ -8,7 +8,10 @@ import {
   type StatusKind,
 } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
-import { NpcTypesButton, type NpcTypesApi } from "../components/NpcTypesManager";
+import {
+  NpcTypesButton,
+  type NpcTypesApi,
+} from "../components/NpcTypesManager";
 import { StatusPill } from "../components/StatusPill";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
@@ -40,11 +43,12 @@ export function NpcList({
   );
   const [page, setPage] = useState(1);
 
-  // Not memoized: labels come from the campaign's NPC type registry, which changes without `npcs` changing.
-  const typeFilters = [...new Set(npcs.map((n) => n.crystal))].map((crystal) => ({
-    crystal,
-    label: crystalLabelFor(crystal, lang),
-  }));
+  const typeFilters = [...new Set(npcs.map((n) => n.crystal))].map(
+    (crystal) => ({
+      crystal,
+      label: crystalLabelFor(crystal, lang),
+    }),
+  );
 
   function toggleType(crystal: string) {
     setActiveTypes((prev) => {

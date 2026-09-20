@@ -39,7 +39,6 @@ func (s *NPCTypeService) List(ctx context.Context, campaignID int64) ([]models.N
 	return s.repo.List(ctx, campaignID)
 }
 
-// IsValidKind reports whether an NPC of the campaign may use kind: a defined type or the reserved reference kind.
 func (s *NPCTypeService) IsValidKind(ctx context.Context, campaignID int64, kind string) (bool, error) {
 	if kind == repository.ReferenceNPCKind {
 		return true, nil
@@ -47,7 +46,6 @@ func (s *NPCTypeService) IsValidKind(ctx context.Context, campaignID int64, kind
 	return s.repo.Exists(ctx, campaignID, kind)
 }
 
-// Create derives the key from the label and appends -2, -3... when it is already taken.
 func (s *NPCTypeService) Create(ctx context.Context, campaignID int64, label, color string) (*models.NPCType, error) {
 	label = strings.TrimSpace(label)
 	if err := validNPCTypeFields(label, color); err != nil {

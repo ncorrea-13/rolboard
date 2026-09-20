@@ -14,7 +14,10 @@ import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { SkillsEditor } from "../components/SkillsEditor";
 import { ImageUploadField } from "../components/ImageUploadField";
-import { NpcTypesButton, type NpcTypesApi } from "../components/NpcTypesManager";
+import {
+  NpcTypesButton,
+  type NpcTypesApi,
+} from "../components/NpcTypesManager";
 import { useT, useLang } from "../lib/i18n";
 import type { CSSProperties } from "react";
 
@@ -51,7 +54,6 @@ export function NpcEdit({
   const [detailLevel, setDetailLevel] = useState<"full" | "minor">(
     npc.detailLevel,
   );
-  // A new NPC starts on the campaign's first type when the draft's default no longer exists.
   const [crystal, setCrystal] = useState<string>(() =>
     npcTypesApi.types.some((x) => x.key === npc.crystal)
       ? npc.crystal
@@ -215,7 +217,10 @@ export function NpcEdit({
 
           <div>
             <span className="label">{t("common.type")}</span>
-            <div className="npc-edit__type-row" style={{ flexWrap: "wrap", alignItems: "center" }}>
+            <div
+              className="npc-edit__type-row"
+              style={{ flexWrap: "wrap", alignItems: "center" }}
+            >
               {npcTypesApi.types.map((opt) => (
                 <button
                   key={opt.key}

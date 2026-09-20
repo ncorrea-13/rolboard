@@ -331,7 +331,6 @@ func (h *Handlers) GetNPCImage(w http.ResponseWriter, r *http.Request) {
 	serveImage(w, r, absPath, contentType)
 }
 
-// checkNPCKind writes the error response and returns false when kind is not one of the campaign's NPC types.
 func (h *Handlers) checkNPCKind(w http.ResponseWriter, r *http.Request, campaignID int64, kind string) bool {
 	ok, err := h.npcTypes.IsValidKind(r.Context(), campaignID, kind)
 	if err != nil {

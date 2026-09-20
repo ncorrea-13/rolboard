@@ -11,11 +11,8 @@ import (
 
 var ErrNPCTypeInUse = errors.New("npc type is used by npcs")
 
-// ReferenceNPCKind is the reserved npc_kind for vault notes that only serve as link targets.
-// It is not a user-managed type.
 const ReferenceNPCKind = "referencia"
 
-// DefaultNPCTypes are created with every new campaign.
 var DefaultNPCTypes = []models.NPCType{
 	{Key: "npc", Label: "Humano", Color: "#c79a55"},
 	{Key: "spren", Label: "Spren", Color: "#6fa98c"},
@@ -24,7 +21,6 @@ var DefaultNPCTypes = []models.NPCType{
 
 var accentReplacer = strings.NewReplacer("á", "a", "é", "e", "í", "i", "ó", "o", "ú", "u", "ü", "u", "ñ", "n")
 
-// NPCTypeKey turns a label or a vault `tipo` into a type key: "Ent. Cognitiva" -> "ent-cognitiva".
 func NPCTypeKey(label string) string {
 	s := accentReplacer.Replace(strings.ToLower(strings.TrimSpace(label)))
 	var b strings.Builder
@@ -41,7 +37,6 @@ func NPCTypeKey(label string) string {
 	return strings.Trim(b.String(), "-")
 }
 
-// autoTypeColors are handed out, in order, to types the indexer creates on its own.
 var autoTypeColors = []string{"#5fa8d3", "#d46a9f", "#d08a3c", "#9b7bea", "#4fb5a3", "#c2665c", "#7fb58c"}
 
 type NPCTypeRepository struct {
@@ -52,7 +47,6 @@ func NewNPCTypeRepository(db *sql.DB) *NPCTypeRepository {
 	return &NPCTypeRepository{db: db}
 }
 
-// execer is satisfied by *sql.DB and *sql.Tx.
 type execer interface {
 	ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
 }
@@ -101,7 +95,6 @@ func (r *NPCTypeRepository) Exists(ctx context.Context, campaignID int64, key st
 	return err == nil, err
 }
 
-// Ensure creates the type when the campaign does not have it yet (used when the vault mentions a new `tipo`).
 func (r *NPCTypeRepository) Ensure(ctx context.Context, campaignID int64, key, label string) error {
 	exists, err := r.Exists(ctx, campaignID, key)
 	if err != nil || exists {
@@ -141,7 +134,6 @@ func (r *NPCTypeRepository) Update(ctx context.Context, id int64, label, color s
 	return &t, nil
 }
 
-// Delete removes a type; it fails with ErrNPCTypeInUse while any live NPC of the campaign uses its key.
 func (r *NPCTypeRepository) Delete(ctx context.Context, id int64) error {
 	var campaignID int64
 	var key string

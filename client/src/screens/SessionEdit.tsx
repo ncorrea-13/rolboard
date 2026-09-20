@@ -75,7 +75,6 @@ export function SessionEdit({
       .catch((err) => console.error("Error cargando quests esperadas:", err));
   }, [session.id]);
 
-  // Wardails are only shown while playing the session (the confirm-as-played view).
   useEffect(() => {
     if (!confirmingPlay) return;
     apiFetch<{ wardails: string }>(`/campaigns/${campaignId}`)
@@ -117,8 +116,8 @@ export function SessionEdit({
     return (
       <div className="card npc-edit">
         <div className="npc-edit__bar npc-edit__bar--played">
-        <div className="npc-edit__bar-left">
-          <span className="status-dot" />
+          <div className="npc-edit__bar-left">
+            <span className="status-dot" />
             <span
               style={{
                 fontWeight: 500,
@@ -237,7 +236,12 @@ export function SessionEdit({
               <div style={{ marginTop: 16 }}>
                 <span
                   className="label"
-                  style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--accent-wardail)" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    color: "var(--accent-wardail)",
+                  }}
                 >
                   <Cross size={12} strokeWidth={2} />
                   {t("wardails.title")}

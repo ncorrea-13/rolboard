@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-// The same markup the markdown renderer emits for `> [!NOTE]`, built directly so the help shows real callouts.
 export function Callout({
   kind,
   title,

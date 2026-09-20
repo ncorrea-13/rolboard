@@ -509,12 +509,10 @@ func TestReindexCreatesNPCTypesMentionedByTheVault(t *testing.T) {
 		t.Fatalf("expected exactly one new type (defaults reused, referencia reserved), got %d -> %d", len(before), len(after))
 	}
 	created := after[len(after)-1]
-	// the label comes from the first note that mentions the type (the user can rename it later)
 	if created.Key != "monstruo-elite" || created.Label == "" || created.Color == "" {
 		t.Errorf("unexpected created type: %+v", created)
 	}
 
-	// a second reindex must not duplicate anything
 	if _, err := indexer.Reindex(ctx); err != nil {
 		t.Fatalf("second Reindex failed: %v", err)
 	}

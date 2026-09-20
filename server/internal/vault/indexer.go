@@ -120,7 +120,6 @@ func sessionType(tags []string, status string) string {
 	return "planning"
 }
 
-// npcTypeLabel is the display name for a type the vault introduced: the `tipo` text, capitalized and capped at 40 characters.
 func npcTypeLabel(tipo string) string {
 	runes := []rune(strings.TrimSpace(tipo))
 	if len(runes) > 40 {

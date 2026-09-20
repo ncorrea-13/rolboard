@@ -6,7 +6,6 @@ import { Modal } from "./Modal";
 import type { NpcType } from "../data/domain";
 import { useT } from "../lib/i18n";
 
-/** What the manager needs from the data layer; every action resolves to true on success. */
 export interface NpcTypesApi {
   types: NpcType[];
   onCreate: (label: string, color: string) => Promise<boolean>;
@@ -39,7 +38,6 @@ function TypeRow({ type, api }: { type: NpcType; api: NpcTypesApi }) {
     if (next !== type.label) void api.onUpdate(type.id, next, color);
   }
 
-  // The native picker fires on every drag step; wait for it to settle before saving.
   function changeColor(next: string) {
     setColor(next);
     window.clearTimeout(colorTimer.current);
@@ -87,7 +85,9 @@ function TypeRow({ type, api }: { type: NpcType; api: NpcTypesApi }) {
 function AddRow({ api }: { api: NpcTypesApi }) {
   const t = useT();
   const [label, setLabel] = useState("");
-  const [color, setColor] = useState(PALETTE[api.types.length % PALETTE.length]);
+  const [color, setColor] = useState(
+    PALETTE[api.types.length % PALETTE.length],
+  );
 
   async function add() {
     const next = label.trim();
@@ -127,15 +127,22 @@ function AddRow({ api }: { api: NpcTypesApi }) {
   );
 }
 
-/** Button that opens the NPC types ABM: add, rename, recolor and delete, all inline. */
 export function NpcTypesButton({ api }: { api: NpcTypesApi }) {
   const t = useT();
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <button type="button" className="btn btn-secondary" onClick={() => setOpen(true)}>
-        <Tags size={13} strokeWidth={1.75} style={{ verticalAlign: "-2px", marginRight: 6 }} />
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => setOpen(true)}
+      >
+        <Tags
+          size={13}
+          strokeWidth={1.75}
+          style={{ verticalAlign: "-2px", marginRight: 6 }}
+        />
         {t("npcTypes.manage")}
       </button>
       {open && (
