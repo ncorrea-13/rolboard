@@ -1,4 +1,4 @@
-import { LifeBuoy } from "lucide-react";
+import { BookOpenText } from "lucide-react";
 import "./SiteFooter.css";
 import { useT } from "../lib/i18n";
 
@@ -19,7 +19,7 @@ export function SiteFooter({ onHelp }: { onHelp: () => void }) {
         title={t("footer.help")}
         className="site-footer__icon"
       >
-        <LifeBuoy size={16} strokeWidth={1.6} />
+        <BookOpenText size={16} strokeWidth={1.6} />
       </a>
       <a
         href={GITHUB_URL}
