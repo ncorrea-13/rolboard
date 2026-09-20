@@ -34,6 +34,12 @@ type UpdateCampaignPayload struct {
 	VaultPath   string `json:"vault_path"`
 }
 
+type SetWardailsPayload struct {
+	Wardails string `json:"wardails"`
+}
+
+const maxWardailsLen = 20000
+
 var validCampaignStatuses = map[string]bool{
 	"active":   true,
 	"paused":   true,
@@ -194,5 +200,34 @@ func (h *Handlers) DeleteCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handlers) SetWardails(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	var payload SetWardailsPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if len(payload.Wardails) > maxWardailsLen {
+		http.Error(w, "Wardails too long", http.StatusBadRequest)
+		return
+	}
+
+	err = h.campaigns.SetWardails(r.Context(), id, payload.Wardails)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "Campaign not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error saving wardails", http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }

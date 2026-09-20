@@ -1,0 +1,71 @@
+.npc-types__hint {
+  margin: 0 0 14px;
+  font: 400 12.5px/1.6 var(--font-body);
+  color: var(--text-secondary);
+}
+
+.npc-types__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.npc-types__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.npc-types__row .npc-edit__input {
+  margin-top: 0;
+  flex: 1;
+  min-width: 0;
+}
+
+.npc-types__color {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 2px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.npc-types__key {
+  flex: none;
+  font: 500 11px var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.npc-types__delete {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.npc-types__delete:hover {
+  color: var(--status-dead);
+  border-color: var(--border);
+}
+
+.npc-types__add {
+  border-bottom: none;
+  padding-top: 14px;
+}
+
+@media (max-width: 640px) {
+  .npc-types__key {
+    display: none;
+  }
+}

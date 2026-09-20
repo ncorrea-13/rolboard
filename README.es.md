@@ -43,6 +43,7 @@ services:
   server:
     container_name: rolboard-server
     image: ghcr.io/ncorrea-13/rolboard-server:main
+    user: "${ROLBOARD_USER:-1000:1000}"
     env_file:
       - .env
     secrets:
@@ -84,9 +85,19 @@ services:
 CLIENT_PORT=8080
 DATA_PATH=./data
 VAULTS_ROOT_HOST=/ruta/a/los/vaults
+# ROLBOARD_USER=0   # solo Podman rootless, ver "Permisos del vault"
 ```
 
 La imagen del server corre como UID 1000 — `mkdir -p ./data` y `podman unshare chown -R 1000:1000 ./data` (Docker: `chown` común en vez de `podman unshare chown`) antes del primer arranque.
+
+### Permisos del vault
+
+El servidor tiene que poder leer el vault; si no, renderizar notas y reindexar fallan con `permission denied`.
+
+- **Docker (rootful):** el UID 1000 del contenedor es el UID 1000 del host, así que el vault debe ser legible por ese usuario.
+- **Podman rootless:** el UID 1000 del contenedor mapea a un sub-UID de tu usuario, no a vos, así que un vault `770` no se puede leer. Poné `ROLBOARD_USER=0` en el `.env`: el root de un contenedor rootless es tu propio usuario sin privilegios, no root del host, y el vault se monta read-only.
+
+No pongas `ROLBOARD_USER=0` en Docker rootful: ahí es root real.
 
 Crear el secret del token de admin y levantar:
 
@@ -114,6 +125,7 @@ Abrí `http://localhost:${CLIENT_PORT}`, entrá como admin con el token, creá u
 | `CLIENT_PORT`         | host     | Puerto del host para el cliente web                                                                                                     |
 | `DATA_PATH`           | host     | Carpeta del host para la base y las imágenes subidas                                                                                    |
 | `VAULTS_ROOT_HOST`    | host     | Carpeta del host con el vault de cada campaña como subcarpeta (montada read-only)                                                       |
+| `ROLBOARD_USER`       | host     | Usuario del contenedor (`uid:gid`). Default `1000:1000`. Podman rootless: `0` (ver [Permisos del vault](#permisos-del-vault))                |
 | `DB_PATH`             | servidor | Ruta del archivo SQLite                                                                                                                 |
 | `VAULTS_ROOT`         | servidor | Ruta del mount de vaults                                                                                                                |
 | `UPLOADS_ROOT`        | servidor | Ruta de imágenes. Sin default — ponela dentro del volumen de datos                                                                      |

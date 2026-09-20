@@ -11,11 +11,41 @@
   gap: 2px;
 }
 
+.sidebar__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 8px;
+}
+
+/* Same box as .app-shell__open: it lands on the same spot (16px, 16px) so the toggle stays put. */
+.sidebar__close {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.sidebar__close:hover {
+  color: var(--text-body-strong);
+  border-color: #34393d;
+}
+
 .sidebar__brand {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 0 9px 8px;
+  padding: 0;
   background: none;
   border: none;
   cursor: pointer;
@@ -31,6 +61,10 @@
 }
 
 .sidebar__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-family: var(--font-display);
   font-size: 15.5px;
   font-weight: 600;
@@ -41,7 +75,11 @@
   display: flex;
   align-items: center;
   gap: 9px;
+  width: 100%;
   padding: 8px 10px;
+  background: none;
+  border: none;
+  text-align: left;
   border-radius: 5px;
   font: 400 13.5px var(--font-body);
   color: var(--text-secondary);
@@ -56,9 +94,14 @@
 }
 
 .sidebar__item--active {
-  background: var(--bg-elevated);
+  background: color-mix(in srgb, var(--accent-obsidian) 12%, var(--bg-canvas));
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.sidebar__logout {
+  color: var(--status-dead);
+  border-color: var(--status-dead);
 }
 
 .sidebar__icon {
@@ -81,12 +124,6 @@
   border-radius: 1px;
 }
 
-.sidebar__marker {
-  width: 3px;
-  height: 12px;
-  border-radius: 2px;
-}
-
 .sidebar__footer-actions {
   display: flex;
   gap: 8px;
@@ -100,8 +137,14 @@
     gap: 6px;
   }
 
-  .sidebar__brand {
-    padding: 0 9px 16px;
+  .sidebar__head {
+    padding-bottom: 16px;
+  }
+
+  .sidebar__close {
+    width: 40px;
+    height: 40px;
+    margin-left: 0;
   }
 
   .sidebar__name {

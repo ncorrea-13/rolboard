@@ -74,7 +74,10 @@ export function EncounterStatusPill({ status }: { status: EncounterStatus }) {
 export function CampaignStatusPill({ status }: { status: CampaignStatus }) {
   const lang = useLang();
   return (
-    <span className="status-pill" style={{ color: campaignStatusColor[status] }}>
+    <span
+      className="status-pill"
+      style={{ color: campaignStatusColor[status] }}
+    >
       <span
         className="status-dot"
         style={{ background: campaignStatusDotColor[status] }}

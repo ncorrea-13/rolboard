@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PanelLeftOpen } from "lucide-react";
 import "./AppShell.css";
 import { Sidebar } from "./Sidebar";
 import type { DashboardSection } from "../screens/CampaignDashboard";
@@ -24,9 +25,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const t = useT();
-  const [sidebarOpen, setSidebarOpen] = useState(
-    () => window.innerWidth > 640,
-  );
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 640);
 
   function handleNavigate(section: DashboardSection) {
     onNavigate(section);
@@ -38,21 +37,7 @@ export function AppShell({
   }
 
   return (
-    <div className="app-shell">
-      <div
-        className={`app-shell__toggle-zone${sidebarOpen ? " app-shell__toggle-zone--open" : ""}`}
-      >
-        <button
-          className="app-shell__toggle"
-          onClick={() => setSidebarOpen((v) => !v)}
-          aria-label={
-            sidebarOpen ? t("appShell.hideSidebar") : t("appShell.showSidebar")
-          }
-          aria-expanded={sidebarOpen}
-        >
-          ☰
-        </button>
-      </div>
+    <div className={`app-shell${sidebarOpen ? "" : " app-shell--collapsed"}`}>
       <div
         className={`app-shell__sidebar${sidebarOpen ? "" : " app-shell__sidebar--closed"}`}
       >
@@ -64,8 +49,17 @@ export function AppShell({
           onOpenSettings={onOpenSettings}
           onAdminLogout={onAdminLogout}
           onBackdropClick={handleBackdropClick}
+          onClose={() => setSidebarOpen(false)}
         />
       </div>
+      <button
+        className="app-shell__open"
+        onClick={() => setSidebarOpen(true)}
+        aria-label={t("appShell.showSidebar")}
+        title={t("appShell.showSidebar")}
+      >
+        <PanelLeftOpen size={16} strokeWidth={1.75} />
+      </button>
       <main className="app-shell__main">{children}</main>
     </div>
   );

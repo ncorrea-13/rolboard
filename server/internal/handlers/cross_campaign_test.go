@@ -14,11 +14,6 @@ import (
 	"github.com/ncorrea-13/rolboard/server/internal/service"
 )
 
-// Representative of the six checks fixed together (NPC.location_id,
-// Location.parent_location_id, Session.arc_id, Group.lider_npc_id,
-// Encounter.session_id, EncounterParticipant.pc_id/npc_id) — all follow the
-// same "fetch the referenced entity, compare CampaignID" shape, so one
-// solid case per direction (reject/accept) stands in for the rest.
 func TestCreateNPCRejectsLocationFromAnotherCampaign(t *testing.T) {
 	db := setupCampaignTestDB(t)
 	ctx := context.Background()
@@ -26,7 +21,8 @@ func TestCreateNPCRejectsLocationFromAnotherCampaign(t *testing.T) {
 	npcSvc := service.NewNPCService(repository.NewNPCRepository(db), t.TempDir())
 	locRepo := repository.NewLocationRepository(db)
 	locSvc := service.NewLocationService(locRepo, t.TempDir())
-	h := &Handlers{npcs: npcSvc, locations: locSvc}
+	npcTypeSvc := service.NewNPCTypeService(repository.NewNPCTypeRepository(db))
+	h := &Handlers{npcs: npcSvc, npcTypes: npcTypeSvc, locations: locSvc}
 
 	campaignRepo := repository.NewCampaignRepository(db)
 	campaignA := &models.Campaign{Name: "A", System: "Cosmere RPG"}
@@ -65,7 +61,8 @@ func TestCreateNPCAcceptsLocationFromSameCampaign(t *testing.T) {
 	npcSvc := service.NewNPCService(repository.NewNPCRepository(db), t.TempDir())
 	locRepo := repository.NewLocationRepository(db)
 	locSvc := service.NewLocationService(locRepo, t.TempDir())
-	h := &Handlers{npcs: npcSvc, locations: locSvc}
+	npcTypeSvc := service.NewNPCTypeService(repository.NewNPCTypeRepository(db))
+	h := &Handlers{npcs: npcSvc, npcTypes: npcTypeSvc, locations: locSvc}
 
 	campaignRepo := repository.NewCampaignRepository(db)
 	campaignA := &models.Campaign{Name: "A", System: "Cosmere RPG"}

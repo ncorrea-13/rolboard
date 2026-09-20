@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
-import { apiFetch, apiImageRequest } from "../lib/api";
+import { useEffect, useEffectEvent, useState } from "react";
+import { ApiError, apiFetch, apiImageRequest } from "../lib/api";
 import {
   locationBreadcrumb,
+  setNpcTypeRegistry,
   type Campaign,
   type Npc,
+  type NpcType,
   type Arc,
   type Encounter,
   type Group,
@@ -19,6 +21,7 @@ import {
 } from "../data/entityForms";
 import {
   mapNpc,
+  mapNpcType,
   npcToApiPayload,
   mapLocation,
   locationToApiPayload,
@@ -35,6 +38,7 @@ import {
   mapSession,
   sessionToApiPayload,
   type ApiNpc,
+  type ApiNpcType,
   type ApiLocation,
   type ApiGroup,
   type ApiArc,
@@ -151,6 +155,12 @@ export function useCampaignData(
 ) {
   const t = useT();
   const lang = useLang();
+
+  const loadFailed = useEffectEvent((what: string, err: unknown) => {
+    console.error(`Error cargando ${what}:`, err);
+    notify(t("toast.errorLoading"), "error");
+  });
+
   const [npcs, setNpcs] = useState<Npc[]>([]);
 
   useEffect(() => {
@@ -161,8 +171,60 @@ export function useCampaignData(
           (data ?? []).filter((n) => n.npc_kind !== "referencia").map(mapNpc),
         ),
       )
-      .catch((err) => console.error("Error cargando NPCs:", err));
+      .catch((err) => loadFailed("NPCs", err));
   }, [activeCampaignId]);
+
+  const [npcTypes, setNpcTypes] = useState<NpcType[]>([]);
+  setNpcTypeRegistry(npcTypes);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiNpcType[]>(`/campaigns/${activeCampaignId}/npc-types`)
+      .then((data) => setNpcTypes((data ?? []).map(mapNpcType)))
+      .catch((err) => loadFailed("tipos de NPC", err));
+  }, [activeCampaignId]);
+
+  function npcTypeError(err: unknown) {
+    console.error("Error con tipos de NPC:", err);
+    const inUse = err instanceof ApiError && err.status === 409;
+    notify(t(inUse ? "npcTypes.inUse" : "npcTypes.errorSaving"), "error");
+    return false;
+  }
+
+  function createNpcType(label: string, color: string) {
+    return apiFetch<ApiNpcType>(`/campaigns/${activeCampaignId}/npc-types`, {
+      method: "POST",
+      body: JSON.stringify({ label, color }),
+    })
+      .then((created) => {
+        setNpcTypes((prev) => [...prev, mapNpcType(created)]);
+        return true;
+      })
+      .catch(npcTypeError);
+  }
+
+  function updateNpcType(id: string, label: string, color: string) {
+    return apiFetch<ApiNpcType>(`/npc-types/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ label, color }),
+    })
+      .then((updated) => {
+        setNpcTypes((prev) =>
+          prev.map((x) => (x.id === id ? mapNpcType(updated) : x)),
+        );
+        return true;
+      })
+      .catch(npcTypeError);
+  }
+
+  function deleteNpcType(id: string) {
+    return apiFetch(`/npc-types/${id}`, { method: "DELETE" })
+      .then(() => {
+        setNpcTypes((prev) => prev.filter((x) => x.id !== id));
+        return true;
+      })
+      .catch(npcTypeError);
+  }
 
   const [arcs, setArcs] = useState<Arc[]>([]);
 
@@ -170,7 +232,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiArc[]>(`/campaigns/${activeCampaignId}/arcs`)
       .then((data) => setArcs((data ?? []).map(mapArc)))
-      .catch((err) => console.error("Error cargando arcos:", err));
+      .catch((err) => loadFailed("arcos", err));
   }, [activeCampaignId]);
 
   const [groups, setGroups] = useState<Group[]>([]);
@@ -179,7 +241,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiGroup[]>(`/campaigns/${activeCampaignId}/groups`)
       .then((data) => setGroups((data ?? []).map(mapGroup)))
-      .catch((err) => console.error("Error cargando facciones:", err));
+      .catch((err) => loadFailed("facciones", err));
   }, [activeCampaignId]);
 
   const [locations, setLocations] = useState<Location[]>([]);
@@ -188,7 +250,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiLocation[]>(`/campaigns/${activeCampaignId}/locations`)
       .then((data) => setLocations((data ?? []).map(mapLocation)))
-      .catch((err) => console.error("Error cargando locaciones:", err));
+      .catch((err) => loadFailed("locaciones", err));
   }, [activeCampaignId]);
 
   const [quests, setQuests] = useState<Quest[]>([]);
@@ -197,7 +259,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiQuest[]>(`/campaigns/${activeCampaignId}/quests`)
       .then((data) => setQuests((data ?? []).map(mapQuest)))
-      .catch((err) => console.error("Error cargando quests:", err));
+      .catch((err) => loadFailed("quests", err));
   }, [activeCampaignId]);
 
   const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
@@ -210,7 +272,7 @@ export function useCampaignData(
       `/campaigns/${activeCampaignId}/player-characters`,
     )
       .then((data) => setPlayerCharacters((data ?? []).map(mapPlayerCharacter)))
-      .catch((err) => console.error("Error cargando personajes:", err));
+      .catch((err) => loadFailed("personajes", err));
   }, [activeCampaignId]);
 
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -219,7 +281,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiSession[]>(`/campaigns/${activeCampaignId}/sessions`)
       .then((data) => setSessions((data ?? []).map(mapSession)))
-      .catch((err) => console.error("Error cargando sesiones:", err));
+      .catch((err) => loadFailed("sesiones", err));
   }, [activeCampaignId]);
 
   const [encounters, setEncounters] = useState<Encounter[]>([]);
@@ -228,7 +290,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiEncounter[]>(`/campaigns/${activeCampaignId}/encounters`)
       .then((data) => setEncounters((data ?? []).map(mapEncounter)))
-      .catch((err) => console.error("Error cargando encuentros:", err));
+      .catch((err) => loadFailed("encuentros", err));
   }, [activeCampaignId]);
 
   const [dashboardSummary, setDashboardSummary] =
@@ -238,7 +300,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiDashboardSummary>(`/campaigns/${activeCampaignId}/dashboard`)
       .then(setDashboardSummary)
-      .catch((err) => console.error("Error cargando dashboard:", err));
+      .catch((err) => loadFailed("dashboard", err));
   }, [activeCampaignId]);
 
   const [reindexing, setReindexing] = useState(false);
@@ -247,10 +309,7 @@ export function useCampaignData(
     if (!activeCampaign || reindexing) return;
     setReindexing(true);
     apiFetch(`/campaigns/${activeCampaign.id}/reindex`, { method: "POST" })
-      .then((result) => {
-        console.log("Reindexado:", result);
-        notify(t("toast.reindexed"));
-      })
+      .then(() => notify(t("toast.reindexed")))
       .catch((err) => {
         console.error("Error reindexando:", err);
         notify(t("toast.errorReindexing"), "error");
@@ -1008,8 +1067,10 @@ export function useCampaignData(
   }
 
   return {
-    npcs,
-    playerCharacters,
+    npcTypes,
+    createNpcType,
+    updateNpcType,
+    deleteNpcType,
     campaignArcs,
     campaignGroups,
     campaignLocations,

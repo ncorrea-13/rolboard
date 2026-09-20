@@ -155,30 +155,6 @@
   color: var(--text-secondary);
 }
 
-.campaign-dashboard__chips {
-  display: flex;
-  gap: 7px;
-  flex-wrap: wrap;
-  margin-top: 13px;
-}
-
-.campaign-dashboard__chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font: 500 11.5px var(--font-mono);
-  color: var(--text-body-strong);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  padding: 4px 9px;
-  border-radius: 4px;
-}
-
-.campaign-dashboard__chip--dead {
-  color: var(--status-dead);
-  border-color: var(--status-dead-border);
-}
-
 .campaign-dashboard__list {
   border-radius: var(--radius-md);
   overflow: hidden;

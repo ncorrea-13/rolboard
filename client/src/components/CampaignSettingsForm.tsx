@@ -37,14 +37,21 @@ export function CampaignSettingsForm({
   useEffect(() => {
     apiFetch<string[]>(`/admin/vault-dirs?campaignId=${campaign.id}`)
       .then(setVaultDirs)
-      .catch((err) => console.error("Error listando directorios del vault:", err));
+      .catch((err) =>
+        console.error("Error listando directorios del vault:", err),
+      );
   }, [campaign.id]);
 
   async function handleSave() {
     if (!name.trim() || saving) return;
     setSaving(true);
     try {
-      await onSave({ name: name.trim(), system: system.trim(), status, vaultPath });
+      await onSave({
+        name: name.trim(),
+        system: system.trim(),
+        status,
+        vaultPath,
+      });
     } finally {
       setSaving(false);
     }
@@ -93,7 +100,9 @@ export function CampaignSettingsForm({
         >
           <option value="active">{t("campaignSettings.statusActive")}</option>
           <option value="paused">{t("campaignSettings.statusPaused")}</option>
-          <option value="finished">{t("campaignSettings.statusFinished")}</option>
+          <option value="finished">
+            {t("campaignSettings.statusFinished")}
+          </option>
         </select>
       </div>
       <div>
@@ -132,7 +141,13 @@ export function CampaignSettingsForm({
         </button>
       </div>
 
-      <hr style={{ margin: "16px 0", border: "none", borderTop: "1px solid var(--border-subtle)" }} />
+      <hr
+        style={{
+          margin: "16px 0",
+          border: "none",
+          borderTop: "1px solid var(--border-subtle)",
+        }}
+      />
 
       <div>
         <span className="label">{t("campaignSettings.accessCodeTitle")}</span>
@@ -148,7 +163,9 @@ export function CampaignSettingsForm({
           onKeyDown={(e) => e.key === "Enter" && handleSaveCode()}
         />
         {codeError && (
-          <div style={{ color: "var(--status-dead)", marginTop: 4 }}>{codeError}</div>
+          <div style={{ color: "var(--status-dead)", marginTop: 4 }}>
+            {codeError}
+          </div>
         )}
         {codeSaved && (
           <div style={{ color: "var(--status-alive)", marginTop: 4 }}>
@@ -156,7 +173,9 @@ export function CampaignSettingsForm({
           </div>
         )}
       </div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+      <div
+        style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}
+      >
         <button
           className="btn btn-primary"
           onClick={handleSaveCode}

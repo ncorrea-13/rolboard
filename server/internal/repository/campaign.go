@@ -46,22 +46,35 @@ func (r *CampaignRepository) List(ctx context.Context) ([]models.Campaign, error
 }
 
 func (r *CampaignRepository) Create(ctx context.Context, c *models.Campaign) error {
-	return r.db.QueryRowContext(ctx, `
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	err = tx.QueryRowContext(ctx, `
               INSERT INTO campaigns (name, system, description, vault_path)
               VALUES (?, ?, ?, ?)
               RETURNING id, name, system, description, status, vault_path, created_at, updated_at`,
 		c.Name, c.System, c.Description, c.VaultPath,
 	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.CreatedAt, &c.UpdatedAt)
+	if err != nil {
+		return err
+	}
+	if err := seedDefaultNPCTypes(ctx, tx, c.ID); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (r *CampaignRepository) GetByID(ctx context.Context, id int64) (*models.Campaign, error) {
 	c := models.Campaign{}
 	err := r.db.QueryRowContext(ctx, `
-	SELECT id, name, system, description, status, vault_path, created_at, updated_at, COALESCE(access_code_hash, '') FROM campaigns
+	SELECT id, name, system, description, status, vault_path, wardails, created_at, updated_at, COALESCE(access_code_hash, '') FROM campaigns
 		WHERE id = ?
 		AND deleted_at IS NULL`,
 		id,
-	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.CreatedAt, &c.UpdatedAt, &c.AccessCodeHash)
+	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.Wardails, &c.CreatedAt, &c.UpdatedAt, &c.AccessCodeHash)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -91,6 +104,25 @@ func (r *CampaignRepository) SetAccessCodeHash(ctx context.Context, id int64, ha
               UPDATE campaigns SET access_code_hash = ?, updated_at = datetime('now')
               WHERE id = ? AND deleted_at IS NULL`,
 		hash, id,
+	)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+func (r *CampaignRepository) SetWardails(ctx context.Context, id int64, wardails string) error {
+	res, err := r.db.ExecContext(ctx, `
+              UPDATE campaigns SET wardails = ?, updated_at = datetime('now')
+              WHERE id = ? AND deleted_at IS NULL`,
+		wardails, id,
 	)
 	if err != nil {
 		return err

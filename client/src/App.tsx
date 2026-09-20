@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import "./App.css";
 import {
   apiFetch,
@@ -43,6 +43,9 @@ import { QuestsList } from "./screens/QuestsList";
 import { PlayersList } from "./screens/PlayersList";
 import { EncountersList } from "./screens/EncountersList";
 import { EncounterDetail } from "./screens/EncounterDetail";
+import { Wardails } from "./screens/Wardails";
+import { Help } from "./screens/Help";
+import type { NpcTypesApi } from "./components/NpcTypesManager";
 import {
   ArcDetail,
   FactionDetail,
@@ -79,10 +82,37 @@ export default function App() {
   );
   const [, forceAdminRerender] = useState(0);
 
+  const [helpOpen, setHelpOpen] = useState(
+    () => window.location.pathname === "/help",
+  );
+
+  useEffect(() => {
+    const onPop = () => setHelpOpen(window.location.pathname === "/help");
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
+  function openHelp() {
+    window.history.pushState({ help: true }, "", "/help");
+    window.scrollTo(0, 0);
+    setHelpOpen(true);
+  }
+
+  function closeHelp() {
+    if (window.history.state?.help) window.history.back();
+    else window.history.replaceState(null, "", "/");
+    setHelpOpen(false);
+  }
+
+  const campaignsLoadFailed = useEffectEvent((err: unknown) => {
+    console.error("Error cargando campañas:", err);
+    notify(t("toast.errorLoading"), "error");
+  });
+
   useEffect(() => {
     apiFetch<ApiCampaignSummary[]>("/campaigns")
       .then((data) => setCampaigns((data ?? []).map(mapCampaignSummary)))
-      .catch((err) => console.error("Error cargando campañas:", err));
+      .catch(campaignsLoadFailed);
     checkAdminSession().then(() => forceAdminRerender((v) => v + 1));
   }, []);
 
@@ -95,15 +125,6 @@ export default function App() {
   function notify(message: string, type: "success" | "error" = "success") {
     setToast({ id: Date.now(), message, type });
   }
-
-  useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(
-      () => setToast(null),
-      toast.type === "error" ? 3000 : 2000,
-    );
-    return () => clearTimeout(timer);
-  }, [toast]);
 
   const activeCampaign = campaigns.find((c) => c.id === activeCampaignId);
 
@@ -121,6 +142,10 @@ export default function App() {
     handleReindex,
     nextSessionNumber,
     defaultSessionArc,
+    npcTypes,
+    createNpcType,
+    updateNpcType,
+    deleteNpcType,
     saveNpc,
     createNpc,
     deleteNpc,
@@ -161,6 +186,13 @@ export default function App() {
     setNewSessionOpen,
     notify,
   );
+
+  const npcTypesApi: NpcTypesApi = {
+    types: npcTypes,
+    onCreate: createNpcType,
+    onUpdate: updateNpcType,
+    onDelete: deleteNpcType,
+  };
 
   async function selectCampaign(id: string) {
     try {
@@ -302,6 +334,17 @@ export default function App() {
                         ? "encuentros"
                         : "resumen";
 
+  if (helpOpen) {
+    return (
+      <div className="app">
+        <div className="app__stage">
+          <Help onBack={closeHelp} />
+        </div>
+        <SiteFooter onHelp={openHelp} />
+      </div>
+    );
+  }
+
   return (
     <div className="app">
       {route.name === "campaigns" || !activeCampaign ? (
@@ -383,6 +426,7 @@ export default function App() {
               npcs={campaignNpcs}
               onSelect={(npcId) => setRoute({ name: "npc-detail", npcId })}
               onCreate={() => setRoute({ name: "npc-create" })}
+              npcTypesApi={npcTypesApi}
               imageVersion={imageVersion}
             />
           )}
@@ -455,6 +499,9 @@ export default function App() {
               }
               onCreate={() => createEncounter()}
             />
+          )}
+          {route.name === "section" && route.section === "wardails" && (
+            <Wardails campaignId={activeCampaignId!} notify={notify} />
           )}
 
           {route.name === "entity-detail" && route.kind === "arc" && (
@@ -608,7 +655,9 @@ export default function App() {
                     })
                   }
                   imageVersion={imageVersion}
-                  onUploadImage={(file) => uploadLocationImage(location.id, file)}
+                  onUploadImage={(file) =>
+                    uploadLocationImage(location.id, file)
+                  }
                   onRemoveImage={() => removeLocationImage(location.id)}
                 />
               );
@@ -695,6 +744,7 @@ export default function App() {
               npc={selectedNpc}
               npcs={campaignNpcs}
               locations={campaignLocations}
+              npcTypesApi={npcTypesApi}
               onSave={(patch) => {
                 saveNpc(selectedNpc.id, patch);
                 setRoute({ name: "npc-detail", npcId: selectedNpc.id });
@@ -713,6 +763,7 @@ export default function App() {
               npc={blankDrafts.npc}
               npcs={campaignNpcs}
               locations={campaignLocations}
+              npcTypesApi={npcTypesApi}
               onSave={createNpc}
               onDiscard={() => setRoute({ name: "section", section: "npcs" })}
             />
@@ -747,7 +798,9 @@ export default function App() {
                 setRoute({ name: "player-detail", playerId: selectedPlayer.id })
               }
               imageVersion={imageVersion}
-              onUploadImage={(file) => uploadPlayerImage(selectedPlayer.id, file)}
+              onUploadImage={(file) =>
+                uploadPlayerImage(selectedPlayer.id, file)
+              }
               onRemoveImage={() => removePlayerImage(selectedPlayer.id)}
             />
           )}
@@ -925,11 +978,11 @@ export default function App() {
           key={toast.id}
           message={toast.message}
           type={toast.type}
-          durationMs={toast.type === "error" ? 3000 : 2000}
+          onDone={() => setToast(null)}
         />
       )}
 
-      <SiteFooter />
+      <SiteFooter onHelp={openHelp} />
     </div>
   );
 }

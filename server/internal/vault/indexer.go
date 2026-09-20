@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
@@ -33,6 +34,7 @@ type Indexer struct {
 	db               *sql.DB
 	locations        *repository.LocationRepository
 	npcs             *repository.NPCRepository
+	npcTypes         *repository.NPCTypeRepository
 	groups           *repository.GroupRepository
 	sessions         *repository.SessionRepository
 	arcs             *repository.ArcRepository
@@ -47,6 +49,7 @@ func NewIndexer(root string, campaignID int64, db *sql.DB) *Indexer {
 		db:               db,
 		locations:        repository.NewLocationRepository(db),
 		npcs:             repository.NewNPCRepository(db),
+		npcTypes:         repository.NewNPCTypeRepository(db),
 		groups:           repository.NewGroupRepository(db),
 		sessions:         repository.NewSessionRepository(db),
 		arcs:             repository.NewArcRepository(db),
@@ -115,6 +118,17 @@ func sessionType(tags []string, status string) string {
 		return "session"
 	}
 	return "planning"
+}
+
+func npcTypeLabel(tipo string) string {
+	runes := []rune(strings.TrimSpace(tipo))
+	if len(runes) > 40 {
+		runes = runes[:40]
+	}
+	if len(runes) > 0 {
+		runes[0] = unicode.ToUpper(runes[0])
+	}
+	return string(runes)
 }
 
 func firstWikilinkTarget(raw string) string {
@@ -247,10 +261,21 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
 				continue
 			}
+			kind := repository.NPCTypeKey(fm.Tipo)
+			if kind == "" {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: missing tipo", relPath))
+				continue
+			}
+			if kind != repository.ReferenceNPCKind {
+				if err := ix.npcTypes.Ensure(ctx, ix.campaignID, kind, npcTypeLabel(fm.Tipo)); err != nil {
+					result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+					continue
+				}
+			}
 			npc := &models.NPC{
 				CampaignID:   ix.campaignID,
 				Name:         name,
-				NPCKind:      fm.Tipo,
+				NPCKind:      kind,
 				DetailLevel:  "full",
 				Status:       fm.Status,
 				ObsidianPath: &obsidianPath,

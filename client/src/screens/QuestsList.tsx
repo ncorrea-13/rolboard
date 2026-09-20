@@ -3,6 +3,7 @@ import "../styles/list.css";
 import { crystalColor, type Quest } from "../data/domain";
 import { QuestStatusPill } from "../components/StatusPill";
 import { useT } from "../lib/i18n";
+import { MarkdownText } from "../components/MarkdownText";
 
 const priorityLabel = { 1: "P1", 2: "P2", 3: "P3" } as const;
 const priorityColor = {
@@ -35,7 +36,9 @@ export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
           <div className="display" style={{ fontSize: 21 }}>
             {t("questsList.title")}
           </div>
-          <span className="list-page__count">{quests.length} {t("questsList.count")}</span>
+          <span className="list-page__count">
+            {quests.length} {t("questsList.count")}
+          </span>
         </div>
         <div className="list-page__header-actions">
           <input
@@ -64,8 +67,11 @@ export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
                   style={{ background: crystalColor[q.crystal] }}
                 />
               </span>
-              <div className="list-page__row-sub list-page__row-sub--clamp-1" style={{ marginTop: 6 }}>
-                {q.hook}
+              <div
+                className="list-page__row-sub list-page__row-sub--clamp-1"
+                style={{ marginTop: 6 }}
+              >
+                <MarkdownText inline text={q.hook} />
               </div>
             </div>
             <span

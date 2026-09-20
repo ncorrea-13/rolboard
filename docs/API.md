@@ -45,10 +45,13 @@ GET    /api/campaigns          public — [{id, name, system, status}]
 POST   /api/campaigns          admin
 GET    /api/campaigns/{id}
 PUT    /api/campaigns/{id}
+PUT    /api/campaigns/{id}/wardails   {"wardails": "..."}   204, max 20000 characters
 DELETE /api/campaigns/{id}
 ```
 
 Body: `name`, `system`, `description`, `vault_path`, and `status` (`active` | `paused` | `finished`) on `PUT`.
+
+`wardails` is free-form markdown with the campaign's sensitive topics; it has its own endpoint so saving it never overwrites the other fields. `GET /api/campaigns/{id}` returns it.
 
 The public list is deliberately trimmed: the selection screen needs it before there's a session, and it must not expose `vault_path`. The detail endpoint returns the full record.
 
@@ -106,6 +109,19 @@ GET    /api/locations/{id}/image
 ```
 
 Body: `name`, `location_type` (`planet` | `region` | `city` | `site` | `plane`), `parent_location_id`, `description`, `notes`, `obsidian_path`.
+
+## NPC types
+
+Each campaign defines its own NPC types (label, color). A new campaign starts with three defaults (`npc`, `spren`, `entidad-cognitiva`).
+
+```
+GET    /api/campaigns/{id}/npc-types
+POST   /api/campaigns/{id}/npc-types   {"label": "Monstruo", "color": "#aa3344"}
+PUT    /api/npc-types/{id}             {"label": "...", "color": "#rrggbb"}
+DELETE /api/npc-types/{id}             409 while any NPC uses it
+```
+
+The `key` is derived from the label on creation (`Monstruo Élite` → `monstruo-elite`, with `-2`, `-3`… if taken) and never changes: it is what NPCs store in `npc_kind` and what the vault writes in `tipo`. `color` is `#rrggbb`, label up to 40 characters.
 
 ## NPCs
 

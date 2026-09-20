@@ -247,7 +247,12 @@ export function EncounterDetail({
   function participantImageUrl(p: EncounterParticipant): string | undefined {
     if (p.pcId) {
       const pc = playerCharacters.find((c) => c.id === p.pcId);
-      return entityImageUrl("player-character", p.pcId, pc?.hasImage, imageVersion);
+      return entityImageUrl(
+        "player-character",
+        p.pcId,
+        pc?.hasImage,
+        imageVersion,
+      );
     }
     if (p.npcId) {
       const npc = npcs.find((n) => n.id === p.npcId);

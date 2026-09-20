@@ -57,7 +57,7 @@
 }
 
 .list-page__row--clickable:hover {
-  border-color: #34393d;
+  border-color: var(--border-hover);
 }
 
 .list-page__row-main {

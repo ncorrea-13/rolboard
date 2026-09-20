@@ -56,7 +56,7 @@ Wikilinks go in quotes in YAML: `"[[Name]]"`.
 
 | Key                 | Use |
 | ------------------- | --- |
-| `tipo`              | `npc_kind`: `npc` \| `spren` \| `entidad-cognitiva` \| `referencia`. Any other value → error on that note |
+| `tipo`              | `npc_kind`: the type's key (`Monstruo Élite` → `monstruo-elite`). A `tipo` the campaign does not have yet is created automatically (label from the note, next free color; rename or recolor it in the app). `referencia` is reserved. Missing → error on that note |
 | `status`            | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` |
 | `etnia`, `rol`, `tipo_spren` | text |
 | `current_location`  | wikilink to a location → `location_id` |

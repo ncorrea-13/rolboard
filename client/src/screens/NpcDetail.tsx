@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import "./NpcDetail.css";
-import { crystalColor, crystalLabelFor, type Npc, type Quest } from "../data/domain";
+import {
+  crystalColorFor,
+  crystalLabelFor,
+  questStatusColor,
+  type Npc,
+  type Quest,
+} from "../data/domain";
 import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
@@ -9,6 +15,8 @@ import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import { MarkdownText } from "../components/MarkdownText";
+import type { CSSProperties } from "react";
 
 interface NpcDetailProps {
   npc: Npc;
@@ -35,13 +43,14 @@ export function NpcDetail({
 }: NpcDetailProps) {
   const t = useT();
   const lang = useLang();
-  const color = crystalColor[npc.crystal];
+  const color = crystalColorFor(npc.crystal);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteHtml, setNoteHtml] = useState<string | null>(null);
 
   function openNote() {
     setNoteOpen(true);
+    setNoteHtml(null);
     if (!npc.obsidianPath) return;
     apiFetch<{ html: string }>(
       `/campaigns/${campaignId}/notes/render?path=${encodeURIComponent(npc.obsidianPath)}`,
@@ -50,12 +59,19 @@ export function NpcDetail({
       .catch(() => setNoteHtml(null));
   }
 
-  const [relations, setRelations] = useState<{ role: string; npcId: string }[]>([]);
+  const [relations, setRelations] = useState<{ role: string; npcId: string }[]>(
+    [],
+  );
 
   useEffect(() => {
     apiFetch<{ to_npc_id: number; role: string }[]>(`/npcs/${npc.id}/relations`)
       .then((data) =>
-        setRelations((data ?? []).map((r) => ({ role: r.role, npcId: String(r.to_npc_id) }))),
+        setRelations(
+          (data ?? []).map((r) => ({
+            role: r.role,
+            npcId: String(r.to_npc_id),
+          })),
+        ),
       )
       .catch((err) => console.error("Error cargando vínculos:", err));
   }, [npc.id]);
@@ -74,19 +90,13 @@ export function NpcDetail({
       <div className="npc-detail__header">
         <div className="npc-detail__breadcrumb">
           <button className="npc-detail__breadcrumb-link" onClick={onBack}>
-            NPCS
+            {t("sidebar.npcs")}
           </button>
           <span>/</span>
-          <span className="npc-detail__breadcrumb-type">
-            <span
-              className="npc-list__type-mark"
-              style={{
-                background: color,
-                width: 3,
-                height: 9,
-                borderRadius: 2,
-              }}
-            />
+          <span
+            className="type-chip"
+            style={{ "--c": color } as CSSProperties}
+          >
             {crystalLabelFor(npc.crystal, lang)}
           </span>
         </div>
@@ -107,13 +117,13 @@ export function NpcDetail({
             >
               {t("entityDetail.openInObsidian")}
             </button>
-            <button
-              className="btn btn-secondary"
-              onClick={openNote}
-            >
+            <button className="btn btn-secondary" onClick={openNote}>
               {t("entityDetail.viewRenderedNote")}
             </button>
-            <button className="btn btn-secondary" onClick={() => setSheetOpen(true)}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setSheetOpen(true)}
+            >
               {t("npcDetail.viewSheet")}
             </button>
             <button className="btn btn-secondary" onClick={onDelete}>
@@ -129,7 +139,7 @@ export function NpcDetail({
       <div className="npc-detail__body">
         <div className="npc-detail__col npc-detail__col--main">
           <span className="label">{t("common.description")}</span>
-          <p className="npc-detail__desc">{npc.description}</p>
+          <MarkdownText className="npc-detail__desc" text={npc.description} />
           {appearances.length > 0 && (
             <div className="npc-detail__stats">
               <div className="card npc-detail__stat">
@@ -155,7 +165,10 @@ export function NpcDetail({
               </span>
               <div className="npc-detail__links">
                 {links.map((l) => (
-                  <div key={l.role} className="card npc-detail__link">
+                  <div
+                    key={`${l.npcId}:${l.role}`}
+                    className="card npc-detail__link"
+                  >
                     <span className="npc-detail__link-role">{l.role}</span>
                     <span className="title-underline" style={{ flex: 1 }}>
                       <span className="npc-detail__link-name">
@@ -166,7 +179,7 @@ export function NpcDetail({
                       </span>
                       <span
                         className="title-underline__bar"
-                        style={{ background: crystalColor[l.target.crystal] }}
+                        style={{ background: crystalColorFor(l.target.crystal) }}
                       />
                     </span>
                     <StatusPill status={l.target.status} />
@@ -189,7 +202,7 @@ export function NpcDetail({
             <span className="label">{t("npcList.colLocation")}</span>
             <div className="npc-detail__location">
               {locationParts.map((part, i) => (
-                <span key={part}>
+                <span key={`${i}:${part}`}>
                   {i > 0 && <>{" ".repeat(i * 3)}└ </>}
                   {i === locationParts.length - 1 ? (
                     <span
@@ -214,7 +227,7 @@ export function NpcDetail({
               <div className="npc-detail__appearances">
                 {appearances.map((a, i) => (
                   <span
-                    key={a}
+                    key={`${i}:${a}`}
                     className={`npc-detail__appearance-chip${i === appearances.length - 1 ? " npc-detail__appearance-chip--active" : ""}`}
                   >
                     {a}
@@ -239,7 +252,7 @@ export function NpcDetail({
                   </span>
                   <span
                     className="status-dot"
-                    style={{ background: "var(--status-alive)" }}
+                    style={{ background: questStatusColor[q.status] }}
                   />
                 </div>
               ))}
@@ -270,13 +283,17 @@ export function NpcDetail({
               dangerouslySetInnerHTML={{ __html: noteHtml }}
             />
           ) : (
-            <p className="npc-detail__desc">{npc.description}</p>
+            <MarkdownText className="npc-detail__desc" text={npc.description} />
           )}
         </Modal>
       )}
 
       {sheetOpen && (
-        <Modal title={`${t("npcDetail.sheetPrefix")} · ${npc.name}`} onClose={() => setSheetOpen(false)} size="sheet">
+        <Modal
+          title={`${t("npcDetail.sheetPrefix")} · ${npc.name}`}
+          onClose={() => setSheetOpen(false)}
+          size="sheet"
+        >
           <CharacterSheet attributes={npc.attributes} skills={npc.skills} />
         </Modal>
       )}

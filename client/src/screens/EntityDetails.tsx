@@ -15,6 +15,7 @@ import {
 } from "../lib/apiMappers";
 import {
   crystalColor,
+  crystalColorFor,
   formatDate,
   locationTypeLabel,
   sessionCode,
@@ -79,7 +80,10 @@ export function ArcDetail({
       onEdit={onEdit}
       onDelete={onDelete}
       fields={[
-        { label: t("common.summary"), value: arc.summary },
+        {
+          label: t("common.summary"),
+          value: <MarkdownText text={arc.summary} />,
+        },
         {
           label: `${t("arcDetail.sessions")} (${sessions.length})`,
           value: (
@@ -95,7 +99,9 @@ export function ArcDetail({
                   >
                     {sessionCode(s)}
                   </span>
-                  <span style={{ flex: 1 }}>{s.summary}</span>
+                  <span style={{ flex: 1 }}>
+                    <MarkdownText inline text={s.summary} />
+                  </span>
                   <span
                     style={{
                       font: "400 12px var(--font-mono)",
@@ -145,7 +151,9 @@ export function FactionDetail({
 
   function reloadMembers() {
     apiFetch<ApiGroupMember[]>(`/groups/${group.id}/members`)
-      .then((data) => setMemberIds((data ?? []).map(mapGroupMember).map((m) => m.npcId)))
+      .then((data) =>
+        setMemberIds((data ?? []).map(mapGroupMember).map((m) => m.npcId)),
+      )
       .catch((err) => console.error("Error cargando miembros:", err));
   }
 
@@ -153,7 +161,9 @@ export function FactionDetail({
 
   function reloadPcMembers() {
     apiFetch<ApiPCGroupMember[]>(`/groups/${group.id}/pc-members`)
-      .then((data) => setPcMemberIds((data ?? []).map(mapPCGroupMember).map((m) => m.pcId)))
+      .then((data) =>
+        setPcMemberIds((data ?? []).map(mapPCGroupMember).map((m) => m.pcId)),
+      )
       .catch((err) => console.error("Error cargando PJs miembros:", err));
   }
 
@@ -200,7 +210,9 @@ export function FactionDetail({
   const members = npcs.filter((n) => memberIds.includes(n.id));
   const addableNpcs = npcs.filter((n) => !memberIds.includes(n.id));
   const pcMembers = playerCharacters.filter((p) => pcMemberIds.includes(p.id));
-  const addablePcs = playerCharacters.filter((p) => !pcMemberIds.includes(p.id));
+  const addablePcs = playerCharacters.filter(
+    (p) => !pcMemberIds.includes(p.id),
+  );
   const lider = npcs.find((n) => n.id === group.liderNpcId);
   return (
     <EntityDetail
@@ -216,9 +228,16 @@ export function FactionDetail({
       onEdit={onEdit}
       onDelete={onDelete}
       fields={[
-        { label: t("common.description"), value: group.description },
-        ...(group.alineacion ? [{ label: t("factionDetail.alignment"), value: group.alineacion }] : []),
-        ...(lider ? [{ label: t("factionDetail.leader"), value: lider.name }] : []),
+        {
+          label: t("common.description"),
+          value: <MarkdownText text={group.description} />,
+        },
+        ...(group.alineacion
+          ? [{ label: t("factionDetail.alignment"), value: group.alineacion }]
+          : []),
+        ...(lider
+          ? [{ label: t("factionDetail.leader"), value: lider.name }]
+          : []),
         {
           label: `${t("factionDetail.members")} (${members.length})`,
           value: (
@@ -237,12 +256,20 @@ export function FactionDetail({
                       initials={n.initials}
                       name={n.name}
                       role={n.role}
-                      color={crystalColor[n.crystal]}
-                      imageUrl={entityImageUrl("npc", n.id, n.hasImage, imageVersion)}
+                      color={crystalColorFor(n.crystal)}
+                      imageUrl={entityImageUrl(
+                        "npc",
+                        n.id,
+                        n.hasImage,
+                        imageVersion,
+                      )}
                     />
                   </div>
                   <StatusPill status={n.status} />
-                  <button className="btn btn-secondary" onClick={() => removeMember(n.id)}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => removeMember(n.id)}
+                  >
                     {t("factionDetail.remove")}
                   </button>
                 </div>
@@ -259,14 +286,20 @@ export function FactionDetail({
                     value={addNpcId}
                     onChange={(e) => setAddNpcId(e.target.value)}
                   >
-                    <option value="">{t("factionDetail.addNpcPlaceholder")}</option>
+                    <option value="">
+                      {t("factionDetail.addNpcPlaceholder")}
+                    </option>
                     {addableNpcs.map((n) => (
                       <option key={n.id} value={n.id}>
                         {n.name}
                       </option>
                     ))}
                   </select>
-                  <button className="btn btn-secondary" onClick={addMember} disabled={!addNpcId}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={addMember}
+                    disabled={!addNpcId}
+                  >
                     {t("common.add")}
                   </button>
                 </div>
@@ -293,11 +326,19 @@ export function FactionDetail({
                       name={p.characterName}
                       role={`${t("playersList.playedBy")} ${p.playerName}`}
                       color="var(--crystal-npc)"
-                      imageUrl={entityImageUrl("player-character", p.id, p.hasImage, imageVersion)}
+                      imageUrl={entityImageUrl(
+                        "player-character",
+                        p.id,
+                        p.hasImage,
+                        imageVersion,
+                      )}
                     />
                   </div>
                   <StatusPill status={p.status} />
-                  <button className="btn btn-secondary" onClick={() => removePcMember(p.id)}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => removePcMember(p.id)}
+                  >
                     {t("factionDetail.remove")}
                   </button>
                 </div>
@@ -314,14 +355,20 @@ export function FactionDetail({
                     value={addPcId}
                     onChange={(e) => setAddPcId(e.target.value)}
                   >
-                    <option value="">{t("factionDetail.addPlayerPlaceholder")}</option>
+                    <option value="">
+                      {t("factionDetail.addPlayerPlaceholder")}
+                    </option>
                     {addablePcs.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.characterName}
                       </option>
                     ))}
                   </select>
-                  <button className="btn btn-secondary" onClick={addPcMember} disabled={!addPcId}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={addPcMember}
+                    disabled={!addPcId}
+                  >
                     {t("common.add")}
                   </button>
                 </div>
@@ -368,7 +415,12 @@ export function LocationDetail({
       onBack={onBack}
       title={location.name}
       accentColor="var(--crystal-location)"
-      imageUrl={entityImageUrl("location", location.id, location.hasImage, imageVersion)}
+      imageUrl={entityImageUrl(
+        "location",
+        location.id,
+        location.hasImage,
+        imageVersion,
+      )}
       subtitle={locationTypeLabel[lang][location.locationType]}
       obsidianPath={location.obsidianPath}
       vaultName={vaultName}
@@ -380,7 +432,10 @@ export function LocationDetail({
           label: t("locationDetail.hierarchy"),
           value: breadcrumb.map((l) => l.name).join(" › "),
         },
-        { label: t("common.description"), value: location.description },
+        {
+          label: t("common.description"),
+          value: <MarkdownText text={location.description} />,
+        },
         {
           label: `${t("locationDetail.subLocations")} (${children.length})`,
           value:
@@ -429,13 +484,23 @@ export function QuestDetail({
       onEdit={onEdit}
       onDelete={onDelete}
       fields={[
-        { label: t("questDetail.hook"), value: <MarkdownText text={quest.hook} /> },
-        { label: t("questDetail.priority"), value: priorityLabel[quest.priority] },
+        {
+          label: t("questDetail.hook"),
+          value: <MarkdownText text={quest.hook} />,
+        },
+        {
+          label: t("questDetail.priority"),
+          value: priorityLabel[quest.priority],
+        },
         ...(quest.notes
-          ? [{ label: t("questDetail.notes"), value: <MarkdownText text={quest.notes} /> }]
+          ? [
+              {
+                label: t("questDetail.notes"),
+                value: <MarkdownText text={quest.notes} />,
+              },
+            ]
           : []),
       ]}
     />
   );
 }
-
