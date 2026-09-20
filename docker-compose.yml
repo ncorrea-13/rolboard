@@ -1,6 +1,7 @@
 services:
   rolboard-server:
     build: ./server
+    user: "${ROLBOARD_USER:-1000:1000}"
     env_file:
       - .env
     volumes:
