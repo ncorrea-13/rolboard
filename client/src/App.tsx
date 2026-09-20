@@ -101,15 +101,6 @@ export default function App() {
     setToast({ id: Date.now(), message, type });
   }
 
-  useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(
-      () => setToast(null),
-      toast.type === "error" ? 3000 : 2000,
-    );
-    return () => clearTimeout(timer);
-  }, [toast]);
-
   const activeCampaign = campaigns.find((c) => c.id === activeCampaignId);
 
   const {
@@ -930,7 +921,7 @@ export default function App() {
           key={toast.id}
           message={toast.message}
           type={toast.type}
-          durationMs={toast.type === "error" ? 3000 : 2000}
+          onDone={() => setToast(null)}
         />
       )}
 

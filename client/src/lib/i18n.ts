@@ -350,6 +350,8 @@ const dict = {
     "toast.reindexed": "Vault reindexado",
     "toast.errorReindexing": "Error reindexando el vault",
     "toast.errorLoading": "No se pudieron cargar los datos",
+    "footer.github": "Repositorio en GitHub",
+    "footer.portfolio": "Portfolio de Nicolás Correa",
 
     "confirm.deactivateNpc":
       "¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.",
@@ -714,6 +716,8 @@ const dict = {
     "toast.reindexed": "Vault reindexed",
     "toast.errorReindexing": "Error reindexing the vault",
     "toast.errorLoading": "Couldn't load data",
+    "footer.github": "GitHub repository",
+    "footer.portfolio": "Nicolás Correa's portfolio",
 
     "confirm.deactivateNpc":
       "Deactivate this NPC? It stops showing in the campaign, it isn't deleted.",

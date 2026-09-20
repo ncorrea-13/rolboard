@@ -75,7 +75,11 @@
   display: flex;
   align-items: center;
   gap: 9px;
+  width: 100%;
   padding: 8px 10px;
+  background: none;
+  border: none;
+  text-align: left;
   border-radius: 5px;
   font: 400 13.5px var(--font-body);
   color: var(--text-secondary);
@@ -93,6 +97,11 @@
   background: var(--bg-elevated);
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.sidebar__logout {
+  color: var(--status-dead);
+  border-color: var(--status-dead);
 }
 
 .sidebar__icon {

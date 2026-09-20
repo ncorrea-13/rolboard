@@ -1,16 +1,18 @@
 import "./SiteFooter.css";
+import { useT } from "../lib/i18n";
 
 const GITHUB_URL = "https://github.com/ncorrea-13/rolboard";
 const PORTFOLIO_URL = "https://ncorrea.com.ar";
 
 export function SiteFooter() {
+  const t = useT();
   return (
     <footer className="site-footer">
       <a
         href={GITHUB_URL}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Repositorio en GitHub"
+        aria-label={t("footer.github")}
         className="site-footer__icon"
       >
         <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" aria-hidden="true">
@@ -21,7 +23,7 @@ export function SiteFooter() {
         href={PORTFOLIO_URL}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Portfolio de Nicolás Correa"
+        aria-label={t("footer.portfolio")}
         title="Nicolás Correa"
         className="site-footer__icon"
       >

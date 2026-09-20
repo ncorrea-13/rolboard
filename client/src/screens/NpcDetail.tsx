@@ -76,7 +76,7 @@ export function NpcDetail({
       <div className="npc-detail__header">
         <div className="npc-detail__breadcrumb">
           <button className="npc-detail__breadcrumb-link" onClick={onBack}>
-            NPCS
+            {t("sidebar.npcs")}
           </button>
           <span>/</span>
           <span className="npc-detail__breadcrumb-type">

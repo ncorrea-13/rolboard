@@ -124,9 +124,11 @@ export function Sidebar({
       {navItems.map(({ Icon, ...item }) => {
         const isActive = item.section === active;
         return (
-          <div
+          <button
             key={item.labelKey}
+            type="button"
             className={`sidebar__item${isActive ? " sidebar__item--active" : ""}${item.section ? " sidebar__item--clickable" : ""}`}
+            aria-current={isActive ? "page" : undefined}
             onClick={item.section ? () => onNavigate(item.section!) : undefined}
           >
             <Icon
@@ -148,7 +150,7 @@ export function Sidebar({
                 />
               )}
             </span>
-          </div>
+          </button>
         );
       })}
       <div
@@ -168,11 +170,10 @@ export function Sidebar({
         <LanguageToggle />
         {onAdminLogout && (
           <button
-            className="btn btn-secondary"
+            className="btn btn-secondary sidebar__logout"
             onClick={onAdminLogout}
             title={t("adminSecret.logout")}
             aria-label={t("adminSecret.logout")}
-            style={{ color: "#e5484d", borderColor: "#e5484d" }}
           >
             <LogOut size={15} strokeWidth={1.75} />
           </button>
