@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strings"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 )
@@ -20,6 +21,28 @@ var DefaultNPCTypes = []models.NPCType{
 	{Key: "spren", Label: "Spren", Color: "#6fa98c"},
 	{Key: "entidad-cognitiva", Label: "Ent. cognitiva", Color: "#a87c9b"},
 }
+
+var accentReplacer = strings.NewReplacer("á", "a", "é", "e", "í", "i", "ó", "o", "ú", "u", "ü", "u", "ñ", "n")
+
+// NPCTypeKey turns a label or a vault `tipo` into a type key: "Ent. Cognitiva" -> "ent-cognitiva".
+func NPCTypeKey(label string) string {
+	s := accentReplacer.Replace(strings.ToLower(strings.TrimSpace(label)))
+	var b strings.Builder
+	dash := false
+	for _, r := range s {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			b.WriteRune(r)
+			dash = false
+		} else if !dash && b.Len() > 0 {
+			b.WriteByte('-')
+			dash = true
+		}
+	}
+	return strings.Trim(b.String(), "-")
+}
+
+// autoTypeColors are handed out, in order, to types the indexer creates on its own.
+var autoTypeColors = []string{"#5fa8d3", "#d46a9f", "#d08a3c", "#9b7bea", "#4fb5a3", "#c2665c", "#7fb58c"}
 
 type NPCTypeRepository struct {
 	db *sql.DB
@@ -76,6 +99,21 @@ func (r *NPCTypeRepository) Exists(ctx context.Context, campaignID int64, key st
 		return false, nil
 	}
 	return err == nil, err
+}
+
+// Ensure creates the type when the campaign does not have it yet (used when the vault mentions a new `tipo`).
+func (r *NPCTypeRepository) Ensure(ctx context.Context, campaignID int64, key, label string) error {
+	exists, err := r.Exists(ctx, campaignID, key)
+	if err != nil || exists {
+		return err
+	}
+	var count int
+	if err := r.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM npc_types WHERE campaign_id = ?`, campaignID).Scan(&count); err != nil {
+		return err
+	}
+	return r.Create(ctx, &models.NPCType{
+		CampaignID: campaignID, Key: key, Label: label, Color: autoTypeColors[count%len(autoTypeColors)],
+	})
 }
 
 func (r *NPCTypeRepository) Create(ctx context.Context, t *models.NPCType) error {

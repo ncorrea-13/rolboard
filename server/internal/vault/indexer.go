@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
@@ -117,6 +118,18 @@ func sessionType(tags []string, status string) string {
 		return "session"
 	}
 	return "planning"
+}
+
+// npcTypeLabel is the display name for a type the vault introduced: the `tipo` text, capitalized and capped at 40 characters.
+func npcTypeLabel(tipo string) string {
+	runes := []rune(strings.TrimSpace(tipo))
+	if len(runes) > 40 {
+		runes = runes[:40]
+	}
+	if len(runes) > 0 {
+		runes[0] = unicode.ToUpper(runes[0])
+	}
+	return string(runes)
 }
 
 func firstWikilinkTarget(raw string) string {
@@ -249,21 +262,21 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
 				continue
 			}
-			if fm.Tipo != repository.ReferenceNPCKind {
-				known, err := ix.npcTypes.Exists(ctx, ix.campaignID, fm.Tipo)
-				if err != nil {
+			kind := repository.NPCTypeKey(fm.Tipo)
+			if kind == "" {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: missing tipo", relPath))
+				continue
+			}
+			if kind != repository.ReferenceNPCKind {
+				if err := ix.npcTypes.Ensure(ctx, ix.campaignID, kind, npcTypeLabel(fm.Tipo)); err != nil {
 					result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
-					continue
-				}
-				if !known {
-					result.Errors = append(result.Errors, fmt.Sprintf("%s: unknown npc type %q; create it in the NPC types first", relPath, fm.Tipo))
 					continue
 				}
 			}
 			npc := &models.NPC{
 				CampaignID:   ix.campaignID,
 				Name:         name,
-				NPCKind:      fm.Tipo,
+				NPCKind:      kind,
 				DetailLevel:  "full",
 				Status:       fm.Status,
 				ObsidianPath: &obsidianPath,

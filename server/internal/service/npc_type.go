@@ -17,31 +17,12 @@ const maxNPCTypeLabelLen = 40
 
 var hexColorRe = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
-var accentReplacer = strings.NewReplacer("á", "a", "é", "e", "í", "i", "ó", "o", "ú", "u", "ü", "u", "ñ", "n")
-
 type NPCTypeService struct {
 	repo *repository.NPCTypeRepository
 }
 
 func NewNPCTypeService(repo *repository.NPCTypeRepository) *NPCTypeService {
 	return &NPCTypeService{repo: repo}
-}
-
-// slugify turns a label into a vault-friendly key: "Ent. Cognitiva" -> "ent-cognitiva".
-func slugify(label string) string {
-	s := accentReplacer.Replace(strings.ToLower(strings.TrimSpace(label)))
-	var b strings.Builder
-	dash := false
-	for _, r := range s {
-		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
-			b.WriteRune(r)
-			dash = false
-		} else if !dash && b.Len() > 0 {
-			b.WriteByte('-')
-			dash = true
-		}
-	}
-	return strings.Trim(b.String(), "-")
 }
 
 func validNPCTypeFields(label, color string) error {
@@ -72,7 +53,7 @@ func (s *NPCTypeService) Create(ctx context.Context, campaignID int64, label, co
 	if err := validNPCTypeFields(label, color); err != nil {
 		return nil, err
 	}
-	base := slugify(label)
+	base := repository.NPCTypeKey(label)
 	if base == "" || base == repository.ReferenceNPCKind {
 		return nil, fmt.Errorf("%w: label needs letters or digits", ErrInvalidNPCType)
 	}
