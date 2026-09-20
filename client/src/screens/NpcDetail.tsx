@@ -16,6 +16,7 @@ import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
+import type { CSSProperties } from "react";
 
 interface NpcDetailProps {
   npc: Npc;
@@ -92,16 +93,10 @@ export function NpcDetail({
             {t("sidebar.npcs")}
           </button>
           <span>/</span>
-          <span className="npc-detail__breadcrumb-type">
-            <span
-              className="npc-list__type-mark"
-              style={{
-                background: color,
-                width: 3,
-                height: 9,
-                borderRadius: 2,
-              }}
-            />
+          <span
+            className="type-chip"
+            style={{ "--c": color } as CSSProperties}
+          >
             {crystalLabelFor(npc.crystal, lang)}
           </span>
         </div>

@@ -124,12 +124,6 @@
   border-radius: 1px;
 }
 
-.sidebar__marker {
-  width: 3px;
-  height: 12px;
-  border-radius: 2px;
-}
-
 .sidebar__footer-actions {
   display: flex;
   gap: 8px;

@@ -149,10 +149,6 @@ export function Sidebar({
               strokeWidth={1.75}
               style={{ color: item.color }}
             />
-            <span
-              className="sidebar__marker"
-              style={{ background: item.color }}
-            />
             <span className="sidebar__item-label">
               {t(item.labelKey)}
               {isActive && (

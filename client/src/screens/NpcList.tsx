@@ -11,6 +11,7 @@ import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import type { CSSProperties } from "react";
 
 const statusFilters: StatusKind[] = ["alive", "dead", "missing", "paused"];
 
@@ -125,12 +126,9 @@ export function NpcList({
           <button
             key={f.crystal}
             className={`npc-list__filter-chip${activeTypes.has(f.crystal) ? " npc-list__filter-chip--active" : ""}`}
+            style={{ "--c": crystalColorFor(f.crystal) } as CSSProperties}
             onClick={() => toggleType(f.crystal)}
           >
-            <span
-              className="npc-list__filter-mark"
-              style={{ background: crystalColorFor(f.crystal) }}
-            />
             {f.label}
           </button>
         ))}
@@ -184,10 +182,11 @@ export function NpcList({
           />
           <span className="npc-list__type">
             <span
-              className="npc-list__type-mark"
-              style={{ background: crystalColorFor(n.crystal) }}
-            />
-            {crystalLabelFor(n.crystal, lang)}
+              className="type-chip"
+              style={{ "--c": crystalColorFor(n.crystal) } as CSSProperties}
+            >
+              {crystalLabelFor(n.crystal, lang)}
+            </span>
           </span>
           <span className="npc-list__cell">{n.location}</span>
           <StatusPill status={n.status} />

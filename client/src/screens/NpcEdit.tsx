@@ -16,6 +16,7 @@ import { entityImageUrl } from "../lib/images";
 import { SkillsEditor } from "../components/SkillsEditor";
 import { ImageUploadField } from "../components/ImageUploadField";
 import { useT, useLang, type TranslationKey } from "../lib/i18n";
+import type { CSSProperties } from "react";
 
 const typeOptions: {
   label: string;
@@ -226,12 +227,9 @@ export function NpcEdit({
                   key={opt.label}
                   type="button"
                   className={`npc-edit__type-chip${crystal === opt.crystal ? " npc-edit__type-chip--active" : ""}`}
+                  style={{ "--c": crystalColor[opt.crystal] } as CSSProperties}
                   onClick={() => setCrystal(opt.crystal)}
                 >
-                  <span
-                    className="npc-edit__type-mark"
-                    style={{ background: crystalColor[opt.crystal] }}
-                  />
                   {t(opt.labelKey)}
                 </button>
               ))}

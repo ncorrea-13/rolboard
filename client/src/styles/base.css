@@ -100,6 +100,18 @@ body {
   border-radius: var(--radius-lg);
 }
 
+/* Entity type (crystal) as a tinted pill; set --c inline. */
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font: 500 11.5px var(--font-body);
+  color: var(--c);
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+}
+
 .title-underline {
   display: inline-flex;
   flex-direction: column;

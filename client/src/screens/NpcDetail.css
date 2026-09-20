@@ -152,9 +152,9 @@
 .npc-detail__desc blockquote:not(.callout) {
   margin: 12px 0;
   padding: 10px 14px;
-  border-left: 3px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle);
   background: var(--bg-elevated);
-  border-radius: 0 6px 6px 0;
+  border-radius: 6px;
 }
 
 .npc-detail__desc blockquote p:empty {
