@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import "./App.css";
 import {
   apiFetch,
@@ -79,10 +79,15 @@ export default function App() {
   );
   const [, forceAdminRerender] = useState(0);
 
+  const campaignsLoadFailed = useEffectEvent((err: unknown) => {
+    console.error("Error cargando campañas:", err);
+    notify(t("toast.errorLoading"), "error");
+  });
+
   useEffect(() => {
     apiFetch<ApiCampaignSummary[]>("/campaigns")
       .then((data) => setCampaigns((data ?? []).map(mapCampaignSummary)))
-      .catch((err) => console.error("Error cargando campañas:", err));
+      .catch(campaignsLoadFailed);
     checkAdminSession().then(() => forceAdminRerender((v) => v + 1));
   }, []);
 
