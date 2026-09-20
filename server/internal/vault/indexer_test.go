@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
@@ -458,5 +459,46 @@ func TestReindexPopulatesSessionNpcsAndPcs(t *testing.T) {
 
 	if len(result.UnresolvedWikilinks) != 0 {
 		t.Errorf("Expected no unresolved wikilinks (location links in body are ignored on purpose), got %v", result.UnresolvedWikilinks)
+	}
+}
+
+func TestReindexValidatesNPCTypeAgainstCampaignTypes(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Homebrew", System: "Pathfinder"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+	if err := repository.NewNPCTypeRepository(db).Create(ctx, &models.NPCType{
+		CampaignID: campaign.ID, Key: "monstruo", Label: "Monstruo", Color: "#aa3344",
+	}); err != nil {
+		t.Fatalf("Create npc type failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "NPC/Trasgo.md", "---\ntipo: monstruo\nstatus: vivo\n---\nUn trasgo.")
+	writeVaultFile(t, root, "NPC/Fantasma.md", "---\ntipo: espectro\nstatus: vivo\n---\nTipo que la campaña no definió.")
+	writeVaultFile(t, root, "NPC/Mencion.md", "---\ntipo: referencia\nstatus: vivo\n---\nSolo destino de enlaces.")
+
+	result, err := NewIndexer(root, campaign.ID, db).Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+
+	if len(result.Errors) != 1 || !strings.Contains(result.Errors[0], "Fantasma.md") || !strings.Contains(result.Errors[0], `"espectro"`) {
+		t.Fatalf("expected one error naming Fantasma.md and the unknown type, got %v", result.Errors)
+	}
+
+	npcs, err := repository.NewNPCRepository(db).List(ctx, campaign.ID)
+	if err != nil {
+		t.Fatalf("List npcs failed: %v", err)
+	}
+	kinds := map[string]string{}
+	for _, n := range npcs {
+		kinds[n.Name] = n.NPCKind
+	}
+	if len(kinds) != 2 || kinds["Trasgo"] != "monstruo" || kinds["Mencion"] != "referencia" {
+		t.Errorf("expected Trasgo=monstruo and Mencion=referencia only, got %v", kinds)
 	}
 }
