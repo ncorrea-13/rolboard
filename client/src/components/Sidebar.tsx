@@ -10,6 +10,7 @@ import {
   Skull,
   Settings,
   LogOut,
+  PanelLeftClose,
   type LucideIcon,
 } from "lucide-react";
 import "./Sidebar.css";
@@ -83,6 +84,7 @@ interface SidebarProps {
   onOpenSettings?: () => void;
   onAdminLogout?: () => void;
   onBackdropClick?: () => void;
+  onClose: () => void;
 }
 
 export function Sidebar({
@@ -93,18 +95,32 @@ export function Sidebar({
   onOpenSettings,
   onAdminLogout,
   onBackdropClick,
+  onClose,
 }: SidebarProps) {
   const t = useT();
   return (
     <nav className="sidebar" onClick={onBackdropClick}>
-      <button
-        className="sidebar__brand"
-        onClick={onBack}
-        title={t("sidebar.backToCampaigns")}
-      >
-        <span className="sidebar__glow" />
-        <span className="sidebar__name">{campaignName}</span>
-      </button>
+      <div className="sidebar__head">
+        <button
+          className="sidebar__close"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          title={t("appShell.hideSidebar")}
+          aria-label={t("appShell.hideSidebar")}
+        >
+          <PanelLeftClose size={16} strokeWidth={1.75} />
+        </button>
+        <button
+          className="sidebar__brand"
+          onClick={onBack}
+          title={t("sidebar.backToCampaigns")}
+        >
+          <span className="sidebar__glow" />
+          <span className="sidebar__name">{campaignName}</span>
+        </button>
+      </div>
       {navItems.map(({ Icon, ...item }) => {
         const isActive = item.section === active;
         return (
