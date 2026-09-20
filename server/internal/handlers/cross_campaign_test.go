@@ -21,7 +21,8 @@ func TestCreateNPCRejectsLocationFromAnotherCampaign(t *testing.T) {
 	npcSvc := service.NewNPCService(repository.NewNPCRepository(db), t.TempDir())
 	locRepo := repository.NewLocationRepository(db)
 	locSvc := service.NewLocationService(locRepo, t.TempDir())
-	h := &Handlers{npcs: npcSvc, locations: locSvc}
+	npcTypeSvc := service.NewNPCTypeService(repository.NewNPCTypeRepository(db))
+	h := &Handlers{npcs: npcSvc, npcTypes: npcTypeSvc, locations: locSvc}
 
 	campaignRepo := repository.NewCampaignRepository(db)
 	campaignA := &models.Campaign{Name: "A", System: "Cosmere RPG"}
@@ -60,7 +61,8 @@ func TestCreateNPCAcceptsLocationFromSameCampaign(t *testing.T) {
 	npcSvc := service.NewNPCService(repository.NewNPCRepository(db), t.TempDir())
 	locRepo := repository.NewLocationRepository(db)
 	locSvc := service.NewLocationService(locRepo, t.TempDir())
-	h := &Handlers{npcs: npcSvc, locations: locSvc}
+	npcTypeSvc := service.NewNPCTypeService(repository.NewNPCTypeRepository(db))
+	h := &Handlers{npcs: npcSvc, npcTypes: npcTypeSvc, locations: locSvc}
 
 	campaignRepo := repository.NewCampaignRepository(db)
 	campaignA := &models.Campaign{Name: "A", System: "Cosmere RPG"}

@@ -33,6 +33,7 @@ type Indexer struct {
 	db               *sql.DB
 	locations        *repository.LocationRepository
 	npcs             *repository.NPCRepository
+	npcTypes         *repository.NPCTypeRepository
 	groups           *repository.GroupRepository
 	sessions         *repository.SessionRepository
 	arcs             *repository.ArcRepository
@@ -47,6 +48,7 @@ func NewIndexer(root string, campaignID int64, db *sql.DB) *Indexer {
 		db:               db,
 		locations:        repository.NewLocationRepository(db),
 		npcs:             repository.NewNPCRepository(db),
+		npcTypes:         repository.NewNPCTypeRepository(db),
 		groups:           repository.NewGroupRepository(db),
 		sessions:         repository.NewSessionRepository(db),
 		arcs:             repository.NewArcRepository(db),
@@ -246,6 +248,17 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 			if err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
 				continue
+			}
+			if fm.Tipo != repository.ReferenceNPCKind {
+				known, err := ix.npcTypes.Exists(ctx, ix.campaignID, fm.Tipo)
+				if err != nil {
+					result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+					continue
+				}
+				if !known {
+					result.Errors = append(result.Errors, fmt.Sprintf("%s: unknown npc type %q; create it in the NPC types first", relPath, fm.Tipo))
+					continue
+				}
 			}
 			npc := &models.NPC{
 				CampaignID:   ix.campaignID,

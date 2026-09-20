@@ -92,12 +92,21 @@ quest_npcs      quest ↔ npc        (schema only, no endpoints)
 | obsidian_path       | |
 | image_path          | |
 
+### npc_types
+
+| Field             | Notes |
+| ----------------- | ----- |
+| campaign_id       | `ON DELETE CASCADE` |
+| key               | Derived from the label, immutable. Unique per campaign. Matches the vault's `tipo` |
+| label, color      | Display only. `color` is `#rrggbb` |
+| position          | Display order |
+
 ### npcs
 
 | Field                  | Notes |
 | ---------------------- | ----- |
 | name                   | |
-| npc_kind               | `npc` \| `spren` \| `entidad-cognitiva` \| `referencia` |
+| npc_kind               | key of one of the campaign's `npc_types`, or the reserved `referencia` (link-target-only notes) |
 | detail_level           | `full` \| `minor` |
 | status                 | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` \| `paused` |
 | location_id            | current location, optional |

@@ -110,6 +110,19 @@ GET    /api/locations/{id}/image
 
 Body: `name`, `location_type` (`planet` | `region` | `city` | `site` | `plane`), `parent_location_id`, `description`, `notes`, `obsidian_path`.
 
+## Tipos de NPC
+
+Cada campaña define sus propios tipos de NPC (etiqueta, color). Una campaña nueva arranca con tres por defecto (`npc`, `spren`, `entidad-cognitiva`).
+
+```
+GET    /api/campaigns/{id}/npc-types
+POST   /api/campaigns/{id}/npc-types   {"label": "Monstruo", "color": "#aa3344"}
+PUT    /api/npc-types/{id}             {"label": "...", "color": "#rrggbb"}
+DELETE /api/npc-types/{id}             409 mientras algún NPC lo use
+```
+
+La `key` se deriva de la etiqueta al crear (`Monstruo Élite` → `monstruo-elite`, con `-2`, `-3`… si ya existe) y no cambia nunca: es lo que los NPC guardan en `npc_kind` y lo que el vault escribe en `tipo`. `color` es `#rrggbb`, etiqueta de hasta 40 caracteres.
+
 ## NPCs
 
 ```

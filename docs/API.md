@@ -110,6 +110,19 @@ GET    /api/locations/{id}/image
 
 Body: `name`, `location_type` (`planet` | `region` | `city` | `site` | `plane`), `parent_location_id`, `description`, `notes`, `obsidian_path`.
 
+## NPC types
+
+Each campaign defines its own NPC types (label, color). A new campaign starts with three defaults (`npc`, `spren`, `entidad-cognitiva`).
+
+```
+GET    /api/campaigns/{id}/npc-types
+POST   /api/campaigns/{id}/npc-types   {"label": "Monstruo", "color": "#aa3344"}
+PUT    /api/npc-types/{id}             {"label": "...", "color": "#rrggbb"}
+DELETE /api/npc-types/{id}             409 while any NPC uses it
+```
+
+The `key` is derived from the label on creation (`Monstruo Élite` → `monstruo-elite`, with `-2`, `-3`… if taken) and never changes: it is what NPCs store in `npc_kind` and what the vault writes in `tipo`. `color` is `#rrggbb`, label up to 40 characters.
+
 ## NPCs
 
 ```

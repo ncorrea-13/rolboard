@@ -44,13 +44,6 @@ type UpdateNPCPayload struct {
 	ObsidianPath *string         `json:"obsidian_path"`
 }
 
-var validNPCKinds = map[string]bool{
-	"npc":               true,
-	"spren":             true,
-	"entidad-cognitiva": true,
-	"referencia":        true,
-}
-
 var validNPCDetailLevels = map[string]bool{
 	"full":  true,
 	"minor": true,
@@ -96,8 +89,11 @@ func (h *Handlers) CreateNPC(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.Name == "" || !validNPCKinds[payload.NPCKind] || !validNPCDetailLevels[payload.DetailLevel] || !validNPCStatuses[payload.Status] {
+	if payload.Name == "" || !validNPCDetailLevels[payload.DetailLevel] || !validNPCStatuses[payload.Status] {
 		http.Error(w, "Name, npc_kind, detail_level and status are required fields", http.StatusBadRequest)
+		return
+	}
+	if !h.checkNPCKind(w, r, campaignID, payload.NPCKind) {
 		return
 	}
 	if payload.LocationID != nil {
@@ -179,20 +175,23 @@ func (h *Handlers) UpdateNPC(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if payload.Name == "" || !validNPCKinds[payload.NPCKind] || !validNPCDetailLevels[payload.DetailLevel] || !validNPCStatuses[payload.Status] {
+	if payload.Name == "" || !validNPCDetailLevels[payload.DetailLevel] || !validNPCStatuses[payload.Status] {
 		http.Error(w, "Name, npc_kind, detail_level and status are required fields", http.StatusBadRequest)
 		return
 	}
+	current, err := h.npcs.GetByID(r.Context(), id)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "NPC not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving npc", http.StatusInternalServerError)
+		return
+	}
+	if !h.checkNPCKind(w, r, current.CampaignID, payload.NPCKind) {
+		return
+	}
 	if payload.LocationID != nil {
-		current, err := h.npcs.GetByID(r.Context(), id)
-		if errors.Is(err, repository.ErrNotFound) {
-			http.Error(w, "NPC not found", http.StatusNotFound)
-			return
-		}
-		if err != nil {
-			http.Error(w, "Error retrieving npc", http.StatusInternalServerError)
-			return
-		}
 		loc, err := h.locations.GetByID(r.Context(), *payload.LocationID)
 		if errors.Is(err, repository.ErrNotFound) {
 			http.Error(w, "Location not found", http.StatusNotFound)
@@ -330,4 +329,18 @@ func (h *Handlers) GetNPCImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	serveImage(w, r, absPath, contentType)
+}
+
+// checkNPCKind writes the error response and returns false when kind is not one of the campaign's NPC types.
+func (h *Handlers) checkNPCKind(w http.ResponseWriter, r *http.Request, campaignID int64, kind string) bool {
+	ok, err := h.npcTypes.IsValidKind(r.Context(), campaignID, kind)
+	if err != nil {
+		http.Error(w, "Error validating npc_kind", http.StatusInternalServerError)
+		return false
+	}
+	if !ok {
+		http.Error(w, "Unknown npc_kind for this campaign", http.StatusBadRequest)
+		return false
+	}
+	return true
 }

@@ -46,12 +46,25 @@ func (r *CampaignRepository) List(ctx context.Context) ([]models.Campaign, error
 }
 
 func (r *CampaignRepository) Create(ctx context.Context, c *models.Campaign) error {
-	return r.db.QueryRowContext(ctx, `
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	err = tx.QueryRowContext(ctx, `
               INSERT INTO campaigns (name, system, description, vault_path)
               VALUES (?, ?, ?, ?)
               RETURNING id, name, system, description, status, vault_path, created_at, updated_at`,
 		c.Name, c.System, c.Description, c.VaultPath,
 	).Scan(&c.ID, &c.Name, &c.System, &c.Description, &c.Status, &c.VaultPath, &c.CreatedAt, &c.UpdatedAt)
+	if err != nil {
+		return err
+	}
+	if err := seedDefaultNPCTypes(ctx, tx, c.ID); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (r *CampaignRepository) GetByID(ctx context.Context, id int64) (*models.Campaign, error) {

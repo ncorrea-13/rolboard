@@ -49,6 +49,10 @@ func NewRouter(h *Handlers) http.Handler {
 
 	mux.Handle("GET /api/campaigns/{id}/npcs", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListNPCs)))
 	mux.Handle("POST /api/campaigns/{id}/npcs", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateNPC)))
+	mux.Handle("GET /api/campaigns/{id}/npc-types", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListNPCTypes)))
+	mux.Handle("POST /api/campaigns/{id}/npc-types", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateNPCType)))
+	mux.Handle("PUT /api/npc-types/{id}", http.HandlerFunc(h.requireCampaign(h.resolveNPCType, h.UpdateNPCType)))
+	mux.Handle("DELETE /api/npc-types/{id}", http.HandlerFunc(h.requireCampaign(h.resolveNPCType, h.DeleteNPCType)))
 	mux.Handle("GET /api/npcs/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.GetNPC)))
 	mux.Handle("PUT /api/npcs/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.UpdateNPC)))
 	mux.Handle("DELETE /api/npcs/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.DeleteNPC)))
