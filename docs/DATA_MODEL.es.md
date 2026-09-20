@@ -53,6 +53,7 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 | status           | `active` \| `paused` \| `finished` |
 | vault_path       | subcarpeta bajo `VAULTS_ROOT`. Única entre campañas activas si no está vacía |
 | access_code_hash | bcrypt del código de acceso. Nunca se serializa |
+| wardails | markdown libre con los temas sensibles de la campaña. `NOT NULL DEFAULT ''` |
 
 ### arcs
 

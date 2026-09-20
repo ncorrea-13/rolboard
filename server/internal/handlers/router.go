@@ -27,6 +27,7 @@ func NewRouter(h *Handlers) http.Handler {
 
 	mux.Handle("GET /api/campaigns/{id}", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.GetCampaign)))
 	mux.Handle("PUT /api/campaigns/{id}", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.UpdateCampaign)))
+	mux.Handle("PUT /api/campaigns/{id}/wardails", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.SetWardails)))
 	mux.Handle("DELETE /api/campaigns/{id}", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.DeleteCampaign)))
 	mux.Handle("GET /api/campaigns/{id}/dashboard", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.GetDashboard)))
 	mux.Handle("GET /api/campaigns/{id}/notes/render", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.RenderNote)))

@@ -45,10 +45,13 @@ GET    /api/campaigns          pública — [{id, name, system, status}]
 POST   /api/campaigns          admin
 GET    /api/campaigns/{id}
 PUT    /api/campaigns/{id}
+PUT    /api/campaigns/{id}/wardails   {"wardails": "..."}   204, máx. 20000 caracteres
 DELETE /api/campaigns/{id}
 ```
 
 Body: `name`, `system`, `description`, `vault_path`, y `status` (`active` | `paused` | `finished`) en `PUT`.
+
+`wardails` es markdown libre con los temas sensibles de la campaña; tiene su propio endpoint para que guardarlo nunca pise los otros campos. `GET /api/campaigns/{id}` lo devuelve.
 
 La lista pública va recortada a propósito: la pantalla de selección la necesita antes de haber sesión, y no debe exponer `vault_path`. El detalle devuelve el registro completo.
 

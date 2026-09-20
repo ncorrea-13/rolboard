@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
@@ -71,5 +73,37 @@ func TestListCampaignsDoesNotLeakVaultPathOrDescription(t *testing.T) {
 		if _, present := raw[0][required]; !present {
 			t.Errorf("GET /api/campaigns is missing expected field %q", required)
 		}
+	}
+}
+
+func TestSetWardailsSavesAndRejectsOversized(t *testing.T) {
+	db := setupCampaignTestDB(t)
+	repo := repository.NewCampaignRepository(db)
+	svc := service.NewCampaignService(repo)
+	c := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repo.Create(context.Background(), c); err != nil {
+		t.Fatalf("seed create failed: %v", err)
+	}
+	h := &Handlers{campaigns: svc}
+
+	put := func(body string) int {
+		req := httptest.NewRequest(http.MethodPut, "/api/campaigns/1/wardails", strings.NewReader(body))
+		req.SetPathValue("id", strconv.FormatInt(c.ID, 10))
+		rec := httptest.NewRecorder()
+		h.SetWardails(rec, req)
+		return rec.Code
+	}
+
+	if code := put(`{"wardails":"suicidio"}`); code != http.StatusNoContent {
+		t.Fatalf("expected 204, got %d", code)
+	}
+	got, err := repo.GetByID(context.Background(), c.ID)
+	if err != nil || got.Wardails != "suicidio" {
+		t.Fatalf("wardails not saved: %v %q", err, got.Wardails)
+	}
+
+	tooLong, _ := json.Marshal(SetWardailsPayload{Wardails: strings.Repeat("a", maxWardailsLen+1)})
+	if code := put(string(tooLong)); code != http.StatusBadRequest {
+		t.Errorf("expected 400 for oversized wardails, got %d", code)
 	}
 }

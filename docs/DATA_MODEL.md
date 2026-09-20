@@ -53,6 +53,7 @@ quest_npcs      quest ↔ npc        (schema only, no endpoints)
 | status            | `active` \| `paused` \| `finished` |
 | vault_path        | subfolder under `VAULTS_ROOT`. Unique among active campaigns when not empty |
 | access_code_hash  | bcrypt of the access code. Never serialized |
+| wardails          | free-form markdown with the campaign's sensitive topics. `NOT NULL DEFAULT ''` |
 
 ### arcs
 
