@@ -386,17 +386,6 @@ export interface Encounter {
 
 export type TurnType = "rapido" | "lento";
 
-export const turnTypeLabel: Record<Lang, Record<TurnType, string>> = {
-  es: {
-    rapido: "Rápido",
-    lento: "Lento",
-  },
-  en: {
-    rapido: "Fast",
-    lento: "Slow",
-  },
-};
-
 export type StatMap = Record<string, string | number>;
 
 export interface EncounterParticipant {

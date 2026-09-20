@@ -20,11 +20,8 @@ const dict = {
 
     "common.cancel": "Cancelar",
     "common.save": "Guardar",
-    "common.confirm": "Confirmar",
-    "common.delete": "Borrar",
     "common.edit": "Editar",
     "common.back": "Volver",
-    "common.create": "Crear",
     "common.close": "Cerrar",
     "common.remove": "Quitar",
 
@@ -63,7 +60,6 @@ const dict = {
     "campaignSettings.statusActive": "Activa",
     "campaignSettings.statusPaused": "Pausada",
     "campaignSettings.statusFinished": "Finalizada",
-    "campaignSettings.description": "Descripción",
     "campaignSettings.save": "Guardar cambios",
     "campaignSettings.accessCodeTitle": "Nuevo código de acceso",
     "campaignSettings.accessCodePlaceholder": "Código",
@@ -392,11 +388,8 @@ const dict = {
 
     "common.cancel": "Cancel",
     "common.save": "Save",
-    "common.confirm": "Confirm",
-    "common.delete": "Delete",
     "common.edit": "Edit",
     "common.back": "Back",
-    "common.create": "Create",
     "common.close": "Close",
     "common.remove": "Remove",
 
@@ -435,7 +428,6 @@ const dict = {
     "campaignSettings.statusActive": "Active",
     "campaignSettings.statusPaused": "Paused",
     "campaignSettings.statusFinished": "Finished",
-    "campaignSettings.description": "Description",
     "campaignSettings.save": "Save changes",
     "campaignSettings.accessCodeTitle": "New access code",
     "campaignSettings.accessCodePlaceholder": "Code",

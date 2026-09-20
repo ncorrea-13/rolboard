@@ -310,10 +310,7 @@ export function useCampaignData(
     if (!activeCampaign || reindexing) return;
     setReindexing(true);
     apiFetch(`/campaigns/${activeCampaign.id}/reindex`, { method: "POST" })
-      .then((result) => {
-        console.log("Reindexado:", result);
-        notify(t("toast.reindexed"));
-      })
+      .then(() => notify(t("toast.reindexed")))
       .catch((err) => {
         console.error("Error reindexando:", err);
         notify(t("toast.errorReindexing"), "error");
@@ -1071,12 +1068,10 @@ export function useCampaignData(
   }
 
   return {
-    npcs,
     npcTypes,
     createNpcType,
     updateNpcType,
     deleteNpcType,
-    playerCharacters,
     campaignArcs,
     campaignGroups,
     campaignLocations,
