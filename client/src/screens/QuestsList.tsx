@@ -3,6 +3,7 @@ import "../styles/list.css";
 import { crystalColor, type Quest } from "../data/domain";
 import { QuestStatusPill } from "../components/StatusPill";
 import { useT } from "../lib/i18n";
+import { MarkdownText } from "../components/MarkdownText";
 
 const priorityLabel = { 1: "P1", 2: "P2", 3: "P3" } as const;
 const priorityColor = {
@@ -65,7 +66,7 @@ export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
                 />
               </span>
               <div className="list-page__row-sub list-page__row-sub--clamp-1" style={{ marginTop: 6 }}>
-                {q.hook}
+                <MarkdownText inline text={q.hook} />
               </div>
             </div>
             <span

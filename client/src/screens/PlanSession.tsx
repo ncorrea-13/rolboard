@@ -82,7 +82,7 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
           </div>
 
           <div>
-            <span className="label">{t("planSession.prepNotesLabel")}</span>
+            <span className="label">{t("planSession.prepNotesLabel")} {t("common.supportsMarkdown")}</span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 160 }}

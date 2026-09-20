@@ -128,12 +128,12 @@ export function PlayerEdit({
           </div>
 
           <div>
-            <span className="label">{t("playerDetail.backstory")}</span>
+            <span className="label">{t("playerDetail.backstory")} {t("common.supportsMarkdown")}</span>
             <textarea className="npc-edit__textarea" value={backstory} onChange={(e) => setBackstory(e.target.value)} />
           </div>
 
           <div>
-            <span className="label">{t("playerDetail.progressionNotes")}</span>
+            <span className="label">{t("playerDetail.progressionNotes")} {t("common.supportsMarkdown")}</span>
             <textarea className="npc-edit__textarea" value={progressionNotes} onChange={(e) => setProgressionNotes(e.target.value)} />
           </div>
 

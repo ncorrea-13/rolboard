@@ -95,7 +95,7 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
           </div>
 
           <div>
-            <span className="label">{t("common.summary")}</span>
+            <span className="label">{t("common.summary")} {t("common.supportsMarkdown")}</span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 200 }}

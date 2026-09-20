@@ -71,7 +71,7 @@ export function SessionEdit({ arc, arcs, session, campaignId, onSave, onBack, on
       {noteHtml ? (
         <div className="npc-detail__desc" dangerouslySetInnerHTML={{ __html: noteHtml }} />
       ) : (
-        <p className="npc-detail__desc">{session.summary}</p>
+        <MarkdownText className="npc-detail__desc" text={session.summary} />
       )}
     </Modal>
   );

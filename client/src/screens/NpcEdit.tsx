@@ -208,7 +208,7 @@ export function NpcEdit({
           </div>
 
           <div>
-            <span className="label">{t("common.description")}</span>
+            <span className="label">{t("common.description")} {t("common.supportsMarkdown")}</span>
             <textarea className="npc-edit__textarea" value={description} onChange={(e) => setDescription(e.target.value)} />
           </div>
 

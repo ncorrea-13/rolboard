@@ -138,7 +138,7 @@ export function CampaignDashboard({
             <div className="display" style={{ fontSize: 21, marginTop: 9 }}>
               {currentArc.label}
             </div>
-            <p className="campaign-dashboard__desc campaign-dashboard__desc--clamp">{currentArc.summary}</p>
+            <MarkdownText className="campaign-dashboard__desc campaign-dashboard__desc--clamp" text={currentArc.summary} />
             <div className="campaign-dashboard__progress">
               <div className="campaign-dashboard__progress-track">
                 <div
@@ -234,7 +234,7 @@ export function CampaignDashboard({
                     textOverflow: "ellipsis",
                   }}
                 >
-                  {q.hook}
+                  <MarkdownText inline text={q.hook} />
                 </div>
               </div>
               <QuestStatusPill status={q.status} />

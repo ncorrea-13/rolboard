@@ -3,6 +3,7 @@ import "../styles/list.css";
 import { locationTypeLabel, type Location } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
 import { entityImageUrl } from "../lib/images";
+import { MarkdownText } from "../components/MarkdownText";
 
 function depthOf(loc: Location, all: Location[]): number {
   let depth = 0;
@@ -79,7 +80,7 @@ export function LocationsList({
                 />
               </span>
               <div className="list-page__row-sub" style={{ marginTop: 6 }}>
-                {l.description}
+                <MarkdownText inline text={l.description} />
               </div>
             </div>
             <span className="list-page__badge">

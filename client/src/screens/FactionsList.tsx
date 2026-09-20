@@ -3,6 +3,7 @@ import "../styles/list.css";
 import type { Group } from "../data/domain";
 import { useT } from "../lib/i18n";
 import { entityImageUrl } from "../lib/images";
+import { MarkdownText } from "../components/MarkdownText";
 
 interface FactionsListProps {
   groups: Group[];
@@ -65,7 +66,7 @@ export function FactionsList({
                 />
               </span>
               <div className="list-page__row-sub" style={{ marginTop: 6 }}>
-                {g.description}
+                <MarkdownText inline text={g.description} />
               </div>
             </div>
             <span className="list-page__badge">{g.memberCount} {t("factionsList.members")}</span>

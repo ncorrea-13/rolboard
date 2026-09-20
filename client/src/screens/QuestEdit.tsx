@@ -69,7 +69,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
           </div>
 
           <div>
-            <span className="label">{t("questEdit.hookLabel")}</span>
+            <span className="label">{t("questEdit.hookLabel")} {t("common.supportsMarkdown")}</span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 140 }}
@@ -79,7 +79,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
           </div>
 
           <div>
-            <span className="label">{t("questEdit.notesLabel")}</span>
+            <span className="label">{t("questEdit.notesLabel")} {t("common.supportsMarkdown")}</span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 160 }}

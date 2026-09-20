@@ -79,7 +79,7 @@ export function ArcDetail({
       onEdit={onEdit}
       onDelete={onDelete}
       fields={[
-        { label: t("common.summary"), value: arc.summary },
+        { label: t("common.summary"), value: <MarkdownText text={arc.summary} /> },
         {
           label: `${t("arcDetail.sessions")} (${sessions.length})`,
           value: (
@@ -95,7 +95,7 @@ export function ArcDetail({
                   >
                     {sessionCode(s)}
                   </span>
-                  <span style={{ flex: 1 }}>{s.summary}</span>
+                  <span style={{ flex: 1 }}><MarkdownText inline text={s.summary} /></span>
                   <span
                     style={{
                       font: "400 12px var(--font-mono)",
@@ -216,7 +216,7 @@ export function FactionDetail({
       onEdit={onEdit}
       onDelete={onDelete}
       fields={[
-        { label: t("common.description"), value: group.description },
+        { label: t("common.description"), value: <MarkdownText text={group.description} /> },
         ...(group.alineacion ? [{ label: t("factionDetail.alignment"), value: group.alineacion }] : []),
         ...(lider ? [{ label: t("factionDetail.leader"), value: lider.name }] : []),
         {
@@ -380,7 +380,7 @@ export function LocationDetail({
           label: t("locationDetail.hierarchy"),
           value: breadcrumb.map((l) => l.name).join(" › "),
         },
-        { label: t("common.description"), value: location.description },
+        { label: t("common.description"), value: <MarkdownText text={location.description} /> },
         {
           label: `${t("locationDetail.subLocations")} (${children.length})`,
           value:

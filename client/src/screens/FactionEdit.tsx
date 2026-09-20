@@ -69,7 +69,7 @@ export function FactionEdit({
             />
           </div>
           <div>
-            <span className="label">{t("common.description")}</span>
+            <span className="label">{t("common.description")} {t("common.supportsMarkdown")}</span>
             <textarea
               className="npc-edit__textarea"
               value={description}
