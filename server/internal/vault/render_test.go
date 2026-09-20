@@ -74,3 +74,13 @@ func TestRenderNoteWithoutFrontmatter(t *testing.T) {
 		t.Errorf("expected the note to render whole, got %q", out)
 	}
 }
+
+func TestRenderNoteCalloutTitleIsEscapedOnce(t *testing.T) {
+	out, err := RenderNote([]byte("---\ntipo: nota\n---\n> [!WARNING] Tom & Jerry\n> body"), NewNameIndex())
+	if err != nil {
+		t.Fatalf("RenderNote failed: %v", err)
+	}
+	if strings.Contains(out, "&amp;amp;") || !strings.Contains(out, "Tom &amp; Jerry") {
+		t.Errorf("callout title escaped wrongly, got %q", out)
+	}
+}
