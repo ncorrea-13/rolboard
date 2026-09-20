@@ -383,7 +383,6 @@ export function NpcEdit({
               </div>
             </div>
           )}
-          <div className="npc-edit__note">{t("npcEdit.note2")}</div>
         </div>
       </div>
     </div>

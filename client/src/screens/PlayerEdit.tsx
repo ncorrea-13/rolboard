@@ -286,7 +286,6 @@ export function PlayerEdit({
               </div>
             </div>
           )}
-          <div className="npc-edit__note">{t("playerEdit.note")}</div>
         </div>
       </div>
     </div>

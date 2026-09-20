@@ -262,8 +262,6 @@ const dict = {
     "npcEdit.missingOrigin": "Falta la ubicación de origen",
     "npcEdit.warningBody":
       "Podés guardar igual; el campo queda marcado como incompleto en la ficha.",
-    "npcEdit.note2":
-      'La facción se gestiona desde la ficha de la facción ("Agregar NPC").',
 
     "playerEdit.new": "Nuevo personaje",
     "playerEdit.characterName": "Nombre del personaje",
@@ -274,8 +272,6 @@ const dict = {
     "playerEdit.maxHp": "HP máximo",
     "playerEdit.markedDead": "Personaje marcado como muerto",
     "playerEdit.missingRace": "Falta definir la raza",
-    "playerEdit.note":
-      "La facción de este PJ viene del vault y no se edita acá. Consultala en la ficha de la facción.",
 
     "questEdit.new": "Nueva quest",
     "questEdit.title": "Título",
@@ -623,8 +619,6 @@ const dict = {
     "npcEdit.missingOrigin": "Missing origin location",
     "npcEdit.warningBody":
       "You can still save; the field is flagged as incomplete on the sheet.",
-    "npcEdit.note2":
-      'The faction is managed from the faction\'s sheet ("Add NPC").',
 
     "playerEdit.new": "New character",
     "playerEdit.characterName": "Character name",
@@ -635,8 +629,6 @@ const dict = {
     "playerEdit.maxHp": "Max HP",
     "playerEdit.markedDead": "Character marked as dead",
     "playerEdit.missingRace": "Race not set",
-    "playerEdit.note":
-      "This PC's faction comes from the vault and isn't edited here. Check it in the faction's sheet.",
 
     "questEdit.new": "New quest",
     "questEdit.title": "Title",
