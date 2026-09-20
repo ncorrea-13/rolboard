@@ -178,10 +178,17 @@ export function useCampaignData(
   setNpcTypeRegistry(npcTypes);
 
   useEffect(() => {
+    setNpcTypes([]);
     if (!activeCampaignId) return;
+    let stale = false;
     apiFetch<ApiNpcType[]>(`/campaigns/${activeCampaignId}/npc-types`)
-      .then((data) => setNpcTypes((data ?? []).map(mapNpcType)))
+      .then((data) => {
+        if (!stale) setNpcTypes((data ?? []).map(mapNpcType));
+      })
       .catch((err) => loadFailed("tipos de NPC", err));
+    return () => {
+      stale = true;
+    };
   }, [activeCampaignId]);
 
   function npcTypeError(err: unknown) {
