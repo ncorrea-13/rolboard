@@ -1,4 +1,10 @@
-import type { ReactNode } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import "./Modal.css";
 import { useT } from "../lib/i18n";
 
@@ -14,9 +20,31 @@ export function Modal({
   size?: "large" | "sheet";
 }) {
   const t = useT();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const close = useEffectEvent(onClose);
+  const [opener] = useState(() => document.activeElement as HTMLElement | null);
+
+  useEffect(() => {
+    if (!panelRef.current?.contains(document.activeElement))
+      panelRef.current?.focus();
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") close();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      opener?.focus();
+    };
+  }, [opener]);
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+        tabIndex={-1}
         className={`card modal-panel${size ? ` modal-panel--${size}` : ""}`}
         onClick={(e) => e.stopPropagation()}
       >

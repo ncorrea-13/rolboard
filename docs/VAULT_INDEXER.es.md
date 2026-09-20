@@ -56,7 +56,7 @@ Los wikilinks van entre comillas en YAML: `"[[Nombre]]"`.
 
 | Clave              | Uso |
 | ------------------ | --- |
-| `tipo`             | `npc_kind`: `npc` \| `spren` \| `entidad-cognitiva` \| `referencia`. Otro valor → error en esa nota |
+| `tipo`             | `npc_kind`: la key del tipo (`Monstruo Élite` → `monstruo-elite`). Un `tipo` que la campaña aún no tiene se crea solo (etiqueta tomada de la nota, siguiente color libre; se renombra o recolorea en la app). `referencia` está reservado. Ausente → error en esa nota |
 | `status`           | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` |
 | `etnia`, `rol`, `tipo_spren` | texto |
 | `current_location` | wikilink a locación → `location_id` |

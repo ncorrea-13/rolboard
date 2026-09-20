@@ -1,0 +1,1 @@
+ALTER TABLE campaigns ADD COLUMN wardails TEXT NOT NULL DEFAULT '';

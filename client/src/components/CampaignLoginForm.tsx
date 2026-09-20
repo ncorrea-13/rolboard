@@ -6,7 +6,10 @@ interface CampaignLoginFormProps {
   onCancel: () => void;
 }
 
-export function CampaignLoginForm({ onSubmit, onCancel }: CampaignLoginFormProps) {
+export function CampaignLoginForm({
+  onSubmit,
+  onCancel,
+}: CampaignLoginFormProps) {
   const t = useT();
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);

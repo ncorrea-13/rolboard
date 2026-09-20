@@ -20,11 +20,8 @@ const dict = {
 
     "common.cancel": "Cancelar",
     "common.save": "Guardar",
-    "common.confirm": "Confirmar",
-    "common.delete": "Borrar",
     "common.edit": "Editar",
     "common.back": "Volver",
-    "common.create": "Crear",
     "common.close": "Cerrar",
     "common.remove": "Quitar",
 
@@ -63,7 +60,6 @@ const dict = {
     "campaignSettings.statusActive": "Activa",
     "campaignSettings.statusPaused": "Pausada",
     "campaignSettings.statusFinished": "Finalizada",
-    "campaignSettings.description": "Descripción",
     "campaignSettings.save": "Guardar cambios",
     "campaignSettings.accessCodeTitle": "Nuevo código de acceso",
     "campaignSettings.accessCodePlaceholder": "Código",
@@ -84,6 +80,7 @@ const dict = {
     "sidebar.facciones": "Facciones",
     "sidebar.quests": "Quests",
     "sidebar.encuentros": "Encuentros",
+    "sidebar.wardails": "Wardails",
 
     "skillsEditor.newField": "Nuevo campo…",
     "skillsEditor.add": "Agregar",
@@ -244,13 +241,10 @@ const dict = {
     "locationEdit.noParent": "— sin padre —",
 
     "npcEdit.new": "Nuevo NPC",
-    "npcEdit.focusHint": "Campo con foco: anillo ámbar de 1px, nunca glow.",
     "npcEdit.detailLevel": "Nivel de detalle",
     "npcEdit.portrait": "Retrato",
     "npcEdit.detailFull": "Completo",
     "npcEdit.detailMinor": "Menor",
-    "npcEdit.typeNpc": "NPC",
-    "npcEdit.typeSprenCognitive": "Spren / cognitiva",
     "npcEdit.sprenType": "Tipo de spren",
     "npcEdit.sprenPlaceholder": "ej. Honorspren",
     "npcEdit.ethnicity": "Etnia",
@@ -258,17 +252,11 @@ const dict = {
     "npcEdit.linkWithNpc": "Vínculo con otro NPC",
     "npcEdit.linkRolePlaceholder": "Rol (ej. VINCULADO)",
     "npcEdit.noLink": "— sin vínculo —",
-    "npcEdit.linkHint":
-      "El selector hereda el color de cristal del tipo elegido — se ve que el vínculo es con un spren sin leer la etiqueta.",
     "npcEdit.noLocation": "— sin ubicación —",
     "npcEdit.markedDead": "NPC marcado como muerto",
     "npcEdit.missingOrigin": "Falta la ubicación de origen",
     "npcEdit.warningBody":
       "Podés guardar igual; el campo queda marcado como incompleto en la ficha.",
-    "npcEdit.note1":
-      "Decisión: edición en la misma vista, no modal. Un modal taparía la ficha justo cuando estás copiando datos de ella en vivo, y los vínculos necesitan el ancho completo.",
-    "npcEdit.note2":
-      'La facción se gestiona desde la ficha de la facción ("Agregar NPC"), no acá — evita tener dos lugares que puedan decir cosas distintas sobre a qué grupo pertenece.',
 
     "playerEdit.new": "Nuevo personaje",
     "playerEdit.characterName": "Nombre del personaje",
@@ -279,8 +267,6 @@ const dict = {
     "playerEdit.maxHp": "HP máximo",
     "playerEdit.markedDead": "Personaje marcado como muerto",
     "playerEdit.missingRace": "Falta definir la raza",
-    "playerEdit.note":
-      "La facción de este PJ se lee del vault (`facciones:` en su ficha), no se edita acá — ver la ficha de la facción para consultarla.",
 
     "questEdit.new": "Nueva quest",
     "questEdit.title": "Título",
@@ -349,6 +335,30 @@ const dict = {
 
     "toast.reindexed": "Vault reindexado",
     "toast.errorReindexing": "Error reindexando el vault",
+    "toast.errorLoading": "No se pudieron cargar los datos",
+    "npcTypes.manage": "Tipos",
+    "npcTypes.title": "Tipos de NPC",
+    "npcTypes.hint": "El nombre y el color se pueden cambiar cuando quieras. En el vault se usa la clave en `tipo:`.",
+    "npcTypes.newPlaceholder": "Nuevo tipo (ej. Monstruo)",
+    "npcTypes.add": "Añadir",
+    "npcTypes.delete": "Borrar tipo",
+    "npcTypes.color": "Color",
+    "npcTypes.confirmDelete": "¿Borrar este tipo?",
+    "npcTypes.inUse": "No se puede borrar: hay NPCs con este tipo",
+    "npcTypes.errorSaving": "Error guardando el tipo",
+    "wardails.title": "Wardails",
+    "wardails.subtitle": "Temas sensibles de esta campaña",
+    "wardails.empty": "Todavía no definiste wardails para esta campaña.",
+    "wardails.placeholder": "Un tema por línea, o usá > [!WARNING] para destacar los más delicados",
+    "wardails.saved": "Wardails guardados",
+    "wardails.errorSaving": "Error guardando los wardails",
+    "footer.github": "Repositorio en GitHub",
+    "footer.portfolio": "Portfolio de Nicolás Correa",
+    "footer.help": "Ayuda",
+    "help.title": "Ayuda",
+    "help.back": "Volver",
+    "help.contents": "Contenido",
+    "help.docs": "Documentación técnica en GitHub",
 
     "confirm.deactivateNpc":
       "¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.",
@@ -383,11 +393,8 @@ const dict = {
 
     "common.cancel": "Cancel",
     "common.save": "Save",
-    "common.confirm": "Confirm",
-    "common.delete": "Delete",
     "common.edit": "Edit",
     "common.back": "Back",
-    "common.create": "Create",
     "common.close": "Close",
     "common.remove": "Remove",
 
@@ -426,7 +433,6 @@ const dict = {
     "campaignSettings.statusActive": "Active",
     "campaignSettings.statusPaused": "Paused",
     "campaignSettings.statusFinished": "Finished",
-    "campaignSettings.description": "Description",
     "campaignSettings.save": "Save changes",
     "campaignSettings.accessCodeTitle": "New access code",
     "campaignSettings.accessCodePlaceholder": "Code",
@@ -447,6 +453,7 @@ const dict = {
     "sidebar.facciones": "Factions",
     "sidebar.quests": "Quests",
     "sidebar.encuentros": "Encounters",
+    "sidebar.wardails": "Wardails",
 
     "skillsEditor.newField": "New field…",
     "skillsEditor.add": "Add",
@@ -607,13 +614,10 @@ const dict = {
     "locationEdit.noParent": "— no parent —",
 
     "npcEdit.new": "New NPC",
-    "npcEdit.focusHint": "Focused field: 1px amber ring, never a glow.",
     "npcEdit.detailLevel": "Detail level",
     "npcEdit.portrait": "Portrait",
     "npcEdit.detailFull": "Full",
     "npcEdit.detailMinor": "Minor",
-    "npcEdit.typeNpc": "NPC",
-    "npcEdit.typeSprenCognitive": "Spren / cognitive",
     "npcEdit.sprenType": "Spren type",
     "npcEdit.sprenPlaceholder": "e.g. Honorspren",
     "npcEdit.ethnicity": "Ethnicity",
@@ -621,17 +625,11 @@ const dict = {
     "npcEdit.linkWithNpc": "Link with another NPC",
     "npcEdit.linkRolePlaceholder": "Role (e.g. LINKED)",
     "npcEdit.noLink": "— no link —",
-    "npcEdit.linkHint":
-      "The selector inherits the crystal color of the chosen type — you can tell the link is to a spren without reading the label.",
     "npcEdit.noLocation": "— no location —",
     "npcEdit.markedDead": "NPC marked as dead",
     "npcEdit.missingOrigin": "Missing origin location",
     "npcEdit.warningBody":
       "You can still save; the field is flagged as incomplete on the sheet.",
-    "npcEdit.note1":
-      "Decision: edit in the same view, not a modal. A modal would cover the sheet right when you're copying data from it live, and the links need the full width.",
-    "npcEdit.note2":
-      'The faction is managed from the faction\'s sheet ("Add NPC"), not here — avoids having two places that could say different things about which group it belongs to.',
 
     "playerEdit.new": "New character",
     "playerEdit.characterName": "Character name",
@@ -642,8 +640,6 @@ const dict = {
     "playerEdit.maxHp": "Max HP",
     "playerEdit.markedDead": "Character marked as dead",
     "playerEdit.missingRace": "Race not set",
-    "playerEdit.note":
-      "This PC's faction is read from the vault (`facciones:` in its sheet), not edited here — see the faction's sheet to check it.",
 
     "questEdit.new": "New quest",
     "questEdit.title": "Title",
@@ -712,6 +708,30 @@ const dict = {
 
     "toast.reindexed": "Vault reindexed",
     "toast.errorReindexing": "Error reindexing the vault",
+    "toast.errorLoading": "Couldn't load data",
+    "npcTypes.manage": "Types",
+    "npcTypes.title": "NPC types",
+    "npcTypes.hint": "Name and color can be changed any time. In the vault, use the key in `tipo:`.",
+    "npcTypes.newPlaceholder": "New type (e.g. Monster)",
+    "npcTypes.add": "Add",
+    "npcTypes.delete": "Delete type",
+    "npcTypes.color": "Color",
+    "npcTypes.confirmDelete": "Delete this type?",
+    "npcTypes.inUse": "Can't delete: NPCs use this type",
+    "npcTypes.errorSaving": "Error saving the type",
+    "wardails.title": "Wardails",
+    "wardails.subtitle": "Sensitive topics for this campaign",
+    "wardails.empty": "You haven't defined any wardails for this campaign yet.",
+    "wardails.placeholder": "One topic per line, or use > [!WARNING] to highlight the most sensitive ones",
+    "wardails.saved": "Wardails saved",
+    "wardails.errorSaving": "Error saving the wardails",
+    "footer.github": "GitHub repository",
+    "footer.portfolio": "Nicolás Correa's portfolio",
+    "footer.help": "Help",
+    "help.title": "Help",
+    "help.back": "Back",
+    "help.contents": "Contents",
+    "help.docs": "Technical docs on GitHub",
 
     "confirm.deactivateNpc":
       "Deactivate this NPC? It stops showing in the campaign, it isn't deleted.",

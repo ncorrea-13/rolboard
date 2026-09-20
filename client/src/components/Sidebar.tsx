@@ -8,8 +8,10 @@ import {
   Shield,
   Swords,
   Skull,
+  Cross,
   Settings,
   LogOut,
+  PanelLeftClose,
   type LucideIcon,
 } from "lucide-react";
 import "./Sidebar.css";
@@ -42,7 +44,12 @@ const navItems: {
     Icon: CalendarDays,
     color: "var(--status-alive)",
   },
-  { labelKey: "sidebar.npcs", section: "npcs", Icon: Users, color: crystalColor.npc },
+  {
+    labelKey: "sidebar.npcs",
+    section: "npcs",
+    Icon: Users,
+    color: crystalColor.npc,
+  },
   {
     labelKey: "sidebar.jugadores",
     section: "jugadores",
@@ -73,6 +80,12 @@ const navItems: {
     Icon: Skull,
     color: "var(--accent-flame)",
   },
+  {
+    labelKey: "sidebar.wardails",
+    section: "wardails",
+    Icon: Cross,
+    color: "var(--accent-wardail)",
+  },
 ];
 
 interface SidebarProps {
@@ -83,6 +96,7 @@ interface SidebarProps {
   onOpenSettings?: () => void;
   onAdminLogout?: () => void;
   onBackdropClick?: () => void;
+  onClose: () => void;
 }
 
 export function Sidebar({
@@ -93,24 +107,40 @@ export function Sidebar({
   onOpenSettings,
   onAdminLogout,
   onBackdropClick,
+  onClose,
 }: SidebarProps) {
   const t = useT();
   return (
     <nav className="sidebar" onClick={onBackdropClick}>
-      <button
-        className="sidebar__brand"
-        onClick={onBack}
-        title={t("sidebar.backToCampaigns")}
-      >
-        <span className="sidebar__glow" />
-        <span className="sidebar__name">{campaignName}</span>
-      </button>
+      <div className="sidebar__head">
+        <button
+          className="sidebar__close"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          title={t("appShell.hideSidebar")}
+          aria-label={t("appShell.hideSidebar")}
+        >
+          <PanelLeftClose size={16} strokeWidth={1.75} />
+        </button>
+        <button
+          className="sidebar__brand"
+          onClick={onBack}
+          title={t("sidebar.backToCampaigns")}
+        >
+          <span className="sidebar__glow" />
+          <span className="sidebar__name">{campaignName}</span>
+        </button>
+      </div>
       {navItems.map(({ Icon, ...item }) => {
         const isActive = item.section === active;
         return (
-          <div
+          <button
             key={item.labelKey}
+            type="button"
             className={`sidebar__item${isActive ? " sidebar__item--active" : ""}${item.section ? " sidebar__item--clickable" : ""}`}
+            aria-current={isActive ? "page" : undefined}
             onClick={item.section ? () => onNavigate(item.section!) : undefined}
           >
             <Icon
@@ -118,10 +148,6 @@ export function Sidebar({
               size={15}
               strokeWidth={1.75}
               style={{ color: item.color }}
-            />
-            <span
-              className="sidebar__marker"
-              style={{ background: item.color }}
             />
             <span className="sidebar__item-label">
               {t(item.labelKey)}
@@ -132,7 +158,7 @@ export function Sidebar({
                 />
               )}
             </span>
-          </div>
+          </button>
         );
       })}
       <div
@@ -152,11 +178,10 @@ export function Sidebar({
         <LanguageToggle />
         {onAdminLogout && (
           <button
-            className="btn btn-secondary"
+            className="btn btn-secondary sidebar__logout"
             onClick={onAdminLogout}
             title={t("adminSecret.logout")}
             aria-label={t("adminSecret.logout")}
-            style={{ color: "#e5484d", borderColor: "#e5484d" }}
           >
             <LogOut size={15} strokeWidth={1.75} />
           </button>

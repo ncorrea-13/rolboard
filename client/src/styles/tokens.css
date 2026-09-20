@@ -16,8 +16,15 @@
   --accent-obsidian: #9b7bea;
   --accent-obsidian-deep: #7457c9;
   --accent-obsidian-soft: rgba(155, 123, 234, 0.16);
+  --border-hover: color-mix(in srgb, var(--accent-obsidian) 45%, var(--border));
 
   --accent-sky: #5fa8d3;
+  --accent-wardail: #d46a9f;
+
+  --callout-note: var(--accent-obsidian);
+  --callout-warning: #e5484d;
+  --callout-tip: var(--status-alive);
+  --callout-quote: var(--text-secondary);
   --accent-teal: #4fb5a3;
 
   --crystal-npc: #c79a55;
@@ -26,7 +33,6 @@
   --crystal-faction-quest: #9a8fc0;
   --crystal-entidad-cognitiva: var(--accent-crystalline);
 
-  /* fallback para crystal types sin token propio (npc_kind nuevo del backend) */
   --crystal-fallback-1: #c79a55;
   --crystal-fallback-2: #6fa98c;
   --crystal-fallback-3: #5fa8d3;

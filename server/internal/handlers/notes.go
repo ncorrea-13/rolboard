@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -31,6 +32,7 @@ func (h *Handlers) RenderNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err != nil {
+		slog.Error("render note", "campaign", campaignID, "path", path, "err", err)
 		http.Error(w, "Error rendering note", http.StatusInternalServerError)
 		return
 	}

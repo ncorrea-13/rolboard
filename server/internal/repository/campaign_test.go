@@ -269,3 +269,29 @@ func TestCampaignTimestamps(t *testing.T) {
 		t.Error("Expected UpdatedAt to be set")
 	}
 }
+
+func TestCampaignSetWardails(t *testing.T) {
+	db := setupTestDB(t)
+	repo := NewCampaignRepository(db)
+	ctx := context.Background()
+
+	created := &models.Campaign{Name: "Test", System: "Test"}
+	if err := repo.Create(ctx, created); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+
+	if err := repo.SetWardails(ctx, created.ID, "> [!WARNING]\n> suicidio"); err != nil {
+		t.Fatalf("SetWardails failed: %v", err)
+	}
+	retrieved, err := repo.GetByID(ctx, created.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if retrieved.Wardails != "> [!WARNING]\n> suicidio" {
+		t.Errorf("wardails not persisted, got %q", retrieved.Wardails)
+	}
+
+	if err := repo.SetWardails(ctx, 9999, "x"); err != ErrNotFound {
+		t.Errorf("Expected ErrNotFound, got %v", err)
+	}
+}

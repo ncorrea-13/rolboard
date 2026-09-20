@@ -23,6 +23,7 @@ type Handlers struct {
 	arcs                  *service.ArcService
 	locations             *service.LocationService
 	npcs                  *service.NPCService
+	npcTypes              *service.NPCTypeService
 	playerCharacters      *service.PlayerCharacterService
 	quests                *service.QuestService
 	sessions              *service.SessionService
@@ -44,6 +45,7 @@ func NewHandlers(
 	arcs *service.ArcService,
 	locations *service.LocationService,
 	npcs *service.NPCService,
+	npcTypes *service.NPCTypeService,
 	playerCharacters *service.PlayerCharacterService,
 	quests *service.QuestService,
 	sessions *service.SessionService,
@@ -64,6 +66,7 @@ func NewHandlers(
 		arcs:                  arcs,
 		locations:             locations,
 		npcs:                  npcs,
+		npcTypes:              npcTypes,
 		playerCharacters:      playerCharacters,
 		quests:                quests,
 		sessions:              sessions,

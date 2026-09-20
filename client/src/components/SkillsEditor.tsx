@@ -62,7 +62,10 @@ export function SkillsEditor({ label, value, onChange }: SkillsEditorProps) {
               value={val}
               onChange={(e) => updateEntry(key, e.target.value)}
             />
-            <button className="skills-editor__remove" onClick={() => removeEntry(key)}>
+            <button
+              className="skills-editor__remove"
+              onClick={() => removeEntry(key)}
+            >
               <X size={12} />
             </button>
           </div>

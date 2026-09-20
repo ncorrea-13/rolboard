@@ -89,11 +89,13 @@ func main() {
 	authSessionRepo := repository.NewAuthSessionRepository(db)
 	authSvc := service.NewAuthService(campaignRepo, authSessionRepo)
 
+	npcTypeSvc := service.NewNPCTypeService(repository.NewNPCTypeRepository(db))
+
 	adminSvc := service.NewAdminService(db, campaignRepo, vaultsRoot)
 	dashboardSvc := service.NewDashboardService(questSvc, npcSvc, sessionSvc)
 	notesSvc := service.NewNotesService(campaignRepo, locationRepo, npcRepo, groupRepo, sessionRepo, arcRepo, pcRepo, vaultsRoot)
 
-	h := handlers.NewHandlers(db, adminToken, cookieSecure, trustProxyHeaders, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
+	h := handlers.NewHandlers(db, adminToken, cookieSecure, trustProxyHeaders, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
 
 	mux := handlers.NewRouter(h)
 

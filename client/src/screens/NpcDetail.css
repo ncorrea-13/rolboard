@@ -32,7 +32,7 @@
 }
 
 .npc-detail__breadcrumb-link:hover {
-  color: var(--text-body-strong);
+  color: var(--accent-obsidian);
 }
 
 .npc-detail__identity {
@@ -149,39 +149,16 @@
   font-weight: 500;
 }
 
-.npc-detail__desc blockquote {
+.npc-detail__desc blockquote:not(.callout) {
   margin: 12px 0;
   padding: 10px 14px;
-  border-left: 3px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle);
   background: var(--bg-elevated);
-  border-radius: 0 6px 6px 0;
+  border-radius: 6px;
 }
 
 .npc-detail__desc blockquote p:empty {
   display: none;
-}
-
-.npc-detail__desc .callout-title {
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text-primary);
-}
-
-.npc-detail__desc .callout-note {
-  border-left-color: var(--accent-sky);
-}
-
-.npc-detail__desc .callout-tip {
-  border-left-color: var(--status-alive);
-}
-
-.npc-detail__desc .callout-warning {
-  border-left-color: var(--accent-flame);
-}
-
-.npc-detail__desc .callout-quote {
-  border-left-color: var(--accent-obsidian);
-  font-style: italic;
 }
 
 .npc-detail__stats {
@@ -238,21 +215,6 @@
   font: 400 13px/1.9 var(--font-mono);
   color: var(--text-secondary);
   margin-top: 7px;
-}
-
-.npc-detail__faction {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  border-radius: 6px;
-  padding: 11px 13px;
-  margin-top: 7px;
-}
-
-.npc-detail__faction-role {
-  font: 400 11.5px var(--font-mono);
-  color: var(--text-secondary);
 }
 
 .npc-detail__appearances {

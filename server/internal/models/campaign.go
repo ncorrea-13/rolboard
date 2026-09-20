@@ -8,6 +8,7 @@ type Campaign struct {
 	Description string `json:"description"`
 	Status      string `json:"status"`
 	VaultPath   string `json:"vault_path"`
+	Wardails    string `json:"wardails"`
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 

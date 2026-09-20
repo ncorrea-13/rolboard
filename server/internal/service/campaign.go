@@ -59,6 +59,10 @@ func (s *CampaignService) Update(ctx context.Context, id int64, campaign *models
 	return s.repo.Update(ctx, id, campaign)
 }
 
+func (s *CampaignService) SetWardails(ctx context.Context, id int64, wardails string) error {
+	return s.repo.SetWardails(ctx, id, wardails)
+}
+
 func (s *CampaignService) Delete(ctx context.Context, id int64) error {
 	return s.repo.Delete(ctx, id)
 }

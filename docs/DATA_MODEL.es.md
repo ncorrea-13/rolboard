@@ -53,6 +53,7 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 | status           | `active` \| `paused` \| `finished` |
 | vault_path       | subcarpeta bajo `VAULTS_ROOT`. Única entre campañas activas si no está vacía |
 | access_code_hash | bcrypt del código de acceso. Nunca se serializa |
+| wardails | markdown libre con los temas sensibles de la campaña. `NOT NULL DEFAULT ''` |
 
 ### arcs
 
@@ -91,12 +92,21 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 | obsidian_path      | |
 | image_path         | |
 
+### npc_types
+
+| Campo             | Notas |
+| ----------------- | ----- |
+| campaign_id       | `ON DELETE CASCADE` |
+| key               | Derivada de la etiqueta, inmutable. Única por campaña. Coincide con el `tipo` del vault |
+| label, color      | Solo visual. `color` es `#rrggbb` |
+| position          | Orden de visualización |
+
 ### npcs
 
 | Campo              | Notas |
 | ------------------ | ----- |
 | name               | |
-| npc_kind           | `npc` \| `spren` \| `entidad-cognitiva` \| `referencia` |
+| npc_kind           | key de uno de los `npc_types` de la campaña, o `referencia` (reservado: notas que solo sirven de destino de enlaces) |
 | detail_level       | `full` \| `minor` |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` \| `paused` |
 | location_id        | ubicación actual, opcional |

@@ -43,6 +43,7 @@ services:
   server:
     container_name: rolboard-server
     image: ghcr.io/ncorrea-13/rolboard-server:main
+    user: "${ROLBOARD_USER:-1000:1000}"
     env_file:
       - .env
     secrets:
@@ -84,9 +85,19 @@ services:
 CLIENT_PORT=8080
 DATA_PATH=./data
 VAULTS_ROOT_HOST=/path/to/vaults
+# ROLBOARD_USER=0   # rootless Podman only, see "Vault permissions"
 ```
 
 The server image runs as UID 1000 — `mkdir -p ./data` and `podman unshare chown -R 1000:1000 ./data` (Docker: plain `chown` instead of `podman unshare chown`) before the first start.
+
+### Vault permissions
+
+The server must be able to read the vault, or rendering notes and reindexing fail with `permission denied`.
+
+- **Docker (rootful):** the container's UID 1000 is the host's UID 1000, so the vault must be readable by that user.
+- **Rootless Podman:** container UID 1000 maps to a sub-UID of your user, not to you, so a `770` vault is unreadable. Set `ROLBOARD_USER=0` in `.env`: root inside a rootless container is your own unprivileged user, not host root, and the vault is mounted read-only.
+
+Don't set `ROLBOARD_USER=0` on rootful Docker: there it is real root.
 
 Create the admin token secret and start:
 
@@ -114,6 +125,7 @@ Open `http://localhost:${CLIENT_PORT}`, log in as admin with the token, create a
 | `CLIENT_PORT`      | host   | Host port for the web client |
 | `DATA_PATH`        | host   | Host folder for the database and uploaded images |
 | `VAULTS_ROOT_HOST` | host   | Host folder holding every campaign's vault as a subfolder (mounted read-only) |
+| `ROLBOARD_USER`    | host   | Container user (`uid:gid`). Default `1000:1000`. Rootless Podman: `0` (see [Vault permissions](#vault-permissions)) |
 | `DB_PATH`          | server | SQLite file path |
 | `VAULTS_ROOT`      | server | Vaults mount path |
 | `UPLOADS_ROOT`     | server | Image storage path. No default — set it inside the data volume |

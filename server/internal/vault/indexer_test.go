@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
@@ -458,5 +459,65 @@ func TestReindexPopulatesSessionNpcsAndPcs(t *testing.T) {
 
 	if len(result.UnresolvedWikilinks) != 0 {
 		t.Errorf("Expected no unresolved wikilinks (location links in body are ignored on purpose), got %v", result.UnresolvedWikilinks)
+	}
+}
+
+func TestReindexCreatesNPCTypesMentionedByTheVault(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Homebrew", System: "Pathfinder"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+	typeRepo := repository.NewNPCTypeRepository(db)
+	before, _ := typeRepo.List(ctx, campaign.ID)
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "NPC/Trasgo.md", "---\ntipo: Monstruo Élite\nstatus: vivo\n---\nUn trasgo.")
+	writeVaultFile(t, root, "NPC/Ogro.md", "---\ntipo: monstruo-elite\nstatus: vivo\n---\nMismo tipo, otra grafía.")
+	writeVaultFile(t, root, "NPC/Aldeano.md", "---\ntipo: Spren\nstatus: vivo\n---\nUsa un tipo por defecto, con mayúscula.")
+	writeVaultFile(t, root, "NPC/Mencion.md", "---\ntipo: referencia\nstatus: vivo\n---\nSolo destino de enlaces.")
+	writeVaultFile(t, root, "NPC/SinTipo.md", "---\nstatus: vivo\n---\nNo dice de qué tipo es.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	result, err := indexer.Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+	if len(result.Errors) != 1 || !strings.Contains(result.Errors[0], "SinTipo.md") {
+		t.Fatalf("expected a single error for SinTipo.md, got %v", result.Errors)
+	}
+
+	npcs, _ := repository.NewNPCRepository(db).List(ctx, campaign.ID)
+	kinds := map[string]string{}
+	for _, n := range npcs {
+		kinds[n.Name] = n.NPCKind
+	}
+	want := map[string]string{"Trasgo": "monstruo-elite", "Ogro": "monstruo-elite", "Aldeano": "spren", "Mencion": "referencia"}
+	if len(kinds) != len(want) {
+		t.Fatalf("expected %d npcs, got %v", len(want), kinds)
+	}
+	for name, kind := range want {
+		if kinds[name] != kind {
+			t.Errorf("%s: expected kind %q, got %q", name, kind, kinds[name])
+		}
+	}
+
+	after, _ := typeRepo.List(ctx, campaign.ID)
+	if len(after) != len(before)+1 {
+		t.Fatalf("expected exactly one new type (defaults reused, referencia reserved), got %d -> %d", len(before), len(after))
+	}
+	created := after[len(after)-1]
+	if created.Key != "monstruo-elite" || created.Label == "" || created.Color == "" {
+		t.Errorf("unexpected created type: %+v", created)
+	}
+
+	if _, err := indexer.Reindex(ctx); err != nil {
+		t.Fatalf("second Reindex failed: %v", err)
+	}
+	again, _ := typeRepo.List(ctx, campaign.ID)
+	if len(again) != len(after) {
+		t.Errorf("second reindex changed the types: %d -> %d", len(after), len(again))
 	}
 }

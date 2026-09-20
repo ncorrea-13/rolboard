@@ -18,7 +18,9 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
   useEffect(() => {
     apiFetch<string[]>("/admin/vault-dirs")
       .then(setVaultDirs)
-      .catch((err) => console.error("Error listando directorios del vault:", err));
+      .catch((err) =>
+        console.error("Error listando directorios del vault:", err),
+      );
   }, []);
 
   function handleConfirm() {

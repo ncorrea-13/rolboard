@@ -1,0 +1,133 @@
+.help {
+  padding-bottom: 60px; /* clears the fixed site footer */
+}
+
+.help__card {
+  padding: 20px 24px;
+}
+
+.help__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.help__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.help__layout {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 32px;
+  margin-top: 20px;
+}
+
+.help__toc {
+  position: sticky;
+  top: 20px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.help__toc a {
+  padding: 7px 10px;
+  border-radius: 5px;
+  font: 400 13.5px var(--font-body);
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.help__toc a:hover {
+  color: var(--accent-obsidian);
+  background: color-mix(in srgb, var(--accent-obsidian) 10%, transparent);
+}
+
+.help__section {
+  scroll-margin-top: 20px;
+  padding-bottom: 8px;
+}
+
+.help__section + .help__section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.help__title {
+  margin: 0;
+  font-size: 19px;
+}
+
+.help__md p,
+.help__md ul,
+.help__md ol {
+  margin: 10px 0;
+}
+
+.help__md li {
+  margin: 4px 0;
+}
+
+.help__md code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  font: 500 12.5px var(--font-mono);
+  color: var(--text-body-strong);
+}
+
+.help__md pre {
+  margin: 12px 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+}
+
+.help__md pre code {
+  padding: 0;
+  background: none;
+}
+
+.help__docs {
+  display: inline-block;
+  margin-top: 28px;
+  font: 500 13px var(--font-body);
+  color: var(--accent-obsidian);
+  text-decoration: none;
+}
+
+.help__docs:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .help__card {
+    padding: 16px;
+  }
+
+  .help__layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .help__toc {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .help__toc a {
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+  }
+}

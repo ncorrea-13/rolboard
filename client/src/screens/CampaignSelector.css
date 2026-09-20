@@ -63,7 +63,7 @@
 }
 
 .campaign-card--clickable:hover {
-  border-color: #34393d;
+  border-color: var(--border-hover);
 }
 
 .campaign-card__top {

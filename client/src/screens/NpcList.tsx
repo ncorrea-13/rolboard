@@ -8,9 +8,14 @@ import {
   type StatusKind,
 } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
+import {
+  NpcTypesButton,
+  type NpcTypesApi,
+} from "../components/NpcTypesManager";
 import { StatusPill } from "../components/StatusPill";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import type { CSSProperties } from "react";
 
 const statusFilters: StatusKind[] = ["alive", "dead", "missing", "paused"];
 
@@ -20,11 +25,13 @@ export function NpcList({
   npcs,
   onSelect,
   onCreate,
+  npcTypesApi,
   imageVersion = 0,
 }: {
   npcs: Npc[];
   onSelect: (id: string) => void;
   onCreate: () => void;
+  npcTypesApi: NpcTypesApi;
   imageVersion?: number;
 }) {
   const t = useT();
@@ -36,11 +43,12 @@ export function NpcList({
   );
   const [page, setPage] = useState(1);
 
-  const typeFilters = useMemo(() => {
-    const seen = new Set<string>();
-    for (const n of npcs) seen.add(n.crystal);
-    return [...seen].map((crystal) => ({ crystal, label: crystalLabelFor(crystal, lang) }));
-  }, [npcs, lang]);
+  const typeFilters = [...new Set(npcs.map((n) => n.crystal))].map(
+    (crystal) => ({
+      crystal,
+      label: crystalLabelFor(crystal, lang),
+    }),
+  );
 
   function toggleType(crystal: string) {
     setActiveTypes((prev) => {
@@ -108,6 +116,7 @@ export function NpcList({
               setPage(1);
             }}
           />
+          <NpcTypesButton api={npcTypesApi} />
           <button className="btn btn-primary" onClick={onCreate}>
             {t("npcList.new")}
           </button>
@@ -115,22 +124,23 @@ export function NpcList({
       </div>
 
       <div className="npc-list__filters">
-        <span className="npc-list__filter-label">{t("npcList.typeFilterLabel")}</span>
+        <span className="npc-list__filter-label">
+          {t("npcList.typeFilterLabel")}
+        </span>
         {typeFilters.map((f) => (
           <button
             key={f.crystal}
             className={`npc-list__filter-chip${activeTypes.has(f.crystal) ? " npc-list__filter-chip--active" : ""}`}
+            style={{ "--c": crystalColorFor(f.crystal) } as CSSProperties}
             onClick={() => toggleType(f.crystal)}
           >
-            <span
-              className="npc-list__filter-mark"
-              style={{ background: crystalColorFor(f.crystal) }}
-            />
             {f.label}
           </button>
         ))}
         <span className="npc-list__divider" />
-        <span className="npc-list__filter-label">{t("npcList.statusFilterLabel")}</span>
+        <span className="npc-list__filter-label">
+          {t("npcList.statusFilterLabel")}
+        </span>
         {statusFilters.map((s) => (
           <button
             key={s}
@@ -159,9 +169,7 @@ export function NpcList({
       </div>
 
       {filtered.length === 0 && (
-        <div className="npc-list__empty">
-          {t("npcList.empty")}
-        </div>
+        <div className="npc-list__empty">{t("npcList.empty")}</div>
       )}
 
       {paged.map((n) => (
@@ -179,10 +187,11 @@ export function NpcList({
           />
           <span className="npc-list__type">
             <span
-              className="npc-list__type-mark"
-              style={{ background: crystalColorFor(n.crystal) }}
-            />
-            {crystalLabelFor(n.crystal, lang)}
+              className="type-chip"
+              style={{ "--c": crystalColorFor(n.crystal) } as CSSProperties}
+            >
+              {crystalLabelFor(n.crystal, lang)}
+            </span>
           </span>
           <span className="npc-list__cell">{n.location}</span>
           <StatusPill status={n.status} />
