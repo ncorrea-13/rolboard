@@ -97,7 +97,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
 
           <div>
             <span className="label">
-              {t("questEdit.hookLabel")} {t("common.supportsMarkdown")}
+              {t("questEdit.hookLabel")}
             </span>
             <textarea
               className="npc-edit__textarea"
@@ -109,7 +109,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
 
           <div>
             <span className="label">
-              {t("questEdit.notesLabel")} {t("common.supportsMarkdown")}
+              {t("questEdit.notesLabel")}
             </span>
             <textarea
               className="npc-edit__textarea"

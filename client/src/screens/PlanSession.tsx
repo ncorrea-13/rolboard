@@ -108,7 +108,7 @@ export function PlanSession({
 
           <div>
             <span className="label">
-              {t("planSession.prepNotesLabel")} {t("common.supportsMarkdown")}
+              {t("planSession.prepNotesLabel")}
             </span>
             <textarea
               className="npc-edit__textarea"
