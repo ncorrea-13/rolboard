@@ -9,6 +9,7 @@ import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { useT } from "../lib/i18n";
+import { MarkdownText } from "../components/MarkdownText";
 
 interface PlayerDetailProps {
   player: PlayerCharacter;
@@ -92,8 +93,18 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
               )}
             </div>
           )}
-          <p className="npc-detail__desc">{player.backstory}</p>
-          <p className="npc-detail__desc">{player.progressionNotes}</p>
+          {player.backstory && (
+            <>
+              <span className="label">{t("playerDetail.backstory")}</span>
+              <MarkdownText className="npc-detail__desc" text={player.backstory} />
+            </>
+          )}
+          {player.progressionNotes && (
+            <>
+              <span className="label" style={{ marginTop: 21, display: "block" }}>{t("playerDetail.progressionNotes")}</span>
+              <MarkdownText className="npc-detail__desc" text={player.progressionNotes} />
+            </>
+          )}
         </div>
 
         <div className="npc-detail__col npc-detail__col--side">
@@ -124,7 +135,7 @@ export function PlayerDetail({ player, campaignId, vaultName, onEdit, onBack, on
               dangerouslySetInnerHTML={{ __html: noteHtml }}
             />
           ) : (
-            <p className="npc-detail__desc">{noteOpen.fallback}</p>
+            <MarkdownText className="npc-detail__desc" text={noteOpen.fallback} />
           )}
         </Modal>
       )}
