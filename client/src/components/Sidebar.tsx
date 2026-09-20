@@ -8,6 +8,7 @@ import {
   Shield,
   Swords,
   Skull,
+  Cross,
   Settings,
   LogOut,
   PanelLeftClose,
@@ -78,6 +79,12 @@ const navItems: {
     section: "encuentros",
     Icon: Skull,
     color: "var(--accent-flame)",
+  },
+  {
+    labelKey: "sidebar.wardails",
+    section: "wardails",
+    Icon: Cross,
+    color: "var(--accent-wardail)",
   },
 ];
 

@@ -43,6 +43,7 @@ import { QuestsList } from "./screens/QuestsList";
 import { PlayersList } from "./screens/PlayersList";
 import { EncountersList } from "./screens/EncountersList";
 import { EncounterDetail } from "./screens/EncounterDetail";
+import { Wardails } from "./screens/Wardails";
 import {
   ArcDetail,
   FactionDetail,
@@ -451,6 +452,9 @@ export default function App() {
               }
               onCreate={() => createEncounter()}
             />
+          )}
+          {route.name === "section" && route.section === "wardails" && (
+            <Wardails campaignId={activeCampaignId!} notify={notify} />
           )}
 
           {route.name === "entity-detail" && route.kind === "arc" && (

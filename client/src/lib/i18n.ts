@@ -84,6 +84,7 @@ const dict = {
     "sidebar.facciones": "Facciones",
     "sidebar.quests": "Quests",
     "sidebar.encuentros": "Encuentros",
+    "sidebar.wardails": "Wardails",
 
     "skillsEditor.newField": "Nuevo campo…",
     "skillsEditor.add": "Agregar",
@@ -341,6 +342,12 @@ const dict = {
     "toast.reindexed": "Vault reindexado",
     "toast.errorReindexing": "Error reindexando el vault",
     "toast.errorLoading": "No se pudieron cargar los datos",
+    "wardails.title": "Wardails",
+    "wardails.subtitle": "Temas sensibles de esta campaña",
+    "wardails.empty": "Todavía no definiste wardails para esta campaña.",
+    "wardails.placeholder": "Un tema por línea, o usá > [!WARNING] para destacar los más delicados",
+    "wardails.saved": "Wardails guardados",
+    "wardails.errorSaving": "Error guardando los wardails",
     "footer.github": "Repositorio en GitHub",
     "footer.portfolio": "Portfolio de Nicolás Correa",
 
@@ -441,6 +448,7 @@ const dict = {
     "sidebar.facciones": "Factions",
     "sidebar.quests": "Quests",
     "sidebar.encuentros": "Encounters",
+    "sidebar.wardails": "Wardails",
 
     "skillsEditor.newField": "New field…",
     "skillsEditor.add": "Add",
@@ -698,6 +706,12 @@ const dict = {
     "toast.reindexed": "Vault reindexed",
     "toast.errorReindexing": "Error reindexing the vault",
     "toast.errorLoading": "Couldn't load data",
+    "wardails.title": "Wardails",
+    "wardails.subtitle": "Sensitive topics for this campaign",
+    "wardails.empty": "You haven't defined any wardails for this campaign yet.",
+    "wardails.placeholder": "One topic per line, or use > [!WARNING] to highlight the most sensitive ones",
+    "wardails.saved": "Wardails saved",
+    "wardails.errorSaving": "Error saving the wardails",
     "footer.github": "GitHub repository",
     "footer.portfolio": "Nicolás Correa's portfolio",
 
