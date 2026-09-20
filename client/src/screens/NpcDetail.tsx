@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import "./NpcDetail.css";
-import { crystalColor, crystalLabelFor, questStatusColor, type Npc, type Quest } from "../data/domain";
+import {
+  crystalColor,
+  crystalLabelFor,
+  questStatusColor,
+  type Npc,
+  type Quest,
+} from "../data/domain";
 import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
@@ -52,12 +58,19 @@ export function NpcDetail({
       .catch(() => setNoteHtml(null));
   }
 
-  const [relations, setRelations] = useState<{ role: string; npcId: string }[]>([]);
+  const [relations, setRelations] = useState<{ role: string; npcId: string }[]>(
+    [],
+  );
 
   useEffect(() => {
     apiFetch<{ to_npc_id: number; role: string }[]>(`/npcs/${npc.id}/relations`)
       .then((data) =>
-        setRelations((data ?? []).map((r) => ({ role: r.role, npcId: String(r.to_npc_id) }))),
+        setRelations(
+          (data ?? []).map((r) => ({
+            role: r.role,
+            npcId: String(r.to_npc_id),
+          })),
+        ),
       )
       .catch((err) => console.error("Error cargando vínculos:", err));
   }, [npc.id]);
@@ -109,13 +122,13 @@ export function NpcDetail({
             >
               {t("entityDetail.openInObsidian")}
             </button>
-            <button
-              className="btn btn-secondary"
-              onClick={openNote}
-            >
+            <button className="btn btn-secondary" onClick={openNote}>
               {t("entityDetail.viewRenderedNote")}
             </button>
-            <button className="btn btn-secondary" onClick={() => setSheetOpen(true)}>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setSheetOpen(true)}
+            >
               {t("npcDetail.viewSheet")}
             </button>
             <button className="btn btn-secondary" onClick={onDelete}>
@@ -157,7 +170,10 @@ export function NpcDetail({
               </span>
               <div className="npc-detail__links">
                 {links.map((l) => (
-                  <div key={`${l.npcId}:${l.role}`} className="card npc-detail__link">
+                  <div
+                    key={`${l.npcId}:${l.role}`}
+                    className="card npc-detail__link"
+                  >
                     <span className="npc-detail__link-role">{l.role}</span>
                     <span className="title-underline" style={{ flex: 1 }}>
                       <span className="npc-detail__link-name">
@@ -278,7 +294,11 @@ export function NpcDetail({
       )}
 
       {sheetOpen && (
-        <Modal title={`${t("npcDetail.sheetPrefix")} · ${npc.name}`} onClose={() => setSheetOpen(false)} size="sheet">
+        <Modal
+          title={`${t("npcDetail.sheetPrefix")} · ${npc.name}`}
+          onClose={() => setSheetOpen(false)}
+          size="sheet"
+        >
           <CharacterSheet attributes={npc.attributes} skills={npc.skills} />
         </Modal>
       )}

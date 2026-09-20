@@ -17,12 +17,21 @@ interface PlanSessionProps {
   onCancel: () => void;
 }
 
-export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, onCancel }: PlanSessionProps) {
+export function PlanSession({
+  nextNumber,
+  currentArc,
+  npcs,
+  quests,
+  onConfirm,
+  onCancel,
+}: PlanSessionProps) {
   const t = useT();
   const [date, setDate] = useState("");
   const [text, setText] = useState("");
   const [expectedNpcIds, setExpectedNpcIds] = useState<Set<string>>(new Set());
-  const [expectedQuestIds, setExpectedQuestIds] = useState<Set<string>>(new Set());
+  const [expectedQuestIds, setExpectedQuestIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const sessionCode = `S${String(nextNumber).padStart(2, "0")}`;
 
@@ -55,16 +64,33 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
 
   return (
     <div className="card npc-edit">
-      <div className="npc-edit__bar" style={{ boxShadow: "inset 4px 0 0 var(--accent-sky)" }}>
+      <div
+        className="npc-edit__bar"
+        style={{ boxShadow: "inset 4px 0 0 var(--accent-sky)" }}
+      >
         <div className="npc-edit__bar-left">
-          <span className="status-dot" style={{ background: "var(--accent-sky)" }} />
-          <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {t("planSession.planning")} · {sessionCode}{currentArc ? ` · ${currentArc.label}` : ""}
+          <span
+            className="status-dot"
+            style={{ background: "var(--accent-sky)" }}
+          />
+          <span
+            style={{
+              fontWeight: 500,
+              fontSize: 13.5,
+              color: "var(--text-primary)",
+            }}
+          >
+            {t("planSession.planning")} · {sessionCode}
+            {currentArc ? ` · ${currentArc.label}` : ""}
           </span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onCancel}>{t("common.cancel")}</button>
-          <button className="btn btn-primary" onClick={handleConfirm}>{t("sessionsTimeline.plan")}</button>
+          <button className="btn btn-secondary" onClick={onCancel}>
+            {t("common.cancel")}
+          </button>
+          <button className="btn btn-primary" onClick={handleConfirm}>
+            {t("sessionsTimeline.plan")}
+          </button>
         </div>
       </div>
 
@@ -77,12 +103,19 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
             </div>
             <div>
               <span className="label">{t("planSession.tentativeDate")}</span>
-              <input type="date" className="npc-edit__input" value={date} onChange={(e) => setDate(e.target.value)} />
+              <input
+                type="date"
+                className="npc-edit__input"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
             </div>
           </div>
 
           <div>
-            <span className="label">{t("planSession.prepNotesLabel")} {t("common.supportsMarkdown")}</span>
+            <span className="label">
+              {t("planSession.prepNotesLabel")} {t("common.supportsMarkdown")}
+            </span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 160 }}
@@ -130,13 +163,13 @@ export function PlanSession({ nextNumber, currentArc, npcs, quests, onConfirm, o
                 ))}
               </div>
             ) : (
-              <div className="npc-edit__hint">{t("planSession.noQuestsYet")}</div>
+              <div className="npc-edit__hint">
+                {t("planSession.noQuestsYet")}
+              </div>
             )}
           </div>
 
-          <div className="npc-edit__note">
-            {t("planSession.note")}
-          </div>
+          <div className="npc-edit__note">{t("planSession.note")}</div>
         </div>
       </div>
     </div>

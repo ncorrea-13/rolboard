@@ -18,9 +18,17 @@ import { SkillsEditor } from "../components/SkillsEditor";
 import { ImageUploadField } from "../components/ImageUploadField";
 import { useT, useLang, type TranslationKey } from "../lib/i18n";
 
-const typeOptions: { label: string; labelKey: TranslationKey; crystal: CrystalType }[] = [
+const typeOptions: {
+  label: string;
+  labelKey: TranslationKey;
+  crystal: CrystalType;
+}[] = [
   { label: "NPC", labelKey: "npcEdit.typeNpc", crystal: "npc" },
-  { label: "Spren / cognitiva", labelKey: "npcEdit.typeSprenCognitive", crystal: "spren" },
+  {
+    label: "Spren / cognitiva",
+    labelKey: "npcEdit.typeSprenCognitive",
+    crystal: "spren",
+  },
 ];
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
@@ -51,11 +59,16 @@ export function NpcEdit({
   const [name, setName] = useState(npc.name);
   const [description, setDescription] = useState(npc.description);
   const [status, setStatus] = useState<StatusKind>(npc.status);
-  const [detailLevel, setDetailLevel] = useState<"full" | "minor">(npc.detailLevel);
+  const [detailLevel, setDetailLevel] = useState<"full" | "minor">(
+    npc.detailLevel,
+  );
   const [crystal, setCrystal] = useState<CrystalType>(npc.crystal);
   const [linkRole, setLinkRole] = useState("");
   const [linkNpcId, setLinkNpcId] = useState("");
-  const [existingLink, setExistingLink] = useState<{ role: string; npcId: string } | null>(null);
+  const [existingLink, setExistingLink] = useState<{
+    role: string;
+    npcId: string;
+  } | null>(null);
   const [locationId, setLocationId] = useState(npc.locationId ?? "");
   const [etnia, setEtnia] = useState(npc.etnia ?? "");
   const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
@@ -92,20 +105,37 @@ export function NpcEdit({
 
   function syncLink(savedNpcId: string) {
     if (existingLink) {
-      apiFetch(`/npcs/${savedNpcId}/relations/${existingLink.npcId}/${existingLink.role}`, {
-        method: "DELETE",
-      }).catch((err) => console.error("Error borrando vínculo:", err));
+      apiFetch(
+        `/npcs/${savedNpcId}/relations/${existingLink.npcId}/${existingLink.role}`,
+        {
+          method: "DELETE",
+        },
+      ).catch((err) => console.error("Error borrando vínculo:", err));
     }
     if (linkNpcId) {
       apiFetch(`/npcs/${savedNpcId}/relations`, {
         method: "POST",
-        body: JSON.stringify({ to_npc_id: Number(linkNpcId), role: linkRole || "VINCULADO" }),
+        body: JSON.stringify({
+          to_npc_id: Number(linkNpcId),
+          role: linkRole || "VINCULADO",
+        }),
       }).catch((err) => console.error("Error guardando vínculo:", err));
     }
   }
 
   function handleSave() {
-    onSave({ name, description, status, detailLevel, crystal, locationId: locationId || undefined, etnia, tipoSpren, attributes, skills });
+    onSave({
+      name,
+      description,
+      status,
+      detailLevel,
+      crystal,
+      locationId: locationId || undefined,
+      etnia,
+      tipoSpren,
+      attributes,
+      skills,
+    });
     if (npc.id) syncLink(npc.id);
   }
 
@@ -114,19 +144,43 @@ export function NpcEdit({
 
   return (
     <div className="card npc-edit">
-      <div className="npc-edit__bar" style={{ boxShadow: "inset 4px 0 0 var(--accent-flame)" }}>
+      <div
+        className="npc-edit__bar"
+        style={{ boxShadow: "inset 4px 0 0 var(--accent-flame)" }}
+      >
         <div className="npc-edit__bar-left">
-          <span className="status-dot" style={{ background: "var(--accent-flame)" }} />
-          <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
+          <span
+            className="status-dot"
+            style={{ background: "var(--accent-flame)" }}
+          />
+          <span
+            style={{
+              fontWeight: 500,
+              fontSize: 13.5,
+              color: "var(--text-primary)",
+            }}
+          >
             {npc.id ? `${t("common.editing")} · ${npc.name}` : t("npcEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
+            <span
+              style={{
+                fontSize: 12,
+                color: "var(--text-secondary)",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              {t("common.unsavedChanges")}
+            </span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
-          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>
+            {t("common.discard")}
+          </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            {t("common.save")}
+          </button>
         </div>
       </div>
 
@@ -135,7 +189,11 @@ export function NpcEdit({
           <div className="npc-edit__grid-2">
             <div>
               <span className="label">{t("common.name")}</span>
-              <input className="npc-edit__input npc-edit__input--focus" value={name} onChange={(e) => setName(e.target.value)} />
+              <input
+                className="npc-edit__input npc-edit__input--focus"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
               <div className="npc-edit__hint">{t("npcEdit.focusHint")}</div>
             </div>
             <div>
@@ -158,7 +216,9 @@ export function NpcEdit({
               <select
                 className="npc-edit__select npc-edit__select--native"
                 value={detailLevel}
-                onChange={(e) => setDetailLevel(e.target.value as "full" | "minor")}
+                onChange={(e) =>
+                  setDetailLevel(e.target.value as "full" | "minor")
+                }
               >
                 <option value="full">{t("npcEdit.detailFull")}</option>
                 <option value="minor">{t("npcEdit.detailMinor")}</option>
@@ -176,7 +236,10 @@ export function NpcEdit({
                   className={`npc-edit__type-chip${crystal === opt.crystal ? " npc-edit__type-chip--active" : ""}`}
                   onClick={() => setCrystal(opt.crystal)}
                 >
-                  <span className="npc-edit__type-mark" style={{ background: crystalColor[opt.crystal] }} />
+                  <span
+                    className="npc-edit__type-mark"
+                    style={{ background: crystalColor[opt.crystal] }}
+                  />
                   {t(opt.labelKey)}
                 </button>
               ))}
@@ -208,8 +271,14 @@ export function NpcEdit({
           </div>
 
           <div>
-            <span className="label">{t("common.description")} {t("common.supportsMarkdown")}</span>
-            <textarea className="npc-edit__textarea" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <span className="label">
+              {t("common.description")} {t("common.supportsMarkdown")}
+            </span>
+            <textarea
+              className="npc-edit__textarea"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
 
           <div>
@@ -225,28 +294,49 @@ export function NpcEdit({
                 className="npc-edit__select npc-edit__select--native"
                 value={linkNpcId}
                 onChange={(e) => setLinkNpcId(e.target.value)}
-                style={linkTarget ? { borderBottom: `2px solid ${crystalColor[linkTarget.crystal]}` } : undefined}
+                style={
+                  linkTarget
+                    ? {
+                        borderBottom: `2px solid ${crystalColor[linkTarget.crystal]}`,
+                      }
+                    : undefined
+                }
               >
                 <option value="">{t("npcEdit.noLink")}</option>
-                {npcs.filter((n) => n.id !== npc.id).map((n) => (
-                  <option key={n.id} value={n.id}>{n.name}</option>
-                ))}
+                {npcs
+                  .filter((n) => n.id !== npc.id)
+                  .map((n) => (
+                    <option key={n.id} value={n.id}>
+                      {n.name}
+                    </option>
+                  ))}
               </select>
             </div>
-            <div className="npc-edit__hint">
-              {t("npcEdit.linkHint")}
-            </div>
+            <div className="npc-edit__hint">{t("npcEdit.linkHint")}</div>
           </div>
 
-          <SkillsEditor label={t("characterSheet.attributes")} value={attributes} onChange={setAttributes} />
-          <SkillsEditor label={t("characterSheet.skills")} value={skills} onChange={setSkills} />
+          <SkillsEditor
+            label={t("characterSheet.attributes")}
+            value={attributes}
+            onChange={setAttributes}
+          />
+          <SkillsEditor
+            label={t("characterSheet.skills")}
+            value={skills}
+            onChange={setSkills}
+          />
         </div>
 
         <div className="npc-edit__col">
           {npc.id && onUploadImage && onRemoveImage && (
             <ImageUploadField
               label={t("npcEdit.portrait")}
-              imageUrl={entityImageUrl("npc", npc.id, npc.hasImage, imageVersion)}
+              imageUrl={entityImageUrl(
+                "npc",
+                npc.id,
+                npc.hasImage,
+                imageVersion,
+              )}
               onUpload={onUploadImage}
               onRemove={onRemoveImage}
             />
@@ -261,31 +351,42 @@ export function NpcEdit({
             >
               <option value="">{t("npcEdit.noLocation")}</option>
               {locations.map((l) => (
-                <option key={l.id} value={l.id}>{locationBreadcrumb(l, locations)}</option>
+                <option key={l.id} value={l.id}>
+                  {locationBreadcrumb(l, locations)}
+                </option>
               ))}
             </select>
           </div>
           <div>
             <span className="label">{t("entityDetail.obsidianNote")}</span>
-            <div className="npc-edit__select" style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}>
+            <div
+              className="npc-edit__select"
+              style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}
+            >
               {npc.obsidianPath}
             </div>
           </div>
           {(status === "dead" || missingOrigin) && (
-            <div className="card npc-edit__warning" style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}>
+            <div
+              className="card npc-edit__warning"
+              style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}
+            >
               <div className="npc-edit__warning-title">
-                <span className="status-dot" style={{ background: statusDotColor[status] }} />
-                {status === "dead" ? t("npcEdit.markedDead") : t("npcEdit.missingOrigin")}
+                <span
+                  className="status-dot"
+                  style={{ background: statusDotColor[status] }}
+                />
+                {status === "dead"
+                  ? t("npcEdit.markedDead")
+                  : t("npcEdit.missingOrigin")}
               </div>
-              <div className="npc-edit__warning-body">{t("npcEdit.warningBody")}</div>
+              <div className="npc-edit__warning-body">
+                {t("npcEdit.warningBody")}
+              </div>
             </div>
           )}
-          <div className="npc-edit__note">
-            {t("npcEdit.note1")}
-          </div>
-          <div className="npc-edit__note">
-            {t("npcEdit.note2")}
-          </div>
+          <div className="npc-edit__note">{t("npcEdit.note1")}</div>
+          <div className="npc-edit__note">{t("npcEdit.note2")}</div>
         </div>
       </div>
     </div>

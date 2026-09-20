@@ -1,4 +1,10 @@
-import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import "./Modal.css";
 import { useT } from "../lib/i18n";
 
@@ -16,12 +22,11 @@ export function Modal({
   const t = useT();
   const panelRef = useRef<HTMLDivElement>(null);
   const close = useEffectEvent(onClose);
-  // read during the first render, before any child autoFocus moves focus into the dialog
   const [opener] = useState(() => document.activeElement as HTMLElement | null);
 
-  // Escape closes; focus moves into the dialog and returns to the opener on unmount.
   useEffect(() => {
-    if (!panelRef.current?.contains(document.activeElement)) panelRef.current?.focus();
+    if (!panelRef.current?.contains(document.activeElement))
+      panelRef.current?.focus();
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") close();
     }

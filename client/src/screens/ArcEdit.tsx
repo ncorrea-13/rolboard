@@ -45,19 +45,45 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
 
   return (
     <div className="card npc-edit">
-      <div className="npc-edit__bar" style={{ boxShadow: "inset 4px 0 0 var(--accent-obsidian)" }}>
+      <div
+        className="npc-edit__bar"
+        style={{ boxShadow: "inset 4px 0 0 var(--accent-obsidian)" }}
+      >
         <div className="npc-edit__bar-left">
-          <span className="status-dot" style={{ background: "var(--accent-obsidian)" }} />
-          <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {arc.id ? `${t("common.editing")} · ${arc.label}` : t("arcEdit.new")}
+          <span
+            className="status-dot"
+            style={{ background: "var(--accent-obsidian)" }}
+          />
+          <span
+            style={{
+              fontWeight: 500,
+              fontSize: 13.5,
+              color: "var(--text-primary)",
+            }}
+          >
+            {arc.id
+              ? `${t("common.editing")} · ${arc.label}`
+              : t("arcEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
+            <span
+              style={{
+                fontSize: 12,
+                color: "var(--text-secondary)",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              {t("common.unsavedChanges")}
+            </span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
-          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>
+            {t("common.discard")}
+          </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            {t("common.save")}
+          </button>
         </div>
       </div>
 
@@ -83,7 +109,9 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
               />
             </div>
             <div>
-              <span className="label">{t("arcEdit.subarcPrefix")} {order || "N"}.1")</span>
+              <span className="label">
+                {t("arcEdit.subarcPrefix")} {order || "N"}.1")
+              </span>
               <input
                 className="npc-edit__input"
                 type="number"
@@ -95,7 +123,9 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
           </div>
 
           <div>
-            <span className="label">{t("common.summary")} {t("common.supportsMarkdown")}</span>
+            <span className="label">
+              {t("common.summary")} {t("common.supportsMarkdown")}
+            </span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 200 }}

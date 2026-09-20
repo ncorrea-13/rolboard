@@ -10,7 +10,12 @@ interface EncountersListProps {
   onCreate: () => void;
 }
 
-export function EncountersList({ encounters, sessions, onSelect, onCreate }: EncountersListProps) {
+export function EncountersList({
+  encounters,
+  sessions,
+  onSelect,
+  onCreate,
+}: EncountersListProps) {
   const t = useT();
   return (
     <div className="card list-page">
@@ -19,7 +24,9 @@ export function EncountersList({ encounters, sessions, onSelect, onCreate }: Enc
           <div className="display" style={{ fontSize: 21 }}>
             {t("encountersList.title")}
           </div>
-          <span className="list-page__count">{encounters.length} {t("encountersList.count")}</span>
+          <span className="list-page__count">
+            {encounters.length} {t("encountersList.count")}
+          </span>
         </div>
         <button className="btn btn-primary" onClick={onCreate}>
           {t("encountersList.new")}
@@ -39,7 +46,9 @@ export function EncountersList({ encounters, sessions, onSelect, onCreate }: Enc
                   {t("encountersList.round")} {e.round}
                 </span>
                 <div className="list-page__row-sub" style={{ marginTop: 6 }}>
-                  {session ? sessionCode(session) : t("encountersList.noSession")}
+                  {session
+                    ? sessionCode(session)
+                    : t("encountersList.noSession")}
                 </div>
               </div>
               <EncounterStatusPill status={e.status} />

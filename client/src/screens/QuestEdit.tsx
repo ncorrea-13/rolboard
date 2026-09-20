@@ -9,14 +9,21 @@ interface QuestEditProps {
   onDiscard: () => void;
 }
 
-const questStatusOrder: QuestStatus[] = ["active", "on_hold", "completed", "failed"];
+const questStatusOrder: QuestStatus[] = [
+  "active",
+  "on_hold",
+  "completed",
+  "failed",
+];
 
 export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
   const t = useT();
   const lang = useLang();
-  const statusOptions: { value: QuestStatus; label: string }[] = questStatusOrder.map(
-    (value) => ({ value, label: questStatusLabel[lang][value] }),
-  );
+  const statusOptions: { value: QuestStatus; label: string }[] =
+    questStatusOrder.map((value) => ({
+      value,
+      label: questStatusLabel[lang][value],
+    }));
   const priorityOptions: { value: 1 | 2 | 3; label: string }[] = [
     { value: 1, label: t("questDetail.priorityHigh") },
     { value: 2, label: t("questDetail.priorityMedium") },
@@ -41,19 +48,45 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
 
   return (
     <div className="card npc-edit">
-      <div className="npc-edit__bar" style={{ boxShadow: "inset 4px 0 0 var(--crystal-faction-quest)" }}>
+      <div
+        className="npc-edit__bar"
+        style={{ boxShadow: "inset 4px 0 0 var(--crystal-faction-quest)" }}
+      >
         <div className="npc-edit__bar-left">
-          <span className="status-dot" style={{ background: "var(--crystal-faction-quest)" }} />
-          <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {quest.id ? `${t("common.editing")} · ${quest.name}` : t("questEdit.new")}
+          <span
+            className="status-dot"
+            style={{ background: "var(--crystal-faction-quest)" }}
+          />
+          <span
+            style={{
+              fontWeight: 500,
+              fontSize: 13.5,
+              color: "var(--text-primary)",
+            }}
+          >
+            {quest.id
+              ? `${t("common.editing")} · ${quest.name}`
+              : t("questEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
+            <span
+              style={{
+                fontSize: 12,
+                color: "var(--text-secondary)",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              {t("common.unsavedChanges")}
+            </span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
-          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>
+            {t("common.discard")}
+          </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            {t("common.save")}
+          </button>
         </div>
       </div>
 
@@ -69,7 +102,9 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
           </div>
 
           <div>
-            <span className="label">{t("questEdit.hookLabel")} {t("common.supportsMarkdown")}</span>
+            <span className="label">
+              {t("questEdit.hookLabel")} {t("common.supportsMarkdown")}
+            </span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 140 }}
@@ -79,7 +114,9 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
           </div>
 
           <div>
-            <span className="label">{t("questEdit.notesLabel")} {t("common.supportsMarkdown")}</span>
+            <span className="label">
+              {t("questEdit.notesLabel")} {t("common.supportsMarkdown")}
+            </span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 160 }}
@@ -110,7 +147,9 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
               <select
                 className="npc-edit__select npc-edit__select--native"
                 value={priority}
-                onChange={(e) => setPriority(Number(e.target.value) as 1 | 2 | 3)}
+                onChange={(e) =>
+                  setPriority(Number(e.target.value) as 1 | 2 | 3)
+                }
               >
                 {priorityOptions.map((p) => (
                   <option key={p.value} value={p.value}>

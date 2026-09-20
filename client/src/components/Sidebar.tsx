@@ -43,7 +43,12 @@ const navItems: {
     Icon: CalendarDays,
     color: "var(--status-alive)",
   },
-  { labelKey: "sidebar.npcs", section: "npcs", Icon: Users, color: crystalColor.npc },
+  {
+    labelKey: "sidebar.npcs",
+    section: "npcs",
+    Icon: Users,
+    color: crystalColor.npc,
+  },
   {
     labelKey: "sidebar.jugadores",
     section: "jugadores",

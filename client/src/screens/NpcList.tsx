@@ -39,7 +39,10 @@ export function NpcList({
   const typeFilters = useMemo(() => {
     const seen = new Set<string>();
     for (const n of npcs) seen.add(n.crystal);
-    return [...seen].map((crystal) => ({ crystal, label: crystalLabelFor(crystal, lang) }));
+    return [...seen].map((crystal) => ({
+      crystal,
+      label: crystalLabelFor(crystal, lang),
+    }));
   }, [npcs, lang]);
 
   function toggleType(crystal: string) {
@@ -115,7 +118,9 @@ export function NpcList({
       </div>
 
       <div className="npc-list__filters">
-        <span className="npc-list__filter-label">{t("npcList.typeFilterLabel")}</span>
+        <span className="npc-list__filter-label">
+          {t("npcList.typeFilterLabel")}
+        </span>
         {typeFilters.map((f) => (
           <button
             key={f.crystal}
@@ -130,7 +135,9 @@ export function NpcList({
           </button>
         ))}
         <span className="npc-list__divider" />
-        <span className="npc-list__filter-label">{t("npcList.statusFilterLabel")}</span>
+        <span className="npc-list__filter-label">
+          {t("npcList.statusFilterLabel")}
+        </span>
         {statusFilters.map((s) => (
           <button
             key={s}
@@ -159,9 +166,7 @@ export function NpcList({
       </div>
 
       {filtered.length === 0 && (
-        <div className="npc-list__empty">
-          {t("npcList.empty")}
-        </div>
+        <div className="npc-list__empty">{t("npcList.empty")}</div>
       )}
 
       {paged.map((n) => (

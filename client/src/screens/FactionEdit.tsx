@@ -37,24 +37,55 @@ export function FactionEdit({
     liderNpcId !== (group.liderNpcId ?? "");
 
   function handleSave() {
-    onSave({ name, description, alineacion, liderNpcId: liderNpcId || undefined });
+    onSave({
+      name,
+      description,
+      alineacion,
+      liderNpcId: liderNpcId || undefined,
+    });
   }
 
   return (
     <div className="card npc-edit">
-      <div className="npc-edit__bar" style={{ boxShadow: "inset 4px 0 0 var(--crystal-faction-quest)" }}>
+      <div
+        className="npc-edit__bar"
+        style={{ boxShadow: "inset 4px 0 0 var(--crystal-faction-quest)" }}
+      >
         <div className="npc-edit__bar-left">
-          <span className="status-dot" style={{ background: "var(--crystal-faction-quest)" }} />
-          <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {group.id ? `${t("common.editing")} · ${group.name}` : t("factionEdit.new")}
+          <span
+            className="status-dot"
+            style={{ background: "var(--crystal-faction-quest)" }}
+          />
+          <span
+            style={{
+              fontWeight: 500,
+              fontSize: 13.5,
+              color: "var(--text-primary)",
+            }}
+          >
+            {group.id
+              ? `${t("common.editing")} · ${group.name}`
+              : t("factionEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
+            <span
+              style={{
+                fontSize: 12,
+                color: "var(--text-secondary)",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              {t("common.unsavedChanges")}
+            </span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
-          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>
+            {t("common.discard")}
+          </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            {t("common.save")}
+          </button>
         </div>
       </div>
 
@@ -69,7 +100,9 @@ export function FactionEdit({
             />
           </div>
           <div>
-            <span className="label">{t("common.description")} {t("common.supportsMarkdown")}</span>
+            <span className="label">
+              {t("common.description")} {t("common.supportsMarkdown")}
+            </span>
             <textarea
               className="npc-edit__textarea"
               value={description}
@@ -82,7 +115,12 @@ export function FactionEdit({
           {group.id && onUploadImage && onRemoveImage && (
             <ImageUploadField
               label={t("factionEdit.image")}
-              imageUrl={entityImageUrl("group", group.id, group.hasImage, imageVersion)}
+              imageUrl={entityImageUrl(
+                "group",
+                group.id,
+                group.hasImage,
+                imageVersion,
+              )}
               onUpload={onUploadImage}
               onRemove={onRemoveImage}
             />

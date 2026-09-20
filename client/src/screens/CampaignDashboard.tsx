@@ -9,7 +9,11 @@ import {
   type Quest,
   type Session,
 } from "../data/domain";
-import { StatusPill, ArcStatusPill, QuestStatusPill } from "../components/StatusPill";
+import {
+  StatusPill,
+  ArcStatusPill,
+  QuestStatusPill,
+} from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
 import { openInObsidian } from "../lib/obsidian";
@@ -72,7 +76,8 @@ export function CampaignDashboard({
 }: CampaignDashboardProps) {
   const t = useT();
   const recentNpcs = summary?.recentNpcs ?? npcs.slice(0, 4);
-  const activeQuests = summary?.activeQuests ?? quests.filter((q) => q.status === "active");
+  const activeQuests =
+    summary?.activeQuests ?? quests.filter((q) => q.status === "active");
   const currentArc =
     arcs.find((a) => a.status === "en_curso") ?? arcs[arcs.length - 1];
   const lastSession = summary?.lastSession;
@@ -101,7 +106,9 @@ export function CampaignDashboard({
           {currentArc?.obsidianPath && (
             <button
               className="btn btn-secondary"
-              onClick={() => openInObsidian(campaign.vaultPath, currentArc.obsidianPath)}
+              onClick={() =>
+                openInObsidian(campaign.vaultPath, currentArc.obsidianPath)
+              }
             >
               {t("entityDetail.openInObsidian")}
             </button>
@@ -111,7 +118,9 @@ export function CampaignDashboard({
             onClick={onReindex}
             disabled={reindexing}
           >
-            {reindexing ? t("dashboard.reindexing") : t("dashboard.reindexVault")}
+            {reindexing
+              ? t("dashboard.reindexing")
+              : t("dashboard.reindexVault")}
           </button>
           {lastSession && lastSession.sessionType !== "planning" ? (
             <button className="btn btn-primary" onClick={onPlanSession}>
@@ -138,7 +147,10 @@ export function CampaignDashboard({
             <div className="display" style={{ fontSize: 21, marginTop: 9 }}>
               {currentArc.label}
             </div>
-            <MarkdownText className="campaign-dashboard__desc campaign-dashboard__desc--clamp" text={currentArc.summary} />
+            <MarkdownText
+              className="campaign-dashboard__desc campaign-dashboard__desc--clamp"
+              text={currentArc.summary}
+            />
             <div className="campaign-dashboard__progress">
               <div className="campaign-dashboard__progress-track">
                 <div
@@ -177,7 +189,10 @@ export function CampaignDashboard({
                   {formatDate(lastSession.date)}
                 </span>
               </div>
-              <MarkdownText className="campaign-dashboard__desc campaign-dashboard__desc--clamp" text={lastSession.summary} />
+              <MarkdownText
+                className="campaign-dashboard__desc campaign-dashboard__desc--clamp"
+                text={lastSession.summary}
+              />
             </div>
           )}
         </div>
@@ -272,7 +287,12 @@ export function CampaignDashboard({
                   name={n.name}
                   role={n.statusNote ?? n.role}
                   color={crystalColor[n.crystal]}
-                  imageUrl={entityImageUrl("npc", n.id, n.hasImage, imageVersion)}
+                  imageUrl={entityImageUrl(
+                    "npc",
+                    n.id,
+                    n.hasImage,
+                    imageVersion,
+                  )}
                 />
               </div>
               <StatusPill status={n.status} />

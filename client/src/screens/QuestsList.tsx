@@ -36,7 +36,9 @@ export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
           <div className="display" style={{ fontSize: 21 }}>
             {t("questsList.title")}
           </div>
-          <span className="list-page__count">{quests.length} {t("questsList.count")}</span>
+          <span className="list-page__count">
+            {quests.length} {t("questsList.count")}
+          </span>
         </div>
         <div className="list-page__header-actions">
           <input
@@ -65,7 +67,10 @@ export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
                   style={{ background: crystalColor[q.crystal] }}
                 />
               </span>
-              <div className="list-page__row-sub list-page__row-sub--clamp-1" style={{ marginTop: 6 }}>
+              <div
+                className="list-page__row-sub list-page__row-sub--clamp-1"
+                style={{ marginTop: 6 }}
+              >
                 <MarkdownText inline text={q.hook} />
               </div>
             </div>

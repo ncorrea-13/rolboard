@@ -152,8 +152,6 @@ export function useCampaignData(
   const t = useT();
   const lang = useLang();
 
-  // notify() holds a single toast, so several loaders failing at once show one message.
-  // useEffectEvent: reads the latest t/notify without re-running the loader effects.
   const loadFailed = useEffectEvent((what: string, err: unknown) => {
     console.error(`Error cargando ${what}:`, err);
     notify(t("toast.errorLoading"), "error");

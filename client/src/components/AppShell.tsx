@@ -25,9 +25,7 @@ export function AppShell({
   children,
 }: AppShellProps) {
   const t = useT();
-  const [sidebarOpen, setSidebarOpen] = useState(
-    () => window.innerWidth > 640,
-  );
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 640);
 
   function handleNavigate(section: DashboardSection) {
     onNavigate(section);

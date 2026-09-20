@@ -40,10 +40,14 @@ export function PlayerEdit({
   const [charClass, setCharClass] = useState(player.class);
   const [status, setStatus] = useState<StatusKind>(player.status);
   const [backstory, setBackstory] = useState(player.backstory);
-  const [progressionNotes, setProgressionNotes] = useState(player.progressionNotes);
+  const [progressionNotes, setProgressionNotes] = useState(
+    player.progressionNotes,
+  );
   const [attributes, setAttributes] = useState<StatMap>(player.attributes);
   const [skills, setSkills] = useState<StatMap>(player.skills);
-  const [currentHp, setCurrentHp] = useState<number | undefined>(player.currentHp);
+  const [currentHp, setCurrentHp] = useState<number | undefined>(
+    player.currentHp,
+  );
   const [maxHp, setMaxHp] = useState<number | undefined>(player.maxHp);
 
   const dirty =
@@ -60,26 +64,64 @@ export function PlayerEdit({
     maxHp !== player.maxHp;
 
   function handleSave() {
-    onSave({ playerName, characterName, race, class: charClass, status, backstory, progressionNotes, attributes, skills, currentHp, maxHp });
+    onSave({
+      playerName,
+      characterName,
+      race,
+      class: charClass,
+      status,
+      backstory,
+      progressionNotes,
+      attributes,
+      skills,
+      currentHp,
+      maxHp,
+    });
   }
 
   const missingRace = race.trim() === "";
 
   return (
     <div className="card npc-edit">
-      <div className="npc-edit__bar" style={{ boxShadow: "inset 4px 0 0 var(--accent-flame)" }}>
+      <div
+        className="npc-edit__bar"
+        style={{ boxShadow: "inset 4px 0 0 var(--accent-flame)" }}
+      >
         <div className="npc-edit__bar-left">
-          <span className="status-dot" style={{ background: "var(--accent-flame)" }} />
-          <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {player.id ? `${t("common.editing")} · ${player.characterName}` : t("playerEdit.new")}
+          <span
+            className="status-dot"
+            style={{ background: "var(--accent-flame)" }}
+          />
+          <span
+            style={{
+              fontWeight: 500,
+              fontSize: 13.5,
+              color: "var(--text-primary)",
+            }}
+          >
+            {player.id
+              ? `${t("common.editing")} · ${player.characterName}`
+              : t("playerEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
+            <span
+              style={{
+                fontSize: 12,
+                color: "var(--text-secondary)",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              {t("common.unsavedChanges")}
+            </span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
-          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>
+            {t("common.discard")}
+          </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            {t("common.save")}
+          </button>
         </div>
       </div>
 
@@ -113,39 +155,77 @@ export function PlayerEdit({
 
           <div>
             <span className="label">{t("playerEdit.player")}</span>
-            <input className="npc-edit__input" value={playerName} onChange={(e) => setPlayerName(e.target.value)} />
+            <input
+              className="npc-edit__input"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+            />
           </div>
 
           <div className="npc-edit__grid-2">
             <div>
               <span className="label">{t("playerEdit.race")}</span>
-              <input className="npc-edit__input" value={race} onChange={(e) => setRace(e.target.value)} />
+              <input
+                className="npc-edit__input"
+                value={race}
+                onChange={(e) => setRace(e.target.value)}
+              />
             </div>
             <div>
               <span className="label">{t("playerEdit.class")}</span>
-              <input className="npc-edit__input" value={charClass} onChange={(e) => setCharClass(e.target.value)} />
+              <input
+                className="npc-edit__input"
+                value={charClass}
+                onChange={(e) => setCharClass(e.target.value)}
+              />
             </div>
           </div>
 
           <div>
-            <span className="label">{t("playerDetail.backstory")} {t("common.supportsMarkdown")}</span>
-            <textarea className="npc-edit__textarea" value={backstory} onChange={(e) => setBackstory(e.target.value)} />
+            <span className="label">
+              {t("playerDetail.backstory")} {t("common.supportsMarkdown")}
+            </span>
+            <textarea
+              className="npc-edit__textarea"
+              value={backstory}
+              onChange={(e) => setBackstory(e.target.value)}
+            />
           </div>
 
           <div>
-            <span className="label">{t("playerDetail.progressionNotes")} {t("common.supportsMarkdown")}</span>
-            <textarea className="npc-edit__textarea" value={progressionNotes} onChange={(e) => setProgressionNotes(e.target.value)} />
+            <span className="label">
+              {t("playerDetail.progressionNotes")}{" "}
+              {t("common.supportsMarkdown")}
+            </span>
+            <textarea
+              className="npc-edit__textarea"
+              value={progressionNotes}
+              onChange={(e) => setProgressionNotes(e.target.value)}
+            />
           </div>
 
-          <SkillsEditor label={t("characterSheet.attributes")} value={attributes} onChange={setAttributes} />
-          <SkillsEditor label={t("characterSheet.skills")} value={skills} onChange={setSkills} />
+          <SkillsEditor
+            label={t("characterSheet.attributes")}
+            value={attributes}
+            onChange={setAttributes}
+          />
+          <SkillsEditor
+            label={t("characterSheet.skills")}
+            value={skills}
+            onChange={setSkills}
+          />
         </div>
 
         <div className="npc-edit__col">
           {player.id && onUploadImage && onRemoveImage && (
             <ImageUploadField
               label={t("npcEdit.portrait")}
-              imageUrl={entityImageUrl("player-character", player.id, player.hasImage, imageVersion)}
+              imageUrl={entityImageUrl(
+                "player-character",
+                player.id,
+                player.hasImage,
+                imageVersion,
+              )}
               onUpload={onUploadImage}
               onRemove={onRemoveImage}
             />
@@ -157,7 +237,11 @@ export function PlayerEdit({
                 className="npc-edit__input"
                 type="number"
                 value={currentHp ?? ""}
-                onChange={(e) => setCurrentHp(e.target.value === "" ? undefined : Number(e.target.value))}
+                onChange={(e) =>
+                  setCurrentHp(
+                    e.target.value === "" ? undefined : Number(e.target.value),
+                  )
+                }
               />
             </div>
             <div>
@@ -166,28 +250,43 @@ export function PlayerEdit({
                 className="npc-edit__input"
                 type="number"
                 value={maxHp ?? ""}
-                onChange={(e) => setMaxHp(e.target.value === "" ? undefined : Number(e.target.value))}
+                onChange={(e) =>
+                  setMaxHp(
+                    e.target.value === "" ? undefined : Number(e.target.value),
+                  )
+                }
               />
             </div>
           </div>
           <div>
             <span className="label">{t("entityDetail.obsidianNote")}</span>
-            <div className="npc-edit__select" style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}>
+            <div
+              className="npc-edit__select"
+              style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}
+            >
               {player.obsidianPath}
             </div>
           </div>
           {(status === "dead" || missingRace) && (
-            <div className="card npc-edit__warning" style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}>
+            <div
+              className="card npc-edit__warning"
+              style={{ boxShadow: "inset 3px 0 0 var(--status-dead)" }}
+            >
               <div className="npc-edit__warning-title">
-                <span className="status-dot" style={{ background: statusDotColor[status] }} />
-                {status === "dead" ? t("playerEdit.markedDead") : t("playerEdit.missingRace")}
+                <span
+                  className="status-dot"
+                  style={{ background: statusDotColor[status] }}
+                />
+                {status === "dead"
+                  ? t("playerEdit.markedDead")
+                  : t("playerEdit.missingRace")}
               </div>
-              <div className="npc-edit__warning-body">{t("npcEdit.warningBody")}</div>
+              <div className="npc-edit__warning-body">
+                {t("npcEdit.warningBody")}
+              </div>
             </div>
           )}
-          <div className="npc-edit__note">
-            {t("playerEdit.note")}
-          </div>
+          <div className="npc-edit__note">{t("playerEdit.note")}</div>
         </div>
       </div>
     </div>

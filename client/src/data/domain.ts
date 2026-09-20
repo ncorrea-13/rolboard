@@ -1,11 +1,7 @@
 import { getLang, type Lang } from "../lib/i18n";
 
 export type CrystalType =
-  | "npc"
-  | "spren"
-  | "location"
-  | "faction-quest"
-  | "entidad-cognitiva";
+  "npc" | "spren" | "location" | "faction-quest" | "entidad-cognitiva";
 export type StatusKind = "alive" | "missing" | "dead" | "paused";
 
 export const crystalColor: Record<CrystalType, string> = {
@@ -47,9 +43,6 @@ function hashString(s: string): number {
   return Math.abs(h);
 }
 
-/** Color para cualquier crystal type, incluso uno sin token propio (npc_kind
- * nuevo del backend que domain.ts todavía no mapeó) — cae a una de 5 variantes
- * de paleta, asignada de forma estable por hash del nombre. */
 export function crystalColorFor(crystal: string): string {
   return (
     crystalColor[crystal as CrystalType] ??
@@ -57,9 +50,10 @@ export function crystalColorFor(crystal: string): string {
   );
 }
 
-/** Label legible para cualquier crystal type — si no está en crystalLabel,
- * capitaliza el string crudo tal cual viene del backend. */
-export function crystalLabelFor(crystal: string, lang: Lang = getLang()): string {
+export function crystalLabelFor(
+  crystal: string,
+  lang: Lang = getLang(),
+): string {
   return (
     crystalLabel[lang][crystal as CrystalType] ??
     crystal.charAt(0).toUpperCase() + crystal.slice(1)
@@ -127,7 +121,10 @@ export const campaignStatusDotColor: Record<CampaignStatus, string> = {
   paused: "var(--status-paused-dot)",
 };
 
-export const campaignStatusLabel: Record<Lang, Record<CampaignStatus, string>> = {
+export const campaignStatusLabel: Record<
+  Lang,
+  Record<CampaignStatus, string>
+> = {
   es: {
     active: "Activa",
     paused: "En pausa",
@@ -212,12 +209,22 @@ export interface Location {
 }
 
 export function locationBreadcrumb(loc: Location, all: Location[]): string {
-  const parent = loc.parentId ? all.find((l) => l.id === loc.parentId) : undefined;
-  if (!parent || parent.locationType === "planet" || parent.locationType === "region") return loc.name;
+  const parent = loc.parentId
+    ? all.find((l) => l.id === loc.parentId)
+    : undefined;
+  if (
+    !parent ||
+    parent.locationType === "planet" ||
+    parent.locationType === "region"
+  )
+    return loc.name;
   return `${parent.name} · ${loc.name}`;
 }
 
-export const locationTypeLabel: Record<Lang, Record<Location["locationType"], string>> = {
+export const locationTypeLabel: Record<
+  Lang,
+  Record<Location["locationType"], string>
+> = {
   es: {
     planet: "Planeta",
     region: "Región",
@@ -295,15 +302,15 @@ export interface Session {
   obsidianPath?: string;
 }
 
-export function sessionCode(s: Pick<Session, "sessionNumber" | "subNumber">): string {
+export function sessionCode(
+  s: Pick<Session, "sessionNumber" | "subNumber">,
+): string {
   const base = `S${String(s.sessionNumber).padStart(2, "0")}`;
   return s.subNumber ? `${base}.${s.subNumber}` : base;
 }
 
 const isoDateRe = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-/** Normaliza a DD/MM/YYYY. El vault mezcla ISO con DD/MM/YYYY a mano y hasta
- * texto libre ("Previo al inicio") — lo que no matchea ISO se deja intacto. */
 export function formatDate(raw: string): string {
   const match = raw.match(isoDateRe);
   if (!match) return raw;
@@ -332,7 +339,10 @@ export const encounterStatusColor: Record<EncounterStatus, string> = {
   cerrado: "var(--status-dead)",
 };
 
-export const encounterStatusLabel: Record<Lang, Record<EncounterStatus, string>> = {
+export const encounterStatusLabel: Record<
+  Lang,
+  Record<EncounterStatus, string>
+> = {
   es: {
     planificado: "Planificado",
     activo: "Activo",

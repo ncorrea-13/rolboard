@@ -604,7 +604,9 @@ export default function App() {
                     })
                   }
                   imageVersion={imageVersion}
-                  onUploadImage={(file) => uploadLocationImage(location.id, file)}
+                  onUploadImage={(file) =>
+                    uploadLocationImage(location.id, file)
+                  }
                   onRemoveImage={() => removeLocationImage(location.id)}
                 />
               );
@@ -743,7 +745,9 @@ export default function App() {
                 setRoute({ name: "player-detail", playerId: selectedPlayer.id })
               }
               imageVersion={imageVersion}
-              onUploadImage={(file) => uploadPlayerImage(selectedPlayer.id, file)}
+              onUploadImage={(file) =>
+                uploadPlayerImage(selectedPlayer.id, file)
+              }
               onRemoveImage={() => removePlayerImage(selectedPlayer.id)}
             />
           )}

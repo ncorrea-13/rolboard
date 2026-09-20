@@ -26,7 +26,10 @@ export function LocationEdit({
 }: LocationEditProps) {
   const t = useT();
   const lang = useLang();
-  const typeOptions = Object.entries(locationTypeLabel[lang]) as [Location["locationType"], string][];
+  const typeOptions = Object.entries(locationTypeLabel[lang]) as [
+    Location["locationType"],
+    string,
+  ][];
   const [name, setName] = useState(location.name);
   const [locationType, setLocationType] = useState(location.locationType);
   const [parentId, setParentId] = useState(location.parentId ?? "");
@@ -39,24 +42,55 @@ export function LocationEdit({
     description !== location.description;
 
   function handleSave() {
-    onSave({ name, locationType, parentId: parentId || undefined, description });
+    onSave({
+      name,
+      locationType,
+      parentId: parentId || undefined,
+      description,
+    });
   }
 
   return (
     <div className="card npc-edit">
-      <div className="npc-edit__bar" style={{ boxShadow: "inset 4px 0 0 var(--crystal-location)" }}>
+      <div
+        className="npc-edit__bar"
+        style={{ boxShadow: "inset 4px 0 0 var(--crystal-location)" }}
+      >
         <div className="npc-edit__bar-left">
-          <span className="status-dot" style={{ background: "var(--crystal-location)" }} />
-          <span style={{ fontWeight: 500, fontSize: 13.5, color: "var(--text-primary)" }}>
-            {location.id ? `${t("common.editing")} · ${location.name}` : t("locationEdit.new")}
+          <span
+            className="status-dot"
+            style={{ background: "var(--crystal-location)" }}
+          />
+          <span
+            style={{
+              fontWeight: 500,
+              fontSize: 13.5,
+              color: "var(--text-primary)",
+            }}
+          >
+            {location.id
+              ? `${t("common.editing")} · ${location.name}`
+              : t("locationEdit.new")}
           </span>
           {dirty && (
-            <span style={{ fontSize: 12, color: "var(--text-secondary)", fontFamily: "var(--font-mono)" }}>{t("common.unsavedChanges")}</span>
+            <span
+              style={{
+                fontSize: 12,
+                color: "var(--text-secondary)",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              {t("common.unsavedChanges")}
+            </span>
           )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <button className="btn btn-secondary" onClick={onDiscard}>{t("common.discard")}</button>
-          <button className="btn btn-primary" onClick={handleSave}>{t("common.save")}</button>
+          <button className="btn btn-secondary" onClick={onDiscard}>
+            {t("common.discard")}
+          </button>
+          <button className="btn btn-primary" onClick={handleSave}>
+            {t("common.save")}
+          </button>
         </div>
       </div>
 
@@ -71,7 +105,9 @@ export function LocationEdit({
             />
           </div>
           <div>
-            <span className="label">{t("common.description")} {t("common.supportsMarkdown")}</span>
+            <span className="label">
+              {t("common.description")} {t("common.supportsMarkdown")}
+            </span>
             <textarea
               className="npc-edit__textarea"
               value={description}
@@ -84,7 +120,12 @@ export function LocationEdit({
           {location.id && onUploadImage && onRemoveImage && (
             <ImageUploadField
               label={t("locationEdit.image")}
-              imageUrl={entityImageUrl("location", location.id, location.hasImage, imageVersion)}
+              imageUrl={entityImageUrl(
+                "location",
+                location.id,
+                location.hasImage,
+                imageVersion,
+              )}
               onUpload={onUploadImage}
               onRemove={onRemoveImage}
             />
@@ -94,7 +135,9 @@ export function LocationEdit({
             <select
               className="npc-edit__select npc-edit__select--native"
               value={locationType}
-              onChange={(e) => setLocationType(e.target.value as Location["locationType"])}
+              onChange={(e) =>
+                setLocationType(e.target.value as Location["locationType"])
+              }
             >
               {typeOptions.map(([value, label]) => (
                 <option key={value} value={value}>
