@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Cross } from "lucide-react";
 import "./NpcEdit.css";
 import { sessionCode, type Arc, type Session } from "../data/domain";
 import { MarkdownText } from "../components/MarkdownText";
@@ -47,6 +48,8 @@ export function SessionEdit({
     { quest_id: number; title: string }[]
   >([]);
 
+  const [wardails, setWardails] = useState("");
+
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteHtml, setNoteHtml] = useState<string | null>(null);
 
@@ -71,6 +74,14 @@ export function SessionEdit({
       .then((data) => setExpectedQuests(data ?? []))
       .catch((err) => console.error("Error cargando quests esperadas:", err));
   }, [session.id]);
+
+  // Wardails are only shown while playing the session (the confirm-as-played view).
+  useEffect(() => {
+    if (!confirmingPlay) return;
+    apiFetch<{ wardails: string }>(`/campaigns/${campaignId}`)
+      .then((c) => setWardails(c.wardails ?? ""))
+      .catch((err) => console.error("Error cargando wardails:", err));
+  }, [campaignId, confirmingPlay]);
 
   function handleSave() {
     onSave({ date, summary: text, arcId: arcId || undefined });
@@ -228,6 +239,18 @@ export function SessionEdit({
                 onChange={(e) => setRecap(e.target.value)}
               />
             </div>
+            {wardails.trim() && (
+              <div style={{ marginTop: 16 }}>
+                <span
+                  className="label"
+                  style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--accent-wardail)" }}
+                >
+                  <Cross size={12} strokeWidth={2} />
+                  {t("wardails.title")}
+                </span>
+                <MarkdownText className="npc-detail__desc" text={wardails} />
+              </div>
+            )}
             <div className="npc-edit__note">
               {t("sessionEdit.prepNotesKeptSeparate")}
             </div>
