@@ -3,7 +3,7 @@ import {
   type ArcStatus,
   type Campaign,
   type CampaignStatus,
-  type CrystalType,
+  type NpcType,
   type Encounter,
   type EncounterParticipant,
   type EncounterStatus,
@@ -92,8 +92,27 @@ const canonicalApiStatus = new Set([
   "paused",
 ]);
 
+export interface ApiNpcType {
+  id: number;
+  campaign_id: number;
+  key: string;
+  label: string;
+  color: string;
+  position: number;
+}
+
+export function mapNpcType(t: ApiNpcType): NpcType {
+  return {
+    id: String(t.id),
+    key: t.key,
+    label: t.label,
+    color: t.color,
+    position: t.position,
+  };
+}
+
 export function mapNpc(n: ApiNpc): Npc {
-  const crystal = n.npc_kind as CrystalType;
+  const crystal = n.npc_kind;
   return {
     id: String(n.id),
     campaignId: String(n.campaign_id),

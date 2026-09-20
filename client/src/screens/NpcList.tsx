@@ -8,6 +8,7 @@ import {
   type StatusKind,
 } from "../data/domain";
 import { EntityIdentity } from "../components/EntityIdentity";
+import { NpcTypesButton, type NpcTypesApi } from "../components/NpcTypesManager";
 import { StatusPill } from "../components/StatusPill";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
@@ -21,11 +22,13 @@ export function NpcList({
   npcs,
   onSelect,
   onCreate,
+  npcTypesApi,
   imageVersion = 0,
 }: {
   npcs: Npc[];
   onSelect: (id: string) => void;
   onCreate: () => void;
+  npcTypesApi: NpcTypesApi;
   imageVersion?: number;
 }) {
   const t = useT();
@@ -37,14 +40,11 @@ export function NpcList({
   );
   const [page, setPage] = useState(1);
 
-  const typeFilters = useMemo(() => {
-    const seen = new Set<string>();
-    for (const n of npcs) seen.add(n.crystal);
-    return [...seen].map((crystal) => ({
-      crystal,
-      label: crystalLabelFor(crystal, lang),
-    }));
-  }, [npcs, lang]);
+  // Not memoized: labels come from the campaign's NPC type registry, which changes without `npcs` changing.
+  const typeFilters = [...new Set(npcs.map((n) => n.crystal))].map((crystal) => ({
+    crystal,
+    label: crystalLabelFor(crystal, lang),
+  }));
 
   function toggleType(crystal: string) {
     setActiveTypes((prev) => {
@@ -112,6 +112,7 @@ export function NpcList({
               setPage(1);
             }}
           />
+          <NpcTypesButton api={npcTypesApi} />
           <button className="btn btn-primary" onClick={onCreate}>
             {t("npcList.new")}
           </button>

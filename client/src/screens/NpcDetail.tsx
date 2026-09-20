@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./NpcDetail.css";
 import {
-  crystalColor,
+  crystalColorFor,
   crystalLabelFor,
   questStatusColor,
   type Npc,
@@ -43,7 +43,7 @@ export function NpcDetail({
 }: NpcDetailProps) {
   const t = useT();
   const lang = useLang();
-  const color = crystalColor[npc.crystal];
+  const color = crystalColorFor(npc.crystal);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [noteOpen, setNoteOpen] = useState(false);
   const [noteHtml, setNoteHtml] = useState<string | null>(null);
@@ -179,7 +179,7 @@ export function NpcDetail({
                       </span>
                       <span
                         className="title-underline__bar"
-                        style={{ background: crystalColor[l.target.crystal] }}
+                        style={{ background: crystalColorFor(l.target.crystal) }}
                       />
                     </span>
                     <StatusPill status={l.target.status} />

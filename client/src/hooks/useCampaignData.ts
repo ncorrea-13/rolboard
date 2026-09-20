@@ -1,9 +1,11 @@
 import { useEffect, useEffectEvent, useState } from "react";
-import { apiFetch, apiImageRequest } from "../lib/api";
+import { ApiError, apiFetch, apiImageRequest } from "../lib/api";
 import {
   locationBreadcrumb,
+  setNpcTypeRegistry,
   type Campaign,
   type Npc,
+  type NpcType,
   type Arc,
   type Encounter,
   type Group,
@@ -19,6 +21,7 @@ import {
 } from "../data/entityForms";
 import {
   mapNpc,
+  mapNpcType,
   npcToApiPayload,
   mapLocation,
   locationToApiPayload,
@@ -35,6 +38,7 @@ import {
   mapSession,
   sessionToApiPayload,
   type ApiNpc,
+  type ApiNpcType,
   type ApiLocation,
   type ApiGroup,
   type ApiArc,
@@ -169,6 +173,59 @@ export function useCampaignData(
       )
       .catch((err) => loadFailed("NPCs", err));
   }, [activeCampaignId]);
+
+  const [npcTypes, setNpcTypes] = useState<NpcType[]>([]);
+  // Render-phase on purpose: children read the registry while rendering, so it must match this state.
+  setNpcTypeRegistry(npcTypes);
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    apiFetch<ApiNpcType[]>(`/campaigns/${activeCampaignId}/npc-types`)
+      .then((data) => setNpcTypes((data ?? []).map(mapNpcType)))
+      .catch((err) => loadFailed("tipos de NPC", err));
+  }, [activeCampaignId]);
+
+  function npcTypeError(err: unknown) {
+    console.error("Error con tipos de NPC:", err);
+    const inUse = err instanceof ApiError && err.status === 409;
+    notify(t(inUse ? "npcTypes.inUse" : "npcTypes.errorSaving"), "error");
+    return false;
+  }
+
+  function createNpcType(label: string, color: string) {
+    return apiFetch<ApiNpcType>(`/campaigns/${activeCampaignId}/npc-types`, {
+      method: "POST",
+      body: JSON.stringify({ label, color }),
+    })
+      .then((created) => {
+        setNpcTypes((prev) => [...prev, mapNpcType(created)]);
+        return true;
+      })
+      .catch(npcTypeError);
+  }
+
+  function updateNpcType(id: string, label: string, color: string) {
+    return apiFetch<ApiNpcType>(`/npc-types/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ label, color }),
+    })
+      .then((updated) => {
+        setNpcTypes((prev) =>
+          prev.map((x) => (x.id === id ? mapNpcType(updated) : x)),
+        );
+        return true;
+      })
+      .catch(npcTypeError);
+  }
+
+  function deleteNpcType(id: string) {
+    return apiFetch(`/npc-types/${id}`, { method: "DELETE" })
+      .then(() => {
+        setNpcTypes((prev) => prev.filter((x) => x.id !== id));
+        return true;
+      })
+      .catch(npcTypeError);
+  }
 
   const [arcs, setArcs] = useState<Arc[]>([]);
 
@@ -1015,6 +1072,10 @@ export function useCampaignData(
 
   return {
     npcs,
+    npcTypes,
+    createNpcType,
+    updateNpcType,
+    deleteNpcType,
     playerCharacters,
     campaignArcs,
     campaignGroups,

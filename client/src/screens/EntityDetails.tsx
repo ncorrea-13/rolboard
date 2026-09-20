@@ -15,6 +15,7 @@ import {
 } from "../lib/apiMappers";
 import {
   crystalColor,
+  crystalColorFor,
   formatDate,
   locationTypeLabel,
   sessionCode,
@@ -255,7 +256,7 @@ export function FactionDetail({
                       initials={n.initials}
                       name={n.name}
                       role={n.role}
-                      color={crystalColor[n.crystal]}
+                      color={crystalColorFor(n.crystal)}
                       imageUrl={entityImageUrl(
                         "npc",
                         n.id,

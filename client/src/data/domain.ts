@@ -43,8 +43,26 @@ function hashString(s: string): number {
   return Math.abs(h);
 }
 
+/** A per-campaign NPC category. `key` is what NPCs store in `npc_kind` and the vault writes in `tipo`. */
+export interface NpcType {
+  id: string;
+  key: string;
+  label: string;
+  color: string;
+  position: number;
+}
+
+// The campaign's NPC types, keyed by `key`. crystalColorFor/crystalLabelFor read it so any component
+// can resolve an NPC's type without threading the list through every prop; useCampaignData keeps it in sync.
+let npcTypeRegistry = new Map<string, NpcType>();
+
+export function setNpcTypeRegistry(types: NpcType[]) {
+  npcTypeRegistry = new Map(types.map((t) => [t.key, t]));
+}
+
 export function crystalColorFor(crystal: string): string {
   return (
+    npcTypeRegistry.get(crystal)?.color ??
     crystalColor[crystal as CrystalType] ??
     fallbackPalette[hashString(crystal) % fallbackPalette.length]
   );
@@ -55,6 +73,7 @@ export function crystalLabelFor(
   lang: Lang = getLang(),
 ): string {
   return (
+    npcTypeRegistry.get(crystal)?.label ??
     crystalLabel[lang][crystal as CrystalType] ??
     crystal.charAt(0).toUpperCase() + crystal.slice(1)
   );
@@ -250,7 +269,8 @@ export interface Npc {
   etnia?: string;
   tipoSpren?: string;
   description: string;
-  crystal: CrystalType;
+  /** The NPC type key (npc_kind). */
+  crystal: string;
   status: StatusKind;
   statusNote?: string;
   detailLevel: "full" | "minor";

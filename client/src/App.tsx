@@ -44,6 +44,7 @@ import { PlayersList } from "./screens/PlayersList";
 import { EncountersList } from "./screens/EncountersList";
 import { EncounterDetail } from "./screens/EncounterDetail";
 import { Wardails } from "./screens/Wardails";
+import type { NpcTypesApi } from "./components/NpcTypesManager";
 import {
   ArcDetail,
   FactionDetail,
@@ -118,6 +119,10 @@ export default function App() {
     handleReindex,
     nextSessionNumber,
     defaultSessionArc,
+    npcTypes,
+    createNpcType,
+    updateNpcType,
+    deleteNpcType,
     saveNpc,
     createNpc,
     deleteNpc,
@@ -158,6 +163,13 @@ export default function App() {
     setNewSessionOpen,
     notify,
   );
+
+  const npcTypesApi: NpcTypesApi = {
+    types: npcTypes,
+    onCreate: createNpcType,
+    onUpdate: updateNpcType,
+    onDelete: deleteNpcType,
+  };
 
   async function selectCampaign(id: string) {
     try {
@@ -380,6 +392,7 @@ export default function App() {
               npcs={campaignNpcs}
               onSelect={(npcId) => setRoute({ name: "npc-detail", npcId })}
               onCreate={() => setRoute({ name: "npc-create" })}
+              npcTypesApi={npcTypesApi}
               imageVersion={imageVersion}
             />
           )}
@@ -697,6 +710,7 @@ export default function App() {
               npc={selectedNpc}
               npcs={campaignNpcs}
               locations={campaignLocations}
+              npcTypesApi={npcTypesApi}
               onSave={(patch) => {
                 saveNpc(selectedNpc.id, patch);
                 setRoute({ name: "npc-detail", npcId: selectedNpc.id });
@@ -715,6 +729,7 @@ export default function App() {
               npc={blankDrafts.npc}
               npcs={campaignNpcs}
               locations={campaignLocations}
+              npcTypesApi={npcTypesApi}
               onSave={createNpc}
               onDiscard={() => setRoute({ name: "section", section: "npcs" })}
             />

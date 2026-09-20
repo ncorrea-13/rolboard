@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import "./NpcEdit.css";
 import {
-  crystalColor,
+  crystalColorFor,
   statusLabel,
   statusColor,
   locationBreadcrumb,
-  type CrystalType,
   type Npc,
   type StatMap,
   type StatusKind,
@@ -15,21 +14,9 @@ import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { SkillsEditor } from "../components/SkillsEditor";
 import { ImageUploadField } from "../components/ImageUploadField";
-import { useT, useLang, type TranslationKey } from "../lib/i18n";
+import { NpcTypesButton, type NpcTypesApi } from "../components/NpcTypesManager";
+import { useT, useLang } from "../lib/i18n";
 import type { CSSProperties } from "react";
-
-const typeOptions: {
-  label: string;
-  labelKey: TranslationKey;
-  crystal: CrystalType;
-}[] = [
-  { label: "NPC", labelKey: "npcEdit.typeNpc", crystal: "npc" },
-  {
-    label: "Spren / cognitiva",
-    labelKey: "npcEdit.typeSprenCognitive",
-    crystal: "spren",
-  },
-];
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
@@ -37,6 +24,7 @@ interface NpcEditProps {
   npc: Npc;
   npcs: Npc[];
   locations: Location[];
+  npcTypesApi: NpcTypesApi;
   onSave: (patch: Partial<Npc>) => void;
   onDiscard: () => void;
   imageVersion?: number;
@@ -48,6 +36,7 @@ export function NpcEdit({
   npc,
   npcs,
   locations,
+  npcTypesApi,
   onSave,
   onDiscard,
   imageVersion = 0,
@@ -62,7 +51,12 @@ export function NpcEdit({
   const [detailLevel, setDetailLevel] = useState<"full" | "minor">(
     npc.detailLevel,
   );
-  const [crystal, setCrystal] = useState<CrystalType>(npc.crystal);
+  // A new NPC starts on the campaign's first type when the draft's default no longer exists.
+  const [crystal, setCrystal] = useState<string>(() =>
+    npcTypesApi.types.some((x) => x.key === npc.crystal)
+      ? npc.crystal
+      : (npcTypesApi.types[0]?.key ?? npc.crystal),
+  );
   const [linkRole, setLinkRole] = useState("");
   const [linkNpcId, setLinkNpcId] = useState("");
   const [existingLink, setExistingLink] = useState<{
@@ -221,18 +215,19 @@ export function NpcEdit({
 
           <div>
             <span className="label">{t("common.type")}</span>
-            <div className="npc-edit__type-row">
-              {typeOptions.map((opt) => (
+            <div className="npc-edit__type-row" style={{ flexWrap: "wrap", alignItems: "center" }}>
+              {npcTypesApi.types.map((opt) => (
                 <button
-                  key={opt.label}
+                  key={opt.key}
                   type="button"
-                  className={`npc-edit__type-chip${crystal === opt.crystal ? " npc-edit__type-chip--active" : ""}`}
-                  style={{ "--c": crystalColor[opt.crystal] } as CSSProperties}
-                  onClick={() => setCrystal(opt.crystal)}
+                  className={`npc-edit__type-chip${crystal === opt.key ? " npc-edit__type-chip--active" : ""}`}
+                  style={{ "--c": opt.color } as CSSProperties}
+                  onClick={() => setCrystal(opt.key)}
                 >
-                  {t(opt.labelKey)}
+                  {opt.label}
                 </button>
               ))}
+              <NpcTypesButton api={npcTypesApi} />
             </div>
           </div>
 
@@ -287,7 +282,7 @@ export function NpcEdit({
                 style={
                   linkTarget
                     ? {
-                        borderBottom: `2px solid ${crystalColor[linkTarget.crystal]}`,
+                        borderBottom: `2px solid ${crystalColorFor(linkTarget.crystal)}`,
                       }
                     : undefined
                 }
