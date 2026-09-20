@@ -170,6 +170,8 @@
 }
 
 .npc-edit__textarea {
+  resize: vertical; /* horizontal resize let it overflow its container */
+  max-width: 100%;
   min-height: 74px;
   line-height: 1.7;
   color: var(--text-body);
