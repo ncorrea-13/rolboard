@@ -64,3 +64,13 @@ func TestRenderNoteStripsJavascriptLinks(t *testing.T) {
 		t.Errorf("Expected javascript: URL scheme to be stripped, got %q", out)
 	}
 }
+
+func TestRenderNoteWithoutFrontmatter(t *testing.T) {
+	out, err := RenderNote([]byte("# Sprens\n\nplain note"), NewNameIndex())
+	if err != nil {
+		t.Fatalf("RenderNote failed: %v", err)
+	}
+	if !strings.Contains(out, "<h1>Sprens</h1>") || !strings.Contains(out, "plain note") {
+		t.Errorf("expected the note to render whole, got %q", out)
+	}
+}

@@ -68,7 +68,8 @@ var markdown = goldmark.New(
 func RenderNote(content []byte, idx *NameIndex) (string, error) {
 	_, body, err := Split(content)
 	if err != nil {
-		return "", err
+		// Split only fails when there is no frontmatter; plain notes render whole.
+		body = bytes.TrimSpace(content)
 	}
 
 	var placeholders []string
