@@ -20,10 +20,10 @@ Started as a move away from Obsidian, for faster management, while still includi
 
 ## Stack
 
-| Layer    | Tech                          |
-| -------- | ------------------------------ |
-| Server   | Go 1.27, `net/http` stdlib     |
-| Database | SQLite (`modernc.org/sqlite`)  |
+| Layer    | Tech                                       |
+| -------- | ------------------------------------------ |
+| Server   | Go 1.27, `net/http` stdlib                 |
+| Database | SQLite (`modernc.org/sqlite`)              |
 | Client   | React + TypeScript + Vite, served by Caddy |
 
 More: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
@@ -42,7 +42,7 @@ secrets:
 services:
   server:
     container_name: rolboard-server
-    image: ghcr.io/ncorrea-13/rolboard-server:main
+    image: ghcr.io/ncorrea-13/rolboard-server:latest
     user: "${ROLBOARD_USER:-1000:1000}"
     env_file:
       - .env
@@ -65,7 +65,7 @@ services:
 
   client:
     container_name: rolboard-client
-    image: ghcr.io/ncorrea-13/rolboard-client:main
+    image: ghcr.io/ncorrea-13/rolboard-client:latest
     environment:
       BACKEND_HOST: rolboard-server
     ports:
@@ -120,22 +120,22 @@ Open `http://localhost:${CLIENT_PORT}`, log in as admin with the token, create a
 
 ## Configuration
 
-| Variable           | Where  | Description |
-| ------------------ | ------ | ----------- |
-| `CLIENT_PORT`      | host   | Host port for the web client |
-| `DATA_PATH`        | host   | Host folder for the database and uploaded images |
-| `VAULTS_ROOT_HOST` | host   | Host folder holding every campaign's vault as a subfolder (mounted read-only) |
-| `ROLBOARD_USER`    | host   | Container user (`uid:gid`). Default `1000:1000`. Rootless Podman: `0` (see [Vault permissions](#vault-permissions)) |
-| `DB_PATH`          | server | SQLite file path |
-| `VAULTS_ROOT`      | server | Vaults mount path |
-| `UPLOADS_ROOT`     | server | Image storage path. No default — set it inside the data volume |
-| `PORT`             | server | Listen port (the client proxies to `8080`) |
-| `ADMIN_TOKEN_FILE` | server | File with the admin token (secret). Takes precedence over `ADMIN_TOKEN` |
-| `ADMIN_TOKEN`      | server | Admin token as plain env var (dev only) |
-| `COOKIE_SECURE`    | server | Set `false` only for local HTTP. Default: secure cookies |
-| `LOG_JSON`            | server | Structured JSON logs (`log/slog`). Default: human-readable text |
+| Variable              | Where  | Description                                                                                                                         |
+| --------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `CLIENT_PORT`         | host   | Host port for the web client                                                                                                        |
+| `DATA_PATH`           | host   | Host folder for the database and uploaded images                                                                                    |
+| `VAULTS_ROOT_HOST`    | host   | Host folder holding every campaign's vault as a subfolder (mounted read-only)                                                       |
+| `ROLBOARD_USER`       | host   | Container user (`uid:gid`). Default `1000:1000`. Rootless Podman: `0` (see [Vault permissions](#vault-permissions))                 |
+| `DB_PATH`             | server | SQLite file path                                                                                                                    |
+| `VAULTS_ROOT`         | server | Vaults mount path                                                                                                                   |
+| `UPLOADS_ROOT`        | server | Image storage path. No default — set it inside the data volume                                                                      |
+| `PORT`                | server | Listen port (the client proxies to `8080`)                                                                                          |
+| `ADMIN_TOKEN_FILE`    | server | File with the admin token (secret). Takes precedence over `ADMIN_TOKEN`                                                             |
+| `ADMIN_TOKEN`         | server | Admin token as plain env var (dev only)                                                                                             |
+| `COOKIE_SECURE`       | server | Set `false` only for local HTTP. Default: secure cookies                                                                            |
+| `LOG_JSON`            | server | Structured JSON logs (`log/slog`). Default: human-readable text                                                                     |
 | `TRUST_PROXY_HEADERS` | server | Trust `CF-Connecting-IP` for rate limiting. Only if every request passes through Cloudflare — otherwise spoofable. Default: `false` |
-| `BACKEND_HOST`     | client | Backend hostname for the `/api` proxy. Default: `localhost` |
+| `BACKEND_HOST`        | client | Backend hostname for the `/api` proxy. Default: `localhost`                                                                         |
 
 ## Development
 
