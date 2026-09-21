@@ -16,9 +16,9 @@ import { AppShell } from "./components/AppShell";
 import { SiteFooter } from "./components/SiteFooter";
 import { Modal } from "./components/Modal";
 import { Toast } from "./components/Toast";
-import { NewSessionForm } from "./components/NewSessionForm";
 import { PlanSession } from "./screens/PlanSession";
 import { SessionEdit } from "./screens/SessionEdit";
+import { SessionDetail } from "./screens/SessionDetail";
 import { NewCampaignForm } from "./components/NewCampaignForm";
 import { CampaignSettingsForm } from "./components/CampaignSettingsForm";
 import { CampaignSelector } from "./screens/CampaignSelector";
@@ -73,7 +73,6 @@ export default function App() {
 
   const [activeCampaignId, setActiveCampaignId] = useState<string | null>(null);
   const [loginCampaignId, setLoginCampaignId] = useState<string | null>(null);
-  const [newSessionOpen, setNewSessionOpen] = useState(false);
   const [newCampaignOpen, setNewCampaignOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [adminGateOpen, setAdminGateOpen] = useState(false);
@@ -141,6 +140,7 @@ export default function App() {
     reindexing,
     handleReindex,
     nextSessionNumber,
+    hasPlannedSession,
     defaultSessionArc,
     npcTypes,
     createNpcType,
@@ -167,7 +167,6 @@ export default function App() {
     createEncounter,
     deleteEncounter,
     planSession,
-    playSession,
     startPlaySession,
     goToEntitySection,
     imageVersion,
@@ -179,13 +178,7 @@ export default function App() {
     removeLocationImage,
     uploadGroupImage,
     removeGroupImage,
-  } = useCampaignData(
-    activeCampaignId,
-    activeCampaign,
-    setRoute,
-    setNewSessionOpen,
-    notify,
-  );
+  } = useCampaignData(activeCampaignId, activeCampaign, setRoute, notify);
 
   const npcTypesApi: NpcTypesApi = {
     types: npcTypes,
@@ -316,7 +309,9 @@ export default function App() {
             route.name === "player-edit" ||
             route.name === "player-create"
           ? "jugadores"
-          : route.name === "session-plan" || route.name === "session-edit"
+          : route.name === "session-plan" ||
+              route.name === "session-detail" ||
+              route.name === "session-edit"
             ? "sesiones"
             : route.name === "entity-detail"
               ? entityKindSection[route.kind]
@@ -381,6 +376,7 @@ export default function App() {
               npcs={campaignNpcs}
               quests={campaignQuests}
               nextSessionNumber={nextSessionNumber}
+              hasPlannedSession={hasPlannedSession}
               summary={
                 dashboardSummary
                   ? {
@@ -408,11 +404,11 @@ export default function App() {
                 const session = campaignSessions.find(
                   (s) => s.id === sessionId,
                 );
-                setRoute({
-                  name: "session-edit",
-                  sessionId,
-                  autoConfirm: session?.sessionType === "planning",
-                });
+                setRoute(
+                  session?.sessionType === "planning"
+                    ? { name: "session-edit", sessionId, autoConfirm: true }
+                    : { name: "session-detail", sessionId },
+                );
               }}
               onStartSession={startPlaySession}
               onPlanSession={() => setRoute({ name: "session-plan" })}
@@ -435,10 +431,11 @@ export default function App() {
               arcs={campaignArcs}
               sessions={campaignSessions}
               nextSessionNumber={nextSessionNumber}
+              hasPlannedSession={hasPlannedSession}
               onPlaySession={startPlaySession}
               onPlanSession={() => setRoute({ name: "session-plan" })}
               onOpenSession={(sessionId) =>
-                setRoute({ name: "session-edit", sessionId })
+                setRoute({ name: "session-detail", sessionId })
               }
             />
           )}
@@ -861,6 +858,35 @@ export default function App() {
             />
           )}
 
+          {route.name === "session-detail" &&
+            (() => {
+              const session = campaignSessions.find(
+                (s) => s.id === route.sessionId,
+              );
+              if (!session) return null;
+              return (
+                <SessionDetail
+                  key={session.id}
+                  campaignId={activeCampaignId!}
+                  arc={campaignArcs.find((a) => a.id === session.arcId)}
+                  session={session}
+                  onBack={() =>
+                    setRoute({ name: "section", section: "sesiones" })
+                  }
+                  onEdit={() =>
+                    setRoute({ name: "session-edit", sessionId: session.id })
+                  }
+                  onMarkPlayed={() =>
+                    setRoute({
+                      name: "session-edit",
+                      sessionId: session.id,
+                      autoConfirm: true,
+                    })
+                  }
+                />
+              );
+            })()}
+
           {route.name === "session-edit" &&
             (() => {
               const session = campaignSessions.find(
@@ -879,25 +905,16 @@ export default function App() {
                   onSave={(patch) => saveSession(session.id, patch)}
                   onDelete={() => deleteSession(session.id)}
                   onBack={() =>
-                    setRoute({ name: "section", section: "sesiones" })
+                    setRoute(
+                      route.autoConfirm
+                        ? { name: "section", section: "sesiones" }
+                        : { name: "session-detail", sessionId: session.id },
+                    )
                   }
                 />
               );
             })()}
         </AppShell>
-      )}
-
-      {newSessionOpen && (
-        <Modal
-          title={t("app.modal.newSession")}
-          onClose={() => setNewSessionOpen(false)}
-        >
-          <NewSessionForm
-            nextNumber={nextSessionNumber}
-            onConfirm={playSession}
-            onCancel={() => setNewSessionOpen(false)}
-          />
-        </Modal>
       )}
 
       {adminGateOpen && (

@@ -28,18 +28,13 @@ const dict = {
     "imageUpload.upload": "Subir imagen",
     "imageUpload.replace": "Reemplazar",
 
-    "app.modal.newSession": "Jugar sesión",
     "app.modal.confirm": "Confirmar",
     "app.modal.campaignCode": "Código de la campaña",
     "app.modal.newCampaign": "Nueva campaña",
 
-    "newSessionForm.defaultSummary": "Sesión sin resumen todavía.",
+    "newSessionForm.defaultSummary": "Sesión sin historial todavía.",
     "newSessionForm.session": "Sesión",
     "newSessionForm.date": "Fecha",
-    "newSessionForm.summaryLabel":
-      "Resumen (opcional, se completa después de jugar — admite Markdown)",
-    "newSessionForm.summaryPlaceholder": "Qué pasó en la sesión…",
-    "newSessionForm.confirm": "Jugar sesión",
 
     "campaignSelector.title": "Rolboard",
     "campaignSelector.one": "campaña",
@@ -283,12 +278,13 @@ const dict = {
     "sessionEdit.notSet": "sin definir",
     "sessionEdit.whatHappened": "Lo que pasó",
     "sessionEdit.realDate": "Fecha real",
-    "sessionEdit.recapLabel": "Resumen de lo jugado (admite Markdown)",
+    "sessionEdit.recapLabel": "Historial de lo jugado (admite Markdown)",
     "sessionEdit.recapPlaceholder": "Qué pasó realmente…",
     "sessionEdit.prepNotesKeptSeparate":
       "Las notas de preparación quedan guardadas aparte, no se pisan.",
     "sessionEdit.deleteSession": "Borrar sesión",
     "sessionEdit.arc": "Arco",
+    "sessionEdit.history": "Historial",
     "sessionEdit.prepNotesOnly": "Notas de preparación",
     "sessionEdit.originalPrepNotes": "Notas de preparación originales",
     "sessionEdit.playedSuffix": "· jugada",
@@ -401,18 +397,13 @@ const dict = {
     "imageUpload.upload": "Upload image",
     "imageUpload.replace": "Replace",
 
-    "app.modal.newSession": "Play session",
     "app.modal.confirm": "Confirm",
     "app.modal.campaignCode": "Campaign code",
     "app.modal.newCampaign": "New campaign",
 
-    "newSessionForm.defaultSummary": "Session with no summary yet.",
+    "newSessionForm.defaultSummary": "Session with no history yet.",
     "newSessionForm.session": "Session",
     "newSessionForm.date": "Date",
-    "newSessionForm.summaryLabel":
-      "Summary (optional, filled in after playing — supports Markdown)",
-    "newSessionForm.summaryPlaceholder": "What happened in the session…",
-    "newSessionForm.confirm": "Play session",
 
     "campaignSelector.title": "Rolboard",
     "campaignSelector.one": "campaign",
@@ -656,12 +647,13 @@ const dict = {
     "sessionEdit.notSet": "not set",
     "sessionEdit.whatHappened": "What happened",
     "sessionEdit.realDate": "Real date",
-    "sessionEdit.recapLabel": "Recap of what was played (supports Markdown)",
+    "sessionEdit.recapLabel": "History of what was played (supports Markdown)",
     "sessionEdit.recapPlaceholder": "What actually happened…",
     "sessionEdit.prepNotesKeptSeparate":
       "Prep notes stay saved separately, they don't get overwritten.",
     "sessionEdit.deleteSession": "Delete session",
     "sessionEdit.arc": "Arc",
+    "sessionEdit.history": "History",
     "sessionEdit.prepNotesOnly": "Prep notes",
     "sessionEdit.originalPrepNotes": "Original prep notes",
     "sessionEdit.playedSuffix": "· played",

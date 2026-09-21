@@ -150,7 +150,6 @@ export function useCampaignData(
   activeCampaignId: string | null,
   activeCampaign: Campaign | undefined,
   setRoute: (route: Route) => void,
-  setNewSessionOpen: (open: boolean) => void,
   notify: (message: string, type?: "success" | "error") => void,
 ) {
   const t = useT();
@@ -325,7 +324,6 @@ export function useCampaignData(
   }
 
   const hasVault = !!activeCampaign?.vaultPath;
-  const vaultPath = (path: string) => (hasVault ? path : "");
   const withoutVaultPath = <T extends { obsidianPath?: string }>(x: T): T =>
     hasVault || !x.obsidianPath ? x : { ...x, obsidianPath: "" };
 
@@ -400,12 +398,10 @@ export function useCampaignData(
   }
 
   function createNpc(patch: Partial<Npc>) {
-    const name = patch.name ?? "";
     const draft: Npc = {
       ...blankNpcDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: vaultPath(`NPCs/${name}.md`),
     };
     apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
       method: "POST",
@@ -467,13 +463,10 @@ export function useCampaignData(
   }
 
   function createPlayer(patch: Partial<PlayerCharacter>) {
-    const playerName = patch.playerName ?? "";
-    const characterName = patch.characterName ?? "";
     const draft: PlayerCharacter = {
       ...blankPlayerDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: vaultPath(`Jugadores/${playerName}/${characterName}.md`),
     };
     apiFetch<ApiPlayerCharacter>(
       `/campaigns/${activeCampaign!.id}/player-characters`,
@@ -523,7 +516,7 @@ export function useCampaignData(
       .then((saved) => {
         const session = mapSession(saved);
         setSessions((prev) => prev.map((s) => (s.id === id ? session : s)));
-        setRoute({ name: "section", section: "sesiones" });
+        setRoute({ name: "session-detail", sessionId: id });
       })
       .catch((err) => {
         console.error("Error guardando sesión:", err);
@@ -550,22 +543,20 @@ export function useCampaignData(
       });
   }
 
-  function createSession(
-    values: {
-      sessionType: Session["sessionType"];
-      date: string;
-      summary: string;
-    },
-    expectedNpcIds: string[] = [],
-    expectedQuestIds: string[] = [],
-  ) {
+  function planSession(values: {
+    date: string;
+    summary: string;
+    expectedNpcIds: string[];
+    expectedQuestIds: string[];
+  }) {
+    const { expectedNpcIds, expectedQuestIds } = values;
     const draft: Session = {
       id: "",
       campaignId: activeCampaign!.id,
       arcId: defaultSessionArc?.id,
       sessionNumber: nextSessionNumber,
       subNumber: 0,
-      sessionType: values.sessionType,
+      sessionType: "planning",
       date: values.date,
       summary: values.summary,
       prepNotes: "",
@@ -602,38 +593,13 @@ export function useCampaignData(
       });
   }
 
-  function planSession(values: {
-    date: string;
-    summary: string;
-    expectedNpcIds: string[];
-    expectedQuestIds: string[];
-  }) {
-    createSession(
-      { sessionType: "planning", date: values.date, summary: values.summary },
-      values.expectedNpcIds,
-      values.expectedQuestIds,
-    );
-  }
-
-  function playSession(values: { date: string; summary: string }) {
-    createSession({
-      sessionType: "session",
-      date: values.date,
-      summary: values.summary,
-    });
-    setNewSessionOpen(false);
-  }
-
   function startPlaySession() {
-    if (pendingPlannedSession) {
-      setRoute({
-        name: "session-edit",
-        sessionId: pendingPlannedSession.id,
-        autoConfirm: true,
-      });
-    } else {
-      setNewSessionOpen(true);
-    }
+    if (!pendingPlannedSession) return;
+    setRoute({
+      name: "session-edit",
+      sessionId: pendingPlannedSession.id,
+      autoConfirm: true,
+    });
   }
 
   function saveFaction(id: string, patch: Partial<Group>) {
@@ -662,7 +628,6 @@ export function useCampaignData(
       ...blankFactionDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: vaultPath(`Facciones/${patch.name}.md`),
     };
     apiFetch<ApiGroup>(`/campaigns/${activeCampaign!.id}/groups`, {
       method: "POST",
@@ -708,7 +673,6 @@ export function useCampaignData(
       ...blankLocationDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: vaultPath(`Locaciones/${patch.name}.md`),
     };
     apiFetch<ApiLocation>(`/campaigns/${activeCampaign!.id}/locations`, {
       method: "POST",
@@ -754,7 +718,6 @@ export function useCampaignData(
       ...blankArcDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: vaultPath(patch.obsidianPath || `Arcos/${patch.label}.md`),
     };
     apiFetch<ApiArc>(`/campaigns/${activeCampaign!.id}/arcs`, {
       method: "POST",
@@ -1098,6 +1061,7 @@ export function useCampaignData(
     reindexing,
     handleReindex,
     nextSessionNumber,
+    hasPlannedSession: !!pendingPlannedSession,
     defaultSessionArc,
     saveNpc,
     createNpc,
@@ -1120,7 +1084,6 @@ export function useCampaignData(
     createEncounter,
     deleteEncounter,
     planSession,
-    playSession,
     startPlaySession,
     goToEntitySection,
     imageVersion,

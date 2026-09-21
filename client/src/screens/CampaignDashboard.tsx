@@ -46,6 +46,7 @@ interface CampaignDashboardProps {
   quests: Quest[];
   summary: DashboardSummaryData | null;
   nextSessionNumber: number;
+  hasPlannedSession: boolean;
   onNavigate: (section: DashboardSection) => void;
   onSelectNpc: (npcId: string) => void;
   onSelectQuest: (questId: string) => void;
@@ -65,6 +66,7 @@ export function CampaignDashboard({
   quests,
   summary,
   nextSessionNumber,
+  hasPlannedSession,
   onNavigate,
   onSelectNpc,
   onSelectQuest,
@@ -124,13 +126,13 @@ export function CampaignDashboard({
               ? t("dashboard.reindexing")
               : t("dashboard.reindexVault")}
           </button>
-          {lastSession && lastSession.sessionType !== "planning" ? (
-            <button className="btn btn-primary" onClick={onPlanSession}>
-              {t("sessionsTimeline.plan")}
-            </button>
-          ) : (
+          {hasPlannedSession ? (
             <button className="btn btn-primary" onClick={onStartSession}>
               {t("sessionsTimeline.play")} {nextSessionNumber}
+            </button>
+          ) : (
+            <button className="btn btn-primary" onClick={onPlanSession}>
+              {t("sessionsTimeline.plan")}
             </button>
           )}
         </div>
