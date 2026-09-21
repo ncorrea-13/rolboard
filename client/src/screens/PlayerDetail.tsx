@@ -86,20 +86,24 @@ export function PlayerDetail({
             </span>
           )}
           <div className="npc-detail__header-actions">
-            <button
-              className="btn btn-secondary"
-              onClick={() => openInObsidian(vaultName, player.obsidianPath)}
-            >
-              {t("entityDetail.openInObsidian")}
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() =>
-                openNote(player.obsidianPath, player.characterName, "")
-              }
-            >
-              {t("entityDetail.viewRenderedNote")}
-            </button>
+            {player.obsidianPath && (
+              <>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => openInObsidian(vaultName, player.obsidianPath)}
+                >
+                  {t("entityDetail.openInObsidian")}
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() =>
+                    openNote(player.obsidianPath, player.characterName, "")
+                  }
+                >
+                  {t("entityDetail.viewRenderedNote")}
+                </button>
+              </>
+            )}
             <button
               className="btn btn-secondary"
               onClick={() => setSheetOpen(true)}
@@ -193,22 +197,26 @@ export function PlayerDetail({
               alt=""
             />
           )}
-          <div>
-            <span className="label">{t("entityDetail.obsidianNote")}</span>
-            <div className="entity-detail__obsidian">
-              <span className="entity-detail__obsidian-path">
-                {player.obsidianPath}
-              </span>
-              <div className="entity-detail__obsidian-actions">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => openInObsidian(vaultName, player.obsidianPath)}
-                >
-                  {t("entityDetail.openInObsidian")}
-                </button>
+          {player.obsidianPath && (
+            <div>
+              <span className="label">{t("entityDetail.obsidianNote")}</span>
+              <div className="entity-detail__obsidian">
+                <span className="entity-detail__obsidian-path">
+                  {player.obsidianPath}
+                </span>
+                <div className="entity-detail__obsidian-actions">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() =>
+                      openInObsidian(vaultName, player.obsidianPath)
+                    }
+                  >
+                    {t("entityDetail.openInObsidian")}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

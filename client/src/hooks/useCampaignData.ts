@@ -324,36 +324,44 @@ export function useCampaignData(
       .finally(() => setReindexing(false));
   }
 
-  const campaignArcs = arcs.filter(
-    (a) => a.campaignId === activeCampaignId && !a.deletedAt,
-  );
-  const campaignGroups = groups.filter(
-    (g) => g.campaignId === activeCampaignId && !g.deletedAt,
-  );
-  const campaignLocations = locations.filter(
-    (l) => l.campaignId === activeCampaignId && !l.deletedAt,
-  );
+  const hasVault = !!activeCampaign?.vaultPath;
+  const vaultPath = (path: string) => (hasVault ? path : "");
+  const withoutVaultPath = <T extends { obsidianPath?: string }>(x: T): T =>
+    hasVault || !x.obsidianPath ? x : { ...x, obsidianPath: "" };
+
+  const campaignArcs = arcs
+    .filter((a) => a.campaignId === activeCampaignId && !a.deletedAt)
+    .map(withoutVaultPath);
+  const campaignGroups = groups
+    .filter((g) => g.campaignId === activeCampaignId && !g.deletedAt)
+    .map(withoutVaultPath);
+  const campaignLocations = locations
+    .filter((l) => l.campaignId === activeCampaignId && !l.deletedAt)
+    .map(withoutVaultPath);
   const campaignNpcs = npcs
     .filter((n) => n.campaignId === activeCampaignId && !n.deletedAt)
     .map((n) => {
       const loc = n.locationId
         ? campaignLocations.find((l) => l.id === n.locationId)
         : undefined;
-      return loc
-        ? { ...n, location: locationBreadcrumb(loc, campaignLocations) }
-        : n;
+      return withoutVaultPath(
+        loc
+          ? { ...n, location: locationBreadcrumb(loc, campaignLocations) }
+          : n,
+      );
     });
   const campaignQuests = quests.filter(
     (q) => q.campaignId === activeCampaignId && !q.deletedAt,
   );
-  const campaignPlayerCharacters = playerCharacters.filter(
-    (p) => p.campaignId === activeCampaignId && !p.deletedAt,
-  );
+  const campaignPlayerCharacters = playerCharacters
+    .filter((p) => p.campaignId === activeCampaignId && !p.deletedAt)
+    .map(withoutVaultPath);
   const campaignEncounters = encounters
     .filter((e) => e.campaignId === activeCampaignId && !e.deletedAt)
     .sort((a, b) => Number(b.id) - Number(a.id));
   const campaignSessions = sessions
     .filter((s) => s.campaignId === activeCampaignId && !s.deletedAt)
+    .map(withoutVaultPath)
     .sort(
       (a, b) => a.sessionNumber - b.sessionNumber || a.subNumber - b.subNumber,
     );
@@ -397,7 +405,7 @@ export function useCampaignData(
       ...blankNpcDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: `NPCs/${name}.md`,
+      obsidianPath: vaultPath(`NPCs/${name}.md`),
     };
     apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
       method: "POST",
@@ -465,7 +473,7 @@ export function useCampaignData(
       ...blankPlayerDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: `Jugadores/${playerName}/${characterName}.md`,
+      obsidianPath: vaultPath(`Jugadores/${playerName}/${characterName}.md`),
     };
     apiFetch<ApiPlayerCharacter>(
       `/campaigns/${activeCampaign!.id}/player-characters`,
@@ -654,7 +662,7 @@ export function useCampaignData(
       ...blankFactionDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: `Facciones/${patch.name}.md`,
+      obsidianPath: vaultPath(`Facciones/${patch.name}.md`),
     };
     apiFetch<ApiGroup>(`/campaigns/${activeCampaign!.id}/groups`, {
       method: "POST",
@@ -700,7 +708,7 @@ export function useCampaignData(
       ...blankLocationDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: `Locaciones/${patch.name}.md`,
+      obsidianPath: vaultPath(`Locaciones/${patch.name}.md`),
     };
     apiFetch<ApiLocation>(`/campaigns/${activeCampaign!.id}/locations`, {
       method: "POST",
@@ -746,7 +754,7 @@ export function useCampaignData(
       ...blankArcDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: patch.obsidianPath || `Arcos/${patch.label}.md`,
+      obsidianPath: vaultPath(patch.obsidianPath || `Arcos/${patch.label}.md`),
     };
     apiFetch<ApiArc>(`/campaigns/${activeCampaign!.id}/arcs`, {
       method: "POST",

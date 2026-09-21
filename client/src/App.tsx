@@ -680,6 +680,7 @@ export default function App() {
                 <ArcEdit
                   key={arc.id}
                   arc={arc}
+                  hasVault={!!activeCampaign?.vaultPath}
                   onSave={(patch) => {
                     saveArc(arc.id, patch);
                     setRoute({
@@ -698,6 +699,7 @@ export default function App() {
           {route.name === "arc-create" && (
             <ArcEdit
               arc={blankDrafts.arc}
+              hasVault={!!activeCampaign?.vaultPath}
               onSave={createArc}
               onDiscard={() => goToEntitySection("arc")}
             />
