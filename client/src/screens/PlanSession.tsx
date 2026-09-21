@@ -107,9 +107,7 @@ export function PlanSession({
           </div>
 
           <div>
-            <span className="label">
-              {t("planSession.prepNotesLabel")} {t("common.supportsMarkdown")}
-            </span>
+            <span className="label">{t("planSession.prepNotesLabel")}</span>
             <textarea
               className="npc-edit__textarea"
               style={{ minHeight: 160 }}

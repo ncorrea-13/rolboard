@@ -11,6 +11,7 @@ export type Route =
   | { name: "player-edit"; playerId: string }
   | { name: "player-create" }
   | { name: "session-plan" }
+  | { name: "session-detail"; sessionId: string }
   | {
       name: "session-edit";
       sessionId: string;

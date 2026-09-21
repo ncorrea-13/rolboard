@@ -5,11 +5,12 @@ import { useT, useLang } from "../lib/i18n";
 
 interface ArcEditProps {
   arc: Arc;
+  hasVault: boolean;
   onSave: (patch: Partial<Arc>) => void;
   onDiscard: () => void;
 }
 
-export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
+export function ArcEdit({ arc, hasVault, onSave, onDiscard }: ArcEditProps) {
   const t = useT();
   const lang = useLang();
   const statusOptions: { value: ArcStatus; label: string }[] = (
@@ -144,15 +145,17 @@ export function ArcEdit({ arc, onSave, onDiscard }: ArcEditProps) {
               ))}
             </select>
           </div>
-          <div>
-            <span className="label">{t("arcEdit.obsidianPathLabel")}</span>
-            <input
-              className="npc-edit__input"
-              value={obsidianPath}
-              onChange={(e) => setObsidianPath(e.target.value)}
-              placeholder="Arcos/Arco 3 - La Marea Alta.md"
-            />
-          </div>
+          {hasVault && (
+            <div>
+              <span className="label">{t("arcEdit.obsidianPathLabel")}</span>
+              <input
+                className="npc-edit__input"
+                value={obsidianPath}
+                onChange={(e) => setObsidianPath(e.target.value)}
+                placeholder="Arcos/Arco 3 - La Marea Alta.md"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
