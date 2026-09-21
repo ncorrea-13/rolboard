@@ -150,7 +150,6 @@ export function useCampaignData(
   activeCampaignId: string | null,
   activeCampaign: Campaign | undefined,
   setRoute: (route: Route) => void,
-  setNewSessionOpen: (open: boolean) => void,
   notify: (message: string, type?: "success" | "error") => void,
 ) {
   const t = useT();
@@ -324,36 +323,43 @@ export function useCampaignData(
       .finally(() => setReindexing(false));
   }
 
-  const campaignArcs = arcs.filter(
-    (a) => a.campaignId === activeCampaignId && !a.deletedAt,
-  );
-  const campaignGroups = groups.filter(
-    (g) => g.campaignId === activeCampaignId && !g.deletedAt,
-  );
-  const campaignLocations = locations.filter(
-    (l) => l.campaignId === activeCampaignId && !l.deletedAt,
-  );
+  const hasVault = !!activeCampaign?.vaultPath;
+  const withoutVaultPath = <T extends { obsidianPath?: string }>(x: T): T =>
+    hasVault || !x.obsidianPath ? x : { ...x, obsidianPath: "" };
+
+  const campaignArcs = arcs
+    .filter((a) => a.campaignId === activeCampaignId && !a.deletedAt)
+    .map(withoutVaultPath);
+  const campaignGroups = groups
+    .filter((g) => g.campaignId === activeCampaignId && !g.deletedAt)
+    .map(withoutVaultPath);
+  const campaignLocations = locations
+    .filter((l) => l.campaignId === activeCampaignId && !l.deletedAt)
+    .map(withoutVaultPath);
   const campaignNpcs = npcs
     .filter((n) => n.campaignId === activeCampaignId && !n.deletedAt)
     .map((n) => {
       const loc = n.locationId
         ? campaignLocations.find((l) => l.id === n.locationId)
         : undefined;
-      return loc
-        ? { ...n, location: locationBreadcrumb(loc, campaignLocations) }
-        : n;
+      return withoutVaultPath(
+        loc
+          ? { ...n, location: locationBreadcrumb(loc, campaignLocations) }
+          : n,
+      );
     });
   const campaignQuests = quests.filter(
     (q) => q.campaignId === activeCampaignId && !q.deletedAt,
   );
-  const campaignPlayerCharacters = playerCharacters.filter(
-    (p) => p.campaignId === activeCampaignId && !p.deletedAt,
-  );
+  const campaignPlayerCharacters = playerCharacters
+    .filter((p) => p.campaignId === activeCampaignId && !p.deletedAt)
+    .map(withoutVaultPath);
   const campaignEncounters = encounters
     .filter((e) => e.campaignId === activeCampaignId && !e.deletedAt)
     .sort((a, b) => Number(b.id) - Number(a.id));
   const campaignSessions = sessions
     .filter((s) => s.campaignId === activeCampaignId && !s.deletedAt)
+    .map(withoutVaultPath)
     .sort(
       (a, b) => a.sessionNumber - b.sessionNumber || a.subNumber - b.subNumber,
     );
@@ -392,12 +398,10 @@ export function useCampaignData(
   }
 
   function createNpc(patch: Partial<Npc>) {
-    const name = patch.name ?? "";
     const draft: Npc = {
       ...blankNpcDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: `NPCs/${name}.md`,
     };
     apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
       method: "POST",
@@ -459,13 +463,10 @@ export function useCampaignData(
   }
 
   function createPlayer(patch: Partial<PlayerCharacter>) {
-    const playerName = patch.playerName ?? "";
-    const characterName = patch.characterName ?? "";
     const draft: PlayerCharacter = {
       ...blankPlayerDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: `Jugadores/${playerName}/${characterName}.md`,
     };
     apiFetch<ApiPlayerCharacter>(
       `/campaigns/${activeCampaign!.id}/player-characters`,
@@ -515,7 +516,7 @@ export function useCampaignData(
       .then((saved) => {
         const session = mapSession(saved);
         setSessions((prev) => prev.map((s) => (s.id === id ? session : s)));
-        setRoute({ name: "section", section: "sesiones" });
+        setRoute({ name: "session-detail", sessionId: id });
       })
       .catch((err) => {
         console.error("Error guardando sesión:", err);
@@ -542,22 +543,20 @@ export function useCampaignData(
       });
   }
 
-  function createSession(
-    values: {
-      sessionType: Session["sessionType"];
-      date: string;
-      summary: string;
-    },
-    expectedNpcIds: string[] = [],
-    expectedQuestIds: string[] = [],
-  ) {
+  function planSession(values: {
+    date: string;
+    summary: string;
+    expectedNpcIds: string[];
+    expectedQuestIds: string[];
+  }) {
+    const { expectedNpcIds, expectedQuestIds } = values;
     const draft: Session = {
       id: "",
       campaignId: activeCampaign!.id,
       arcId: defaultSessionArc?.id,
       sessionNumber: nextSessionNumber,
       subNumber: 0,
-      sessionType: values.sessionType,
+      sessionType: "planning",
       date: values.date,
       summary: values.summary,
       prepNotes: "",
@@ -594,38 +593,13 @@ export function useCampaignData(
       });
   }
 
-  function planSession(values: {
-    date: string;
-    summary: string;
-    expectedNpcIds: string[];
-    expectedQuestIds: string[];
-  }) {
-    createSession(
-      { sessionType: "planning", date: values.date, summary: values.summary },
-      values.expectedNpcIds,
-      values.expectedQuestIds,
-    );
-  }
-
-  function playSession(values: { date: string; summary: string }) {
-    createSession({
-      sessionType: "session",
-      date: values.date,
-      summary: values.summary,
-    });
-    setNewSessionOpen(false);
-  }
-
   function startPlaySession() {
-    if (pendingPlannedSession) {
-      setRoute({
-        name: "session-edit",
-        sessionId: pendingPlannedSession.id,
-        autoConfirm: true,
-      });
-    } else {
-      setNewSessionOpen(true);
-    }
+    if (!pendingPlannedSession) return;
+    setRoute({
+      name: "session-edit",
+      sessionId: pendingPlannedSession.id,
+      autoConfirm: true,
+    });
   }
 
   function saveFaction(id: string, patch: Partial<Group>) {
@@ -654,7 +628,6 @@ export function useCampaignData(
       ...blankFactionDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: `Facciones/${patch.name}.md`,
     };
     apiFetch<ApiGroup>(`/campaigns/${activeCampaign!.id}/groups`, {
       method: "POST",
@@ -700,7 +673,6 @@ export function useCampaignData(
       ...blankLocationDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: `Locaciones/${patch.name}.md`,
     };
     apiFetch<ApiLocation>(`/campaigns/${activeCampaign!.id}/locations`, {
       method: "POST",
@@ -746,7 +718,6 @@ export function useCampaignData(
       ...blankArcDraft,
       ...patch,
       campaignId: activeCampaign!.id,
-      obsidianPath: patch.obsidianPath || `Arcos/${patch.label}.md`,
     };
     apiFetch<ApiArc>(`/campaigns/${activeCampaign!.id}/arcs`, {
       method: "POST",
@@ -1090,6 +1061,7 @@ export function useCampaignData(
     reindexing,
     handleReindex,
     nextSessionNumber,
+    hasPlannedSession: !!pendingPlannedSession,
     defaultSessionArc,
     saveNpc,
     createNpc,
@@ -1112,7 +1084,6 @@ export function useCampaignData(
     createEncounter,
     deleteEncounter,
     planSession,
-    playSession,
     startPlaySession,
     goToEntitySection,
     imageVersion,

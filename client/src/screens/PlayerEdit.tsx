@@ -251,15 +251,17 @@ export function PlayerEdit({
               />
             </div>
           </div>
-          <div>
-            <span className="label">{t("entityDetail.obsidianNote")}</span>
-            <div
-              className="npc-edit__select"
-              style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}
-            >
-              {player.obsidianPath}
+          {player.obsidianPath && (
+            <div>
+              <span className="label">{t("entityDetail.obsidianNote")}</span>
+              <div
+                className="npc-edit__select"
+                style={{ fontFamily: "var(--font-mono)", fontSize: 12.5 }}
+              >
+                {player.obsidianPath}
+              </div>
             </div>
-          </div>
+          )}
           {(status === "dead" || missingRace) && (
             <div className="callout callout-warning">
               <p className="callout-title">

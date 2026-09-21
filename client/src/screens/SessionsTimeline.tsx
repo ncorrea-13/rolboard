@@ -13,6 +13,7 @@ interface SessionsTimelineProps {
   arcs: Arc[];
   sessions: Session[];
   nextSessionNumber: number;
+  hasPlannedSession: boolean;
   onPlanSession: () => void;
   onPlaySession: () => void;
   onOpenSession: (sessionId: string) => void;
@@ -22,6 +23,7 @@ export function SessionsTimeline({
   arcs,
   sessions,
   nextSessionNumber,
+  hasPlannedSession,
   onPlanSession,
   onPlaySession,
   onOpenSession,
@@ -52,9 +54,11 @@ export function SessionsTimeline({
           <button className="btn btn-secondary" onClick={onPlanSession}>
             {t("sessionsTimeline.plan")}
           </button>
-          <button className="btn btn-primary" onClick={onPlaySession}>
-            {t("sessionsTimeline.play")} {nextSessionNumber}
-          </button>
+          {hasPlannedSession && (
+            <button className="btn btn-primary" onClick={onPlaySession}>
+              {t("sessionsTimeline.play")} {nextSessionNumber}
+            </button>
+          )}
         </div>
       </header>
 
