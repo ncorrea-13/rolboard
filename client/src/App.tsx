@@ -22,6 +22,7 @@ import { SessionDetail } from "./screens/SessionDetail";
 import { NewCampaignForm } from "./components/NewCampaignForm";
 import { CampaignSettingsForm } from "./components/CampaignSettingsForm";
 import { CampaignSelector } from "./screens/CampaignSelector";
+import { Splash } from "./screens/Splash";
 import {
   CampaignDashboard,
   type DashboardSection,
@@ -80,6 +81,7 @@ export default function App() {
     null,
   );
   const [, forceAdminRerender] = useState(0);
+  const [showSplash, setShowSplash] = useState(true);
 
   const [helpOpen, setHelpOpen] = useState(
     () => window.location.pathname === "/help",
@@ -338,6 +340,10 @@ export default function App() {
         <SiteFooter onHelp={openHelp} />
       </div>
     );
+  }
+
+  if (showSplash) {
+    return <Splash onContinue={() => setShowSplash(false)} onHelp={openHelp} />;
   }
 
   return (

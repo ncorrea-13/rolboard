@@ -351,6 +351,10 @@ const dict = {
     "footer.github": "Repositorio en GitHub",
     "footer.portfolio": "Portfolio de Nicolás Correa",
     "footer.help": "Ayuda",
+    "splash.tagline": "Tu compañero de campañas de rol",
+    "splash.enter": "Entrar",
+    "splash.repo": "Repositorio",
+    "splash.credits": "Créditos",
     "help.title": "Ayuda",
     "help.back": "Volver",
     "help.contents": "Contenido",
@@ -720,6 +724,10 @@ const dict = {
     "footer.github": "GitHub repository",
     "footer.portfolio": "Nicolás Correa's portfolio",
     "footer.help": "Help",
+    "splash.tagline": "Your tabletop campaign companion",
+    "splash.enter": "Enter",
+    "splash.repo": "Repository",
+    "splash.credits": "Credits",
     "help.title": "Help",
     "help.back": "Back",
     "help.contents": "Contents",
@@ -748,7 +756,9 @@ const dict = {
 
 export type TranslationKey = keyof (typeof dict)["es"];
 
-let currentLang: Lang = (localStorage.getItem(STORAGE_KEY) as Lang) || "es";
+let currentLang: Lang =
+  (localStorage.getItem(STORAGE_KEY) as Lang) ||
+  (navigator.language.startsWith("es") ? "es" : "en");
 
 export function getLang(): Lang {
   return currentLang;
