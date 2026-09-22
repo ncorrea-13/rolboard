@@ -11,10 +11,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-7-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
 [![Caddy](https://img.shields.io/badge/Caddy-2-1F88C0?logo=caddy&logoColor=white)](https://caddyserver.com)
-[![SQLite](https://img.shields.io/badge/SQLite-modernc.org%2Fsqlite-003B57?logo=sqlite&logoColor=white)](https://modernc.org/sqlite)
+[![SQLite](https://img.shields.io/badge/SQLite-modernc-003B57?logo=sqlite&logoColor=white)](https://modernc.org/sqlite)
 [![Docker](https://img.shields.io/badge/Docker-GHCR-2496ED?logo=docker&logoColor=white)](https://github.com/ncorrea-13?tab=packages&repo_name=rolboard)
-[![Dependabot](https://img.shields.io/badge/Dependabot-enabled-025E8C?logo=dependabot&logoColor=white)](.github/dependabot.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#licencia)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
 [English](README.md)
 
@@ -133,7 +132,7 @@ Abrí `http://localhost:${CLIENT_PORT}`, entrá como admin con el token, creá u
 | `CLIENT_PORT`         | host     | Puerto del host para el cliente web                                                                                                     |
 | `DATA_PATH`           | host     | Carpeta del host para la base y las imágenes subidas                                                                                    |
 | `VAULTS_ROOT_HOST`    | host     | Carpeta del host con el vault de cada campaña como subcarpeta (montada read-only)                                                       |
-| `ROLBOARD_USER`       | host     | Usuario del contenedor (`uid:gid`). Default `1000:1000`. Podman rootless: `0` (ver [Permisos del vault](#permisos-del-vault))                |
+| `ROLBOARD_USER`       | host     | Usuario del contenedor (`uid:gid`). Default `1000:1000`. Podman rootless: `0` (ver [Permisos del vault](#permisos-del-vault))           |
 | `DB_PATH`             | servidor | Ruta del archivo SQLite                                                                                                                 |
 | `VAULTS_ROOT`         | servidor | Ruta del mount de vaults                                                                                                                |
 | `UPLOADS_ROOT`        | servidor | Ruta de imágenes. Sin default — ponela dentro del volumen de datos                                                                      |
