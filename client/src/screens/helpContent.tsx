@@ -16,15 +16,33 @@ const CALLOUT_EXAMPLE = `> [!NOTE]
 
 const es: HelpSection[] = [
   {
+    id: "que-es",
+    title: "Qué es Rolboard",
+    body: (
+      <>
+        <p>
+          Rolboard es un tablero para dirigir campañas de rol de mesa: sesiones,
+          arcos, jugadores, NPCs, locaciones, facciones, quests y un tracker de
+          combate, todo en un mismo lugar.
+        </p>
+        <p>
+          No está atado a ningún sistema de reglas. Nació para salir de
+          Obsidian y manejar la campaña más rápido, pero puede convivir con tu
+          vault: lee sus notas y te deja volver a ellas desde cada ficha.
+        </p>
+      </>
+    ),
+  },
+  {
     id: "empezar",
     title: "Primeros pasos",
     body: (
       <>
         <p>
-          En la pantalla inicial elegí <em>Nueva campaña</em> (te pide la clave
+          En la pantalla inicial elige <em>Nueva campaña</em> (te pide la clave
           de admin de la instalación). Después, en el botón de ajustes del
-          sidebar, poné un <strong>código de acceso</strong>: con ese código
-          entrás a la campaña desde el selector.
+          sidebar, pon un <strong>código de acceso</strong>: con ese código
+          entras a la campaña desde el selector.
         </p>
       </>
     ),
@@ -49,12 +67,12 @@ const es: HelpSection[] = [
     body: (
       <ol>
         <li>
-          <strong>Planificala:</strong> elegí una fecha tentativa, escribí las
-          notas de preparación y marcá los NPCs y las quests que esperás usar.
+          <strong>Planifícala:</strong> elige una fecha tentativa, escribe las
+          notas de preparación y marca los NPCs y las quests que esperas usar.
         </li>
         <li>
-          <strong>Jugala:</strong> abrila y tocá <em>Marcar como jugada</em>.
-          Anotás la fecha real y un resumen; tus notas de preparación se
+          <strong>Juégala:</strong> ábrela y toca <em>Marcar como jugada</em>.
+          Anotas la fecha real y un resumen; tus notas de preparación se
           conservan. Debajo del resumen ves los wardails para tenerlos
           presentes.
         </li>
@@ -67,7 +85,7 @@ const es: HelpSection[] = [
     body: (
       <p>
         Son los temas sensibles que quieren cuidar en la mesa (violencia, duelo,
-        abuso…). Los escribís una vez por campaña en la sección{" "}
+        abuso…). Los escribes una vez por campaña en la sección{" "}
         <em>Wardails</em> del sidebar, con el botón <em>Editar</em>.
       </p>
     ),
@@ -79,7 +97,7 @@ const es: HelpSection[] = [
       <>
         <p>
           Los campos que dicen <em>(admite Markdown)</em> aceptan texto con
-          formato. Para destacar algo, usá un aviso al estilo Obsidian:
+          formato. Para destacar algo, usa un aviso al estilo Obsidian:
         </p>
         <Code>{CALLOUT_EXAMPLE}</Code>
         <Callout kind="note" title="Nota">
@@ -96,7 +114,7 @@ const es: HelpSection[] = [
     title: "Tipos de NPC",
     body: (
       <p>
-        Cada campaña tiene sus propios tipos (Humano, Spren, Monstruo…). Tocá{" "}
+        Cada campaña tiene sus propios tipos (Humano, Spren, Monstruo…). Toca{" "}
         <strong>Tipos</strong> en la lista de NPCs o en el editor para agregar,
         renombrar, cambiar el color o borrar. Un tipo que algún NPC usa no se
         puede borrar.
@@ -105,11 +123,11 @@ const es: HelpSection[] = [
   },
   {
     id: "obsidian",
-    title: "Si usás Obsidian",
+    title: "Si usas Obsidian",
     body: (
       <>
         <p>
-          Podés apuntar la campaña a tu vault y traer tus notas con{" "}
+          Puedes apuntar la campaña a tu vault y traer tus notas con{" "}
           <strong>Reindexar vault</strong>, en el Resumen. La app solo lee: no
           modifica tus notas. Cada nota se convierte según su carpeta y el
           nombre del archivo es el nombre de la entidad:
@@ -131,8 +149,8 @@ const es: HelpSection[] = [
           </tbody>
         </table>
         <p>
-          Desde cada ficha podés <em>Abrir en Obsidian</em> o ver la nota
-          completa con <em>Ver nota renderizada</em>. Si en un NPC escribís{" "}
+          Desde cada ficha puedes <em>Abrir en Obsidian</em> o ver la nota
+          completa con <em>Ver nota renderizada</em>. Si en un NPC escribes{" "}
           <code>tipo:</code> con un tipo nuevo, se crea solo.
         </p>
       </>
@@ -147,6 +165,24 @@ const enCalloutExample = `> [!NOTE]
 > Something not to forget.`;
 
 const en: HelpSection[] = [
+  {
+    id: "what-is",
+    title: "What Rolboard is",
+    body: (
+      <>
+        <p>
+          Rolboard is a dashboard for running tabletop RPG campaigns: sessions,
+          arcs, players, NPCs, locations, factions, quests and a combat
+          tracker, all in one place.
+        </p>
+        <p>
+          It isn't tied to any ruleset. It started as a way out of Obsidian to
+          manage the campaign faster, but it can live alongside your vault: it
+          reads its notes and lets you jump back to them from each sheet.
+        </p>
+      </>
+    ),
+  },
   {
     id: "start",
     title: "Getting started",

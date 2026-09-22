@@ -155,7 +155,7 @@ const dict = {
     "factionDetail.alignment": "Alineación",
     "factionDetail.leader": "Líder",
     "factionDetail.members": "Miembros",
-    "factionDetail.remove": "Sacar",
+    "factionDetail.remove": "Quitar",
     "factionDetail.noMembers": "Sin miembros todavía.",
     "factionDetail.addNpcPlaceholder": "Agregar NPC…",
     "factionDetail.players": "Jugadores",
@@ -203,7 +203,7 @@ const dict = {
     "planSession.tentativeDate": "Fecha tentativa (opcional)",
     "planSession.prepNotesLabel": "Notas de preparación (admite Markdown)",
     "planSession.prepPlaceholder":
-      "Qué querés que pase, ganchos preparados, escenas planeadas…",
+      "Qué quieres que pase, ganchos preparados, escenas planeadas…",
     "planSession.expectedNpcs": "NPCs esperados",
     "planSession.noNpcsYet": "Sin NPCs cargados todavía en esta campaña.",
     "planSession.expectedQuests": "Quests esperadas",
@@ -251,7 +251,7 @@ const dict = {
     "npcEdit.markedDead": "NPC marcado como muerto",
     "npcEdit.missingOrigin": "Falta la ubicación de origen",
     "npcEdit.warningBody":
-      "Podés guardar igual; el campo queda marcado como incompleto en la ficha.",
+      "Puedes guardar de todos modos; el campo queda marcado como incompleto en la ficha.",
 
     "playerEdit.new": "Nuevo personaje",
     "playerEdit.characterName": "Nombre del personaje",
@@ -281,7 +281,7 @@ const dict = {
     "sessionEdit.recapLabel": "Historial de lo jugado (admite Markdown)",
     "sessionEdit.recapPlaceholder": "Qué pasó realmente…",
     "sessionEdit.prepNotesKeptSeparate":
-      "Las notas de preparación quedan guardadas aparte, no se pisan.",
+      "Las notas de preparación se guardan aparte, no se sobrescriben.",
     "sessionEdit.deleteSession": "Borrar sesión",
     "sessionEdit.arc": "Arco",
     "sessionEdit.history": "Historial",
@@ -305,7 +305,7 @@ const dict = {
     "encounterDetail.choosePc": "Elegir personaje…",
     "encounterDetail.customNamePlaceholder": "Nombre (ej. Bandido 3)",
     "encounterDetail.actedTitle": "Jugó su turno esta ronda",
-    "encounterDetail.removeTitle": "Sacar del encuentro",
+    "encounterDetail.removeTitle": "Quitar del encuentro",
     "encounterDetail.fast": "Rápido",
     "encounterDetail.slow": "Lento",
     "encounterDetail.viewFullSheet": "Ver ficha completa",
@@ -345,7 +345,7 @@ const dict = {
     "wardails.title": "Wardails",
     "wardails.subtitle": "Temas sensibles de esta campaña",
     "wardails.empty": "Todavía no definiste wardails para esta campaña.",
-    "wardails.placeholder": "Un tema por línea, o usá > [!WARNING] para destacar los más delicados",
+    "wardails.placeholder": "Un tema por línea, o usa > [!WARNING] para destacar los más delicados",
     "wardails.saved": "Wardails guardados",
     "wardails.errorSaving": "Error guardando los wardails",
     "footer.github": "Repositorio en GitHub",

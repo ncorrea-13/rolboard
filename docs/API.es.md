@@ -51,7 +51,7 @@ DELETE /api/campaigns/{id}
 
 Body: `name`, `system`, `description`, `vault_path`, y `status` (`active` | `paused` | `finished`) en `PUT`.
 
-`wardails` es markdown libre con los temas sensibles de la campaña; tiene su propio endpoint para que guardarlo nunca pise los otros campos. `GET /api/campaigns/{id}` lo devuelve.
+`wardails` es markdown libre con los temas sensibles de la campaña; tiene su propio endpoint para que guardarlo nunca sobrescriba los otros campos. `GET /api/campaigns/{id}` lo devuelve.
 
 La lista pública va recortada a propósito: la pantalla de selección la necesita antes de haber sesión, y no debe exponer `vault_path`. El detalle devuelve el registro completo.
 
@@ -93,7 +93,7 @@ DELETE /api/sessions/{id}/quests/{questId}
 
 Body: `arc_id`, `session_number`, `sub_number`, `session_type` (`session` | `interlude` | `planning`), `date`, `summary`, `prep_notes`, `obsidian_path`.
 
-`session_npcs` también lo escribe el reindex (lo reemplaza con los wikilinks del cuerpo de la nota). `session_quests` solo se maneja desde acá.
+`session_npcs` también lo escribe el reindex (lo reemplaza con los wikilinks del cuerpo de la nota). `session_quests` solo se maneja desde aquí.
 
 ## Locations
 
@@ -181,7 +181,7 @@ GET    /api/groups/{id}/image
 
 Body: `name`, `description`, `notes`, `alineacion`, `lider_npc_id`, `obsidian_path`.
 
-Lista y detalle incluyen `member_count` (calculado). Sacar un miembro es baja lógica (`source = 'removed'`) para que el reindex no lo vuelva a agregar.
+Lista y detalle incluyen `member_count` (calculado). Quitar un miembro es baja lógica (`source = 'removed'`) para que el reindex no lo vuelva a agregar.
 
 ## Quests
 

@@ -2,7 +2,7 @@
 
 # Plantilla de vault
 
-Estructura mínima que reconoce el indexador. Copiá estas carpetas como base de una campaña nueva y reemplazá las notas de ejemplo.
+Estructura mínima que reconoce el indexador. Copia estas carpetas como base de una campaña nueva y reemplaza las notas de ejemplo.
 
 ```
 Arcos/        arcos

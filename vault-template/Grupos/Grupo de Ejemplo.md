@@ -10,4 +10,4 @@ tags:
 
 ## Descripción general
 
-Descripción de la facción/organización. Reemplazá con la de tu campaña.
+Descripción de la facción/organización. Reemplaza con la de tu campaña.

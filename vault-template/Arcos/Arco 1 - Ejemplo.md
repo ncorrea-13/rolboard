@@ -11,4 +11,4 @@ tags:
 
 # El comienzo
 
-Resumen del arco. Reemplazá este contenido con el de tu campaña.
+Resumen del arco. Reemplaza este contenido con el de tu campaña.
