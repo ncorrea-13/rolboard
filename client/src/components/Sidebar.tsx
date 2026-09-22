@@ -129,7 +129,7 @@ export function Sidebar({
           onClick={onBack}
           title={t("sidebar.backToCampaigns")}
         >
-          <span className="sidebar__glow" />
+          <img src="/logo-icon.png" alt="" className="sidebar__logo" />
           <span className="sidebar__name">{campaignName}</span>
         </button>
       </div>
@@ -161,31 +161,38 @@ export function Sidebar({
           </button>
         );
       })}
-      <div
-        className="sidebar__footer-actions"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {onOpenSettings && (
-          <button
-            className="btn btn-secondary"
-            onClick={onOpenSettings}
-            title={t("campaignSettings.openSettings")}
-            aria-label={t("campaignSettings.openSettings")}
-          >
-            <Settings size={15} strokeWidth={1.75} />
-          </button>
-        )}
-        <LanguageToggle />
-        {onAdminLogout && (
-          <button
-            className="btn btn-secondary sidebar__logout"
-            onClick={onAdminLogout}
-            title={t("adminSecret.logout")}
-            aria-label={t("adminSecret.logout")}
-          >
-            <LogOut size={15} strokeWidth={1.75} />
-          </button>
-        )}
+      <div className="sidebar__footer">
+        <img
+          src="/logo-wordmark.png"
+          alt={t("campaignSelector.title")}
+          className="sidebar__wordmark"
+        />
+        <div
+          className="sidebar__footer-actions"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {onOpenSettings && (
+            <button
+              className="btn btn-secondary"
+              onClick={onOpenSettings}
+              title={t("campaignSettings.openSettings")}
+              aria-label={t("campaignSettings.openSettings")}
+            >
+              <Settings size={15} strokeWidth={1.75} />
+            </button>
+          )}
+          <LanguageToggle />
+          {onAdminLogout && (
+            <button
+              className="btn btn-secondary sidebar__logout"
+              onClick={onAdminLogout}
+              title={t("adminSecret.logout")}
+              aria-label={t("adminSecret.logout")}
+            >
+              <LogOut size={15} strokeWidth={1.75} />
+            </button>
+          )}
+        </div>
       </div>
     </nav>
   );

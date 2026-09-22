@@ -52,12 +52,10 @@
   text-align: left;
 }
 
-.sidebar__glow {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent-obsidian);
-  box-shadow: 0 0 7px rgba(155, 123, 234, 0.7);
+.sidebar__logo {
+  flex: none;
+  height: 22px;
+  width: auto;
 }
 
 .sidebar__name {
@@ -124,11 +122,25 @@
   border-radius: 1px;
 }
 
+/* Shrinks to its widest child, so the wordmark centers over the buttons. */
+.sidebar__footer {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.sidebar__wordmark {
+  height: 80px;
+  width: auto;
+}
+
 .sidebar__footer-actions {
   display: flex;
   gap: 8px;
   padding: 8px 12px;
-  margin-top: auto;
 }
 
 @media (max-width: 640px) {
@@ -155,6 +167,10 @@
     padding: 13px 12px;
     font-size: 15.5px;
     min-height: 44px;
+  }
+
+  .sidebar__footer {
+    align-self: center;
   }
 
   .sidebar__footer-actions {

@@ -28,6 +28,14 @@ export function Help({ onBack }: { onBack: () => void }) {
 
         <div className="help__layout">
           <nav className="help__toc" aria-label={t("help.contents")}>
+            <div className="help__logo">
+              <img src="/logo-icon.png" alt="" className="help__logo-icon" />
+              <img
+                src="/logo-wordmark.png"
+                alt={t("campaignSelector.title")}
+                className="help__logo-wordmark"
+              />
+            </div>
             {sections.map((s) => (
               <a
                 key={s.id}
