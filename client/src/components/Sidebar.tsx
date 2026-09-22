@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   PanelLeftClose,
+  ArrowLeft,
   type LucideIcon,
 } from "lucide-react";
 import "./Sidebar.css";
@@ -94,6 +95,7 @@ interface SidebarProps {
   onNavigate: (section: DashboardSection) => void;
   onBack: () => void;
   onOpenSettings?: () => void;
+  onHelp: () => void;
   onAdminLogout?: () => void;
   onBackdropClick?: () => void;
   onClose: () => void;
@@ -105,6 +107,7 @@ export function Sidebar({
   onNavigate,
   onBack,
   onOpenSettings,
+  onHelp,
   onAdminLogout,
   onBackdropClick,
   onClose,
@@ -114,7 +117,7 @@ export function Sidebar({
     <nav className="sidebar" onClick={onBackdropClick}>
       <div className="sidebar__head">
         <button
-          className="sidebar__close"
+          className="sidebar__head-btn sidebar__close"
           onClick={(e) => {
             e.stopPropagation();
             onClose();
@@ -125,13 +128,27 @@ export function Sidebar({
           <PanelLeftClose size={16} strokeWidth={1.75} />
         </button>
         <button
-          className="sidebar__brand"
+          className="sidebar__head-btn sidebar__back"
           onClick={onBack}
           title={t("sidebar.backToCampaigns")}
+          aria-label={t("sidebar.backToCampaigns")}
+        >
+          <ArrowLeft size={16} strokeWidth={1.75} />
+        </button>
+        <a
+          href="/help"
+          onClick={(e) => {
+            e.preventDefault();
+            onHelp();
+          }}
+          title={t("footer.help")}
+          aria-label={t("footer.help")}
         >
           <img src="/logo-icon.png" alt="" className="sidebar__logo" />
-          <span className="sidebar__name">{campaignName}</span>
-        </button>
+        </a>
+        <span className="sidebar__name" title={campaignName}>
+          {campaignName}
+        </span>
       </div>
       {navItems.map(({ Icon, ...item }) => {
         const isActive = item.section === active;
@@ -145,7 +162,7 @@ export function Sidebar({
           >
             <Icon
               className="sidebar__icon"
-              size={15}
+              size={18}
               strokeWidth={1.75}
               style={{ color: item.color }}
             />

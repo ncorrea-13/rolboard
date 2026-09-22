@@ -10,4 +10,4 @@ tags:
 
 ## Descripción general
 
-Descripción de la ciudad. Reemplazá con la de tu campaña.
+Descripción de la ciudad. Reemplaza con la de tu campaña.

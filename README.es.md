@@ -23,7 +23,7 @@
 
 App web para la gestión y manejo de campañas de rol de mesa. Incluye el manejo de sesiones, jugadores, NPCs, arcos, locaciones, grupos, quests y un tracker de combate pensado para Cosmere RPG y DND 5e. Se mantiene agnóstico sin definir un solo sistema.
 
-Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gestión más rápida con lo que incluye un indexador del frontmatter para poder traer esta información y poder convivir con la vault. Mantiene la estructura del vault y permite la navegación para allá. Cada campaña guarda su `vault_path`, una subcarpeta dentro de `VAULTS_ROOT`. [`vault-template/`](vault-template/) tiene una estructura de vault que el indexador reconoce sin tocar código.
+Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gestión más rápida con lo que incluye un indexador del frontmatter para poder traer esta información y poder convivir con la vault. Mantiene la estructura del vault y permite navegar hacia él. Cada campaña guarda su `vault_path`, una subcarpeta dentro de `VAULTS_ROOT`. [`vault-template/`](vault-template/) tiene una estructura de vault que el indexador reconoce sin tocar código.
 
 ## Stack
 
@@ -37,7 +37,7 @@ Más: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## Inicio rápido
 
-Imágenes ya armadas en GHCR. Funciona con Docker y Podman.
+Imágenes precompiladas en GHCR. Funciona con Docker y Podman.
 
 `compose.yaml`:
 
@@ -102,7 +102,7 @@ La imagen del server corre como UID 1000 — `mkdir -p ./data` y `podman unshare
 El servidor tiene que poder leer el vault; si no, renderizar notas y reindexar fallan con `permission denied`.
 
 - **Docker (rootful):** el UID 1000 del contenedor es el UID 1000 del host, así que el vault debe ser legible por ese usuario.
-- **Podman rootless:** el UID 1000 del contenedor mapea a un sub-UID de tu usuario, no a vos, así que un vault `770` no se puede leer. Poné `ROLBOARD_USER=0` en el `.env`: el root de un contenedor rootless es tu propio usuario sin privilegios, no root del host, y el vault se monta read-only.
+- **Podman rootless:** el UID 1000 del contenedor mapea a un sub-UID de tu usuario, no a ti, así que un vault `770` no se puede leer. Pon `ROLBOARD_USER=0` en el `.env`: el root de un contenedor rootless es tu propio usuario sin privilegios, no root del host, y el vault se monta read-only.
 
 No pongas `ROLBOARD_USER=0` en Docker rootful: ahí es root real.
 
@@ -119,11 +119,11 @@ printf '%s' 'tu-admin-token' | docker secret create rolboard_admin_token -
 docker compose up -d
 ```
 
-En Docker sin Swarm, reemplazá `external: true` por `file: ./secrets/admin_token` y poné el token en ese archivo.
+En Docker sin Swarm, reemplaza `external: true` por `file: ./secrets/admin_token` y pon el token en ese archivo.
 
-`logging: journald` requiere un host con systemd; si no, sacá esos bloques.
+`logging: journald` requiere un host con systemd; si no, quita esos bloques.
 
-Abrí `http://localhost:${CLIENT_PORT}`, entrá como admin con el token, creá una campaña y asignale su código de acceso.
+Abre `http://localhost:${CLIENT_PORT}`, entra como admin con el token, crea una campaña y asígnale su código de acceso.
 
 ## Configuración
 
@@ -135,7 +135,7 @@ Abrí `http://localhost:${CLIENT_PORT}`, entrá como admin con el token, creá u
 | `ROLBOARD_USER`       | host     | Usuario del contenedor (`uid:gid`). Default `1000:1000`. Podman rootless: `0` (ver [Permisos del vault](#permisos-del-vault))           |
 | `DB_PATH`             | servidor | Ruta del archivo SQLite                                                                                                                 |
 | `VAULTS_ROOT`         | servidor | Ruta del mount de vaults                                                                                                                |
-| `UPLOADS_ROOT`        | servidor | Ruta de imágenes. Sin default — ponela dentro del volumen de datos                                                                      |
+| `UPLOADS_ROOT`        | servidor | Ruta de imágenes. Sin default — ponla dentro del volumen de datos                                                                       |
 | `PORT`                | servidor | Puerto de escucha (el cliente proxea a `8080`)                                                                                          |
 | `ADMIN_TOKEN_FILE`    | servidor | Archivo con el token de admin (secret). Tiene prioridad sobre `ADMIN_TOKEN`                                                             |
 | `ADMIN_TOKEN`         | servidor | Token de admin como env var plana (solo dev)                                                                                            |

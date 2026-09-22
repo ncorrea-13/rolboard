@@ -11,4 +11,4 @@ tags:
 ## Descripción general
 
 El nombre del personaje sale del nombre de este archivo, no de un campo
-frontmatter — renombrá el archivo, no agregues `personaje:`.
+frontmatter — renombra el archivo, no agregues `personaje:`.

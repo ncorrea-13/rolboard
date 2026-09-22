@@ -14,7 +14,7 @@ tags:
 
 ## Descripción general
 
-Descripción del personaje. Reemplazá con el de tu campaña.
+Descripción del personaje. Reemplaza con el de tu campaña.
 
 ## Historia
 

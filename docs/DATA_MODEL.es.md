@@ -186,7 +186,7 @@ Sin `obsidian_path`: las quests viven solo en la DB.
 
 ### vault_file_state
 
-PK `(campaign_id, path)`. Guarda `content_hash` (SHA-256), `entity_type`, `entity_id` e `indexed_at` de cada nota indexada. El reindex saltea notas cuyo hash no cambió.
+PK `(campaign_id, path)`. Guarda `content_hash` (SHA-256), `entity_type`, `entity_id` e `indexed_at` de cada nota indexada. El reindex omite notas cuyo hash no cambió.
 
 ## Tablas puente
 
@@ -204,7 +204,7 @@ quest_npcs     (quest_id, npc_id)                          PK (quest_id, npc_id)
 
 - El reindex solo borra y reescribe filas `vault`.
 - Si el vault confirma una fila `dashboard`, pasa a `vault`; una `removed` sigue `removed`.
-- Sacar un miembro desde el dashboard pone `removed` (no borra), así el reindex no lo revive.
+- Quitar un miembro desde el dashboard pone `removed` (no borra), así el reindex no lo revive.
 - Las lecturas filtran `source != 'removed'`.
 
 `npc_relations` es dirigida: A → B con rol "ACREEDOR" no implica B → A.
