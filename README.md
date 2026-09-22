@@ -1,6 +1,7 @@
 <div align="center">
 
-# Rolboard
+<img src="client/public/logo-icon.png" height="60" alt="" />
+<img src="client/public/logo-wordmark.png" height="72" alt="Rolboard" />
 
 **Personal dashboard for tabletop RPG campaign management**
 
