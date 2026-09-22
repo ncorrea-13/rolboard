@@ -2,7 +2,7 @@
 
 [English](DECISIONS.md)
 
-Decisiones vigentes y su porqué. Si una cambia, se reescribe acá; el historial queda en git.
+Decisiones vigentes y su porqué. Si una cambia, se reescribe aquí; el historial queda en git.
 
 ---
 
@@ -43,8 +43,8 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 
 - Endpoint HTTP por campaña, síncrono.
 - Upsert por `(campaign_id, obsidian_path)`; notas borradas → baja lógica.
-- Notas sin cambios (hash en `vault_file_state`) no se reprocesan, para no pisar ediciones hechas en el dashboard. Si la nota cambió, gana el vault. No hay UI de conflictos.
-- Membresías con `source` (`vault` / `dashboard` / `removed`) para que el reindex no borre lo agregado a mano ni reviva lo sacado a mano.
+- Notas sin cambios (hash en `vault_file_state`) no se reprocesan, para no sobrescribir ediciones hechas en el dashboard. Si la nota cambió, gana el vault. No hay UI de conflictos.
+- Membresías con `source` (`vault` / `dashboard` / `removed`) para que el reindex no borre lo agregado a mano ni reviva lo quitado a mano.
 - `session_npcs` / `session_pcs` salen de los wikilinks del cuerpo de la sesión: así se escriben naturalmente las notas, sin campos extra.
 - Wikilinks se resuelven por nombre + tipo esperado; si hay ambigüedad no se adivina.
 
@@ -53,7 +53,7 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - Migraciones SQL versionadas y embebidas. Nunca se edita una ya aplicada.
 - Baja lógica (`deleted_at`) y `ON DELETE RESTRICT`: perder datos por un borrado en cascada es peor que desvincular a mano.
 - Enums con `CHECK` en la base, no solo en Go.
-- Timestamps `TEXT` ISO 8601: legibles con `sqlite3`, el costo de performance no importa acá.
+- Timestamps `TEXT` ISO 8601: legibles con `sqlite3`, el costo de performance no importa aquí.
 - PK compuesta en tablas puente.
 - Sin índices sobre FKs todavía: con este volumen un scan es instantáneo.
 - `groups` y `player_characters` son entidades propias desde el principio.
@@ -81,7 +81,7 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 
 - Una imagen por NPC, PJ, locación y facción (`image_path`). La misma sirve para el retrato grande y el ícono chico (CSS). Sin galería ni tabla polimórfica.
 - En filesystem bajo `UPLOADS_ROOT`, no BLOB: la base y los backups quedan livianos. Fuera del vault.
-- Se escribe solo por su endpoint, nunca por el `PUT` de la entidad (un save del formulario no la pisa) ni por el reindex.
+- Se escribe solo por su endpoint, nunca por el `PUT` de la entidad (un save del formulario no la sobrescribe) ni por el reindex.
 - **Solo PNG y JPEG**, detectados decodificando el contenido. SVG rechazado: se serviría desde el mismo origen y podría ejecutar JS con la sesión del DM. WebP/AVIF requerirían una dependencia nueva.
 - La ruta en disco se construye (`<entidad>/<id>-portrait.<ext>`); el nombre subido nunca se usa. Cierra path traversal.
 - Máx. 5 MiB y `X-Content-Type-Options: nosniff` al servir.

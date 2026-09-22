@@ -9,7 +9,7 @@ Código: `server/internal/vault/`. Se dispara con `POST /api/campaigns/{id}/rein
 Lee el frontmatter YAML de las notas y crea/actualiza entidades. La prosa queda en Obsidian: el dashboard guarda `obsidian_path` para abrir la nota (`obsidian://`) o renderizarla.
 
 ```
-walker.go       recorre el vault, solo .md, saltea excluidos
+walker.go       recorre el vault, solo .md, omite excluidos
 frontmatter.go  separa YAML y cuerpo
 mapper.go       carpeta → tipo de entidad; structs de frontmatter
 wikilinks.go    extrae [[wikilinks]] (soporta [[Nombre|Alias]])
@@ -27,7 +27,7 @@ render.go       Markdown → HTML sanitizado
 
 Se hace en dos pasadas porque una nota puede referenciar otra que todavía no se leyó.
 
-**Incremental:** para NPCs, locaciones, facciones y PJs se guarda el SHA-256 de la nota en `vault_file_state`. Si no cambió, se saltea (solo se agrega al índice). Así una edición hecha en el dashboard no se pisa mientras la nota no cambie. Sesiones y arcos se procesan siempre.
+**Incremental:** para NPCs, locaciones, facciones y PJs se guarda el SHA-256 de la nota en `vault_file_state`. Si no cambió, se omite (solo se agrega al índice). Así una edición hecha en el dashboard no se sobrescribe mientras la nota no cambie. Sesiones y arcos se procesan siempre.
 
 **Resultado:** `{Processed, UnresolvedWikilinks, Conflicts, Errors}`. Un error en una nota no corta el reindex.
 
@@ -135,7 +135,7 @@ Un wikilink se busca por nombre y se filtra por el tipo esperado según el campo
 
 ## Membresías y ediciones manuales
 
-`npc_groups` / `pc_groups` distinguen origen (`source`): el reindex solo reescribe lo que vino del vault y respeta lo agregado o sacado desde el dashboard. Ver `DATA_MODEL.md`.
+`npc_groups` / `pc_groups` distinguen origen (`source`): el reindex solo reescribe lo que vino del vault y respeta lo agregado o quitado desde el dashboard. Ver `DATA_MODEL.md`.
 
 ## Render de notas
 
@@ -148,7 +148,7 @@ Un wikilink se busca por nombre y se filtra por el tipo esperado según el campo
 
 ## Abrir en Obsidian
 
-El cliente arma `obsidian://open?vault=<vault_path>&file=<obsidian_path sin .md>` (`client/src/lib/obsidian.ts`). Funciona porque Obsidian nombra el vault igual que su carpeta.
+El cliente construye `obsidian://open?vault=<vault_path>&file=<obsidian_path sin .md>` (`client/src/lib/obsidian.ts`). Funciona porque Obsidian nombra el vault igual que su carpeta.
 
 ## Sincronización
 
