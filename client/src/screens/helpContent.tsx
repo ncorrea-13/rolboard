@@ -17,7 +17,7 @@ const CALLOUT_EXAMPLE = `> [!NOTE]
 const es: HelpSection[] = [
   {
     id: "empezar",
-    title: "Empezar",
+    title: "Primeros pasos",
     body: (
       <>
         <p>

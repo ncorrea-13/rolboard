@@ -6,6 +6,23 @@
   padding: 20px 24px;
 }
 
+.help__logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px 12px;
+}
+
+.help__logo-icon {
+  height: 34px;
+  width: auto;
+}
+
+.help__logo-wordmark {
+  height: 42px;
+  width: auto;
+}
+
 .help__header {
   display: flex;
   align-items: center;
@@ -112,6 +129,10 @@
 @media (max-width: 640px) {
   .help__card {
     padding: 16px;
+  }
+
+  .help__logo {
+    display: none;
   }
 
   .help__layout {
