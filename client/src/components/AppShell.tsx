@@ -11,6 +11,7 @@ interface AppShellProps {
   onNavigate: (section: DashboardSection) => void;
   onBackToCampaigns: () => void;
   onOpenSettings?: () => void;
+  onHelp: () => void;
   onAdminLogout?: () => void;
   children: React.ReactNode;
 }
@@ -21,6 +22,7 @@ export function AppShell({
   onNavigate,
   onBackToCampaigns,
   onOpenSettings,
+  onHelp,
   onAdminLogout,
   children,
 }: AppShellProps) {
@@ -47,6 +49,7 @@ export function AppShell({
           onNavigate={handleNavigate}
           onBack={onBackToCampaigns}
           onOpenSettings={onOpenSettings}
+          onHelp={onHelp}
           onAdminLogout={onAdminLogout}
           onBackdropClick={handleBackdropClick}
           onClose={() => setSidebarOpen(false)}

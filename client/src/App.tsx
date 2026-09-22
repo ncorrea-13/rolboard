@@ -363,6 +363,7 @@ export default function App() {
           onNavigate={(section) => setRoute({ name: "section", section })}
           onBackToCampaigns={() => setRoute({ name: "campaigns" })}
           onOpenSettings={() => setSettingsOpen(true)}
+          onHelp={openHelp}
           onAdminLogout={
             hasAdminSecret()
               ? async () => {
