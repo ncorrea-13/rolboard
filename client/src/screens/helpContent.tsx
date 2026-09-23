@@ -26,9 +26,14 @@ const es: HelpSection[] = [
           combate, todo en un mismo lugar.
         </p>
         <p>
-          No está atado a ningún sistema de reglas. Nació para salir de
-          Obsidian y manejar la campaña más rápido, pero puede convivir con tu
-          vault: lee sus notas y te deja volver a ellas desde cada ficha.
+          Está pensado por y para la narrativa: no reemplaza a un VTT ni a una
+          ficha de personaje. No trae reglas cargadas ni resuelve tiradas; el
+          tracker de combate solo ordena los turnos.
+        </p>
+        <p>
+          Nació para salir de Obsidian y manejar la campaña más rápido, pero
+          puede convivir con tu vault: lee sus notas y te deja volver a ellas
+          desde cada ficha.
         </p>
       </>
     ),
@@ -44,6 +49,11 @@ const es: HelpSection[] = [
           sidebar, pon un <strong>código de acceso</strong>: con ese código
           entras a la campaña desde el selector.
         </p>
+        <p>
+          El tablero es para quien dirige: los jugadores no tienen cuenta
+          propia. Quien tenga el código ve y edita toda la campaña, así que no
+          lo compartas con la mesa.
+        </p>
       </>
     ),
   },
@@ -52,12 +62,29 @@ const es: HelpSection[] = [
     title: "Qué hay en cada sección",
     body: (
       <ul>
-        <li><strong>Resumen:</strong> el arco actual, la última sesión, las quests activas y los NPCs recientes.</li>
-        <li><strong>Arcos y Sesiones:</strong> la historia de la campaña, ordenada en una línea de tiempo.</li>
-        <li><strong>NPCs, Jugadores, Locaciones y Facciones:</strong> tu elenco y tu mundo, con sus fichas y relaciones.</li>
-        <li><strong>Quests:</strong> las misiones, con estado y prioridad.</li>
-        <li><strong>Encuentros:</strong> un tracker de combate por rondas, con personajes, NPCs y enemigos genéricos.</li>
-        <li><strong>Wardails:</strong> los temas sensibles de la campaña (más abajo).</li>
+        <li>
+          <strong>Resumen:</strong> el arco actual, la última sesión, las quests
+          activas y los NPCs recientes.
+        </li>
+        <li>
+          <strong>Arcos y Sesiones:</strong> la historia de la campaña, ordenada
+          en una línea de tiempo.
+        </li>
+        <li>
+          <strong>NPCs, Jugadores, Locaciones y Facciones:</strong> tu elenco y
+          tu mundo, con sus fichas y relaciones.
+        </li>
+        <li>
+          <strong>Quests:</strong> las misiones, con estado y prioridad.
+        </li>
+        <li>
+          <strong>Encuentros:</strong> un tracker de combate por rondas, con
+          personajes, NPCs y enemigos genéricos.
+        </li>
+        <li>
+          <strong>Wardails:</strong> los temas sensibles de la campaña (más
+          abajo).
+        </li>
       </ul>
     ),
   },
@@ -140,12 +167,42 @@ const es: HelpSection[] = [
             </tr>
           </thead>
           <tbody>
-            <tr><td><code>NPC/</code></td><td>NPCs</td></tr>
-            <tr><td><code>Locaciones/</code></td><td>Locaciones</td></tr>
-            <tr><td><code>Grupos/</code></td><td>Facciones</td></tr>
-            <tr><td><code>Sesiones/</code></td><td>Sesiones</td></tr>
-            <tr><td><code>Jugadores/</code></td><td>Personajes</td></tr>
-            <tr><td><code>Arcos/</code></td><td>Arcos</td></tr>
+            <tr>
+              <td>
+                <code>NPC/</code>
+              </td>
+              <td>NPCs</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Locaciones/</code>
+              </td>
+              <td>Locaciones</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Grupos/</code>
+              </td>
+              <td>Facciones</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Sesiones/</code>
+              </td>
+              <td>Sesiones</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Jugadores/</code>
+              </td>
+              <td>Personajes</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Arcos/</code>
+              </td>
+              <td>Arcos</td>
+            </tr>
           </tbody>
         </table>
         <p>
@@ -172,13 +229,18 @@ const en: HelpSection[] = [
       <>
         <p>
           Rolboard is a dashboard for running tabletop RPG campaigns: sessions,
-          arcs, players, NPCs, locations, factions, quests and a combat
-          tracker, all in one place.
+          arcs, players, NPCs, locations, factions, quests and a combat tracker,
+          all in one place.
         </p>
         <p>
-          It isn't tied to any ruleset. It started as a way out of Obsidian to
-          manage the campaign faster, but it can live alongside your vault: it
-          reads its notes and lets you jump back to them from each sheet.
+          It's built by and for the narrative: it doesn't replace a VTT or a
+          character sheet. It ships no rules and doesn't resolve rolls; the
+          combat tracker only orders turns.
+        </p>
+        <p>
+          It started as a way out of Obsidian to manage the campaign faster, but
+          it can live alongside your vault: it reads its notes and lets you jump
+          back to them from each sheet.
         </p>
       </>
     ),
@@ -187,12 +249,19 @@ const en: HelpSection[] = [
     id: "start",
     title: "Getting started",
     body: (
-      <p>
-        On the first screen pick <em>New campaign</em> (it asks for the
-        installation's admin key). Then, in the sidebar's settings button, set
-        an <strong>access code</strong>: that code is how you enter the campaign
-        from the selector.
-      </p>
+      <>
+        <p>
+          On the first screen pick <em>New campaign</em> (it asks for the
+          installation's admin key). Then, in the sidebar's settings button, set
+          an <strong>access code</strong>: that code is how you enter the
+          campaign from the selector.
+        </p>
+        <p>
+          The board is for whoever runs the game: players don't get their own
+          accounts. Anyone with the code sees and edits the whole campaign, so
+          don't share it with the table.
+        </p>
+      </>
     ),
   },
   {
@@ -200,12 +269,28 @@ const en: HelpSection[] = [
     title: "What each section is for",
     body: (
       <ul>
-        <li><strong>Overview:</strong> the current arc, the last session, active quests and recent NPCs.</li>
-        <li><strong>Arcs and Sessions:</strong> the campaign's story, laid out on a timeline.</li>
-        <li><strong>NPCs, Players, Locations and Factions:</strong> your cast and your world, with their sheets and relations.</li>
-        <li><strong>Quests:</strong> the missions, with status and priority.</li>
-        <li><strong>Encounters:</strong> a round-by-round combat tracker, with characters, NPCs and generic enemies.</li>
-        <li><strong>Wardails:</strong> the campaign's sensitive topics (below).</li>
+        <li>
+          <strong>Overview:</strong> the current arc, the last session, active
+          quests and recent NPCs.
+        </li>
+        <li>
+          <strong>Arcs and Sessions:</strong> the campaign's story, laid out on
+          a timeline.
+        </li>
+        <li>
+          <strong>NPCs, Players, Locations and Factions:</strong> your cast and
+          your world, with their sheets and relations.
+        </li>
+        <li>
+          <strong>Quests:</strong> the missions, with status and priority.
+        </li>
+        <li>
+          <strong>Encounters:</strong> a round-by-round combat tracker, with
+          characters, NPCs and generic enemies.
+        </li>
+        <li>
+          <strong>Wardails:</strong> the campaign's sensitive topics (below).
+        </li>
       </ul>
     ),
   },
@@ -274,9 +359,9 @@ const en: HelpSection[] = [
       <>
         <p>
           You can point the campaign at your vault and bring in your notes with{" "}
-          <strong>Reindex vault</strong>, on the Overview. The app only reads: it
-          never changes your notes. Each note becomes something according to its
-          folder, and the file name is the entity's name:
+          <strong>Reindex vault</strong>, on the Overview. The app only reads:
+          it never changes your notes. Each note becomes something according to
+          its folder, and the file name is the entity's name:
         </p>
         <table>
           <thead>
@@ -286,12 +371,42 @@ const en: HelpSection[] = [
             </tr>
           </thead>
           <tbody>
-            <tr><td><code>NPC/</code></td><td>NPCs</td></tr>
-            <tr><td><code>Locaciones/</code></td><td>Locations</td></tr>
-            <tr><td><code>Grupos/</code></td><td>Factions</td></tr>
-            <tr><td><code>Sesiones/</code></td><td>Sessions</td></tr>
-            <tr><td><code>Jugadores/</code></td><td>Characters</td></tr>
-            <tr><td><code>Arcos/</code></td><td>Arcs</td></tr>
+            <tr>
+              <td>
+                <code>NPC/</code>
+              </td>
+              <td>NPCs</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Locaciones/</code>
+              </td>
+              <td>Locations</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Grupos/</code>
+              </td>
+              <td>Factions</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Sesiones/</code>
+              </td>
+              <td>Sessions</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Jugadores/</code>
+              </td>
+              <td>Characters</td>
+            </tr>
+            <tr>
+              <td>
+                <code>Arcos/</code>
+              </td>
+              <td>Arcs</td>
+            </tr>
           </tbody>
         </table>
         <p>
