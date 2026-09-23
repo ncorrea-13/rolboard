@@ -21,7 +21,7 @@
 
 ---
 
-Web app for managing tabletop RPG campaigns. Covers sessions, players, NPCs, arcs, locations, groups, quests and a combat tracker built for Cosmere RPG and D&D 5e. Stays system-agnostic, no single ruleset baked in.
+Web app for running tabletop RPG campaigns, focused on narrative: sessions, arcs, players, NPCs, locations, factions and quests, plus a light combat tracker. No ruleset baked in — no rolls, no stat blocks; it's a place to keep the story, not a VTT. Built for the GM: players don't get accounts.
 
 Started as a move away from Obsidian, for faster management, while still including a frontmatter indexer to pull that data in and coexist with the vault. Keeps the vault structure and lets you navigate back to it. Each campaign stores its own `vault_path`, a subfolder under `VAULTS_ROOT`. [`vault-template/`](vault-template/) has a vault layout the indexer recognizes out of the box.
 

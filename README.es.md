@@ -21,7 +21,7 @@
 
 ---
 
-App web para la gestión y manejo de campañas de rol de mesa. Incluye el manejo de sesiones, jugadores, NPCs, arcos, locaciones, grupos, quests y un tracker de combate pensado para Cosmere RPG y DND 5e. Se mantiene agnóstico sin definir un solo sistema.
+App web para dirigir campañas de rol de mesa, enfocada en la narrativa: sesiones, arcos, jugadores, NPCs, locaciones, facciones y quests, más un tracker de combate liviano. No trae reglas: no hay tiradas ni stats; es un lugar para la historia, no un VTT. Pensado para quien dirige: los jugadores no tienen cuenta.
 
 Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gestión más rápida con lo que incluye un indexador del frontmatter para poder traer esta información y poder convivir con la vault. Mantiene la estructura del vault y permite navegar hacia él. Cada campaña guarda su `vault_path`, una subcarpeta dentro de `VAULTS_ROOT`. [`vault-template/`](vault-template/) tiene una estructura de vault que el indexador reconoce sin tocar código.
 
@@ -29,7 +29,7 @@ Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gesti�
 
 | Capa          | Tecnología                                   |
 | ------------- | -------------------------------------------- |
-| Servidor      | Go 1.27, `net/http` stdlib ()                |
+| Servidor      | Go 1.27, `net/http` stdlib                   |
 | Base de datos | SQLite (`modernc.org/sqlite`)                |
 | Cliente       | React + TypeScript + Vite, servido por Caddy |
 
