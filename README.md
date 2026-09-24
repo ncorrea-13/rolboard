@@ -170,4 +170,9 @@ Personal project, built as a deliberate Go-learning exercise. [`AGENTS.md`](AGEN
 
 MIT - see [LICENSE](LICENSE) for details.
 
-**Nicolás Correa** — [github.com/ncorrea-13](https://github.com/ncorrea-13)
+Logos and icons (`client/public/logo-*.png`, `client/public/favicon.png`) are © Mateo Guareschi, used with permission. They are **not** covered by the MIT license.
+
+
+---
+
+_Mendoza, Argentina · Nicolás Correa ([ncorrea-13](https://github.com/ncorrea-13))_

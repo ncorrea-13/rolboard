@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Callout, Code } from "../components/HelpBlocks";
+import { PORTFOLIO_URL } from "../components/SiteFooter";
 import type { Lang } from "../lib/i18n";
 
 export interface HelpSection {
@@ -213,6 +214,26 @@ const es: HelpSection[] = [
       </>
     ),
   },
+  {
+    id: "creditos",
+    title: "Créditos y licencia",
+    body: (
+      <>
+        <p>
+          Desarrollado por{" "}
+          <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">
+            <strong>Nicolás Correa</strong>
+          </a>
+          . Logos e íconos diseñados por <strong>Mateo Guareschi</strong>.
+        </p>
+        <p>
+          Rolboard es software de código abierto distribuido bajo la licencia
+          MIT. Los logos e íconos no están incluidos en esa licencia: son
+          propiedad de su autor y se usan con su permiso.
+        </p>
+      </>
+    ),
+  },
 ];
 
 const enCalloutExample = `> [!NOTE]
@@ -413,6 +434,26 @@ const en: HelpSection[] = [
           From each sheet you can <em>Open in Obsidian</em> or see the full note
           with <em>View rendered note</em>. If an NPC's <code>tipo:</code> is a
           new type, it is created on its own.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "credits",
+    title: "Credits and license",
+    body: (
+      <>
+        <p>
+          Developed by{" "}
+          <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">
+            <strong>Nicolás Correa</strong>
+          </a>
+          . Logos and icons designed by <strong>Mateo Guareschi</strong>.
+        </p>
+        <p>
+          Rolboard is open source software distributed under the MIT license.
+          The logos and icons are not covered by that license: they belong to
+          their author and are used with permission.
         </p>
       </>
     ),
