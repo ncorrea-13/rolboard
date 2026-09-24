@@ -172,4 +172,6 @@ MIT - [LICENSE](LICENSE) para más información.
 
 Los logos e íconos (`client/public/logo-*.png`, `client/public/favicon.png`) son © Mateo Guareschi y se usan con su permiso. **No** están cubiertos por la licencia MIT.
 
-**Nicolás Correa** — [github.com/ncorrea-13](https://github.com/ncorrea-13)
+---
+
+_Mendoza, Argentina · Nicolás Correa ([ncorrea-13](https://github.com/ncorrea-13))_
