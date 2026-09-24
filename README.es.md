@@ -170,4 +170,6 @@ Proyecto personal, pensado como ejercicio deliberado de aprendizaje de Go. [`AGE
 
 MIT - [LICENSE](LICENSE) para más información.
 
+Los logos e íconos (`client/public/logo-*.png`, `client/public/favicon.png`) son © Mateo Guareschi y se usan con su permiso. **No** están cubiertos por la licencia MIT.
+
 **Nicolás Correa** — [github.com/ncorrea-13](https://github.com/ncorrea-13)
