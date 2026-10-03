@@ -130,3 +130,9 @@ body {
     min-height: 40px;
   }
 }
+
+:where(.link-reset) {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}

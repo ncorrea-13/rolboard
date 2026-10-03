@@ -16,6 +16,7 @@ import { StatusPill } from "../components/StatusPill";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 import type { CSSProperties } from "react";
+import { Link } from "../components/Link";
 
 const statusFilters: StatusKind[] = ["alive", "dead", "missing", "paused"];
 
@@ -23,13 +24,11 @@ const PAGE_SIZE = 25;
 
 export function NpcList({
   npcs,
-  onSelect,
   onCreate,
   npcTypesApi,
   imageVersion = 0,
 }: {
   npcs: Npc[];
-  onSelect: (id: string) => void;
   onCreate: () => void;
   npcTypesApi: NpcTypesApi;
   imageVersion?: number;
@@ -173,10 +172,10 @@ export function NpcList({
       )}
 
       {paged.map((n) => (
-        <div
+        <Link
           key={n.id}
           className="npc-list__row npc-list__row--data"
-          onClick={() => onSelect(n.id)}
+          route={{ name: "npc-detail", npcId: n.id }}
         >
           <EntityIdentity
             initials={n.initials}
@@ -195,7 +194,7 @@ export function NpcList({
           </span>
           <span className="npc-list__cell">{n.location}</span>
           <StatusPill status={n.status} />
-        </div>
+        </Link>
       ))}
 
       {pageCount > 1 && (

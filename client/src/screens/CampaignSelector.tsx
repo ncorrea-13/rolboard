@@ -3,6 +3,7 @@ import type { Campaign } from "../data/domain";
 import { CampaignStatusPill } from "../components/StatusPill";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { useT } from "../lib/i18n";
+import { Link } from "../components/Link";
 
 interface CampaignSelectorProps {
   campaigns: Campaign[];
@@ -42,10 +43,12 @@ export function CampaignSelector({
       </header>
       <div className="campaign-selector__grid">
         {campaigns.map((c) => (
-          <div
+          <Link
             key={c.id}
             className="card campaign-card campaign-card--clickable"
-            onClick={() => onSelect(c.id)}
+            route={{ name: "section", section: "resumen" }}
+            campaignId={c.id}
+            onNavigate={() => onSelect(c.id)}
           >
             <div className="campaign-card__top">
               <div>
@@ -60,7 +63,7 @@ export function CampaignSelector({
               <span>{c.meta}</span>
               <span>{c.last}</span>
             </div>
-          </div>
+          </Link>
         ))}
         <div className="campaign-card campaign-card--new" onClick={onCreate}>
           {t("campaignSelector.newCard")}

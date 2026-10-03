@@ -4,14 +4,14 @@ import { type Arc } from "../data/domain";
 import { ArcStatusPill } from "../components/StatusPill";
 import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
+import { Link } from "../components/Link";
 
 interface ArcsListProps {
   arcs: Arc[];
-  onSelect: (id: string) => void;
   onCreate: () => void;
 }
 
-export function ArcsList({ arcs, onSelect, onCreate }: ArcsListProps) {
+export function ArcsList({ arcs, onCreate }: ArcsListProps) {
   const t = useT();
   const [search, setSearch] = useState("");
   const q = search.trim().toLowerCase();
@@ -43,10 +43,10 @@ export function ArcsList({ arcs, onSelect, onCreate }: ArcsListProps) {
       </div>
       <div className="list-page__rows">
         {filtered.map((a) => (
-          <div
+          <Link
             key={a.id}
             className="list-page__row list-page__row--clickable"
-            onClick={() => onSelect(a.id)}
+            route={{ name: "entity-detail", kind: "arc", id: a.id }}
           >
             <div className="list-page__row-main">
               <div className="list-page__row-title">{a.label}</div>
@@ -56,7 +56,7 @@ export function ArcsList({ arcs, onSelect, onCreate }: ArcsListProps) {
             </div>
             <span className="list-page__badge">{a.meta}</span>
             <ArcStatusPill status={a.status} />
-          </div>
+          </Link>
         ))}
       </div>
     </div>
