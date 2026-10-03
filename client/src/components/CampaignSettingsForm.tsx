@@ -15,6 +15,8 @@ interface CampaignSettingsFormProps {
   onCancel: () => void;
 }
 
+const MIN_ACCESS_CODE_LENGTH = 8;
+
 export function CampaignSettingsForm({
   campaign,
   onSave,
@@ -58,7 +60,7 @@ export function CampaignSettingsForm({
   }
 
   async function handleSaveCode() {
-    if (!accessCode.trim() || codeSaving) return;
+    if (accessCode.trim().length < MIN_ACCESS_CODE_LENGTH || codeSaving) return;
     setCodeSaving(true);
     setCodeError(null);
     setCodeSaved(false);
@@ -179,7 +181,9 @@ export function CampaignSettingsForm({
         <button
           className="btn btn-primary"
           onClick={handleSaveCode}
-          disabled={!accessCode.trim() || codeSaving}
+          disabled={
+            accessCode.trim().length < MIN_ACCESS_CODE_LENGTH || codeSaving
+          }
         >
           {t("campaignSettings.accessCodeSave")}
         </button>
