@@ -17,7 +17,7 @@ REST + JSON under `/api`. Router: `net/http` stdlib (`ServeMux` with methods and
 | -------- | -------------------------------------- | ------------------------ |
 | Public   | no cookie                              | —                        |
 | Admin    | `POST /api/admin/login`                | `rolboard_admin_session` |
-| Campaign | `POST /api/campaigns/{id}/login`       | `rolboard_session`       |
+| Campaign | `POST /api/campaigns/{id}/login`       | `rolboard_session_<id>`  |
 
 An admin session passes any campaign check. A campaign session only accesses resources from that campaign (middleware resolves the resource's campaign and compares; mismatch → `401`).
 

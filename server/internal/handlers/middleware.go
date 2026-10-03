@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,9 +17,11 @@ import (
 )
 
 const (
-	sessionCookieName      = "rolboard_session"
+	sessionCookiePrefix    = "rolboard_session_"
 	adminSessionCookieName = "rolboard_admin_session"
 	adminSessionTTL        = 24 * time.Hour
+
+	maxSessionCookiesChecked = 20
 )
 
 var adminLoginLimiter = newRateLimiter(5, 15*time.Minute)
@@ -153,7 +156,21 @@ func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error),
 			return
 		}
 
-		cookie, err := r.Cookie(sessionCookieName)
+		resourceCampaignID, err := resolve(r)
+		if errors.Is(err, repository.ErrNotFound) {
+			if h.hasValidCampaignSession(r) {
+				http.Error(w, "Not found", http.StatusNotFound)
+			} else {
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			}
+			return
+		}
+		if err != nil {
+			http.Error(w, "Invalid id", http.StatusBadRequest)
+			return
+		}
+
+		cookie, err := r.Cookie(sessionCookieFor(resourceCampaignID))
 		if err != nil {
 			slog.Warn("campaign auth failed: no session cookie",
 				"path", r.URL.Path,
@@ -174,16 +191,6 @@ func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error),
 			return
 		}
 
-		resourceCampaignID, err := resolve(r)
-		if errors.Is(err, repository.ErrNotFound) {
-			http.Error(w, "Not found", http.StatusNotFound)
-			return
-		}
-		if err != nil {
-			http.Error(w, "Invalid id", http.StatusBadRequest)
-			return
-		}
-
 		if resourceCampaignID != sessionCampaignID {
 			slog.Warn("campaign auth failed: campaign mismatch",
 				"session_campaign_id", sessionCampaignID,
@@ -196,6 +203,27 @@ func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error),
 		}
 		next(w, r)
 	}
+}
+
+func sessionCookieFor(campaignID int64) string {
+	return sessionCookiePrefix + strconv.FormatInt(campaignID, 10)
+}
+
+func (h *Handlers) hasValidCampaignSession(r *http.Request) bool {
+	checked := 0
+	for _, c := range r.Cookies() {
+		if !strings.HasPrefix(c.Name, sessionCookiePrefix) {
+			continue
+		}
+		if checked == maxSessionCookiesChecked {
+			return false
+		}
+		checked++
+		if _, err := h.auth.ValidateToken(r.Context(), c.Value); err == nil {
+			return true
+		}
+	}
+	return false
 }
 
 func resolveCampaignFromPath(r *http.Request) (int64, error) {
