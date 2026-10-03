@@ -9,6 +9,45 @@ export interface HelpSection {
   body: ReactNode;
 }
 
+const CALLOUT_TYPES: [string, string[]][] = [
+  ["NOTE", []],
+  ["ABSTRACT", ["SUMMARY", "TLDR"]],
+  ["INFO", []],
+  ["TODO", []],
+  ["TIP", ["HINT", "IMPORTANT"]],
+  ["SUCCESS", ["CHECK", "DONE"]],
+  ["QUESTION", ["HELP", "FAQ"]],
+  ["WARNING", ["CAUTION", "ATTENTION"]],
+  ["FAILURE", ["FAIL", "MISSING"]],
+  ["DANGER", ["ERROR"]],
+  ["BUG", []],
+  ["EXAMPLE", []],
+  ["QUOTE", ["CITE"]],
+];
+
+function CalloutTypes({ aliasLabel }: { aliasLabel: string }) {
+  return (
+    <ul>
+      {CALLOUT_TYPES.map(([kind, aliases]) => (
+        <li key={kind}>
+          <code>[!{kind}]</code>
+          {aliases.length > 0 && (
+            <>
+              {` — ${aliasLabel}: `}
+              {aliases.map((a, i) => (
+                <span key={a}>
+                  {i > 0 && ", "}
+                  <code>{a}</code>
+                </span>
+              ))}
+            </>
+          )}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 const CALLOUT_EXAMPLE = `> [!NOTE]
 > Una nota informativa.
 
@@ -134,6 +173,10 @@ const es: HelpSection[] = [
         <Callout kind="warning" title="Título propio">
           Algo que no hay que olvidar.
         </Callout>
+        <p>
+          Tipos disponibles (los mismos de Obsidian, sin distinguir mayúsculas):
+        </p>
+        <CalloutTypes aliasLabel="alias" />
       </>
     ),
   },
@@ -359,6 +402,8 @@ const en: HelpSection[] = [
         <Callout kind="warning" title="Custom title">
           Something not to forget.
         </Callout>
+        <p>Available types (same as Obsidian, case-insensitive):</p>
+        <CalloutTypes aliasLabel="aliases" />
       </>
     ),
   },
