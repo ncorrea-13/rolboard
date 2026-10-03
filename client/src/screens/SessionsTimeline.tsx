@@ -8,6 +8,7 @@ import {
 } from "../data/domain";
 import { MarkdownText } from "../components/MarkdownText";
 import { useT } from "../lib/i18n";
+import { Link } from "../components/Link";
 
 interface SessionsTimelineProps {
   arcs: Arc[];
@@ -16,7 +17,6 @@ interface SessionsTimelineProps {
   hasPlannedSession: boolean;
   onPlanSession: () => void;
   onPlaySession: () => void;
-  onOpenSession: (sessionId: string) => void;
 }
 
 export function SessionsTimeline({
@@ -26,7 +26,6 @@ export function SessionsTimeline({
   hasPlannedSession,
   onPlanSession,
   onPlaySession,
-  onOpenSession,
 }: SessionsTimelineProps) {
   const t = useT();
   const unassigned = sessions.filter((s) => !s.arcId);
@@ -81,11 +80,11 @@ export function SessionsTimeline({
             </div>
             <div className="sessions-timeline__list">
               {groupSessions.map((s) => (
-                <div
+                <Link
                   key={s.id}
                   className="card sessions-timeline__item"
                   style={{ cursor: "pointer" }}
-                  onClick={() => onOpenSession(s.id)}
+                  route={{ name: "session-detail", sessionId: s.id }}
                 >
                   <div className="sessions-timeline__item-n">
                     <div className="sessions-timeline__item-code">
@@ -110,7 +109,7 @@ export function SessionsTimeline({
                       <MarkdownText inline text={s.summary} />
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

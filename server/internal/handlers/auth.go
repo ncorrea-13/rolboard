@@ -46,7 +46,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		"remote", r.RemoteAddr,
 	)
 	http.SetCookie(w, &http.Cookie{
-		Name:     sessionCookieName,
+		Name:     sessionCookieFor(campaignID),
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
@@ -58,15 +58,21 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
-	if cookie, err := r.Cookie(sessionCookieName); err == nil {
+	campaignID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+
+	if cookie, err := r.Cookie(sessionCookieFor(campaignID)); err == nil {
 		_ = h.auth.Logout(r.Context(), cookie.Value)
 	}
 	slog.Info("logout",
-		"campaign_id", r.PathValue("id"),
+		"campaign_id", campaignID,
 		"remote", r.RemoteAddr,
 	)
 	http.SetCookie(w, &http.Cookie{
-		Name:     sessionCookieName,
+		Name:     sessionCookieFor(campaignID),
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,

@@ -58,7 +58,7 @@ Capas del backend: `handlers → service → repository`. El handler solo traduc
 ## Autenticación
 
 - **Admin**: `POST /api/admin/login` con el token de instancia (`ADMIN_TOKEN_FILE` o `ADMIN_TOKEN`). Emite cookie `rolboard_admin_session` (24 h, sesiones en memoria — se pierden al reiniciar). Da acceso a todo.
-- **Campaña**: `POST /api/campaigns/{id}/login` con el código de acceso (bcrypt en `campaigns.access_code_hash`). Emite cookie `rolboard_session` (24 h, hash del token en `auth_sessions`). Solo da acceso a recursos de esa campaña: cada ruta resuelve a qué campaña pertenece el recurso y lo compara con la sesión.
+- **Campaña**: `POST /api/campaigns/{id}/login` con el código de acceso (bcrypt en `campaigns.access_code_hash`). Emite cookie `rolboard_session_<id>` (una por campaña, 24 h, hash del token en `auth_sessions`). Solo da acceso a recursos de esa campaña: cada ruta resuelve a qué campaña pertenece el recurso y lo compara con la sesión.
 - Cookies `HttpOnly`, `SameSite=Lax`, `Secure` salvo `COOKIE_SECURE=false`. Logins con rate limit.
 
 ## Despliegue

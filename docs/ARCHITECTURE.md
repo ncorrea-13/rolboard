@@ -58,7 +58,7 @@ Backend layers: `handlers → service → repository`. The handler only translat
 ## Authentication
 
 - **Admin**: `POST /api/admin/login` with the instance token (`ADMIN_TOKEN_FILE` or `ADMIN_TOKEN`). Issues the `rolboard_admin_session` cookie (24 h, in-memory sessions — lost on restart). Grants access to everything.
-- **Campaign**: `POST /api/campaigns/{id}/login` with the access code (bcrypt against `campaigns.access_code_hash`). Issues the `rolboard_session` cookie (24 h, token hash in `auth_sessions`). Only grants access to that campaign's resources: each route resolves which campaign the resource belongs to and compares it against the session.
+- **Campaign**: `POST /api/campaigns/{id}/login` with the access code (bcrypt against `campaigns.access_code_hash`). Issues the `rolboard_session_<id>` cookie (one per campaign, 24 h, token hash in `auth_sessions`). Only grants access to that campaign's resources: each route resolves which campaign the resource belongs to and compares it against the session.
 - Cookies are `HttpOnly`, `SameSite=Lax`, `Secure` unless `COOKIE_SECURE=false`. Logins are rate limited.
 
 ## Deployment

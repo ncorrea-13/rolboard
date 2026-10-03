@@ -2,7 +2,7 @@
 
 [Español](VAULT_INDEXER.es.md)
 
-Code: `server/internal/vault/`. Triggered by `POST /api/campaigns/{id}/reindex` over `VAULTS_ROOT/<vault_path>`. The vault is mounted read-only; the indexer never writes to it.
+Code: `server/internal/vault/`. Triggered by `POST /api/campaigns/{id}/reindex` over `VAULTS_ROOT/<vault_path>`. The vault is mounted read-only; the indexer never writes to it. Files are read through `os.Root`, so a symlink pointing outside the vault is rejected and reported as an error.
 
 ## What it does
 

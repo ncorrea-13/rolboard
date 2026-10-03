@@ -4,17 +4,16 @@ import type { Group } from "../data/domain";
 import { useT } from "../lib/i18n";
 import { entityImageUrl } from "../lib/images";
 import { MarkdownText } from "../components/MarkdownText";
+import { Link } from "../components/Link";
 
 interface FactionsListProps {
   groups: Group[];
-  onSelect: (id: string) => void;
   onCreate: () => void;
   imageVersion?: number;
 }
 
 export function FactionsList({
   groups,
-  onSelect,
   onCreate,
   imageVersion = 0,
 }: FactionsListProps) {
@@ -56,10 +55,10 @@ export function FactionsList({
             imageVersion,
           );
           return (
-            <div
+            <Link
               key={g.id}
               className="list-page__row list-page__row--clickable"
-              onClick={() => onSelect(g.id)}
+              route={{ name: "entity-detail", kind: "faction", id: g.id }}
             >
               {imageUrl && (
                 <img className="list-page__thumbnail" src={imageUrl} alt="" />
@@ -79,7 +78,7 @@ export function FactionsList({
               <span className="list-page__badge">
                 {g.memberCount} {t("factionsList.members")}
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>

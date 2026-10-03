@@ -28,6 +28,7 @@ import {
   type Session,
 } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
+import { Link } from "../components/Link";
 
 interface EditableProps {
   onEdit: () => void;
@@ -127,8 +128,6 @@ export function FactionDetail({
   vaultName,
   campaignId,
   onBack,
-  onSelectNpc,
-  onSelectPlayer,
   onEdit,
   onDelete,
   imageVersion = 0,
@@ -139,8 +138,6 @@ export function FactionDetail({
   vaultName: string;
   campaignId: string;
   onBack: () => void;
-  onSelectNpc: (id: string) => void;
-  onSelectPlayer: (id: string) => void;
   imageVersion?: number;
 } & EditableProps) {
   const t = useT();
@@ -248,9 +245,9 @@ export function FactionDetail({
                   className="list-page__row"
                   style={{ display: "flex", alignItems: "center", gap: 8 }}
                 >
-                  <div
+                  <Link
                     style={{ flex: 1, cursor: "pointer" }}
-                    onClick={() => onSelectNpc(n.id)}
+                    route={{ name: "npc-detail", npcId: n.id }}
                   >
                     <EntityIdentity
                       initials={n.initials}
@@ -264,7 +261,7 @@ export function FactionDetail({
                         imageVersion,
                       )}
                     />
-                  </div>
+                  </Link>
                   <StatusPill status={n.status} />
                   <button
                     className="btn btn-secondary"
@@ -317,9 +314,9 @@ export function FactionDetail({
                   className="list-page__row"
                   style={{ display: "flex", alignItems: "center", gap: 8 }}
                 >
-                  <div
+                  <Link
                     style={{ flex: 1, cursor: "pointer" }}
-                    onClick={() => onSelectPlayer(p.id)}
+                    route={{ name: "player-detail", playerId: p.id }}
                   >
                     <EntityIdentity
                       initials={p.characterName.slice(0, 2).toUpperCase()}
@@ -333,7 +330,7 @@ export function FactionDetail({
                         imageVersion,
                       )}
                     />
-                  </div>
+                  </Link>
                   <StatusPill status={p.status} />
                   <button
                     className="btn btn-secondary"

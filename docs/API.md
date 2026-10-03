@@ -17,7 +17,7 @@ REST + JSON under `/api`. Router: `net/http` stdlib (`ServeMux` with methods and
 | -------- | -------------------------------------- | ------------------------ |
 | Public   | no cookie                              | —                        |
 | Admin    | `POST /api/admin/login`                | `rolboard_admin_session` |
-| Campaign | `POST /api/campaigns/{id}/login`       | `rolboard_session`       |
+| Campaign | `POST /api/campaigns/{id}/login`       | `rolboard_session_<id>`  |
 
 An admin session passes any campaign check. A campaign session only accesses resources from that campaign (middleware resolves the resource's campaign and compares; mismatch → `401`).
 
@@ -46,7 +46,7 @@ POST   /api/campaigns          admin
 GET    /api/campaigns/{id}
 PUT    /api/campaigns/{id}
 PUT    /api/campaigns/{id}/wardails   {"wardails": "..."}   204, max 20000 characters
-DELETE /api/campaigns/{id}
+DELETE /api/campaigns/{id}     admin
 ```
 
 Body: `name`, `system`, `description`, `vault_path`, and `status` (`active` | `paused` | `finished`) on `PUT`.

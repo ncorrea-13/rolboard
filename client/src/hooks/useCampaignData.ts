@@ -149,7 +149,7 @@ export const blankDrafts = {
 export function useCampaignData(
   activeCampaignId: string | null,
   activeCampaign: Campaign | undefined,
-  setRoute: (route: Route) => void,
+  navigate: (route: Route, opts?: { replace?: boolean }) => void,
   notify: (message: string, type?: "success" | "error") => void,
 ) {
   const t = useT();
@@ -410,7 +410,7 @@ export function useCampaignData(
       .then((created) => {
         const npc = mapNpc(created);
         setNpcs((prev) => [...prev, npc]);
-        setRoute({ name: "npc-detail", npcId: npc.id });
+        navigate({ name: "npc-detail", npcId: npc.id }, { replace: true });
       })
       .catch((err) => {
         console.error("Error creando NPC:", err);
@@ -429,7 +429,7 @@ export function useCampaignData(
     apiFetch(`/npcs/${id}`, { method: "DELETE" })
       .then(() => {
         setNpcs((prev) => prev.filter((n) => n.id !== id));
-        setRoute({ name: "section", section: "npcs" });
+        navigate({ name: "section", section: "npcs" }, { replace: true });
       })
       .catch((err) => {
         console.error("Error borrando NPC:", err);
@@ -478,7 +478,10 @@ export function useCampaignData(
       .then((created) => {
         const player = mapPlayerCharacter(created);
         setPlayerCharacters((prev) => [...prev, player]);
-        setRoute({ name: "player-detail", playerId: player.id });
+        navigate(
+          { name: "player-detail", playerId: player.id },
+          { replace: true },
+        );
       })
       .catch((err) => {
         console.error("Error creando personaje:", err);
@@ -502,7 +505,7 @@ export function useCampaignData(
           "error",
         );
       });
-    setRoute({ name: "section", section: "jugadores" });
+    navigate({ name: "section", section: "jugadores" }, { replace: true });
   }
 
   function saveSession(id: string, patch: Partial<Session>) {
@@ -516,7 +519,7 @@ export function useCampaignData(
       .then((saved) => {
         const session = mapSession(saved);
         setSessions((prev) => prev.map((s) => (s.id === id ? session : s)));
-        setRoute({ name: "session-detail", sessionId: id });
+        navigate({ name: "session-detail", sessionId: id }, { replace: true });
       })
       .catch((err) => {
         console.error("Error guardando sesión:", err);
@@ -532,7 +535,7 @@ export function useCampaignData(
     apiFetch(`/sessions/${id}`, { method: "DELETE" })
       .then(() => {
         setSessions((prev) => prev.filter((s) => s.id !== id));
-        setRoute({ name: "section", section: "sesiones" });
+        navigate({ name: "section", section: "sesiones" }, { replace: true });
       })
       .catch((err) => {
         console.error("Error borrando sesión:", err);
@@ -582,7 +585,7 @@ export function useCampaignData(
             }),
           ),
         ]).catch((err) => console.error("Error asociando sesión:", err));
-        setRoute({ name: "section", section: "sesiones" });
+        navigate({ name: "section", section: "sesiones" }, { replace: true });
       })
       .catch((err) => {
         console.error("Error creando sesión:", err);
@@ -595,7 +598,7 @@ export function useCampaignData(
 
   function startPlaySession() {
     if (!pendingPlannedSession) return;
-    setRoute({
+    navigate({
       name: "session-edit",
       sessionId: pendingPlannedSession.id,
       autoConfirm: true,
@@ -636,7 +639,10 @@ export function useCampaignData(
       .then((created) => {
         const group = mapGroup(created);
         setGroups((prev) => [...prev, group]);
-        setRoute({ name: "entity-detail", kind: "faction", id: group.id });
+        navigate(
+          { name: "entity-detail", kind: "faction", id: group.id },
+          { replace: true },
+        );
       })
       .catch((err) => {
         console.error("Error creando facción:", err);
@@ -681,7 +687,10 @@ export function useCampaignData(
       .then((created) => {
         const location = mapLocation(created);
         setLocations((prev) => [...prev, location]);
-        setRoute({ name: "entity-detail", kind: "location", id: location.id });
+        navigate(
+          { name: "entity-detail", kind: "location", id: location.id },
+          { replace: true },
+        );
       })
       .catch((err) => {
         console.error("Error creando locación:", err);
@@ -726,7 +735,10 @@ export function useCampaignData(
       .then((created) => {
         const arc = mapArc(created);
         setArcs((prev) => [...prev, arc]);
-        setRoute({ name: "entity-detail", kind: "arc", id: arc.id });
+        navigate(
+          { name: "entity-detail", kind: "arc", id: arc.id },
+          { replace: true },
+        );
       })
       .catch((err) => {
         console.error("Error creando arco:", err);
@@ -771,7 +783,10 @@ export function useCampaignData(
       .then((created) => {
         const quest = mapQuest(created);
         setQuests((prev) => [...prev, quest]);
-        setRoute({ name: "entity-detail", kind: "quest", id: quest.id });
+        navigate(
+          { name: "entity-detail", kind: "quest", id: quest.id },
+          { replace: true },
+        );
       })
       .catch((err) => {
         console.error("Error creando quest:", err);
@@ -816,7 +831,7 @@ export function useCampaignData(
       .then((created) => {
         const encounter = mapEncounter(created);
         setEncounters((prev) => [...prev, encounter]);
-        setRoute({ name: "encounter-detail", encounterId: encounter.id });
+        navigate({ name: "encounter-detail", encounterId: encounter.id });
       })
       .catch((err) => {
         console.error("Error creando encuentro:", err);
@@ -832,7 +847,7 @@ export function useCampaignData(
     apiFetch(`/encounters/${id}`, { method: "DELETE" })
       .then(() => {
         setEncounters((prev) => prev.filter((e) => e.id !== id));
-        setRoute({ name: "section", section: "encuentros" });
+        navigate({ name: "section", section: "encuentros" }, { replace: true });
       })
       .catch((err) => {
         console.error("Error borrando encuentro:", err);
@@ -844,7 +859,7 @@ export function useCampaignData(
   }
 
   function goToEntitySection(kind: EntityKind) {
-    setRoute({ name: "section", section: entityKindSection[kind] });
+    navigate({ name: "section", section: entityKindSection[kind] });
   }
 
   function deleteEntity(kind: EntityKind, id: string) {

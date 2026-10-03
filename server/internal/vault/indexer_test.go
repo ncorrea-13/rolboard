@@ -521,3 +521,38 @@ func TestReindexCreatesNPCTypesMentionedByTheVault(t *testing.T) {
 		t.Errorf("second reindex changed the types: %d -> %d", len(after), len(again))
 	}
 }
+
+func TestReindexRejectsSymlinkOutsideVault(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Cosmere", System: "Cosmere RPG"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	outside := t.TempDir()
+	writeVaultFile(t, outside, "Secret.md", "---\ntipo: npc\nstatus: vivo\n---\nNo debería leerse.")
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "NPC/Kaladin.md", "---\ntipo: npc\nstatus: vivo\n---\nCapitán.")
+	if err := os.Symlink(filepath.Join(outside, "Secret.md"), filepath.Join(root, "NPC", "Secret.md")); err != nil {
+		t.Fatalf("Symlink failed: %v", err)
+	}
+
+	result, err := NewIndexer(root, campaign.ID, db).Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+	if len(result.Errors) != 1 || !strings.Contains(result.Errors[0], "NPC/Secret.md") {
+		t.Errorf("Expected one error for NPC/Secret.md, got %v", result.Errors)
+	}
+
+	var count int
+	if err := db.QueryRowContext(ctx, `SELECT COUNT(*) FROM npcs WHERE name = 'Secret'`).Scan(&count); err != nil {
+		t.Fatalf("count query failed: %v", err)
+	}
+	if count != 0 {
+		t.Errorf("Expected symlinked note outside the vault to be skipped, found %d", count)
+	}
+}

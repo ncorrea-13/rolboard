@@ -19,11 +19,12 @@ import "./Sidebar.css";
 import { crystalColor } from "../data/domain";
 import type { DashboardSection } from "../screens/CampaignDashboard";
 import { LanguageToggle } from "./LanguageToggle";
+import { Link } from "./Link";
 import { useT, type TranslationKey } from "../lib/i18n";
 
 const navItems: {
   labelKey: TranslationKey;
-  section?: DashboardSection;
+  section: DashboardSection;
   Icon: LucideIcon;
   color: string;
 }[] = [
@@ -153,12 +154,12 @@ export function Sidebar({
       {navItems.map(({ Icon, ...item }) => {
         const isActive = item.section === active;
         return (
-          <button
+          <Link
             key={item.labelKey}
-            type="button"
-            className={`sidebar__item${isActive ? " sidebar__item--active" : ""}${item.section ? " sidebar__item--clickable" : ""}`}
+            route={{ name: "section", section: item.section }}
+            onNavigate={() => onNavigate(item.section)}
+            className={`sidebar__item sidebar__item--clickable${isActive ? " sidebar__item--active" : ""}`}
             aria-current={isActive ? "page" : undefined}
-            onClick={item.section ? () => onNavigate(item.section!) : undefined}
           >
             <Icon
               className="sidebar__icon"
@@ -175,7 +176,7 @@ export function Sidebar({
                 />
               )}
             </span>
-          </button>
+          </Link>
         );
       })}
       <div className="sidebar__footer">

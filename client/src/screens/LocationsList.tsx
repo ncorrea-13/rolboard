@@ -4,6 +4,7 @@ import { locationTypeLabel, type Location } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
 import { entityImageUrl } from "../lib/images";
 import { MarkdownText } from "../components/MarkdownText";
+import { Link } from "../components/Link";
 
 function depthOf(loc: Location, all: Location[]): number {
   let depth = 0;
@@ -17,14 +18,12 @@ function depthOf(loc: Location, all: Location[]): number {
 
 interface LocationsListProps {
   locations: Location[];
-  onSelect: (id: string) => void;
   onCreate: () => void;
   imageVersion?: number;
 }
 
 export function LocationsList({
   locations,
-  onSelect,
   onCreate,
   imageVersion = 0,
 }: LocationsListProps) {
@@ -67,11 +66,11 @@ export function LocationsList({
             imageVersion,
           );
           return (
-            <div
+            <Link
               key={l.id}
               className="list-page__row list-page__row--clickable"
               style={{ marginLeft: depthOf(l, locations) * 22 }}
-              onClick={() => onSelect(l.id)}
+              route={{ name: "entity-detail", kind: "location", id: l.id }}
             >
               {imageUrl && (
                 <img className="list-page__thumbnail" src={imageUrl} alt="" />
@@ -91,7 +90,7 @@ export function LocationsList({
               <span className="list-page__badge">
                 {locationTypeLabel[lang][l.locationType]}
               </span>
-            </div>
+            </Link>
           );
         })}
       </div>

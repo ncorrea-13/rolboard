@@ -4,6 +4,7 @@ import { crystalColor, type Quest } from "../data/domain";
 import { QuestStatusPill } from "../components/StatusPill";
 import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
+import { Link } from "../components/Link";
 
 const priorityLabel = { 1: "P1", 2: "P2", 3: "P3" } as const;
 const priorityColor = {
@@ -14,11 +15,10 @@ const priorityColor = {
 
 interface QuestsListProps {
   quests: Quest[];
-  onSelect: (id: string) => void;
   onCreate: () => void;
 }
 
-export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
+export function QuestsList({ quests, onCreate }: QuestsListProps) {
   const t = useT();
   const [search, setSearch] = useState("");
   const q2 = search.trim().toLowerCase();
@@ -54,10 +54,10 @@ export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
       </div>
       <div className="list-page__rows">
         {filtered.map((q) => (
-          <div
+          <Link
             key={q.id}
             className="list-page__row list-page__row--clickable"
-            onClick={() => onSelect(q.id)}
+            route={{ name: "entity-detail", kind: "quest", id: q.id }}
           >
             <div className="list-page__row-main">
               <span className="title-underline">
@@ -84,7 +84,7 @@ export function QuestsList({ quests, onSelect, onCreate }: QuestsListProps) {
               {priorityLabel[q.priority]}
             </span>
             <QuestStatusPill status={q.status} />
-          </div>
+          </Link>
         ))}
       </div>
     </div>
