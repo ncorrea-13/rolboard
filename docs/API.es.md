@@ -46,7 +46,7 @@ POST   /api/campaigns          admin
 GET    /api/campaigns/{id}
 PUT    /api/campaigns/{id}
 PUT    /api/campaigns/{id}/wardails   {"wardails": "..."}   204, máx. 20000 caracteres
-DELETE /api/campaigns/{id}
+DELETE /api/campaigns/{id}     admin
 ```
 
 Body: `name`, `system`, `description`, `vault_path`, y `status` (`active` | `paused` | `finished`) en `PUT`.
