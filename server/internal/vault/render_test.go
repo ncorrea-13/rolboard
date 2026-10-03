@@ -75,6 +75,16 @@ func TestRenderNoteWithoutFrontmatter(t *testing.T) {
 	}
 }
 
+func TestRenderNoteCalloutAliasUsesBaseKind(t *testing.T) {
+	out, err := RenderNote([]byte("---\ntipo: nota\n---\n> [!CAUTION]\n> body"), NewNameIndex())
+	if err != nil {
+		t.Fatalf("RenderNote failed: %v", err)
+	}
+	if !strings.Contains(out, `class="callout callout-warning"`) || !strings.Contains(out, "Advertencia") {
+		t.Errorf("expected caution to render as a warning callout, got %q", out)
+	}
+}
+
 func TestRenderNoteCalloutTitleIsEscapedOnce(t *testing.T) {
 	out, err := RenderNote([]byte("---\ntipo: nota\n---\n> [!WARNING] Tom & Jerry\n> body"), NewNameIndex())
 	if err != nil {

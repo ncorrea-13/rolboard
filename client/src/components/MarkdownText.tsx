@@ -3,8 +3,53 @@ import DOMPurify from "dompurify";
 import { useLang, type Lang } from "../lib/i18n";
 
 const calloutLabel: Record<Lang, Record<string, string>> = {
-  es: { note: "Nota", warning: "Advertencia", tip: "Tip", quote: "Cita" },
-  en: { note: "Note", warning: "Warning", tip: "Tip", quote: "Quote" },
+  es: {
+    note: "Nota",
+    abstract: "Resumen",
+    info: "Info",
+    todo: "Pendiente",
+    tip: "Tip",
+    success: "Hecho",
+    question: "Pregunta",
+    warning: "Advertencia",
+    failure: "Fallo",
+    danger: "Peligro",
+    bug: "Bug",
+    example: "Ejemplo",
+    quote: "Cita",
+  },
+  en: {
+    note: "Note",
+    abstract: "Abstract",
+    info: "Info",
+    todo: "Todo",
+    tip: "Tip",
+    success: "Success",
+    question: "Question",
+    warning: "Warning",
+    failure: "Failure",
+    danger: "Danger",
+    bug: "Bug",
+    example: "Example",
+    quote: "Quote",
+  },
+};
+
+const calloutAlias: Record<string, string> = {
+  summary: "abstract",
+  tldr: "abstract",
+  hint: "tip",
+  important: "tip",
+  check: "success",
+  done: "success",
+  help: "question",
+  faq: "question",
+  caution: "warning",
+  attention: "warning",
+  fail: "failure",
+  missing: "failure",
+  error: "danger",
+  cite: "quote",
 };
 
 const calloutRe = /<blockquote>\s*<p>\[!(\w+)\][ \t]*([^\n<]*)\n?/g;
@@ -13,7 +58,7 @@ function renderCallouts(html: string, lang: Lang) {
   return html.replace(
     calloutRe,
     (_match, rawKind: string, rawTitle: string) => {
-      const kind = rawKind.toLowerCase();
+      const kind = calloutAlias[rawKind.toLowerCase()] ?? rawKind.toLowerCase();
       const title =
         rawTitle.trim() ||
         calloutLabel[lang][kind] ||
