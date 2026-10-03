@@ -36,16 +36,45 @@ func escapeExceptGT(s string) string {
 var calloutRe = regexp.MustCompile(`<blockquote>\s*<p>\[!(\w+)\]([^\n<]*)`)
 
 var calloutLabel = map[string]string{
-	"note":    "Nota",
-	"warning": "Advertencia",
-	"tip":     "Tip",
-	"quote":   "Cita",
+	"note":     "Nota",
+	"abstract": "Resumen",
+	"info":     "Info",
+	"todo":     "Pendiente",
+	"tip":      "Tip",
+	"success":  "Hecho",
+	"question": "Pregunta",
+	"warning":  "Advertencia",
+	"failure":  "Fallo",
+	"danger":   "Peligro",
+	"bug":      "Bug",
+	"example":  "Ejemplo",
+	"quote":    "Cita",
+}
+
+var calloutAlias = map[string]string{
+	"summary":   "abstract",
+	"tldr":      "abstract",
+	"hint":      "tip",
+	"important": "tip",
+	"check":     "success",
+	"done":      "success",
+	"help":      "question",
+	"faq":       "question",
+	"caution":   "warning",
+	"attention": "warning",
+	"fail":      "failure",
+	"missing":   "failure",
+	"error":     "danger",
+	"cite":      "quote",
 }
 
 func renderCallouts(rendered string) string {
 	return calloutRe.ReplaceAllStringFunc(rendered, func(match string) string {
 		groups := calloutRe.FindStringSubmatch(match)
 		kind := strings.ToLower(groups[1])
+		if base, ok := calloutAlias[kind]; ok {
+			kind = base
+		}
 		title := strings.TrimSpace(groups[2])
 		if title == "" {
 			title = calloutLabel[kind]
