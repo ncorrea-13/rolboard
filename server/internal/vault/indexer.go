@@ -182,6 +182,12 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 		return nil, err
 	}
 
+	root, err := os.OpenRoot(ix.root)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = root.Close() }()
+
 	stalePaths, err := ix.snapshotObsidianPaths(ctx)
 	if err != nil {
 		return nil, err
@@ -197,8 +203,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	var stagedPlayerNotes []stagedPlayerNote
 
 	for _, relPath := range paths {
-		full := filepath.Join(ix.root, relPath)
-		content, err := os.ReadFile(full)
+		content, err := root.ReadFile(relPath)
 		if err != nil {
 			result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
 			continue

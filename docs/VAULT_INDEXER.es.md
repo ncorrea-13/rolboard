@@ -2,7 +2,7 @@
 
 [English](VAULT_INDEXER.md)
 
-Código: `server/internal/vault/`. Se dispara con `POST /api/campaigns/{id}/reindex` sobre `VAULTS_ROOT/<vault_path>`. El vault se monta read-only; el indexador nunca lo escribe.
+Código: `server/internal/vault/`. Se dispara con `POST /api/campaigns/{id}/reindex` sobre `VAULTS_ROOT/<vault_path>`. El vault se monta read-only; el indexador nunca lo escribe. Los archivos se leen con `os.Root`: un symlink que apunta fuera del vault se rechaza y se reporta como error.
 
 ## Qué hace
 

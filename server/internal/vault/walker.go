@@ -2,7 +2,7 @@ package vault
 
 import (
 	"io/fs"
-	"path/filepath"
+	"os"
 	"strings"
 )
 
@@ -14,9 +14,14 @@ var excludedFiles = map[string]bool{
 }
 
 func Walk(root string) ([]string, error) {
-	var paths []string
+	r, err := os.OpenRoot(root)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = r.Close() }()
 
-	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+	var paths []string
+	err = fs.WalkDir(r.FS(), ".", func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -29,12 +34,7 @@ func Walk(root string) ([]string, error) {
 		if excludedFiles[d.Name()] {
 			return nil
 		}
-
-		rel, err := filepath.Rel(root, path)
-		if err != nil {
-			return err
-		}
-		paths = append(paths, rel)
+		paths = append(paths, path)
 		return nil
 	})
 

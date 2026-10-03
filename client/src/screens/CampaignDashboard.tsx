@@ -20,6 +20,7 @@ import { MarkdownText } from "../components/MarkdownText";
 import { openInObsidian } from "../lib/obsidian";
 import { useT } from "../lib/i18n";
 import { entityImageUrl } from "../lib/images";
+import { Link } from "../components/Link";
 
 export type DashboardSection =
   | "resumen"
@@ -48,9 +49,6 @@ interface CampaignDashboardProps {
   nextSessionNumber: number;
   hasPlannedSession: boolean;
   onNavigate: (section: DashboardSection) => void;
-  onSelectNpc: (npcId: string) => void;
-  onSelectQuest: (questId: string) => void;
-  onSelectArc: (arcId: string) => void;
   onOpenSession: (sessionId: string) => void;
   onStartSession: () => void;
   onPlanSession: () => void;
@@ -68,9 +66,6 @@ export function CampaignDashboard({
   nextSessionNumber,
   hasPlannedSession,
   onNavigate,
-  onSelectNpc,
-  onSelectQuest,
-  onSelectArc,
   onOpenSession,
   onStartSession,
   onPlanSession,
@@ -140,9 +135,9 @@ export function CampaignDashboard({
 
       {currentArc && (
         <div className="campaign-dashboard__row">
-          <div
+          <Link
             className="card campaign-dashboard__panel campaign-dashboard__panel--clickable"
-            onClick={() => onSelectArc(currentArc.id)}
+            route={{ name: "entity-detail", kind: "arc", id: currentArc.id }}
           >
             <div className="campaign-dashboard__panel-top">
               <span className="label">{t("dashboard.currentArc")}</span>
@@ -166,7 +161,7 @@ export function CampaignDashboard({
                 {currentArc.meta}
               </span>
             </div>
-          </div>
+          </Link>
 
           {lastSession && (
             <div
@@ -222,10 +217,10 @@ export function CampaignDashboard({
             </button>
           </div>
           {activeQuests.map((q) => (
-            <div
+            <Link
               key={q.id}
               className="campaign-dashboard__list-row campaign-dashboard__list-row--clickable"
-              onClick={() => onSelectQuest(q.id)}
+              route={{ name: "entity-detail", kind: "quest", id: q.id }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
                 <span className="title-underline">
@@ -257,7 +252,7 @@ export function CampaignDashboard({
                 </div>
               </div>
               <QuestStatusPill status={q.status} />
-            </div>
+            </Link>
           ))}
         </div>
 
@@ -280,10 +275,10 @@ export function CampaignDashboard({
             </button>
           </div>
           {recentNpcs.map((n) => (
-            <div
+            <Link
               key={n.id}
               className="campaign-dashboard__list-row campaign-dashboard__list-row--clickable"
-              onClick={() => onSelectNpc(n.id)}
+              route={{ name: "npc-detail", npcId: n.id }}
             >
               <div style={{ flex: 1, minWidth: 0 }}>
                 <EntityIdentity
@@ -300,7 +295,7 @@ export function CampaignDashboard({
                 />
               </div>
               <StatusPill status={n.status} />
-            </div>
+            </Link>
           ))}
         </div>
       </div>

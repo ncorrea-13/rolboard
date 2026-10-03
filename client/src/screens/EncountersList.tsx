@@ -2,18 +2,17 @@ import "../styles/list.css";
 import { sessionCode, type Encounter, type Session } from "../data/domain";
 import { EncounterStatusPill } from "../components/StatusPill";
 import { useT } from "../lib/i18n";
+import { Link } from "../components/Link";
 
 interface EncountersListProps {
   encounters: Encounter[];
   sessions: Session[];
-  onSelect: (id: string) => void;
   onCreate: () => void;
 }
 
 export function EncountersList({
   encounters,
   sessions,
-  onSelect,
   onCreate,
 }: EncountersListProps) {
   const t = useT();
@@ -36,10 +35,10 @@ export function EncountersList({
         {encounters.map((e) => {
           const session = sessions.find((s) => s.id === e.sessionId);
           return (
-            <div
+            <Link
               key={e.id}
               className="list-page__row list-page__row--clickable"
-              onClick={() => onSelect(e.id)}
+              route={{ name: "encounter-detail", encounterId: e.id }}
             >
               <div className="list-page__row-main">
                 <span className="list-page__row-title">
@@ -52,7 +51,7 @@ export function EncountersList({
                 </div>
               </div>
               <EncounterStatusPill status={e.status} />
-            </div>
+            </Link>
           );
         })}
         {encounters.length === 0 && (

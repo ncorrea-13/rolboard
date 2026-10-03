@@ -3,17 +3,16 @@ import "../styles/list.css";
 import type { PlayerCharacter } from "../data/domain";
 import { useT } from "../lib/i18n";
 import { entityImageUrl } from "../lib/images";
+import { Link } from "../components/Link";
 
 interface PlayersListProps {
   playerCharacters: PlayerCharacter[];
-  onSelect: (id: string) => void;
   onCreate: () => void;
   imageVersion?: number;
 }
 
 export function PlayersList({
   playerCharacters,
-  onSelect,
   onCreate,
   imageVersion = 0,
 }: PlayersListProps) {
@@ -59,10 +58,10 @@ export function PlayersList({
             imageVersion,
           );
           return (
-            <div
+            <Link
               key={p.id}
               className="list-page__row list-page__row--clickable"
-              onClick={() => onSelect(p.id)}
+              route={{ name: "player-detail", playerId: p.id }}
             >
               {imageUrl && (
                 <img className="list-page__thumbnail" src={imageUrl} alt="" />
@@ -73,7 +72,7 @@ export function PlayersList({
                   {t("playersList.playedBy")} {p.playerName}
                 </div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
