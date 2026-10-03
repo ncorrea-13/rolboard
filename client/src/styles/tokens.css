@@ -24,6 +24,15 @@
   --callout-note: var(--accent-obsidian);
   --callout-warning: #e5484d;
   --callout-tip: var(--status-alive);
+  --callout-abstract: var(--accent-teal);
+  --callout-info: var(--accent-sky);
+  --callout-todo: var(--accent-sky);
+  --callout-success: var(--status-alive);
+  --callout-question: var(--accent-flame);
+  --callout-failure: var(--status-dead);
+  --callout-danger: #e5484d;
+  --callout-bug: var(--status-dead);
+  --callout-example: var(--accent-crystalline);
   --callout-quote: var(--text-secondary);
   --accent-teal: #4fb5a3;
 
