@@ -186,7 +186,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer root.Close()
+	defer func() { _ = root.Close() }()
 
 	stalePaths, err := ix.snapshotObsidianPaths(ctx)
 	if err != nil {

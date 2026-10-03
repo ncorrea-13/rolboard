@@ -18,7 +18,7 @@ func Walk(root string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	var paths []string
 	err = fs.WalkDir(r.FS(), ".", func(path string, d fs.DirEntry, err error) error {

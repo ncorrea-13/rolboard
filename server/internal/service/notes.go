@@ -66,7 +66,7 @@ func (s *NotesService) Render(ctx context.Context, campaignID int64, relPath str
 	if err != nil {
 		return "", err
 	}
-	defer root.Close()
+	defer func() { _ = root.Close() }()
 
 	content, err := root.ReadFile(clean)
 	if err != nil {
