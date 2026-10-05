@@ -17,6 +17,8 @@ type NPC struct {
 	Notes        string          `json:"notes"`
 	Attributes   json.RawMessage `json:"attributes"`
 	Skills       json.RawMessage `json:"skills"`
+	CurrentHp    *int64          `json:"current_hp,omitempty"`
+	MaxHp        *int64          `json:"max_hp,omitempty"`
 	ObsidianPath *string         `json:"obsidian_path,omitempty"`
 	ImagePath    *string         `json:"image_path,omitempty"`
 	CreatedAt    string          `json:"created_at"`

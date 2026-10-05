@@ -5,18 +5,21 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 )
 
 type CreateEncounterPayload struct {
+	Name      string `json:"name"`
 	SessionID *int64 `json:"session_id"`
 	Round     int64  `json:"round"`
 	Status    string `json:"status"`
 }
 
 type UpdateEncounterPayload struct {
+	Name      string `json:"name"`
 	SessionID *int64 `json:"session_id"`
 	Round     int64  `json:"round"`
 	Status    string `json:"status"`
@@ -85,6 +88,7 @@ func (h *Handlers) CreateEncounter(w http.ResponseWriter, r *http.Request) {
 
 	encounter := models.Encounter{
 		CampaignID: campaignId,
+		Name:       strings.TrimSpace(payload.Name),
 		SessionID:  payload.SessionID,
 		Round:      payload.Round,
 		Status:     payload.Status,
@@ -170,6 +174,7 @@ func (h *Handlers) UpdateEncounter(w http.ResponseWriter, r *http.Request) {
 	}
 
 	encounter := models.Encounter{
+		Name:      strings.TrimSpace(payload.Name),
 		SessionID: payload.SessionID,
 		Round:     payload.Round,
 		Status:    payload.Status,

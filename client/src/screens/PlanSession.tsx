@@ -6,11 +6,13 @@ import { useT } from "../lib/i18n";
 interface PlanSessionProps {
   nextNumber: number;
   currentArc?: Arc;
+  arcs: Arc[];
   npcs: Npc[];
   quests: Quest[];
   onConfirm: (values: {
     date: string;
     summary: string;
+    arcId?: string;
     expectedNpcIds: string[];
     expectedQuestIds: string[];
   }) => void;
@@ -20,6 +22,7 @@ interface PlanSessionProps {
 export function PlanSession({
   nextNumber,
   currentArc,
+  arcs,
   npcs,
   quests,
   onConfirm,
@@ -28,6 +31,7 @@ export function PlanSession({
   const t = useT();
   const [date, setDate] = useState("");
   const [text, setText] = useState("");
+  const [arcId, setArcId] = useState(currentArc?.id ?? "");
   const [expectedNpcIds, setExpectedNpcIds] = useState<Set<string>>(new Set());
   const [expectedQuestIds, setExpectedQuestIds] = useState<Set<string>>(
     new Set(),
@@ -57,6 +61,7 @@ export function PlanSession({
     onConfirm({
       date,
       summary: text.trim() || t("planSession.defaultSummary"),
+      arcId: arcId || undefined,
       expectedNpcIds: [...expectedNpcIds],
       expectedQuestIds: [...expectedQuestIds],
     });
@@ -104,6 +109,22 @@ export function PlanSession({
                 onChange={(e) => setDate(e.target.value)}
               />
             </div>
+          </div>
+
+          <div>
+            <span className="label">{t("sessionEdit.arc")}</span>
+            <select
+              className="npc-edit__select npc-edit__select--native"
+              value={arcId}
+              onChange={(e) => setArcId(e.target.value)}
+            >
+              <option value="">{t("sessionsTimeline.noArc")}</option>
+              {arcs.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>

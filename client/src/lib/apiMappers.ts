@@ -64,6 +64,8 @@ export interface ApiNpc {
   description: string;
   attributes?: StatMap;
   skills?: StatMap;
+  current_hp?: number;
+  max_hp?: number;
   obsidian_path?: string;
   image_path?: string;
 }
@@ -131,6 +133,8 @@ export function mapNpc(n: ApiNpc): Npc {
     obsidianPath: n.obsidian_path ?? "",
     attributes: n.attributes ?? {},
     skills: n.skills ?? {},
+    currentHp: n.current_hp,
+    maxHp: n.max_hp,
     hasImage: Boolean(n.image_path),
   };
 }
@@ -162,6 +166,8 @@ export function npcToApiPayload(npc: Npc) {
     location_id: npc.locationId ? Number(npc.locationId) : undefined,
     attributes: npc.attributes,
     skills: npc.skills,
+    current_hp: npc.currentHp,
+    max_hp: npc.maxHp,
     obsidian_path: npc.obsidianPath || undefined,
   };
 }
@@ -444,6 +450,7 @@ export interface ApiDashboardSummary {
 export interface ApiEncounter {
   id: number;
   campaign_id: number;
+  name?: string;
   session_id?: number;
   round: number;
   status: string;
@@ -453,6 +460,7 @@ export function mapEncounter(e: ApiEncounter): Encounter {
   return {
     id: String(e.id),
     campaignId: String(e.campaign_id),
+    name: e.name ?? "",
     sessionId: e.session_id ? String(e.session_id) : undefined,
     round: e.round,
     status: e.status as EncounterStatus,
@@ -461,6 +469,7 @@ export function mapEncounter(e: ApiEncounter): Encounter {
 
 export function encounterToApiPayload(e: Encounter) {
   return {
+    name: e.name,
     session_id: e.sessionId ? Number(e.sessionId) : undefined,
     round: e.round,
     status: e.status,

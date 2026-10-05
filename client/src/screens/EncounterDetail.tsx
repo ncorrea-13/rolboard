@@ -6,12 +6,14 @@ import {
   X,
   Heart,
   Plus,
+  Minus,
   Crosshair,
   ScrollText,
 } from "lucide-react";
 import "./EncounterDetail.css";
 import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityDetail } from "../components/EntityDetail";
+import { Link } from "../components/Link";
 import { Modal } from "../components/Modal";
 import { EncounterStatusPill } from "../components/StatusPill";
 import { SkillsEditor } from "../components/SkillsEditor";
@@ -23,15 +25,19 @@ import {
 } from "../lib/apiMappers";
 import {
   crystalColorFor,
+  sessionCode,
   type Encounter,
   type EncounterParticipant,
   type Npc,
   type PlayerCharacter,
+  type Session,
   type StatMap,
   type TurnType,
 } from "../data/domain";
 import { useT, type TranslationKey } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 import { entityImageUrl } from "../lib/images";
+import { hpBar, nextHp } from "../lib/hp";
 
 type AddKind = "npc" | "pc" | "custom";
 
@@ -39,13 +45,21 @@ interface EncounterDetailProps {
   encounter: Encounter;
   npcs: Npc[];
   playerCharacters: PlayerCharacter[];
+  sessions: Session[];
   onBack: () => void;
   onStart: () => void;
   onClose: () => void;
+  onReopen: () => void;
   onNextRound: () => void;
   onDelete: () => void;
+  onChangeSession: (sessionId?: string) => void;
+  onRename: (name: string) => void;
   onSyncPlayerHp: (
     pcId: string,
+    patch: { currentHp?: number; maxHp?: number },
+  ) => void;
+  onSyncNpcHp: (
+    npcId: string,
     patch: { currentHp?: number; maxHp?: number },
   ) => void;
   imageVersion?: number;
@@ -90,12 +104,17 @@ export function EncounterDetail({
   encounter,
   npcs,
   playerCharacters,
+  sessions,
   onBack,
   onStart,
   onClose,
+  onReopen,
   onNextRound,
   onDelete,
+  onChangeSession,
+  onRename,
   onSyncPlayerHp,
+  onSyncNpcHp,
   imageVersion = 0,
 }: EncounterDetailProps) {
   const t = useT();
@@ -112,6 +131,22 @@ export function EncounterDetail({
   const [addKind, setAddKind] = useState<AddKind>("npc");
   const [addRefId, setAddRefId] = useState("");
   const [addName, setAddName] = useState("");
+  const [hpDeltas, setHpDeltas] = useState<Record<string, string>>({});
+  const closed = encounter.status === "cerrado";
+  const [nameDraft, setNameDraft] = useState(encounter.name);
+
+  function commitName() {
+    const next = nameDraft.trim();
+    if (next !== encounter.name) onRename(next);
+  }
+
+  function applyHpDelta(p: EncounterParticipant, sign: 1 | -1) {
+    const amount = Number(hpDeltas[p.id]);
+    if (!amount || amount < 0) return;
+    const current = p.currentHp ?? p.maxHp ?? 0;
+    updateParticipant(p.id, { currentHp: nextHp(current, p.maxHp, amount, sign) });
+    setHpDeltas((prev) => ({ ...prev, [p.id]: "" }));
+  }
 
   function reload() {
     apiFetch<ApiEncounterParticipant[]>(
@@ -120,7 +155,10 @@ export function EncounterDetail({
       .then((data) =>
         setParticipants((data ?? []).map(mapEncounterParticipant)),
       )
-      .catch((err) => console.error("Error cargando participantes:", err));
+      .catch((err) => {
+        console.error("Error cargando participantes:", err);
+        reportError("toast.errorLoading", err);
+      });
   }
 
   useEffect(reload, [encounter.id]);
@@ -146,13 +184,13 @@ export function EncounterDetail({
   function addParticipant() {
     if (addKind === "custom" && !addName.trim()) return;
     if (addKind !== "custom" && !addRefId) return;
-    const seedHp =
+    const linked =
       addKind === "pc"
-        ? (() => {
-            const pc = playerCharacters.find((p) => p.id === addRefId);
-            return { currentHp: pc?.currentHp, maxHp: pc?.maxHp };
-          })()
-        : {};
+        ? playerCharacters.find((p) => p.id === addRefId)
+        : addKind === "npc"
+          ? npcs.find((n) => n.id === addRefId)
+          : undefined;
+    const seedHp = { currentHp: linked?.currentHp, maxHp: linked?.maxHp };
     const draft: EncounterParticipant = {
       id: "",
       encounterId: encounter.id,
@@ -175,7 +213,10 @@ export function EncounterDetail({
         setAddName("");
         reload();
       })
-      .catch((err) => console.error("Error agregando participante:", err));
+      .catch((err) => {
+        console.error("Error agregando participante:", err);
+        reportError("common.toastErrorSaving", err);
+      });
   }
 
   function updateParticipant(id: string, patch: Partial<EncounterParticipant>) {
@@ -188,20 +229,25 @@ export function EncounterDetail({
     })
       .then(() => {
         setParticipants((prev) => prev.map((p) => (p.id === id ? merged : p)));
-        if (merged.pcId && ("currentHp" in patch || "maxHp" in patch)) {
-          onSyncPlayerHp(merged.pcId, {
-            currentHp: merged.currentHp,
-            maxHp: merged.maxHp,
-          });
+        if ("currentHp" in patch || "maxHp" in patch) {
+          const hp = { currentHp: merged.currentHp, maxHp: merged.maxHp };
+          if (merged.pcId) onSyncPlayerHp(merged.pcId, hp);
+          if (merged.npcId) onSyncNpcHp(merged.npcId, hp);
         }
       })
-      .catch((err) => console.error("Error actualizando participante:", err));
+      .catch((err) => {
+        console.error("Error actualizando participante:", err);
+        reportError("common.toastErrorSaving", err);
+      });
   }
 
   function removeParticipant(id: string) {
     apiFetch(`/encounter-participants/${id}`, { method: "DELETE" })
       .then(() => setParticipants((prev) => prev.filter((p) => p.id !== id)))
-      .catch((err) => console.error("Error sacando participante:", err));
+      .catch((err) => {
+        console.error("Error sacando participante:", err);
+        reportError("common.toastErrorDeleting", err);
+      });
   }
 
   function handleNextRound() {
@@ -222,7 +268,10 @@ export function EncounterDetail({
         );
         onNextRound();
       })
-      .catch((err) => console.error("Error reiniciando turnos:", err));
+      .catch((err) => {
+        console.error("Error reiniciando turnos:", err);
+        reportError("common.toastErrorSaving", err);
+      });
   }
 
   function nameFor(p: EncounterParticipant): string {
@@ -303,12 +352,26 @@ export function EncounterDetail({
               style={{ background: color, flex: "none" }}
             />
           )}
-          <span className="encounter-card__name">{nameFor(p)}</span>
+          {p.pcId || p.npcId ? (
+            <Link
+              className="encounter-card__name encounter-card__name--link"
+              route={
+                p.pcId
+                  ? { name: "player-detail", playerId: p.pcId }
+                  : { name: "npc-detail", npcId: p.npcId! }
+              }
+            >
+              {nameFor(p)}
+            </Link>
+          ) : (
+            <span className="encounter-card__name">{nameFor(p)}</span>
+          )}
           <span className="encounter-card__kind" style={{ color }}>
             {kindLabel(p)}
           </span>
           <button
             className="encounter-card__remove"
+            disabled={closed}
             onClick={() => removeParticipant(p.id)}
             title={t("encounterDetail.removeTitle")}
           >
@@ -324,47 +387,99 @@ export function EncounterDetail({
                 style={{ color: hpColor(p.currentHp, p.maxHp) }}
               />
               <span className="encounter-card__stat-label">HP</span>
+              {p.currentHp != null && p.currentHp <= 0 && (
+                <span className="encounter-card__down">
+                  {t("encounterDetail.down")}
+                </span>
+              )}
             </div>
             <div className="encounter-card__hp-row">
-              <div className="encounter-card__hp-track">
-                <div
-                  className="encounter-card__hp-fill"
-                  style={{
-                    width: p.maxHp
-                      ? `${Math.min(100, ((p.currentHp ?? 0) / p.maxHp) * 100)}%`
-                      : "0%",
-                    background: hpColor(p.currentHp, p.maxHp),
-                  }}
-                />
-              </div>
+              {(() => {
+                const bar = hpBar(p.currentHp, p.maxHp);
+                return (
+                  <div className="encounter-card__hp-track">
+                    <div
+                      className={`encounter-card__hp-fill${bar.negative ? " encounter-card__hp-fill--negative" : ""}`}
+                      style={{
+                        width: `${bar.fill}%`,
+                        background: bar.negative
+                          ? undefined
+                          : hpColor(p.currentHp, p.maxHp),
+                      }}
+                    />
+                    {bar.overflow > 0 && (
+                      <div
+                        className="encounter-card__hp-overflow"
+                        style={{ width: `${bar.overflow}%` }}
+                      />
+                    )}
+                  </div>
+                );
+              })()}
               <div className="encounter-card__hp-values">
                 <input
                   className="encounter-card__hp-input"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  disabled={closed}
                   value={p.currentHp ?? ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const v = e.target.value
+                      .replace(/[^\d-]/g, "")
+                      .replace(/(?!^)-/g, "");
+                    if (v === "-") return;
                     updateParticipant(p.id, {
-                      currentHp:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
-                  }
+                      currentHp: Number(v),
+                    });
+                  }}
                 />
                 <span className="encounter-card__hp-sep">/</span>
                 <input
                   className="encounter-card__hp-input"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
+                  disabled={closed}
                   value={p.maxHp ?? ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "");
                     updateParticipant(p.id, {
-                      maxHp:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
-                  }
+                      maxHp: Number(v),
+                    });
+                  }}
                 />
+              </div>
+              <div className="encounter-card__hp-delta">
+                <input
+                  className="encounter-card__hp-delta-input"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="±"
+                  disabled={closed}
+                  value={hpDeltas[p.id] ?? ""}
+                  onChange={(e) =>
+                    setHpDeltas((prev) => ({
+                      ...prev,
+                      [p.id]: e.target.value.replace(/\D/g, ""),
+                    }))
+                  }
+                  onKeyDown={(e) => e.key === "Enter" && applyHpDelta(p, -1)}
+                />
+                <button
+                  className="encounter-card__hp-btn encounter-card__hp-btn--damage"
+                  disabled={closed}
+                  onClick={() => applyHpDelta(p, -1)}
+                  title={t("encounterDetail.damage")}
+                >
+                  <Minus size={16} />
+                </button>
+                <button
+                  className="encounter-card__hp-btn encounter-card__hp-btn--heal"
+                  disabled={closed}
+                  onClick={() => applyHpDelta(p, 1)}
+                  title={t("encounterDetail.heal")}
+                >
+                  <Plus size={16} />
+                </button>
               </div>
             </div>
           </div>
@@ -383,6 +498,7 @@ export function EncounterDetail({
               <input
                 className="encounter-card__stat-value"
                 type="number"
+                disabled={closed}
                 value={p.initiativeValue ?? ""}
                 onChange={(e) =>
                   updateParticipant(p.id, {
@@ -401,6 +517,7 @@ export function EncounterDetail({
           <div className="encounter-card__toggle">
             <button
               className={`encounter-card__toggle-btn${p.turnType === "rapido" ? " encounter-card__toggle-btn--active" : ""}`}
+              disabled={closed}
               onClick={() =>
                 updateParticipant(p.id, {
                   turnType: p.turnType === "rapido" ? undefined : "rapido",
@@ -411,6 +528,7 @@ export function EncounterDetail({
             </button>
             <button
               className={`encounter-card__toggle-btn${p.turnType === "lento" ? " encounter-card__toggle-btn--active" : ""}`}
+              disabled={closed}
               onClick={() =>
                 updateParticipant(p.id, {
                   turnType: p.turnType === "lento" ? undefined : "lento",
@@ -479,7 +597,7 @@ export function EncounterDetail({
         eyebrow={t("encounterDetail.breadcrumb")}
         backLabel={t("encounterDetail.breadcrumb")}
         onBack={onBack}
-        title={`${t("encountersList.round")} ${encounter.round}`}
+        title={`${encounter.name || `${t("encountersList.unnamed")} #${encounter.id}`} · ${t("encountersList.round")} ${encounter.round}`}
         status={<EncounterStatusPill status={encounter.status} />}
         extraActions={
           <>
@@ -498,10 +616,45 @@ export function EncounterDetail({
                 {t("encounterDetail.closeCombat")}
               </button>
             )}
+            {closed && (
+              <button className="btn btn-secondary" onClick={onReopen}>
+                {t("encounterDetail.reopenCombat")}
+              </button>
+            )}
           </>
         }
         onDelete={onDelete}
         fields={[
+          {
+            label: t("encounterDetail.name"),
+            value: (
+              <input
+                className="npc-edit__input"
+                placeholder={t("encounterDetail.namePlaceholder")}
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onBlur={commitName}
+                onKeyDown={(e) => e.key === "Enter" && commitName()}
+              />
+            ),
+          },
+          {
+            label: t("encounterDetail.session"),
+            value: (
+              <select
+                className="npc-edit__select npc-edit__select--native"
+                value={encounter.sessionId ?? ""}
+                onChange={(e) => onChangeSession(e.target.value || undefined)}
+              >
+                <option value="">{t("encountersList.noSession")}</option>
+                {sessions.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {sessionCode(s)}
+                  </option>
+                ))}
+              </select>
+            ),
+          },
           {
             label: `${t("encounterDetail.participants")} (${participants.length})`,
             value: (
@@ -558,7 +711,7 @@ export function EncounterDetail({
                   </span>
                 )}
 
-                {!addOpen && (
+                {!addOpen && !closed && (
                   <button
                     className="encounter-add-trigger"
                     onClick={() => setAddOpen(true)}

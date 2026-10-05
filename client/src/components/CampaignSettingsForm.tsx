@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { Campaign, CampaignStatus } from "../data/domain";
-import { apiFetch, hasAdminSecret } from "../lib/api";
+import { apiFetch, describeError, hasAdminSecret } from "../lib/api";
 import { useT } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 
 interface CampaignSettingsFormProps {
   campaign: Campaign;
@@ -45,7 +46,15 @@ export function CampaignSettingsForm({
   }, [campaign.id]);
 
   async function handleSave() {
-    if (!name.trim() || saving) return;
+    if (saving) return;
+    const missing = [
+      !name.trim() && t("newCampaignForm.name"),
+      !system.trim() && t("newCampaignForm.system"),
+    ].filter(Boolean);
+    if (missing.length > 0) {
+      reportError("toast.missingFields", undefined, missing.join(", "));
+      return;
+    }
     setSaving(true);
     try {
       await onSave({
@@ -53,14 +62,18 @@ export function CampaignSettingsForm({
         system: system.trim(),
         status,
         vaultPath,
-      });
+      }).catch(() => {});
     } finally {
       setSaving(false);
     }
   }
 
   async function handleSaveCode() {
-    if (accessCode.trim().length < MIN_ACCESS_CODE_LENGTH || codeSaving) return;
+    if (codeSaving) return;
+    if (accessCode.trim().length < MIN_ACCESS_CODE_LENGTH) {
+      setCodeError(t("campaignSettings.accessCodePlaceholder"));
+      return;
+    }
     setCodeSaving(true);
     setCodeError(null);
     setCodeSaved(false);
@@ -68,8 +81,8 @@ export function CampaignSettingsForm({
       await onSetAccessCode(accessCode.trim());
       setAccessCode("");
       setCodeSaved(true);
-    } catch {
-      setCodeError(t("adminSecret.error"));
+    } catch (err) {
+      setCodeError(`${t("adminSecret.error")}: ${describeError(err, t)}`);
     } finally {
       setCodeSaving(false);
     }
@@ -137,7 +150,7 @@ export function CampaignSettingsForm({
         <button
           className="btn btn-primary"
           onClick={handleSave}
-          disabled={!name.trim() || saving}
+          disabled={saving}
         >
           {t("campaignSettings.save")}
         </button>
@@ -181,9 +194,7 @@ export function CampaignSettingsForm({
         <button
           className="btn btn-primary"
           onClick={handleSaveCode}
-          disabled={
-            accessCode.trim().length < MIN_ACCESS_CODE_LENGTH || codeSaving
-          }
+          disabled={codeSaving}
         >
           {t("campaignSettings.accessCodeSave")}
         </button>

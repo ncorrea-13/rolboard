@@ -25,6 +25,8 @@ type CreateNPCPayload struct {
 	Notes        string          `json:"notes"`
 	Attributes   json.RawMessage `json:"attributes"`
 	Skills       json.RawMessage `json:"skills"`
+	CurrentHp    *int64          `json:"current_hp"`
+	MaxHp        *int64          `json:"max_hp"`
 	ObsidianPath *string         `json:"obsidian_path"`
 }
 
@@ -41,6 +43,8 @@ type UpdateNPCPayload struct {
 	Notes        string          `json:"notes"`
 	Attributes   json.RawMessage `json:"attributes"`
 	Skills       json.RawMessage `json:"skills"`
+	CurrentHp    *int64          `json:"current_hp"`
+	MaxHp        *int64          `json:"max_hp"`
 	ObsidianPath *string         `json:"obsidian_path"`
 }
 
@@ -126,6 +130,8 @@ func (h *Handlers) CreateNPC(w http.ResponseWriter, r *http.Request) {
 		Notes:        payload.Notes,
 		Attributes:   payload.Attributes,
 		Skills:       payload.Skills,
+		CurrentHp:    payload.CurrentHp,
+		MaxHp:        payload.MaxHp,
 		ObsidianPath: payload.ObsidianPath,
 	}
 
@@ -220,6 +226,8 @@ func (h *Handlers) UpdateNPC(w http.ResponseWriter, r *http.Request) {
 		Notes:        payload.Notes,
 		Attributes:   payload.Attributes,
 		Skills:       payload.Skills,
+		CurrentHp:    payload.CurrentHp,
+		MaxHp:        payload.MaxHp,
 		ObsidianPath: payload.ObsidianPath,
 	}
 	err = h.npcs.Update(r.Context(), id, &npc)

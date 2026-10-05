@@ -23,7 +23,7 @@ func Open(path string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	dsn := "file:" + path + "?_pragma=foreign_keys(1)"
+	dsn := "file:" + path + "?_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)"
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err

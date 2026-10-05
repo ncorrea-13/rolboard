@@ -1,18 +1,27 @@
 import { useEffect, useState } from "react";
 import { Cross } from "lucide-react";
 import "./NpcEdit.css";
-import { sessionCode, type Arc, type Session } from "../data/domain";
+import {
+  sessionCode,
+  type Arc,
+  type Npc,
+  type Quest,
+  type Session,
+} from "../data/domain";
 import { MarkdownText } from "../components/MarkdownText";
 import { RenderedNoteButton } from "../components/RenderedNoteButton";
 import { useSessionExpectations } from "../hooks/useSessionExpectations";
 import { apiFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 
 interface SessionEditProps {
   arc?: Arc;
   arcs: Arc[];
   session: Session;
   campaignId: string;
+  npcs: Npc[];
+  quests: Quest[];
   onSave: (patch: Partial<Session>) => void;
   onBack: () => void;
   onDelete: () => void;
@@ -24,6 +33,8 @@ export function SessionEdit({
   arcs,
   session,
   campaignId,
+  npcs,
+  quests,
   onSave,
   onBack,
   onDelete,
@@ -46,17 +57,71 @@ export function SessionEdit({
     session.id,
   );
 
+  const [npcIds, setNpcIds] = useState<Set<string> | null>(null);
+  const [questIds, setQuestIds] = useState<Set<string> | null>(null);
+  const savedNpcIds = new Set(expectedNpcs.map((n) => String(n.npc_id)));
+  const savedQuestIds = new Set(expectedQuests.map((q) => String(q.quest_id)));
+  const selectedNpcIds = npcIds ?? savedNpcIds;
+  const selectedQuestIds = questIds ?? savedQuestIds;
+
+  function toggle(
+    current: Set<string>,
+    set: (next: Set<string>) => void,
+    id: string,
+  ) {
+    const next = new Set(current);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    set(next);
+  }
+
+  async function syncRelations() {
+    const calls: [string, RequestInit][] = [];
+    for (const id of selectedNpcIds)
+      if (!savedNpcIds.has(id))
+        calls.push([
+          `/sessions/${session.id}/npcs`,
+          { method: "POST", body: JSON.stringify({ npc_id: Number(id) }) },
+        ]);
+    for (const id of savedNpcIds)
+      if (!selectedNpcIds.has(id))
+        calls.push([`/sessions/${session.id}/npcs/${id}`, { method: "DELETE" }]);
+    for (const id of selectedQuestIds)
+      if (!savedQuestIds.has(id))
+        calls.push([
+          `/sessions/${session.id}/quests`,
+          { method: "POST", body: JSON.stringify({ quest_id: Number(id) }) },
+        ]);
+    for (const id of savedQuestIds)
+      if (!selectedQuestIds.has(id))
+        calls.push([
+          `/sessions/${session.id}/quests/${id}`,
+          { method: "DELETE" },
+        ]);
+    for (const [path, init] of calls) {
+      await apiFetch(path, init).catch((err) => {
+        console.error("Error asociando sesión:", err);
+        reportError("common.toastErrorSaving", err);
+      });
+    }
+  }
+
   const [wardails, setWardails] = useState("");
 
   useEffect(() => {
     if (!confirmingPlay) return;
     apiFetch<{ wardails: string }>(`/campaigns/${campaignId}`)
       .then((c) => setWardails(c.wardails ?? ""))
-      .catch((err) => console.error("Error cargando wardails:", err));
+      .catch((err) => {
+        console.error("Error cargando wardails:", err);
+        reportError("toast.errorLoading", err);
+      });
   }, [campaignId, confirmingPlay]);
 
   function handleSave() {
-    onSave({ date, summary: text, arcId: arcId || undefined });
+    syncRelations().then(() =>
+      onSave({ date, summary: text, arcId: arcId || undefined }),
+    );
   }
 
   function handleConfirmPlayed() {
@@ -272,30 +337,44 @@ export function SessionEdit({
   );
   const expectedBlock = (
     <>
-      {expectedNpcs.length > 0 && (
-        <div>
-          <span className="label">{t("planSession.expectedNpcs")}</span>
+      <div>
+        <span className="label">{t("planSession.expectedNpcs")}</span>
+        {npcs.length > 0 ? (
           <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
-            {expectedNpcs.map((n) => (
-              <span key={n.npc_id} className="npc-edit__type-chip">
+            {npcs.map((n) => (
+              <button
+                key={n.id}
+                type="button"
+                className={`npc-edit__type-chip${selectedNpcIds.has(n.id) ? " npc-edit__type-chip--active" : ""}`}
+                onClick={() => toggle(selectedNpcIds, setNpcIds, n.id)}
+              >
                 {n.name}
-              </span>
+              </button>
             ))}
           </div>
-        </div>
-      )}
-      {expectedQuests.length > 0 && (
-        <div>
-          <span className="label">{t("planSession.expectedQuests")}</span>
+        ) : (
+          <div className="npc-edit__hint">{t("planSession.noNpcsYet")}</div>
+        )}
+      </div>
+      <div>
+        <span className="label">{t("planSession.expectedQuests")}</span>
+        {quests.length > 0 ? (
           <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
-            {expectedQuests.map((q) => (
-              <span key={q.quest_id} className="npc-edit__type-chip">
-                {q.title}
-              </span>
+            {quests.map((q) => (
+              <button
+                key={q.id}
+                type="button"
+                className={`npc-edit__type-chip${selectedQuestIds.has(q.id) ? " npc-edit__type-chip--active" : ""}`}
+                onClick={() => toggle(selectedQuestIds, setQuestIds, q.id)}
+              >
+                {q.name}
+              </button>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="npc-edit__hint">{t("planSession.noQuestsYet")}</div>
+        )}
+      </div>
     </>
   );
 

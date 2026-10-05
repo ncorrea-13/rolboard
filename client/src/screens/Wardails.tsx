@@ -11,7 +11,11 @@ const MAX_LENGTH = 20000;
 
 interface WardailsProps {
   campaignId: string;
-  notify: (message: string, type?: "success" | "error") => void;
+  notify: (
+    message: string,
+    type?: "success" | "error",
+    err?: unknown,
+  ) => void;
 }
 
 export function Wardails({ campaignId, notify }: WardailsProps) {
@@ -23,7 +27,7 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
 
   const loadFailed = useEffectEvent((err: unknown) => {
     console.error("Error cargando wardails:", err);
-    notify(t("toast.errorLoading"), "error");
+    notify(t("toast.errorLoading"), "error", err);
   });
 
   useEffect(() => {
@@ -50,7 +54,7 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
       })
       .catch((err) => {
         console.error("Error guardando wardails:", err);
-        notify(t("wardails.errorSaving"), "error");
+        notify(t("wardails.errorSaving"), "error", err);
       })
       .finally(() => setSaving(false));
   }
