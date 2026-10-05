@@ -411,32 +411,33 @@ export function EncounterDetail({
               <div className="encounter-card__hp-values">
                 <input
                   className="encounter-card__hp-input"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   disabled={closed}
                   value={p.currentHp ?? ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const v = e.target.value
+                      .replace(/[^\d-]/g, "")
+                      .replace(/(?!^)-/g, "");
+                    if (v === "-") return;
                     updateParticipant(p.id, {
-                      currentHp:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
-                  }
+                      currentHp: Number(v),
+                    });
+                  }}
                 />
                 <span className="encounter-card__hp-sep">/</span>
                 <input
                   className="encounter-card__hp-input"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   disabled={closed}
                   value={p.maxHp ?? ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const v = e.target.value.replace(/\D/g, "");
                     updateParticipant(p.id, {
-                      maxHp:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
-                  }
+                      maxHp: Number(v),
+                    });
+                  }}
                 />
               </div>
               <div className="encounter-card__hp-delta">
