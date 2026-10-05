@@ -992,6 +992,8 @@ export default function App() {
                   arcs={campaignArcs}
                   session={session}
                   campaignId={activeCampaignId!}
+                  npcs={campaignNpcs}
+                  quests={campaignQuests}
                   autoConfirm={route.autoConfirm}
                   onSave={(patch) => saveSession(session.id, patch)}
                   onDelete={() => deleteSession(session.id)}
