@@ -8,6 +8,7 @@ import {
   logoutAdmin,
   hasAdminSecret,
   checkAdminSession,
+  describeError,
 } from "./lib/api";
 import { CampaignLoginForm } from "./components/CampaignLoginForm";
 import { AdminSecretForm } from "./components/AdminSecretForm";
@@ -161,7 +162,7 @@ export default function App() {
 
   const campaignsLoadFailed = useEffectEvent((err: unknown) => {
     console.error("Error cargando campañas:", err);
-    notify(t("toast.errorLoading"), "error");
+    notify(t("toast.errorLoading"), "error", err);
   });
 
   useEffect(() => {
@@ -177,7 +178,12 @@ export default function App() {
     type: "success" | "error";
   } | null>(null);
 
-  function notify(message: string, type: "success" | "error" = "success") {
+  function notify(
+    message: string,
+    type: "success" | "error" = "success",
+    err?: unknown,
+  ) {
+    if (err !== undefined) message = `${message}: ${describeError(err, t)}`;
     setToast({ id: Date.now(), message, type });
   }
 
@@ -258,6 +264,7 @@ export default function App() {
         setLogin({ campaignId: id, route: target });
       } else {
         console.error("Error entrando a la campaña:", err);
+        notify(t("toast.errorLoading"), "error", err);
       }
       return;
     }
@@ -269,9 +276,10 @@ export default function App() {
           prev.map((c) => (c.id === mapped.id ? mapped : c)),
         );
       })
-      .catch((err) =>
-        console.error("Error cargando datos completos de campaña:", err),
-      );
+      .catch((err) => {
+        console.error("Error cargando datos completos de campaña:", err);
+        notify(t("toast.errorLoading"), "error", err);
+      });
   }
 
   function openNewCampaign() {
@@ -307,7 +315,14 @@ export default function App() {
         setNewCampaignOpen(false);
         selectCampaign(mapped.id);
       })
-      .catch((err) => console.error("Error creando campaña:", err));
+      .catch((err) => {
+        console.error("Error creando campaña:", err);
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounCampaign")}`,
+          "error",
+          err,
+        );
+      });
   }
 
   function saveCampaignSettings(patch: {
@@ -336,6 +351,11 @@ export default function App() {
       })
       .catch((err) => {
         console.error("Error actualizando campaña:", err);
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounCampaign")}`,
+          "error",
+          err,
+        );
         throw err;
       });
   }

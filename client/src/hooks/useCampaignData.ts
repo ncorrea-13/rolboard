@@ -150,14 +150,18 @@ export function useCampaignData(
   activeCampaignId: string | null,
   activeCampaign: Campaign | undefined,
   navigate: (route: Route, opts?: { replace?: boolean }) => void,
-  notify: (message: string, type?: "success" | "error") => void,
+  notify: (
+    message: string,
+    type?: "success" | "error",
+    err?: unknown,
+  ) => void,
 ) {
   const t = useT();
   const lang = useLang();
 
   const loadFailed = useEffectEvent((what: string, err: unknown) => {
     console.error(`Error cargando ${what}:`, err);
-    notify(t("toast.errorLoading"), "error");
+    notify(t("toast.errorLoading"), "error", err);
   });
 
   const [npcs, setNpcs] = useState<Npc[]>([]);
@@ -193,7 +197,7 @@ export function useCampaignData(
   function npcTypeError(err: unknown) {
     console.error("Error con tipos de NPC:", err);
     const inUse = err instanceof ApiError && err.status === 409;
-    notify(t(inUse ? "npcTypes.inUse" : "npcTypes.errorSaving"), "error");
+    notify(t(inUse ? "npcTypes.inUse" : "npcTypes.errorSaving"), "error", err);
     return false;
   }
 
@@ -318,7 +322,7 @@ export function useCampaignData(
       .then(() => notify(t("toast.reindexed")))
       .catch((err) => {
         console.error("Error reindexando:", err);
-        notify(t("toast.errorReindexing"), "error");
+        notify(t("toast.errorReindexing"), "error", err);
       })
       .finally(() => setReindexing(false));
   }
@@ -955,7 +959,7 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error subiendo imagen de NPC:", err);
-        notify(t("common.toastErrorSaving"), "error");
+        notify(t("common.toastErrorSaving"), "error", err);
         throw err;
       });
   }
@@ -969,7 +973,7 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error borrando imagen de NPC:", err);
-        notify(t("common.toastErrorDeleting"), "error");
+        notify(t("common.toastErrorDeleting"), "error", err);
         throw err;
       });
   }
@@ -989,7 +993,7 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error subiendo imagen de personaje:", err);
-        notify(t("common.toastErrorSaving"), "error");
+        notify(t("common.toastErrorSaving"), "error", err);
         throw err;
       });
   }
@@ -1008,7 +1012,7 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error borrando imagen de personaje:", err);
-        notify(t("common.toastErrorDeleting"), "error");
+        notify(t("common.toastErrorDeleting"), "error", err);
         throw err;
       });
   }
@@ -1022,7 +1026,7 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error subiendo imagen de locación:", err);
-        notify(t("common.toastErrorSaving"), "error");
+        notify(t("common.toastErrorSaving"), "error", err);
         throw err;
       });
   }
@@ -1036,7 +1040,7 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error borrando imagen de locación:", err);
-        notify(t("common.toastErrorDeleting"), "error");
+        notify(t("common.toastErrorDeleting"), "error", err);
         throw err;
       });
   }
@@ -1050,7 +1054,7 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error subiendo imagen de facción:", err);
-        notify(t("common.toastErrorSaving"), "error");
+        notify(t("common.toastErrorSaving"), "error", err);
         throw err;
       });
   }
@@ -1064,7 +1068,7 @@ export function useCampaignData(
       })
       .catch((err) => {
         console.error("Error borrando imagen de facción:", err);
-        notify(t("common.toastErrorDeleting"), "error");
+        notify(t("common.toastErrorDeleting"), "error", err);
         throw err;
       });
   }

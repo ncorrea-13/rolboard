@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Campaign, CampaignStatus } from "../data/domain";
-import { apiFetch, hasAdminSecret } from "../lib/api";
+import { apiFetch, describeError, hasAdminSecret } from "../lib/api";
 import { useT } from "../lib/i18n";
 
 interface CampaignSettingsFormProps {
@@ -53,7 +53,7 @@ export function CampaignSettingsForm({
         system: system.trim(),
         status,
         vaultPath,
-      });
+      }).catch(() => {});
     } finally {
       setSaving(false);
     }
@@ -68,8 +68,8 @@ export function CampaignSettingsForm({
       await onSetAccessCode(accessCode.trim());
       setAccessCode("");
       setCodeSaved(true);
-    } catch {
-      setCodeError(t("adminSecret.error"));
+    } catch (err) {
+      setCodeError(`${t("adminSecret.error")}: ${describeError(err, t)}`);
     } finally {
       setCodeSaving(false);
     }

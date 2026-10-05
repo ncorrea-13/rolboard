@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent } from "react";
 import "./Toast.css";
 
-const DURATION_MS = { success: 2000, error: 3000 };
+const DURATION_MS = { success: 2000, error: 6000 };
 
 export function Toast({
   message,
