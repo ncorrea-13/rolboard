@@ -20,6 +20,7 @@ import {
   type NpcTypesApi,
 } from "../components/NpcTypesManager";
 import { useT, useLang } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 import type { CSSProperties } from "react";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
@@ -91,7 +92,10 @@ export function NpcEdit({
         setLinkRole(link.role);
         setLinkNpcId(link.npcId);
       })
-      .catch((err) => console.error("Error cargando vínculo:", err));
+      .catch((err) => {
+        console.error("Error cargando vínculo:", err);
+        reportError("toast.errorLoading", err);
+      });
   }, [npc.id]);
 
   const dirty =
@@ -117,7 +121,10 @@ export function NpcEdit({
         {
           method: "DELETE",
         },
-      ).catch((err) => console.error("Error borrando vínculo:", err));
+      ).catch((err) => {
+        console.error("Error borrando vínculo:", err);
+        reportError("common.toastErrorDeleting", err);
+      });
     }
     if (linkNpcId) {
       apiFetch(`/npcs/${savedNpcId}/relations`, {
@@ -126,7 +133,10 @@ export function NpcEdit({
           to_npc_id: Number(linkNpcId),
           role: linkRole || "VINCULADO",
         }),
-      }).catch((err) => console.error("Error guardando vínculo:", err));
+      }).catch((err) => {
+        console.error("Error guardando vínculo:", err);
+        reportError("common.toastErrorSaving", err);
+      });
     }
   }
 

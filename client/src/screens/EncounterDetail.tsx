@@ -34,6 +34,7 @@ import {
   type TurnType,
 } from "../data/domain";
 import { useT, type TranslationKey } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 import { entityImageUrl } from "../lib/images";
 
 type AddKind = "npc" | "pc" | "custom";
@@ -132,7 +133,10 @@ export function EncounterDetail({
       .then((data) =>
         setParticipants((data ?? []).map(mapEncounterParticipant)),
       )
-      .catch((err) => console.error("Error cargando participantes:", err));
+      .catch((err) => {
+        console.error("Error cargando participantes:", err);
+        reportError("toast.errorLoading", err);
+      });
   }
 
   useEffect(reload, [encounter.id]);
@@ -187,7 +191,10 @@ export function EncounterDetail({
         setAddName("");
         reload();
       })
-      .catch((err) => console.error("Error agregando participante:", err));
+      .catch((err) => {
+        console.error("Error agregando participante:", err);
+        reportError("common.toastErrorSaving", err);
+      });
   }
 
   function updateParticipant(id: string, patch: Partial<EncounterParticipant>) {
@@ -206,13 +213,19 @@ export function EncounterDetail({
           if (merged.npcId) onSyncNpcHp(merged.npcId, hp);
         }
       })
-      .catch((err) => console.error("Error actualizando participante:", err));
+      .catch((err) => {
+        console.error("Error actualizando participante:", err);
+        reportError("common.toastErrorSaving", err);
+      });
   }
 
   function removeParticipant(id: string) {
     apiFetch(`/encounter-participants/${id}`, { method: "DELETE" })
       .then(() => setParticipants((prev) => prev.filter((p) => p.id !== id)))
-      .catch((err) => console.error("Error sacando participante:", err));
+      .catch((err) => {
+        console.error("Error sacando participante:", err);
+        reportError("common.toastErrorDeleting", err);
+      });
   }
 
   function handleNextRound() {
@@ -233,7 +246,10 @@ export function EncounterDetail({
         );
         onNextRound();
       })
-      .catch((err) => console.error("Error reiniciando turnos:", err));
+      .catch((err) => {
+        console.error("Error reiniciando turnos:", err);
+        reportError("common.toastErrorSaving", err);
+      });
   }
 
   function nameFor(p: EncounterParticipant): string {

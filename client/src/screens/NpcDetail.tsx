@@ -15,6 +15,7 @@ import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 import { MarkdownText } from "../components/MarkdownText";
 import type { CSSProperties } from "react";
 
@@ -73,7 +74,10 @@ export function NpcDetail({
           })),
         ),
       )
-      .catch((err) => console.error("Error cargando vínculos:", err));
+      .catch((err) => {
+        console.error("Error cargando vínculos:", err);
+        reportError("toast.errorLoading", err);
+      });
   }, [npc.id]);
 
   const links = relations

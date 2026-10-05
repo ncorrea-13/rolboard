@@ -28,6 +28,7 @@ import {
   type Session,
 } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 import { Link } from "../components/Link";
 
 interface EditableProps {
@@ -151,7 +152,10 @@ export function FactionDetail({
       .then((data) =>
         setMemberIds((data ?? []).map(mapGroupMember).map((m) => m.npcId)),
       )
-      .catch((err) => console.error("Error cargando miembros:", err));
+      .catch((err) => {
+        console.error("Error cargando miembros:", err);
+        reportError("toast.errorLoading", err);
+      });
   }
 
   useEffect(reloadMembers, [group.id]);
@@ -161,7 +165,10 @@ export function FactionDetail({
       .then((data) =>
         setPcMemberIds((data ?? []).map(mapPCGroupMember).map((m) => m.pcId)),
       )
-      .catch((err) => console.error("Error cargando PJs miembros:", err));
+      .catch((err) => {
+        console.error("Error cargando PJs miembros:", err);
+        reportError("toast.errorLoading", err);
+      });
   }
 
   useEffect(reloadPcMembers, [group.id]);
@@ -176,13 +183,19 @@ export function FactionDetail({
         setAddNpcId("");
         reloadMembers();
       })
-      .catch((err) => console.error("Error agregando miembro:", err));
+      .catch((err) => {
+        console.error("Error agregando miembro:", err);
+        reportError("common.toastErrorSaving", err);
+      });
   }
 
   function removeMember(npcId: string) {
     apiFetch(`/groups/${group.id}/members/${npcId}`, { method: "DELETE" })
       .then(reloadMembers)
-      .catch((err) => console.error("Error sacando miembro:", err));
+      .catch((err) => {
+        console.error("Error sacando miembro:", err);
+        reportError("common.toastErrorDeleting", err);
+      });
   }
 
   function addPcMember() {
@@ -195,13 +208,19 @@ export function FactionDetail({
         setAddPcId("");
         reloadPcMembers();
       })
-      .catch((err) => console.error("Error agregando PJ:", err));
+      .catch((err) => {
+        console.error("Error agregando PJ:", err);
+        reportError("common.toastErrorSaving", err);
+      });
   }
 
   function removePcMember(pcId: string) {
     apiFetch(`/groups/${group.id}/pc-members/${pcId}`, { method: "DELETE" })
       .then(reloadPcMembers)
-      .catch((err) => console.error("Error sacando PJ:", err));
+      .catch((err) => {
+        console.error("Error sacando PJ:", err);
+        reportError("common.toastErrorDeleting", err);
+      });
   }
 
   const members = npcs.filter((n) => memberIds.includes(n.id));

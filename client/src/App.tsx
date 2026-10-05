@@ -68,6 +68,7 @@ import {
 import type { Route } from "./types";
 import { currentLocation, routeToPath } from "./lib/routes";
 import { RouterContext } from "./lib/router";
+import { setErrorReporter } from "./lib/notify";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 type HistoryMode = "push" | "replace" | "none";
@@ -186,6 +187,12 @@ export default function App() {
     if (err !== undefined) message = `${message}: ${describeError(err, t)}`;
     setToast({ id: Date.now(), message, type });
   }
+
+  useEffect(() =>
+    setErrorReporter((key, err, extra) =>
+      notify(extra ? `${t(key)}: ${extra}` : t(key), "error", err),
+    ),
+  );
 
   const activeCampaign = campaigns.find((c) => c.id === activeCampaignId);
 

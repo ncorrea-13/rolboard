@@ -13,6 +13,7 @@ import { RenderedNoteButton } from "../components/RenderedNoteButton";
 import { useSessionExpectations } from "../hooks/useSessionExpectations";
 import { apiFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 
 interface SessionEditProps {
   arc?: Arc;
@@ -98,9 +99,10 @@ export function SessionEdit({
           { method: "DELETE" },
         ]);
     for (const [path, init] of calls) {
-      await apiFetch(path, init).catch((err) =>
-        console.error("Error asociando sesión:", err),
-      );
+      await apiFetch(path, init).catch((err) => {
+        console.error("Error asociando sesión:", err);
+        reportError("common.toastErrorSaving", err);
+      });
     }
   }
 
@@ -110,7 +112,10 @@ export function SessionEdit({
     if (!confirmingPlay) return;
     apiFetch<{ wardails: string }>(`/campaigns/${campaignId}`)
       .then((c) => setWardails(c.wardails ?? ""))
-      .catch((err) => console.error("Error cargando wardails:", err));
+      .catch((err) => {
+        console.error("Error cargando wardails:", err);
+        reportError("toast.errorLoading", err);
+      });
   }, [campaignId, confirmingPlay]);
 
   function handleSave() {
