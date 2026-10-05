@@ -1,9 +1,35 @@
+import type { TranslationKey } from "./i18n";
+
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  detail: string;
+  constructor(status: number, message: string, detail = "") {
     super(message);
     this.status = status;
+    this.detail = detail;
   }
+}
+
+async function failure(res: Response, method: string, path: string) {
+  const detail = (await res.text().catch(() => "")).trim().slice(0, 300);
+  return new ApiError(
+    res.status,
+    `${method} ${path} failed: ${res.status}`,
+    detail,
+  );
+}
+
+/** Human-readable reason for a failed request, for toasts. */
+export function describeError(
+  err: unknown,
+  t: (key: TranslationKey) => string,
+): string {
+  if (err instanceof ApiError) {
+    if (err.status === 401) return t("toast.unauthorized");
+    return err.detail || `HTTP ${err.status}`;
+  }
+  if (err instanceof TypeError) return t("toast.networkError");
+  return err instanceof Error ? err.message : String(err);
 }
 
 let adminAuthenticated = false;
@@ -33,12 +59,7 @@ export async function apiFetch<T>(
       ...init?.headers,
     },
   });
-  if (!res.ok) {
-    throw new ApiError(
-      res.status,
-      `${init?.method ?? "GET"} ${path} failed: ${res.status}`,
-    );
-  }
+  if (!res.ok) throw await failure(res, init?.method ?? "GET", path);
   if (res.status === 204) return undefined as T;
   return res.json();
 }
@@ -74,8 +95,6 @@ export async function apiImageRequest<T>(
     body.append("file", file);
   }
   const res = await fetch(`/api${path}`, { method, body });
-  if (!res.ok) {
-    throw new ApiError(res.status, `${method} ${path} failed: ${res.status}`);
-  }
+  if (!res.ok) throw await failure(res, method, path);
   return res.json();
 }

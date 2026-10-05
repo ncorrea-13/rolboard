@@ -14,11 +14,13 @@ import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { SkillsEditor } from "../components/SkillsEditor";
 import { ImageUploadField } from "../components/ImageUploadField";
+import { usePendingImage } from "../hooks/usePendingImage";
 import {
   NpcTypesButton,
   type NpcTypesApi,
 } from "../components/NpcTypesManager";
 import { useT, useLang } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 import type { CSSProperties } from "react";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
@@ -28,7 +30,10 @@ interface NpcEditProps {
   npcs: Npc[];
   locations: Location[];
   npcTypesApi: NpcTypesApi;
-  onSave: (patch: Partial<Npc>) => void;
+  onSave: (
+    patch: Partial<Npc>,
+    image?: File,
+  ) => boolean | void | Promise<string | undefined>;
   onDiscard: () => void;
   imageVersion?: number;
   onUploadImage?: (file: File) => Promise<void>;
@@ -47,6 +52,7 @@ export function NpcEdit({
   onRemoveImage,
 }: NpcEditProps) {
   const t = useT();
+  const pendingImage = usePendingImage();
   const lang = useLang();
   const [name, setName] = useState(npc.name);
   const [description, setDescription] = useState(npc.description);
@@ -70,6 +76,10 @@ export function NpcEdit({
   const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
   const [attributes, setAttributes] = useState<StatMap>(npc.attributes);
   const [skills, setSkills] = useState<StatMap>(npc.skills);
+  const [currentHp, setCurrentHp] = useState<number | undefined>(
+    npc.currentHp,
+  );
+  const [maxHp, setMaxHp] = useState<number | undefined>(npc.maxHp);
 
   useEffect(() => {
     if (!npc.id) return;
@@ -82,7 +92,10 @@ export function NpcEdit({
         setLinkRole(link.role);
         setLinkNpcId(link.npcId);
       })
-      .catch((err) => console.error("Error cargando vínculo:", err));
+      .catch((err) => {
+        console.error("Error cargando vínculo:", err);
+        reportError("toast.errorLoading", err);
+      });
   }, [npc.id]);
 
   const dirty =
@@ -97,7 +110,9 @@ export function NpcEdit({
     linkRole !== (existingLink?.role ?? "") ||
     linkNpcId !== (existingLink?.npcId ?? "") ||
     JSON.stringify(attributes) !== JSON.stringify(npc.attributes) ||
-    JSON.stringify(skills) !== JSON.stringify(npc.skills);
+    JSON.stringify(skills) !== JSON.stringify(npc.skills) ||
+    currentHp !== npc.currentHp ||
+    maxHp !== npc.maxHp;
 
   function syncLink(savedNpcId: string) {
     if (existingLink) {
@@ -106,7 +121,10 @@ export function NpcEdit({
         {
           method: "DELETE",
         },
-      ).catch((err) => console.error("Error borrando vínculo:", err));
+      ).catch((err) => {
+        console.error("Error borrando vínculo:", err);
+        reportError("common.toastErrorDeleting", err);
+      });
     }
     if (linkNpcId) {
       apiFetch(`/npcs/${savedNpcId}/relations`, {
@@ -115,24 +133,34 @@ export function NpcEdit({
           to_npc_id: Number(linkNpcId),
           role: linkRole || "VINCULADO",
         }),
-      }).catch((err) => console.error("Error guardando vínculo:", err));
+      }).catch((err) => {
+        console.error("Error guardando vínculo:", err);
+        reportError("common.toastErrorSaving", err);
+      });
     }
   }
 
   function handleSave() {
-    onSave({
-      name,
-      description,
-      status,
-      detailLevel,
-      crystal,
-      locationId: locationId || undefined,
-      etnia,
-      tipoSpren,
-      attributes,
-      skills,
-    });
+    const saved = onSave(
+      {
+        name,
+        description,
+        status,
+        detailLevel,
+        crystal,
+        locationId: locationId || undefined,
+        etnia,
+        tipoSpren,
+        attributes,
+        skills,
+        currentHp,
+        maxHp,
+      },
+      pendingImage.file,
+    );
+    if (saved === false) return;
     if (npc.id) syncLink(npc.id);
+    else if (saved instanceof Promise) saved.then((id) => id && syncLink(id));
   }
 
   const linkTarget = npcs.find((n) => n.id === linkNpcId);
@@ -317,7 +345,7 @@ export function NpcEdit({
         </div>
 
         <div className="npc-edit__col">
-          {npc.id && onUploadImage && onRemoveImage && (
+          {npc.id && onUploadImage && onRemoveImage ? (
             <ImageUploadField
               label={t("npcEdit.portrait")}
               imageUrl={entityImageUrl(
@@ -329,7 +357,44 @@ export function NpcEdit({
               onUpload={onUploadImage}
               onRemove={onRemoveImage}
             />
+          ) : (
+            !npc.id && (
+              <ImageUploadField
+                label={t("npcEdit.portrait")}
+                imageUrl={pendingImage.url}
+                onUpload={pendingImage.set}
+                onRemove={pendingImage.clear}
+              />
+            )
           )}
+          <div className="npc-edit__grid-2">
+            <div>
+              <span className="label">{t("playerEdit.currentHp")}</span>
+              <input
+                className="npc-edit__input"
+                type="number"
+                value={currentHp ?? ""}
+                onChange={(e) =>
+                  setCurrentHp(
+                    e.target.value === "" ? undefined : Number(e.target.value),
+                  )
+                }
+              />
+            </div>
+            <div>
+              <span className="label">{t("playerEdit.maxHp")}</span>
+              <input
+                className="npc-edit__input"
+                type="number"
+                value={maxHp ?? ""}
+                onChange={(e) =>
+                  setMaxHp(
+                    e.target.value === "" ? undefined : Number(e.target.value),
+                  )
+                }
+              />
+            </div>
+          </div>
           <div>
             <span className="label">{t("npcList.colLocation")}</span>
             <select

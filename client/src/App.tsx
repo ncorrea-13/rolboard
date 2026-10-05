@@ -8,6 +8,7 @@ import {
   logoutAdmin,
   hasAdminSecret,
   checkAdminSession,
+  describeError,
 } from "./lib/api";
 import { CampaignLoginForm } from "./components/CampaignLoginForm";
 import { AdminSecretForm } from "./components/AdminSecretForm";
@@ -67,6 +68,7 @@ import {
 import type { Route } from "./types";
 import { currentLocation, routeToPath } from "./lib/routes";
 import { RouterContext } from "./lib/router";
+import { setErrorReporter } from "./lib/notify";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 type HistoryMode = "push" | "replace" | "none";
@@ -161,7 +163,7 @@ export default function App() {
 
   const campaignsLoadFailed = useEffectEvent((err: unknown) => {
     console.error("Error cargando campañas:", err);
-    notify(t("toast.errorLoading"), "error");
+    notify(t("toast.errorLoading"), "error", err);
   });
 
   useEffect(() => {
@@ -177,9 +179,20 @@ export default function App() {
     type: "success" | "error";
   } | null>(null);
 
-  function notify(message: string, type: "success" | "error" = "success") {
+  function notify(
+    message: string,
+    type: "success" | "error" = "success",
+    err?: unknown,
+  ) {
+    if (err !== undefined) message = `${message}: ${describeError(err, t)}`;
     setToast({ id: Date.now(), message, type });
   }
+
+  useEffect(() =>
+    setErrorReporter((key, err, extra) =>
+      notify(extra ? `${t(key)}: ${extra}` : t(key), "error", err),
+    ),
+  );
 
   const activeCampaign = campaigns.find((c) => c.id === activeCampaignId);
 
@@ -258,6 +271,7 @@ export default function App() {
         setLogin({ campaignId: id, route: target });
       } else {
         console.error("Error entrando a la campaña:", err);
+        notify(t("toast.errorLoading"), "error", err);
       }
       return;
     }
@@ -269,9 +283,10 @@ export default function App() {
           prev.map((c) => (c.id === mapped.id ? mapped : c)),
         );
       })
-      .catch((err) =>
-        console.error("Error cargando datos completos de campaña:", err),
-      );
+      .catch((err) => {
+        console.error("Error cargando datos completos de campaña:", err);
+        notify(t("toast.errorLoading"), "error", err);
+      });
   }
 
   function openNewCampaign() {
@@ -307,7 +322,14 @@ export default function App() {
         setNewCampaignOpen(false);
         selectCampaign(mapped.id);
       })
-      .catch((err) => console.error("Error creando campaña:", err));
+      .catch((err) => {
+        console.error("Error creando campaña:", err);
+        notify(
+          `${t("common.toastErrorCreating")} ${t("common.nounCampaign")}`,
+          "error",
+          err,
+        );
+      });
   }
 
   function saveCampaignSettings(patch: {
@@ -336,6 +358,11 @@ export default function App() {
       })
       .catch((err) => {
         console.error("Error actualizando campaña:", err);
+        notify(
+          `${t("common.toastErrorSaving")} ${t("common.nounCampaign")}`,
+          "error",
+          err,
+        );
         throw err;
       });
   }
@@ -654,7 +681,7 @@ export default function App() {
                   group={group}
                   npcs={campaignNpcs}
                   onSave={(patch) => {
-                    saveFaction(group.id, patch);
+                    if (saveFaction(group.id, patch) === false) return;
                     navigate(
                       {
                         name: "entity-detail",
@@ -699,7 +726,7 @@ export default function App() {
                   location={location}
                   locations={campaignLocations}
                   onSave={(patch) => {
-                    saveLocation(location.id, patch);
+                    if (saveLocation(location.id, patch) === false) return;
                     navigate(
                       {
                         name: "entity-detail",
@@ -744,7 +771,7 @@ export default function App() {
                   arc={arc}
                   hasVault={!!activeCampaign?.vaultPath}
                   onSave={(patch) => {
-                    saveArc(arc.id, patch);
+                    if (saveArc(arc.id, patch) === false) return;
                     navigate(
                       {
                         name: "entity-detail",
@@ -783,7 +810,7 @@ export default function App() {
                   key={quest.id}
                   quest={quest}
                   onSave={(patch) => {
-                    saveQuest(quest.id, patch);
+                    if (saveQuest(quest.id, patch) === false) return;
                     navigate(
                       {
                         name: "entity-detail",
@@ -820,7 +847,7 @@ export default function App() {
               locations={campaignLocations}
               npcTypesApi={npcTypesApi}
               onSave={(patch) => {
-                saveNpc(selectedNpc.id, patch);
+                if (saveNpc(selectedNpc.id, patch) === false) return false;
                 navigate(
                   { name: "npc-detail", npcId: selectedNpc.id },
                   { replace: true },
@@ -865,7 +892,7 @@ export default function App() {
               key={selectedPlayer.id}
               player={selectedPlayer}
               onSave={(patch) => {
-                savePlayer(selectedPlayer.id, patch);
+                if (savePlayer(selectedPlayer.id, patch) === false) return;
                 navigate(
                   {
                     name: "player-detail",
@@ -910,6 +937,7 @@ export default function App() {
                   encounter={encounter}
                   npcs={campaignNpcs}
                   playerCharacters={campaignPlayerCharacters}
+                  sessions={campaignSessions}
                   onBack={() =>
                     navigate({ name: "section", section: "encuentros" })
                   }
@@ -919,13 +947,21 @@ export default function App() {
                   onClose={() =>
                     saveEncounter(encounter.id, { status: "cerrado" })
                   }
+                  onReopen={() =>
+                    saveEncounter(encounter.id, { status: "activo" })
+                  }
                   onNextRound={() =>
                     saveEncounter(encounter.id, {
                       round: encounter.round + 1,
                     })
                   }
                   onDelete={() => deleteEncounter(encounter.id)}
+                  onChangeSession={(sessionId) =>
+                    saveEncounter(encounter.id, { sessionId })
+                  }
+                  onRename={(name) => saveEncounter(encounter.id, { name })}
                   onSyncPlayerHp={(pcId, patch) => savePlayer(pcId, patch)}
+                  onSyncNpcHp={(npcId, patch) => saveNpc(npcId, patch)}
                   imageVersion={imageVersion}
                 />
               );
@@ -935,6 +971,7 @@ export default function App() {
             <PlanSession
               nextNumber={nextSessionNumber}
               currentArc={defaultSessionArc}
+              arcs={campaignArcs}
               npcs={campaignNpcs}
               quests={campaignQuests}
               onConfirm={planSession}
@@ -987,6 +1024,8 @@ export default function App() {
                   arcs={campaignArcs}
                   session={session}
                   campaignId={activeCampaignId!}
+                  npcs={campaignNpcs}
+                  quests={campaignQuests}
                   autoConfirm={route.autoConfirm}
                   onSave={(patch) => saveSession(session.id, patch)}
                   onDelete={() => deleteSession(session.id)}

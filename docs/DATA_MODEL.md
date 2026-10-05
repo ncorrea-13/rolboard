@@ -113,6 +113,7 @@ quest_npcs      quest ↔ npc        (schema only, no endpoints)
 | etnia, rol, tipo_spren | optional |
 | description, notes     | |
 | attributes, skills     | JSON |
+| current_hp, max_hp     | optional; persist across encounters |
 | obsidian_path          | |
 | image_path             | |
 
@@ -160,6 +161,7 @@ No `obsidian_path`: quests live only in the DB.
 
 | Field      | Notes |
 | ---------- | ----- |
+| name       | optional; the list shows `Encounter #id` when empty |
 | session_id | optional |
 | round      | default `1` |
 | status     | `planificado` (default) \| `activo` \| `cerrado` |
@@ -170,7 +172,7 @@ No `obsidian_path`: quests live only in the DB.
 | ------------------------------ | ----- |
 | encounter_id                   | |
 | pc_id / npc_id / display_name  | at most one (`CHECK`). `display_name` = enemy with no entity |
-| current_hp, max_hp             | for PCs, the client syncs with `player_characters` |
+| current_hp, max_hp             | for PCs and NPCs, the client syncs with `player_characters` / `npcs` |
 | initiative_value               | D&D: numeric turn order |
 | turn_type                      | Cosmere: `rapido` \| `lento` |
 | notes                          | |

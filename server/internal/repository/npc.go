@@ -17,7 +17,7 @@ func NewNPCRepository(db *sql.DB) *NPCRepository {
 }
 
 func (r *NPCRepository) List(ctx context.Context, campaignID int64) ([]models.NPC, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, obsidian_path, image_path, created_at, updated_at
+	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, current_hp, max_hp, obsidian_path, image_path, created_at, updated_at
 		FROM npcs WHERE campaign_id = ? AND deleted_at IS NULL ORDER BY name`,
 		campaignID,
 	)
@@ -33,10 +33,10 @@ func (r *NPCRepository) List(ctx context.Context, campaignID int64) ([]models.NP
 	var npcs []models.NPC
 	for rows.Next() {
 		n := models.NPC{}
-		var locationID sql.NullInt64
+		var locationID, currentHp, maxHp sql.NullInt64
 		var etnia, rol, tipoSpren, obsidianPath, imagePath sql.NullString
 		var attributes, skills string
-		if err := rows.Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &obsidianPath, &imagePath, &n.CreatedAt, &n.UpdatedAt); err != nil {
+		if err := rows.Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &imagePath, &n.CreatedAt, &n.UpdatedAt); err != nil {
 			return nil, err
 		}
 		n.LocationID = fromNullInt64(locationID)
@@ -45,6 +45,8 @@ func (r *NPCRepository) List(ctx context.Context, campaignID int64) ([]models.NP
 		n.TipoSpren = fromNullString(tipoSpren)
 		n.Attributes = json.RawMessage(attributes)
 		n.Skills = json.RawMessage(skills)
+		n.CurrentHp = fromNullInt64(currentHp)
+		n.MaxHp = fromNullInt64(maxHp)
 		n.ObsidianPath = fromNullString(obsidianPath)
 		n.ImagePath = fromNullString(imagePath)
 		npcs = append(npcs, n)
@@ -56,20 +58,20 @@ func (r *NPCRepository) List(ctx context.Context, campaignID int64) ([]models.NP
 }
 
 func (r *NPCRepository) Create(ctx context.Context, n *models.NPC) error {
-	var locationID sql.NullInt64
+	var locationID, currentHp, maxHp sql.NullInt64
 	var etnia, rol, tipoSpren, obsidianPath sql.NullString
 	var attributes, skills string
 	err := r.db.QueryRowContext(ctx, `
-		INSERT INTO npcs (campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, obsidian_path)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO npcs (campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, current_hp, max_hp, obsidian_path)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
 			name = excluded.name, npc_kind = excluded.npc_kind, detail_level = excluded.detail_level,
 			status = excluded.status, location_id = excluded.location_id, etnia = excluded.etnia,
 			rol = excluded.rol, tipo_spren = excluded.tipo_spren,
 			description = excluded.description, notes = excluded.notes, deleted_at = NULL, updated_at = datetime('now')
-		RETURNING id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, obsidian_path, created_at, updated_at`,
-		n.CampaignID, n.Name, n.NPCKind, n.DetailLevel, n.Status, toNullInt64(n.LocationID), toNullString(n.Etnia), toNullString(n.Rol), toNullString(n.TipoSpren), n.Description, n.Notes, toJSONText(n.Attributes), toJSONText(n.Skills), toNullString(n.ObsidianPath),
-	).Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &obsidianPath, &n.CreatedAt, &n.UpdatedAt)
+		RETURNING id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, current_hp, max_hp, obsidian_path, created_at, updated_at`,
+		n.CampaignID, n.Name, n.NPCKind, n.DetailLevel, n.Status, toNullInt64(n.LocationID), toNullString(n.Etnia), toNullString(n.Rol), toNullString(n.TipoSpren), n.Description, n.Notes, toJSONText(n.Attributes), toJSONText(n.Skills), toNullInt64(n.CurrentHp), toNullInt64(n.MaxHp), toNullString(n.ObsidianPath),
+	).Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &n.CreatedAt, &n.UpdatedAt)
 	if err != nil {
 		return err
 	}
@@ -79,20 +81,22 @@ func (r *NPCRepository) Create(ctx context.Context, n *models.NPC) error {
 	n.TipoSpren = fromNullString(tipoSpren)
 	n.Attributes = json.RawMessage(attributes)
 	n.Skills = json.RawMessage(skills)
+	n.CurrentHp = fromNullInt64(currentHp)
+	n.MaxHp = fromNullInt64(maxHp)
 	n.ObsidianPath = fromNullString(obsidianPath)
 	return nil
 }
 
 func (r *NPCRepository) GetByID(ctx context.Context, id int64) (*models.NPC, error) {
 	n := models.NPC{}
-	var locationID sql.NullInt64
+	var locationID, currentHp, maxHp sql.NullInt64
 	var etnia, rol, tipoSpren, obsidianPath, imagePath sql.NullString
 	var attributes, skills string
 	err := r.db.QueryRowContext(ctx, `
-		SELECT id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, obsidian_path, image_path, created_at, updated_at
+		SELECT id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, current_hp, max_hp, obsidian_path, image_path, created_at, updated_at
 		FROM npcs WHERE id = ? AND deleted_at IS NULL`,
 		id,
-	).Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &obsidianPath, &imagePath, &n.CreatedAt, &n.UpdatedAt)
+	).Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &imagePath, &n.CreatedAt, &n.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -105,6 +109,8 @@ func (r *NPCRepository) GetByID(ctx context.Context, id int64) (*models.NPC, err
 	n.TipoSpren = fromNullString(tipoSpren)
 	n.Attributes = json.RawMessage(attributes)
 	n.Skills = json.RawMessage(skills)
+	n.CurrentHp = fromNullInt64(currentHp)
+	n.MaxHp = fromNullInt64(maxHp)
 	n.ObsidianPath = fromNullString(obsidianPath)
 	n.ImagePath = fromNullString(imagePath)
 	return &n, nil
@@ -127,16 +133,16 @@ func (r *NPCRepository) SetImagePath(ctx context.Context, id int64, path *string
 }
 
 func (r *NPCRepository) Update(ctx context.Context, id int64, n *models.NPC) error {
-	var locationID sql.NullInt64
+	var locationID, currentHp, maxHp sql.NullInt64
 	var etnia, rol, tipoSpren, obsidianPath sql.NullString
 	var attributes, skills string
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE npcs
-		SET name = ?, npc_kind = ?, detail_level = ?, status = ?, location_id = ?, etnia = ?, rol = ?, tipo_spren = ?, description = ?, notes = ?, attributes = ?, skills = ?, obsidian_path = ?, updated_at = datetime('now')
+		SET name = ?, npc_kind = ?, detail_level = ?, status = ?, location_id = ?, etnia = ?, rol = ?, tipo_spren = ?, description = ?, notes = ?, attributes = ?, skills = ?, current_hp = ?, max_hp = ?, obsidian_path = ?, updated_at = datetime('now')
 		WHERE id = ? AND deleted_at IS NULL
-		RETURNING id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, obsidian_path, created_at, updated_at`,
-		n.Name, n.NPCKind, n.DetailLevel, n.Status, toNullInt64(n.LocationID), toNullString(n.Etnia), toNullString(n.Rol), toNullString(n.TipoSpren), n.Description, n.Notes, toJSONText(n.Attributes), toJSONText(n.Skills), toNullString(n.ObsidianPath), id,
-	).Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &obsidianPath, &n.CreatedAt, &n.UpdatedAt)
+		RETURNING id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, current_hp, max_hp, obsidian_path, created_at, updated_at`,
+		n.Name, n.NPCKind, n.DetailLevel, n.Status, toNullInt64(n.LocationID), toNullString(n.Etnia), toNullString(n.Rol), toNullString(n.TipoSpren), n.Description, n.Notes, toJSONText(n.Attributes), toJSONText(n.Skills), toNullInt64(n.CurrentHp), toNullInt64(n.MaxHp), toNullString(n.ObsidianPath), id,
+	).Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &n.CreatedAt, &n.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}
@@ -149,6 +155,8 @@ func (r *NPCRepository) Update(ctx context.Context, id int64, n *models.NPC) err
 	n.TipoSpren = fromNullString(tipoSpren)
 	n.Attributes = json.RawMessage(attributes)
 	n.Skills = json.RawMessage(skills)
+	n.CurrentHp = fromNullInt64(currentHp)
+	n.MaxHp = fromNullInt64(maxHp)
 	n.ObsidianPath = fromNullString(obsidianPath)
 	return nil
 }

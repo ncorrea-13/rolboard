@@ -3,6 +3,7 @@ package models
 type Encounter struct {
 	ID         int64  `json:"id"`
 	CampaignID int64  `json:"campaign_id"`
+	Name       string `json:"name"`
 	SessionID  *int64 `json:"session_id,omitempty"`
 	Round      int64  `json:"round"`
 	Status     string `json:"status"`

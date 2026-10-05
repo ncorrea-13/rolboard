@@ -9,6 +9,7 @@ import {
 } from "../data/domain";
 import { SkillsEditor } from "../components/SkillsEditor";
 import { ImageUploadField } from "../components/ImageUploadField";
+import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 
@@ -16,7 +17,7 @@ const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
 interface PlayerEditProps {
   player: PlayerCharacter;
-  onSave: (patch: Partial<PlayerCharacter>) => void;
+  onSave: (patch: Partial<PlayerCharacter>, image?: File) => void;
   onDiscard: () => void;
   imageVersion?: number;
   onUploadImage?: (file: File) => Promise<void>;
@@ -32,6 +33,7 @@ export function PlayerEdit({
   onRemoveImage,
 }: PlayerEditProps) {
   const t = useT();
+  const pendingImage = usePendingImage();
   const lang = useLang();
   const [playerName, setPlayerName] = useState(player.playerName);
   const [characterName, setCharacterName] = useState(player.characterName);
@@ -63,19 +65,22 @@ export function PlayerEdit({
     maxHp !== player.maxHp;
 
   function handleSave() {
-    onSave({
-      playerName,
-      characterName,
-      race,
-      class: charClass,
-      status,
-      backstory,
-      progressionNotes,
-      attributes,
-      skills,
-      currentHp,
-      maxHp,
-    });
+    onSave(
+      {
+        playerName,
+        characterName,
+        race,
+        class: charClass,
+        status,
+        backstory,
+        progressionNotes,
+        attributes,
+        skills,
+        currentHp,
+        maxHp,
+      },
+      pendingImage.file,
+    );
   }
 
   const missingRace = race.trim() === "";
@@ -210,7 +215,7 @@ export function PlayerEdit({
         </div>
 
         <div className="npc-edit__col">
-          {player.id && onUploadImage && onRemoveImage && (
+          {player.id && onUploadImage && onRemoveImage ? (
             <ImageUploadField
               label={t("npcEdit.portrait")}
               imageUrl={entityImageUrl(
@@ -222,6 +227,15 @@ export function PlayerEdit({
               onUpload={onUploadImage}
               onRemove={onRemoveImage}
             />
+          ) : (
+            !player.id && (
+              <ImageUploadField
+                label={t("npcEdit.portrait")}
+                imageUrl={pendingImage.url}
+                onUpload={pendingImage.set}
+                onRemove={pendingImage.clear}
+              />
+            )
           )}
           <div className="npc-edit__grid-2">
             <div>

@@ -15,6 +15,7 @@ import { openInObsidian } from "../lib/obsidian";
 import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 import { MarkdownText } from "../components/MarkdownText";
 import type { CSSProperties } from "react";
 
@@ -73,7 +74,10 @@ export function NpcDetail({
           })),
         ),
       )
-      .catch((err) => console.error("Error cargando vínculos:", err));
+      .catch((err) => {
+        console.error("Error cargando vínculos:", err);
+        reportError("toast.errorLoading", err);
+      });
   }, [npc.id]);
 
   const links = relations
@@ -110,6 +114,14 @@ export function NpcDetail({
             imageUrl={entityImageUrl("npc", npc.id, npc.hasImage, imageVersion)}
           />
           <StatusPill status={npc.status} />
+          {(npc.currentHp != null || npc.maxHp != null) && (
+            <span
+              className="npc-detail__breadcrumb-type"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              {npc.currentHp ?? "—"} / {npc.maxHp ?? "—"} HP
+            </span>
+          )}
           <div className="npc-detail__header-actions">
             {npc.obsidianPath && (
               <>
@@ -300,7 +312,11 @@ export function NpcDetail({
           onClose={() => setSheetOpen(false)}
           size="sheet"
         >
-          <CharacterSheet attributes={npc.attributes} skills={npc.skills} />
+          <CharacterSheet
+            attributes={npc.attributes}
+            skills={npc.skills}
+            hp={{ current: npc.currentHp, max: npc.maxHp }}
+          />
         </Modal>
       )}
     </div>

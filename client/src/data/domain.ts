@@ -279,6 +279,8 @@ export interface Npc {
   relatedQuestIds?: string[];
   attributes: StatMap;
   skills: StatMap;
+  currentHp?: number;
+  maxHp?: number;
   hasImage?: boolean;
 }
 
@@ -376,6 +378,7 @@ export interface Encounter {
   id: string;
   deletedAt?: string;
   campaignId: string;
+  name: string;
   sessionId?: string;
   round: number;
   status: EncounterStatus;
