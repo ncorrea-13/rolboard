@@ -64,6 +64,8 @@ export interface ApiNpc {
   description: string;
   attributes?: StatMap;
   skills?: StatMap;
+  current_hp?: number;
+  max_hp?: number;
   obsidian_path?: string;
   image_path?: string;
 }
@@ -131,6 +133,8 @@ export function mapNpc(n: ApiNpc): Npc {
     obsidianPath: n.obsidian_path ?? "",
     attributes: n.attributes ?? {},
     skills: n.skills ?? {},
+    currentHp: n.current_hp,
+    maxHp: n.max_hp,
     hasImage: Boolean(n.image_path),
   };
 }
@@ -162,6 +166,8 @@ export function npcToApiPayload(npc: Npc) {
     location_id: npc.locationId ? Number(npc.locationId) : undefined,
     attributes: npc.attributes,
     skills: npc.skills,
+    current_hp: npc.currentHp,
+    max_hp: npc.maxHp,
     obsidian_path: npc.obsidianPath || undefined,
   };
 }

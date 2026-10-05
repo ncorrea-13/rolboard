@@ -279,6 +279,8 @@ export interface Npc {
   relatedQuestIds?: string[];
   attributes: StatMap;
   skills: StatMap;
+  currentHp?: number;
+  maxHp?: number;
   hasImage?: boolean;
 }
 

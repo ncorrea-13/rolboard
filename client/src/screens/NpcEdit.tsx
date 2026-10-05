@@ -70,6 +70,10 @@ export function NpcEdit({
   const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
   const [attributes, setAttributes] = useState<StatMap>(npc.attributes);
   const [skills, setSkills] = useState<StatMap>(npc.skills);
+  const [currentHp, setCurrentHp] = useState<number | undefined>(
+    npc.currentHp,
+  );
+  const [maxHp, setMaxHp] = useState<number | undefined>(npc.maxHp);
 
   useEffect(() => {
     if (!npc.id) return;
@@ -97,7 +101,9 @@ export function NpcEdit({
     linkRole !== (existingLink?.role ?? "") ||
     linkNpcId !== (existingLink?.npcId ?? "") ||
     JSON.stringify(attributes) !== JSON.stringify(npc.attributes) ||
-    JSON.stringify(skills) !== JSON.stringify(npc.skills);
+    JSON.stringify(skills) !== JSON.stringify(npc.skills) ||
+    currentHp !== npc.currentHp ||
+    maxHp !== npc.maxHp;
 
   function syncLink(savedNpcId: string) {
     if (existingLink) {
@@ -131,6 +137,8 @@ export function NpcEdit({
       tipoSpren,
       attributes,
       skills,
+      currentHp,
+      maxHp,
     });
     if (npc.id) syncLink(npc.id);
   }
@@ -330,6 +338,34 @@ export function NpcEdit({
               onRemove={onRemoveImage}
             />
           )}
+          <div className="npc-edit__grid-2">
+            <div>
+              <span className="label">{t("playerEdit.currentHp")}</span>
+              <input
+                className="npc-edit__input"
+                type="number"
+                value={currentHp ?? ""}
+                onChange={(e) =>
+                  setCurrentHp(
+                    e.target.value === "" ? undefined : Number(e.target.value),
+                  )
+                }
+              />
+            </div>
+            <div>
+              <span className="label">{t("playerEdit.maxHp")}</span>
+              <input
+                className="npc-edit__input"
+                type="number"
+                value={maxHp ?? ""}
+                onChange={(e) =>
+                  setMaxHp(
+                    e.target.value === "" ? undefined : Number(e.target.value),
+                  )
+                }
+              />
+            </div>
+          </div>
           <div>
             <span className="label">{t("npcList.colLocation")}</span>
             <select

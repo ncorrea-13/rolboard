@@ -110,6 +110,14 @@ export function NpcDetail({
             imageUrl={entityImageUrl("npc", npc.id, npc.hasImage, imageVersion)}
           />
           <StatusPill status={npc.status} />
+          {(npc.currentHp != null || npc.maxHp != null) && (
+            <span
+              className="npc-detail__breadcrumb-type"
+              style={{ fontFamily: "var(--font-mono)" }}
+            >
+              {npc.currentHp ?? "—"} / {npc.maxHp ?? "—"} HP
+            </span>
+          )}
           <div className="npc-detail__header-actions">
             {npc.obsidianPath && (
               <>
@@ -300,7 +308,11 @@ export function NpcDetail({
           onClose={() => setSheetOpen(false)}
           size="sheet"
         >
-          <CharacterSheet attributes={npc.attributes} skills={npc.skills} />
+          <CharacterSheet
+            attributes={npc.attributes}
+            skills={npc.skills}
+            hp={{ current: npc.currentHp, max: npc.maxHp }}
+          />
         </Modal>
       )}
     </div>
