@@ -940,6 +940,7 @@ export default function App() {
             <PlanSession
               nextNumber={nextSessionNumber}
               currentArc={defaultSessionArc}
+              arcs={campaignArcs}
               npcs={campaignNpcs}
               quests={campaignQuests}
               onConfirm={planSession}

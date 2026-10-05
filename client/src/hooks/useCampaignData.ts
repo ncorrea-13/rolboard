@@ -556,6 +556,7 @@ export function useCampaignData(
   function planSession(values: {
     date: string;
     summary: string;
+    arcId?: string;
     expectedNpcIds: string[];
     expectedQuestIds: string[];
   }) {
@@ -563,7 +564,7 @@ export function useCampaignData(
     const draft: Session = {
       id: "",
       campaignId: activeCampaign!.id,
-      arcId: defaultSessionArc?.id,
+      arcId: values.arcId,
       sessionNumber: nextSessionNumber,
       subNumber: 0,
       sessionType: "planning",
