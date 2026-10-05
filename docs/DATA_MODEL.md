@@ -161,6 +161,7 @@ No `obsidian_path`: quests live only in the DB.
 
 | Field      | Notes |
 | ---------- | ----- |
+| name       | optional; the list shows `Encounter #id` when empty |
 | session_id | optional |
 | round      | default `1` |
 | status     | `planificado` (default) \| `activo` \| `cerrado` |

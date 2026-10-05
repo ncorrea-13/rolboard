@@ -209,7 +209,7 @@ PUT    /api/encounter-participants/{id}
 DELETE /api/encounter-participants/{id}
 ```
 
-Encounter: `session_id`, `round` (default 1), `status` (`planificado` | `activo` | `cerrado`, default `planificado`).
+Encounter: `name`, `session_id`, `round` (default 1), `status` (`planificado` | `activo` | `cerrado`, default `planificado`).
 
 Participant: `pc_id`, `npc_id`, `display_name`, `current_hp`, `max_hp`, `initiative_value`, `turn_type` (`rapido` | `lento`), `notes`, `attributes`, `skills`. At most one of `pc_id` / `npc_id` / `display_name` (`400` otherwise).
 

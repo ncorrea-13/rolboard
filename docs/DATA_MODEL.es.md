@@ -161,6 +161,7 @@ Sin `obsidian_path`: las quests viven solo en la DB.
 
 | Campo      | Notas |
 | ---------- | ----- |
+| name       | opcional; si está vacío la lista muestra `Encuentro #id` |
 | session_id | opcional |
 | round      | default `1` |
 | status     | `planificado` (default) \| `activo` \| `cerrado` |
