@@ -29,7 +29,10 @@ interface NpcEditProps {
   npcs: Npc[];
   locations: Location[];
   npcTypesApi: NpcTypesApi;
-  onSave: (patch: Partial<Npc>, image?: File) => void;
+  onSave: (
+    patch: Partial<Npc>,
+    image?: File,
+  ) => void | Promise<string | undefined>;
   onDiscard: () => void;
   imageVersion?: number;
   onUploadImage?: (file: File) => Promise<void>;
@@ -128,7 +131,7 @@ export function NpcEdit({
   }
 
   function handleSave() {
-    onSave(
+    const saved = onSave(
       {
         name,
         description,
@@ -146,6 +149,7 @@ export function NpcEdit({
       pendingImage.file,
     );
     if (npc.id) syncLink(npc.id);
+    else if (saved instanceof Promise) saved.then((id) => id && syncLink(id));
   }
 
   const linkTarget = npcs.find((n) => n.id === linkNpcId);

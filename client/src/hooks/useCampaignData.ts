@@ -397,13 +397,16 @@ export function useCampaignData(
       });
   }
 
-  function createNpc(patch: Partial<Npc>, image?: File) {
+  function createNpc(
+    patch: Partial<Npc>,
+    image?: File,
+  ): Promise<string | undefined> {
     const draft: Npc = {
       ...blankNpcDraft,
       ...patch,
       campaignId: activeCampaign!.id,
     };
-    apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
+    return apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
       method: "POST",
       body: JSON.stringify(npcToApiPayload(draft)),
     })
@@ -412,6 +415,7 @@ export function useCampaignData(
         setNpcs((prev) => [...prev, npc]);
         if (image) uploadNpcImage(npc.id, image).catch(() => {});
         navigate({ name: "npc-detail", npcId: npc.id }, { replace: true });
+        return npc.id;
       })
       .catch((err) => {
         console.error("Error creando NPC:", err);
@@ -419,6 +423,7 @@ export function useCampaignData(
           `${t("common.toastErrorCreating")} ${t("common.nounNpc")}`,
           "error",
         );
+        return undefined;
       });
   }
 
