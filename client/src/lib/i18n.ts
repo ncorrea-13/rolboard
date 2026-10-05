@@ -104,6 +104,9 @@ const dict = {
     "encountersList.noSession": "Sin sesión asociada",
     "encountersList.empty": "Sin encuentros todavía.",
     "encountersList.unnamed": "Encuentro",
+    "encountersList.searchPlaceholder": "Buscar encuentro…",
+    "encountersList.allSessions": "Todas las sesiones",
+    "encountersList.noMatches": "Ningún encuentro coincide con los filtros.",
     "encounterDetail.name": "Nombre",
     "encounterDetail.namePlaceholder": "Ej.: Emboscada en el puente",
 
@@ -491,6 +494,9 @@ const dict = {
     "encountersList.noSession": "No associated session",
     "encountersList.empty": "No encounters yet.",
     "encountersList.unnamed": "Encounter",
+    "encountersList.searchPlaceholder": "Search encounter…",
+    "encountersList.allSessions": "All sessions",
+    "encountersList.noMatches": "No encounter matches the filters.",
     "encounterDetail.name": "Name",
     "encounterDetail.namePlaceholder": "E.g.: Ambush at the bridge",
 
