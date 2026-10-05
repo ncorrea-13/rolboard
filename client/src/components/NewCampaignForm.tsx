@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Campaign } from "../data/domain";
 import { apiFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
+import { reportError } from "../lib/notify";
 
 interface NewCampaignFormProps {
   onConfirm: (campaign: Omit<Campaign, "id">, vaultPath: string) => void;
@@ -24,7 +25,10 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
   }, []);
 
   function handleConfirm() {
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      reportError("toast.missingFields", undefined, t("newCampaignForm.name"));
+      return;
+    }
     onConfirm(
       {
         name: name.trim(),
@@ -87,7 +91,6 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
         <button
           className="btn btn-primary"
           onClick={handleConfirm}
-          disabled={!name.trim()}
         >
           {t("newCampaignForm.confirm")}
         </button>

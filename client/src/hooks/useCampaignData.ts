@@ -52,6 +52,7 @@ import type { Route } from "../types";
 import {
   useT,
   useLang,
+  type TranslationKey,
   npcLeaderWarning,
   arcSessionsWarning,
   locationDependentsWarning,
@@ -157,6 +158,15 @@ export function useCampaignData(
   ) => void,
 ) {
   const t = useT();
+
+  function hasRequired(fields: [TranslationKey, unknown][]): boolean {
+    const missing = fields
+      .filter(([, value]) => value == null || String(value).trim() === "")
+      .map(([label]) => t(label));
+    if (missing.length === 0) return true;
+    notify(`${t("toast.missingFields")}: ${missing.join(", ")}`, "error");
+    return false;
+  }
   const lang = useLang();
 
   const loadFailed = useEffectEvent((what: string, err: unknown) => {
@@ -385,6 +395,10 @@ export function useCampaignData(
     const current = npcs.find((n) => n.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
+    if (!hasRequired([
+      ["common.name", merged.name],
+      ["common.type", merged.crystal],
+    ])) return false;
     apiFetch(`/npcs/${id}`, {
       method: "PUT",
       body: JSON.stringify(npcToApiPayload(merged)),
@@ -397,6 +411,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounNpc")}`,
           "error",
+          err,
         );
       });
   }
@@ -410,6 +425,10 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
+    if (!hasRequired([
+      ["common.name", draft.name],
+      ["common.type", draft.crystal],
+    ])) return Promise.resolve(undefined);
     return apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
       method: "POST",
       body: JSON.stringify(npcToApiPayload(draft)),
@@ -426,6 +445,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounNpc")}`,
           "error",
+          err,
         );
         return undefined;
       });
@@ -446,6 +466,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounNpc")}`,
           "error",
+          err,
         );
       });
   }
@@ -454,6 +475,10 @@ export function useCampaignData(
     const current = playerCharacters.find((p) => p.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
+    if (!hasRequired([
+      ["playerEdit.characterName", merged.characterName],
+      ["playerEdit.player", merged.playerName],
+    ])) return false;
     apiFetch(`/player-characters/${id}`, {
       method: "PUT",
       body: JSON.stringify(playerCharacterToApiPayload(merged)),
@@ -468,6 +493,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounCharacter")}`,
           "error",
+          err,
         );
       });
   }
@@ -478,6 +504,10 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
+    if (!hasRequired([
+      ["playerEdit.characterName", draft.characterName],
+      ["playerEdit.player", draft.playerName],
+    ])) return false;
     apiFetch<ApiPlayerCharacter>(
       `/campaigns/${activeCampaign!.id}/player-characters`,
       {
@@ -499,6 +529,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounCharacter")}`,
           "error",
+          err,
         );
       });
   }
@@ -514,6 +545,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounCharacter")}`,
           "error",
+          err,
         );
       });
     navigate({ name: "section", section: "jugadores" }, { replace: true });
@@ -523,6 +555,12 @@ export function useCampaignData(
     const current = sessions.find((s) => s.id === id);
     if (!current) return;
     const draft: Session = { ...current, ...patch };
+    if (
+      !hasRequired([
+        ["toast.missingDate", draft.sessionType === "planning" || draft.date],
+      ])
+    )
+      return false;
     apiFetch<ApiSession>(`/sessions/${id}`, {
       method: "PUT",
       body: JSON.stringify(sessionToApiPayload(draft)),
@@ -537,6 +575,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounSession")}`,
           "error",
+          err,
         );
       });
   }
@@ -553,6 +592,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounSession")}`,
           "error",
+          err,
         );
       });
   }
@@ -604,6 +644,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounSession")}`,
           "error",
+          err,
         );
       });
   }
@@ -621,6 +662,7 @@ export function useCampaignData(
     const current = groups.find((g) => g.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
+    if (!hasRequired([["common.name", merged.name]])) return false;
     apiFetch<ApiGroup>(`/groups/${id}`, {
       method: "PUT",
       body: JSON.stringify(groupToApiPayload(merged)),
@@ -634,6 +676,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounFaction")}`,
           "error",
+          err,
         );
       });
   }
@@ -644,6 +687,7 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
+    if (!hasRequired([["common.name", draft.name]])) return false;
     apiFetch<ApiGroup>(`/campaigns/${activeCampaign!.id}/groups`, {
       method: "POST",
       body: JSON.stringify(groupToApiPayload(draft)),
@@ -662,6 +706,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounFaction")}`,
           "error",
+          err,
         );
       });
   }
@@ -670,6 +715,10 @@ export function useCampaignData(
     const current = locations.find((l) => l.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
+    if (!hasRequired([
+      ["common.name", merged.name],
+      ["common.type", merged.locationType],
+    ])) return false;
     apiFetch<ApiLocation>(`/locations/${id}`, {
       method: "PUT",
       body: JSON.stringify(locationToApiPayload(merged)),
@@ -683,6 +732,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounLocation")}`,
           "error",
+          err,
         );
       });
   }
@@ -693,6 +743,10 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
+    if (!hasRequired([
+      ["common.name", draft.name],
+      ["common.type", draft.locationType],
+    ])) return false;
     apiFetch<ApiLocation>(`/campaigns/${activeCampaign!.id}/locations`, {
       method: "POST",
       body: JSON.stringify(locationToApiPayload(draft)),
@@ -711,6 +765,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounLocation")}`,
           "error",
+          err,
         );
       });
   }
@@ -719,6 +774,10 @@ export function useCampaignData(
     const current = arcs.find((a) => a.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
+    if (!hasRequired([
+      ["arcEdit.nameLabel", merged.label],
+      ["toast.invalidOrder", merged.order || ""],
+    ])) return false;
     apiFetch<ApiArc>(`/arcs/${id}`, {
       method: "PUT",
       body: JSON.stringify(arcToApiPayload(merged)),
@@ -732,6 +791,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounArc")}`,
           "error",
+          err,
         );
       });
   }
@@ -742,6 +802,10 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
+    if (!hasRequired([
+      ["arcEdit.nameLabel", draft.label],
+      ["toast.invalidOrder", draft.order || ""],
+    ])) return false;
     apiFetch<ApiArc>(`/campaigns/${activeCampaign!.id}/arcs`, {
       method: "POST",
       body: JSON.stringify(arcToApiPayload(draft)),
@@ -759,6 +823,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounArc")}`,
           "error",
+          err,
         );
       });
   }
@@ -767,6 +832,7 @@ export function useCampaignData(
     const current = quests.find((q) => q.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
+    if (!hasRequired([["questEdit.title", merged.name]])) return false;
     apiFetch<ApiQuest>(`/quests/${id}`, {
       method: "PUT",
       body: JSON.stringify(questToApiPayload(merged)),
@@ -780,6 +846,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounQuest")}`,
           "error",
+          err,
         );
       });
   }
@@ -790,6 +857,7 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
+    if (!hasRequired([["questEdit.title", draft.name]])) return false;
     apiFetch<ApiQuest>(`/campaigns/${activeCampaign!.id}/quests`, {
       method: "POST",
       body: JSON.stringify(questToApiPayload(draft)),
@@ -807,6 +875,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounQuest")}`,
           "error",
+          err,
         );
       });
   }
@@ -828,6 +897,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounEncounter")}`,
           "error",
+          err,
         );
       });
   }
@@ -852,6 +922,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounEncounter")}`,
           "error",
+          err,
         );
       });
   }
@@ -868,6 +939,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounEncounter")}`,
           "error",
+          err,
         );
       });
   }
@@ -905,6 +977,7 @@ export function useCampaignData(
           notify(
             `${t("common.toastErrorDeleting")} ${t("common.nounLocation")}`,
             "error",
+            err,
           );
         });
       goToEntitySection(kind);
@@ -918,6 +991,7 @@ export function useCampaignData(
           notify(
             `${t("common.toastErrorDeleting")} ${t("common.nounFaction")}`,
             "error",
+            err,
           );
         });
       goToEntitySection(kind);
@@ -931,6 +1005,7 @@ export function useCampaignData(
           notify(
             `${t("common.toastErrorDeleting")} ${t("common.nounArc")}`,
             "error",
+            err,
           );
         });
       goToEntitySection(kind);
@@ -943,6 +1018,7 @@ export function useCampaignData(
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounQuest")}`,
           "error",
+          err,
         );
       });
     goToEntitySection(kind);

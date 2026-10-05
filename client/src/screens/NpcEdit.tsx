@@ -33,7 +33,7 @@ interface NpcEditProps {
   onSave: (
     patch: Partial<Npc>,
     image?: File,
-  ) => void | Promise<string | undefined>;
+  ) => boolean | void | Promise<string | undefined>;
   onDiscard: () => void;
   imageVersion?: number;
   onUploadImage?: (file: File) => Promise<void>;
@@ -158,6 +158,7 @@ export function NpcEdit({
       },
       pendingImage.file,
     );
+    if (saved === false) return;
     if (npc.id) syncLink(npc.id);
     else if (saved instanceof Promise) saved.then((id) => id && syncLink(id));
   }

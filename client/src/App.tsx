@@ -681,7 +681,7 @@ export default function App() {
                   group={group}
                   npcs={campaignNpcs}
                   onSave={(patch) => {
-                    saveFaction(group.id, patch);
+                    if (saveFaction(group.id, patch) === false) return;
                     navigate(
                       {
                         name: "entity-detail",
@@ -726,7 +726,7 @@ export default function App() {
                   location={location}
                   locations={campaignLocations}
                   onSave={(patch) => {
-                    saveLocation(location.id, patch);
+                    if (saveLocation(location.id, patch) === false) return;
                     navigate(
                       {
                         name: "entity-detail",
@@ -771,7 +771,7 @@ export default function App() {
                   arc={arc}
                   hasVault={!!activeCampaign?.vaultPath}
                   onSave={(patch) => {
-                    saveArc(arc.id, patch);
+                    if (saveArc(arc.id, patch) === false) return;
                     navigate(
                       {
                         name: "entity-detail",
@@ -810,7 +810,7 @@ export default function App() {
                   key={quest.id}
                   quest={quest}
                   onSave={(patch) => {
-                    saveQuest(quest.id, patch);
+                    if (saveQuest(quest.id, patch) === false) return;
                     navigate(
                       {
                         name: "entity-detail",
@@ -847,7 +847,7 @@ export default function App() {
               locations={campaignLocations}
               npcTypesApi={npcTypesApi}
               onSave={(patch) => {
-                saveNpc(selectedNpc.id, patch);
+                if (saveNpc(selectedNpc.id, patch) === false) return false;
                 navigate(
                   { name: "npc-detail", npcId: selectedNpc.id },
                   { replace: true },
@@ -892,7 +892,7 @@ export default function App() {
               key={selectedPlayer.id}
               player={selectedPlayer}
               onSave={(patch) => {
-                savePlayer(selectedPlayer.id, patch);
+                if (savePlayer(selectedPlayer.id, patch) === false) return;
                 navigate(
                   {
                     name: "player-detail",
