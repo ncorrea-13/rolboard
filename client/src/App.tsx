@@ -947,6 +947,9 @@ export default function App() {
                   onClose={() =>
                     saveEncounter(encounter.id, { status: "cerrado" })
                   }
+                  onReopen={() =>
+                    saveEncounter(encounter.id, { status: "activo" })
+                  }
                   onNextRound={() =>
                     saveEncounter(encounter.id, {
                       round: encounter.round + 1,

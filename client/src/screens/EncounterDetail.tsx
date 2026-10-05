@@ -47,6 +47,7 @@ interface EncounterDetailProps {
   onBack: () => void;
   onStart: () => void;
   onClose: () => void;
+  onReopen: () => void;
   onNextRound: () => void;
   onDelete: () => void;
   onChangeSession: (sessionId?: string) => void;
@@ -104,6 +105,7 @@ export function EncounterDetail({
   onBack,
   onStart,
   onClose,
+  onReopen,
   onNextRound,
   onDelete,
   onChangeSession,
@@ -125,6 +127,7 @@ export function EncounterDetail({
   const [addKind, setAddKind] = useState<AddKind>("npc");
   const [addRefId, setAddRefId] = useState("");
   const [addName, setAddName] = useState("");
+  const closed = encounter.status === "cerrado";
 
   function reload() {
     apiFetch<ApiEncounterParticipant[]>(
@@ -349,6 +352,7 @@ export function EncounterDetail({
           </span>
           <button
             className="encounter-card__remove"
+            disabled={closed}
             onClick={() => removeParticipant(p.id)}
             title={t("encounterDetail.removeTitle")}
           >
@@ -381,6 +385,7 @@ export function EncounterDetail({
                 <input
                   className="encounter-card__hp-input"
                   type="number"
+                  disabled={closed}
                   value={p.currentHp ?? ""}
                   onChange={(e) =>
                     updateParticipant(p.id, {
@@ -395,6 +400,7 @@ export function EncounterDetail({
                 <input
                   className="encounter-card__hp-input"
                   type="number"
+                  disabled={closed}
                   value={p.maxHp ?? ""}
                   onChange={(e) =>
                     updateParticipant(p.id, {
@@ -423,6 +429,7 @@ export function EncounterDetail({
               <input
                 className="encounter-card__stat-value"
                 type="number"
+                disabled={closed}
                 value={p.initiativeValue ?? ""}
                 onChange={(e) =>
                   updateParticipant(p.id, {
@@ -441,6 +448,7 @@ export function EncounterDetail({
           <div className="encounter-card__toggle">
             <button
               className={`encounter-card__toggle-btn${p.turnType === "rapido" ? " encounter-card__toggle-btn--active" : ""}`}
+              disabled={closed}
               onClick={() =>
                 updateParticipant(p.id, {
                   turnType: p.turnType === "rapido" ? undefined : "rapido",
@@ -451,6 +459,7 @@ export function EncounterDetail({
             </button>
             <button
               className={`encounter-card__toggle-btn${p.turnType === "lento" ? " encounter-card__toggle-btn--active" : ""}`}
+              disabled={closed}
               onClick={() =>
                 updateParticipant(p.id, {
                   turnType: p.turnType === "lento" ? undefined : "lento",
@@ -538,6 +547,11 @@ export function EncounterDetail({
                 {t("encounterDetail.closeCombat")}
               </button>
             )}
+            {closed && (
+              <button className="btn btn-secondary" onClick={onReopen}>
+                {t("encounterDetail.reopenCombat")}
+              </button>
+            )}
           </>
         }
         onDelete={onDelete}
@@ -615,7 +629,7 @@ export function EncounterDetail({
                   </span>
                 )}
 
-                {!addOpen && (
+                {!addOpen && !closed && (
                   <button
                     className="encounter-add-trigger"
                     onClick={() => setAddOpen(true)}
