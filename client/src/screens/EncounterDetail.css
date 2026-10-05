@@ -174,6 +174,7 @@
 
 .encounter-card__hp-track {
   flex: 1;
+  display: flex;
   height: 10px;
   border-radius: 5px;
   background: var(--bg-elevated);
@@ -186,6 +187,20 @@
   transition:
     width 0.15s ease,
     background 0.15s ease;
+}
+
+.encounter-card__hp-fill--negative {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--status-dead) 0 4px,
+    var(--status-dead-border) 4px 8px
+  );
+}
+
+.encounter-card__hp-overflow {
+  height: 100%;
+  background: var(--accent-sky);
+  transition: width 0.15s ease;
 }
 
 .encounter-card__down {

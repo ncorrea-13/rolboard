@@ -37,7 +37,7 @@ import {
 import { useT, type TranslationKey } from "../lib/i18n";
 import { reportError } from "../lib/notify";
 import { entityImageUrl } from "../lib/images";
-import { nextHp } from "../lib/hp";
+import { hpBar, nextHp } from "../lib/hp";
 
 type AddKind = "npc" | "pc" | "custom";
 
@@ -386,17 +386,28 @@ export function EncounterDetail({
               )}
             </div>
             <div className="encounter-card__hp-row">
-              <div className="encounter-card__hp-track">
-                <div
-                  className="encounter-card__hp-fill"
-                  style={{
-                    width: p.maxHp
-                      ? `${Math.min(100, ((p.currentHp ?? 0) / p.maxHp) * 100)}%`
-                      : "0%",
-                    background: hpColor(p.currentHp, p.maxHp),
-                  }}
-                />
-              </div>
+              {(() => {
+                const bar = hpBar(p.currentHp, p.maxHp);
+                return (
+                  <div className="encounter-card__hp-track">
+                    <div
+                      className={`encounter-card__hp-fill${bar.negative ? " encounter-card__hp-fill--negative" : ""}`}
+                      style={{
+                        width: `${bar.fill}%`,
+                        background: bar.negative
+                          ? undefined
+                          : hpColor(p.currentHp, p.maxHp),
+                      }}
+                    />
+                    {bar.overflow > 0 && (
+                      <div
+                        className="encounter-card__hp-overflow"
+                        style={{ width: `${bar.overflow}%` }}
+                      />
+                    )}
+                  </div>
+                );
+              })()}
               <div className="encounter-card__hp-values">
                 <input
                   className="encounter-card__hp-input"
