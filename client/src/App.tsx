@@ -926,6 +926,7 @@ export default function App() {
                   }
                   onDelete={() => deleteEncounter(encounter.id)}
                   onSyncPlayerHp={(pcId, patch) => savePlayer(pcId, patch)}
+                  onSyncNpcHp={(npcId, patch) => saveNpc(npcId, patch)}
                   imageVersion={imageVersion}
                 />
               );

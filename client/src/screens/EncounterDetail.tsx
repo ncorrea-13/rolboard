@@ -48,6 +48,10 @@ interface EncounterDetailProps {
     pcId: string,
     patch: { currentHp?: number; maxHp?: number },
   ) => void;
+  onSyncNpcHp: (
+    npcId: string,
+    patch: { currentHp?: number; maxHp?: number },
+  ) => void;
   imageVersion?: number;
 }
 
@@ -96,6 +100,7 @@ export function EncounterDetail({
   onNextRound,
   onDelete,
   onSyncPlayerHp,
+  onSyncNpcHp,
   imageVersion = 0,
 }: EncounterDetailProps) {
   const t = useT();
@@ -146,13 +151,13 @@ export function EncounterDetail({
   function addParticipant() {
     if (addKind === "custom" && !addName.trim()) return;
     if (addKind !== "custom" && !addRefId) return;
-    const seedHp =
+    const linked =
       addKind === "pc"
-        ? (() => {
-            const pc = playerCharacters.find((p) => p.id === addRefId);
-            return { currentHp: pc?.currentHp, maxHp: pc?.maxHp };
-          })()
-        : {};
+        ? playerCharacters.find((p) => p.id === addRefId)
+        : addKind === "npc"
+          ? npcs.find((n) => n.id === addRefId)
+          : undefined;
+    const seedHp = { currentHp: linked?.currentHp, maxHp: linked?.maxHp };
     const draft: EncounterParticipant = {
       id: "",
       encounterId: encounter.id,
@@ -188,11 +193,10 @@ export function EncounterDetail({
     })
       .then(() => {
         setParticipants((prev) => prev.map((p) => (p.id === id ? merged : p)));
-        if (merged.pcId && ("currentHp" in patch || "maxHp" in patch)) {
-          onSyncPlayerHp(merged.pcId, {
-            currentHp: merged.currentHp,
-            maxHp: merged.maxHp,
-          });
+        if ("currentHp" in patch || "maxHp" in patch) {
+          const hp = { currentHp: merged.currentHp, maxHp: merged.maxHp };
+          if (merged.pcId) onSyncPlayerHp(merged.pcId, hp);
+          if (merged.npcId) onSyncNpcHp(merged.npcId, hp);
         }
       })
       .catch((err) => console.error("Error actualizando participante:", err));
