@@ -167,6 +167,7 @@
 
 .encounter-card__hp-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
@@ -185,6 +186,64 @@
   transition:
     width 0.15s ease,
     background 0.15s ease;
+}
+
+.encounter-card__down {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--status-dead);
+  color: var(--bg-elevated);
+  font: 600 10px/1.4 var(--font-mono);
+  text-transform: uppercase;
+}
+
+.encounter-card__hp-delta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.encounter-card__hp-delta-input {
+  width: 72px;
+  height: 32px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-body-strong);
+  font: 700 16px var(--font-mono);
+  padding: 0 6px;
+  text-align: center;
+}
+
+.encounter-card__hp-delta-input:focus {
+  outline: none;
+  border-color: var(--accent-obsidian);
+}
+
+.encounter-card__hp-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.encounter-card__hp-btn--damage {
+  color: var(--status-dead);
+}
+
+.encounter-card__hp-btn--heal {
+  color: var(--status-alive);
+}
+
+.encounter-card__hp-btn:disabled,
+.encounter-card__hp-delta-input:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .encounter-card__hp-values {

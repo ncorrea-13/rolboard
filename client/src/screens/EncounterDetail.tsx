@@ -6,6 +6,7 @@ import {
   X,
   Heart,
   Plus,
+  Minus,
   Crosshair,
   ScrollText,
 } from "lucide-react";
@@ -36,6 +37,7 @@ import {
 import { useT, type TranslationKey } from "../lib/i18n";
 import { reportError } from "../lib/notify";
 import { entityImageUrl } from "../lib/images";
+import { nextHp } from "../lib/hp";
 
 type AddKind = "npc" | "pc" | "custom";
 
@@ -127,7 +129,16 @@ export function EncounterDetail({
   const [addKind, setAddKind] = useState<AddKind>("npc");
   const [addRefId, setAddRefId] = useState("");
   const [addName, setAddName] = useState("");
+  const [hpDeltas, setHpDeltas] = useState<Record<string, string>>({});
   const closed = encounter.status === "cerrado";
+
+  function applyHpDelta(p: EncounterParticipant, sign: 1 | -1) {
+    const amount = Number(hpDeltas[p.id]);
+    if (!amount || amount < 0) return;
+    const current = p.currentHp ?? p.maxHp ?? 0;
+    updateParticipant(p.id, { currentHp: nextHp(current, p.maxHp, amount, sign) });
+    setHpDeltas((prev) => ({ ...prev, [p.id]: "" }));
+  }
 
   function reload() {
     apiFetch<ApiEncounterParticipant[]>(
@@ -368,6 +379,11 @@ export function EncounterDetail({
                 style={{ color: hpColor(p.currentHp, p.maxHp) }}
               />
               <span className="encounter-card__stat-label">HP</span>
+              {p.currentHp != null && p.currentHp <= 0 && (
+                <span className="encounter-card__down">
+                  {t("encounterDetail.down")}
+                </span>
+              )}
             </div>
             <div className="encounter-card__hp-row">
               <div className="encounter-card__hp-track">
@@ -411,6 +427,39 @@ export function EncounterDetail({
                     })
                   }
                 />
+              </div>
+              <div className="encounter-card__hp-delta">
+                <input
+                  className="encounter-card__hp-delta-input"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="±"
+                  disabled={closed}
+                  value={hpDeltas[p.id] ?? ""}
+                  onChange={(e) =>
+                    setHpDeltas((prev) => ({
+                      ...prev,
+                      [p.id]: e.target.value.replace(/\D/g, ""),
+                    }))
+                  }
+                  onKeyDown={(e) => e.key === "Enter" && applyHpDelta(p, -1)}
+                />
+                <button
+                  className="encounter-card__hp-btn encounter-card__hp-btn--damage"
+                  disabled={closed}
+                  onClick={() => applyHpDelta(p, -1)}
+                  title={t("encounterDetail.damage")}
+                >
+                  <Minus size={16} />
+                </button>
+                <button
+                  className="encounter-card__hp-btn encounter-card__hp-btn--heal"
+                  disabled={closed}
+                  onClick={() => applyHpDelta(p, 1)}
+                  title={t("encounterDetail.heal")}
+                >
+                  <Plus size={16} />
+                </button>
               </div>
             </div>
           </div>
