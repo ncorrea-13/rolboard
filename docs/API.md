@@ -139,7 +139,7 @@ DELETE /api/npcs/{id}/image
 GET    /api/npcs/{id}/image
 ```
 
-Body: `name`, `npc_kind` (`npc` | `spren` | `entidad-cognitiva` | `referencia`), `detail_level` (`full` | `minor`), `status` (`vivo` | `muerto` | `desaparecido` | `activo` | `consolidado` | `paused`), `location_id`, `etnia`, `rol`, `tipo_spren`, `description`, `notes`, `attributes`, `skills`, `obsidian_path`.
+Body: `name`, `npc_kind` (`npc` | `spren` | `entidad-cognitiva` | `referencia`), `detail_level` (`full` | `minor`), `status` (`vivo` | `muerto` | `desaparecido` | `activo` | `consolidado` | `paused`), `location_id`, `etnia`, `rol`, `tipo_spren`, `description`, `notes`, `attributes`, `skills`, `current_hp`, `max_hp`, `obsidian_path`.
 
 Relations: directed (`{id}` is the origin), `role` is free text. `GET` returns relations where the NPC is either origin or destination.
 

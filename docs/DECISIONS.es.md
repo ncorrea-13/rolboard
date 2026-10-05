@@ -66,7 +66,7 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - Vista de control del DM, en lista. Sin mapa.
 - Participante = PJ, NPC o enemigo suelto (`display_name`), exclusivo por `CHECK`. Los enemigos sueltos tienen ficha propia en el participante; PJ/NPC usan la de su entidad (solo lectura en el tracker).
 - Orden: `initiative_value` para D&D; `turn_type` rápido/lento para Cosmere (fases por ronda, sin iniciativa numérica). Al avanzar de ronda se limpia `turn_type`.
-- HP del PJ persiste en `player_characters` y se sincroniza desde el tracker; HP de NPC es efímero.
+- El HP de PJs y NPCs persiste en su entidad (`player_characters` / `npcs`, ambos opcionales) y se sincroniza desde el tracker: un NPC que sobrevive a un combate llega al siguiente con sus heridas. Los enemigos sueltos solo tienen el HP del participante.
 - "Ya jugó" es estado local del navegador, no se guarda.
 
 ## Frontend
