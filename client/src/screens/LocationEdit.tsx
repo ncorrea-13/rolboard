@@ -2,13 +2,14 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import { locationTypeLabel, type Location } from "../data/domain";
 import { ImageUploadField } from "../components/ImageUploadField";
+import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 
 interface LocationEditProps {
   location: Location;
   locations: Location[];
-  onSave: (patch: Partial<Location>) => void;
+  onSave: (patch: Partial<Location>, image?: File) => void;
   onDiscard: () => void;
   imageVersion?: number;
   onUploadImage?: (file: File) => Promise<void>;
@@ -25,6 +26,7 @@ export function LocationEdit({
   onRemoveImage,
 }: LocationEditProps) {
   const t = useT();
+  const pendingImage = usePendingImage();
   const lang = useLang();
   const typeOptions = Object.entries(locationTypeLabel[lang]) as [
     Location["locationType"],
@@ -42,12 +44,15 @@ export function LocationEdit({
     description !== location.description;
 
   function handleSave() {
-    onSave({
-      name,
-      locationType,
-      parentId: parentId || undefined,
-      description,
-    });
+    onSave(
+      {
+        name,
+        locationType,
+        parentId: parentId || undefined,
+        description,
+      },
+      pendingImage.file,
+    );
   }
 
   return (
@@ -111,7 +116,7 @@ export function LocationEdit({
         </div>
 
         <div className="npc-edit__col">
-          {location.id && onUploadImage && onRemoveImage && (
+          {location.id && onUploadImage && onRemoveImage ? (
             <ImageUploadField
               label={t("locationEdit.image")}
               imageUrl={entityImageUrl(
@@ -123,6 +128,15 @@ export function LocationEdit({
               onUpload={onUploadImage}
               onRemove={onRemoveImage}
             />
+          ) : (
+            !location.id && (
+              <ImageUploadField
+                label={t("locationEdit.image")}
+                imageUrl={pendingImage.url}
+                onUpload={pendingImage.set}
+                onRemove={pendingImage.clear}
+              />
+            )
           )}
           <div>
             <span className="label">{t("common.type")}</span>

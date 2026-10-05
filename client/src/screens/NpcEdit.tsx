@@ -14,6 +14,7 @@ import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { SkillsEditor } from "../components/SkillsEditor";
 import { ImageUploadField } from "../components/ImageUploadField";
+import { usePendingImage } from "../hooks/usePendingImage";
 import {
   NpcTypesButton,
   type NpcTypesApi,
@@ -28,7 +29,7 @@ interface NpcEditProps {
   npcs: Npc[];
   locations: Location[];
   npcTypesApi: NpcTypesApi;
-  onSave: (patch: Partial<Npc>) => void;
+  onSave: (patch: Partial<Npc>, image?: File) => void;
   onDiscard: () => void;
   imageVersion?: number;
   onUploadImage?: (file: File) => Promise<void>;
@@ -47,6 +48,7 @@ export function NpcEdit({
   onRemoveImage,
 }: NpcEditProps) {
   const t = useT();
+  const pendingImage = usePendingImage();
   const lang = useLang();
   const [name, setName] = useState(npc.name);
   const [description, setDescription] = useState(npc.description);
@@ -126,20 +128,23 @@ export function NpcEdit({
   }
 
   function handleSave() {
-    onSave({
-      name,
-      description,
-      status,
-      detailLevel,
-      crystal,
-      locationId: locationId || undefined,
-      etnia,
-      tipoSpren,
-      attributes,
-      skills,
-      currentHp,
-      maxHp,
-    });
+    onSave(
+      {
+        name,
+        description,
+        status,
+        detailLevel,
+        crystal,
+        locationId: locationId || undefined,
+        etnia,
+        tipoSpren,
+        attributes,
+        skills,
+        currentHp,
+        maxHp,
+      },
+      pendingImage.file,
+    );
     if (npc.id) syncLink(npc.id);
   }
 
@@ -325,7 +330,7 @@ export function NpcEdit({
         </div>
 
         <div className="npc-edit__col">
-          {npc.id && onUploadImage && onRemoveImage && (
+          {npc.id && onUploadImage && onRemoveImage ? (
             <ImageUploadField
               label={t("npcEdit.portrait")}
               imageUrl={entityImageUrl(
@@ -337,6 +342,15 @@ export function NpcEdit({
               onUpload={onUploadImage}
               onRemove={onRemoveImage}
             />
+          ) : (
+            !npc.id && (
+              <ImageUploadField
+                label={t("npcEdit.portrait")}
+                imageUrl={pendingImage.url}
+                onUpload={pendingImage.set}
+                onRemove={pendingImage.clear}
+              />
+            )
           )}
           <div className="npc-edit__grid-2">
             <div>

@@ -2,13 +2,14 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import { type Group, type Npc } from "../data/domain";
 import { ImageUploadField } from "../components/ImageUploadField";
+import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT } from "../lib/i18n";
 
 interface FactionEditProps {
   group: Group;
   npcs: Npc[];
-  onSave: (patch: Partial<Group>) => void;
+  onSave: (patch: Partial<Group>, image?: File) => void;
   onDiscard: () => void;
   imageVersion?: number;
   onUploadImage?: (file: File) => Promise<void>;
@@ -25,6 +26,7 @@ export function FactionEdit({
   onRemoveImage,
 }: FactionEditProps) {
   const t = useT();
+  const pendingImage = usePendingImage();
   const [name, setName] = useState(group.name);
   const [description, setDescription] = useState(group.description);
   const [alineacion, setAlineacion] = useState(group.alineacion);
@@ -37,12 +39,15 @@ export function FactionEdit({
     liderNpcId !== (group.liderNpcId ?? "");
 
   function handleSave() {
-    onSave({
-      name,
-      description,
-      alineacion,
-      liderNpcId: liderNpcId || undefined,
-    });
+    onSave(
+      {
+        name,
+        description,
+        alineacion,
+        liderNpcId: liderNpcId || undefined,
+      },
+      pendingImage.file,
+    );
   }
 
   return (
@@ -106,7 +111,7 @@ export function FactionEdit({
         </div>
 
         <div className="npc-edit__col">
-          {group.id && onUploadImage && onRemoveImage && (
+          {group.id && onUploadImage && onRemoveImage ? (
             <ImageUploadField
               label={t("factionEdit.image")}
               imageUrl={entityImageUrl(
@@ -118,6 +123,15 @@ export function FactionEdit({
               onUpload={onUploadImage}
               onRemove={onRemoveImage}
             />
+          ) : (
+            !group.id && (
+              <ImageUploadField
+                label={t("factionEdit.image")}
+                imageUrl={pendingImage.url}
+                onUpload={pendingImage.set}
+                onRemove={pendingImage.clear}
+              />
+            )
           )}
           <div>
             <span className="label">{t("factionDetail.alignment")}</span>

@@ -397,7 +397,7 @@ export function useCampaignData(
       });
   }
 
-  function createNpc(patch: Partial<Npc>) {
+  function createNpc(patch: Partial<Npc>, image?: File) {
     const draft: Npc = {
       ...blankNpcDraft,
       ...patch,
@@ -410,6 +410,7 @@ export function useCampaignData(
       .then((created) => {
         const npc = mapNpc(created);
         setNpcs((prev) => [...prev, npc]);
+        if (image) uploadNpcImage(npc.id, image).catch(() => {});
         navigate({ name: "npc-detail", npcId: npc.id }, { replace: true });
       })
       .catch((err) => {
@@ -462,7 +463,7 @@ export function useCampaignData(
       });
   }
 
-  function createPlayer(patch: Partial<PlayerCharacter>) {
+  function createPlayer(patch: Partial<PlayerCharacter>, image?: File) {
     const draft: PlayerCharacter = {
       ...blankPlayerDraft,
       ...patch,
@@ -478,6 +479,7 @@ export function useCampaignData(
       .then((created) => {
         const player = mapPlayerCharacter(created);
         setPlayerCharacters((prev) => [...prev, player]);
+        if (image) uploadPlayerImage(player.id, image).catch(() => {});
         navigate(
           { name: "player-detail", playerId: player.id },
           { replace: true },
@@ -626,7 +628,7 @@ export function useCampaignData(
       });
   }
 
-  function createFaction(patch: Partial<Group>) {
+  function createFaction(patch: Partial<Group>, image?: File) {
     const draft: Group = {
       ...blankFactionDraft,
       ...patch,
@@ -639,6 +641,7 @@ export function useCampaignData(
       .then((created) => {
         const group = mapGroup(created);
         setGroups((prev) => [...prev, group]);
+        if (image) uploadGroupImage(group.id, image).catch(() => {});
         navigate(
           { name: "entity-detail", kind: "faction", id: group.id },
           { replace: true },
@@ -674,7 +677,7 @@ export function useCampaignData(
       });
   }
 
-  function createLocation(patch: Partial<Location>) {
+  function createLocation(patch: Partial<Location>, image?: File) {
     const draft: Location = {
       ...blankLocationDraft,
       ...patch,
@@ -687,6 +690,7 @@ export function useCampaignData(
       .then((created) => {
         const location = mapLocation(created);
         setLocations((prev) => [...prev, location]);
+        if (image) uploadLocationImage(location.id, image).catch(() => {});
         navigate(
           { name: "entity-detail", kind: "location", id: location.id },
           { replace: true },
