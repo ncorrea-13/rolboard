@@ -93,6 +93,10 @@
   text-overflow: ellipsis;
 }
 
+.encounter-card__name--link:hover {
+  text-decoration: underline;
+}
+
 .encounter-card--acted .encounter-card__name {
   text-decoration: line-through;
   text-decoration-color: var(--text-secondary);

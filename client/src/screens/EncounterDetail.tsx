@@ -12,6 +12,7 @@ import {
 import "./EncounterDetail.css";
 import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityDetail } from "../components/EntityDetail";
+import { Link } from "../components/Link";
 import { Modal } from "../components/Modal";
 import { EncounterStatusPill } from "../components/StatusPill";
 import { SkillsEditor } from "../components/SkillsEditor";
@@ -313,7 +314,20 @@ export function EncounterDetail({
               style={{ background: color, flex: "none" }}
             />
           )}
-          <span className="encounter-card__name">{nameFor(p)}</span>
+          {p.pcId || p.npcId ? (
+            <Link
+              className="encounter-card__name encounter-card__name--link"
+              route={
+                p.pcId
+                  ? { name: "player-detail", playerId: p.pcId }
+                  : { name: "npc-detail", npcId: p.npcId! }
+              }
+            >
+              {nameFor(p)}
+            </Link>
+          ) : (
+            <span className="encounter-card__name">{nameFor(p)}</span>
+          )}
           <span className="encounter-card__kind" style={{ color }}>
             {kindLabel(p)}
           </span>
