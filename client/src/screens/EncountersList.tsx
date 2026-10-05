@@ -42,12 +42,13 @@ export function EncountersList({
             >
               <div className="list-page__row-main">
                 <span className="list-page__row-title">
-                  {t("encountersList.round")} {e.round}
+                  {e.name || `${t("encountersList.unnamed")} #${e.id}`}
                 </span>
                 <div className="list-page__row-sub" style={{ marginTop: 6 }}>
                   {session
                     ? sessionCode(session)
-                    : t("encountersList.noSession")}
+                    : t("encountersList.noSession")}{" "}
+                  · {t("encountersList.round")} {e.round}
                 </div>
               </div>
               <EncounterStatusPill status={e.status} />

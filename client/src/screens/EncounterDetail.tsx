@@ -53,6 +53,7 @@ interface EncounterDetailProps {
   onNextRound: () => void;
   onDelete: () => void;
   onChangeSession: (sessionId?: string) => void;
+  onRename: (name: string) => void;
   onSyncPlayerHp: (
     pcId: string,
     patch: { currentHp?: number; maxHp?: number },
@@ -111,6 +112,7 @@ export function EncounterDetail({
   onNextRound,
   onDelete,
   onChangeSession,
+  onRename,
   onSyncPlayerHp,
   onSyncNpcHp,
   imageVersion = 0,
@@ -131,6 +133,12 @@ export function EncounterDetail({
   const [addName, setAddName] = useState("");
   const [hpDeltas, setHpDeltas] = useState<Record<string, string>>({});
   const closed = encounter.status === "cerrado";
+  const [nameDraft, setNameDraft] = useState(encounter.name);
+
+  function commitName() {
+    const next = nameDraft.trim();
+    if (next !== encounter.name) onRename(next);
+  }
 
   function applyHpDelta(p: EncounterParticipant, sign: 1 | -1) {
     const amount = Number(hpDeltas[p.id]);
@@ -589,7 +597,7 @@ export function EncounterDetail({
         eyebrow={t("encounterDetail.breadcrumb")}
         backLabel={t("encounterDetail.breadcrumb")}
         onBack={onBack}
-        title={`${t("encountersList.round")} ${encounter.round}`}
+        title={`${encounter.name || `${t("encountersList.unnamed")} #${encounter.id}`} · ${t("encountersList.round")} ${encounter.round}`}
         status={<EncounterStatusPill status={encounter.status} />}
         extraActions={
           <>
@@ -617,6 +625,19 @@ export function EncounterDetail({
         }
         onDelete={onDelete}
         fields={[
+          {
+            label: t("encounterDetail.name"),
+            value: (
+              <input
+                className="npc-edit__input"
+                placeholder={t("encounterDetail.namePlaceholder")}
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onBlur={commitName}
+                onKeyDown={(e) => e.key === "Enter" && commitName()}
+              />
+            ),
+          },
           {
             label: t("encounterDetail.session"),
             value: (

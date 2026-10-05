@@ -959,6 +959,7 @@ export default function App() {
                   onChangeSession={(sessionId) =>
                     saveEncounter(encounter.id, { sessionId })
                   }
+                  onRename={(name) => saveEncounter(encounter.id, { name })}
                   onSyncPlayerHp={(pcId, patch) => savePlayer(pcId, patch)}
                   onSyncNpcHp={(npcId, patch) => saveNpc(npcId, patch)}
                   imageVersion={imageVersion}

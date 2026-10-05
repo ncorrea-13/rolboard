@@ -450,6 +450,7 @@ export interface ApiDashboardSummary {
 export interface ApiEncounter {
   id: number;
   campaign_id: number;
+  name?: string;
   session_id?: number;
   round: number;
   status: string;
@@ -459,6 +460,7 @@ export function mapEncounter(e: ApiEncounter): Encounter {
   return {
     id: String(e.id),
     campaignId: String(e.campaign_id),
+    name: e.name ?? "",
     sessionId: e.session_id ? String(e.session_id) : undefined,
     round: e.round,
     status: e.status as EncounterStatus,
@@ -467,6 +469,7 @@ export function mapEncounter(e: ApiEncounter): Encounter {
 
 export function encounterToApiPayload(e: Encounter) {
   return {
+    name: e.name,
     session_id: e.sessionId ? Number(e.sessionId) : undefined,
     round: e.round,
     status: e.status,

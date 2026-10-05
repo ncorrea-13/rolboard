@@ -378,6 +378,7 @@ export interface Encounter {
   id: string;
   deletedAt?: string;
   campaignId: string;
+  name: string;
   sessionId?: string;
   round: number;
   status: EncounterStatus;

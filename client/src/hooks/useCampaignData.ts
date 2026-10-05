@@ -133,6 +133,7 @@ const blankQuestDraft: Quest = {
 const blankEncounterDraft: Encounter = {
   id: "",
   campaignId: "",
+  name: "",
   round: 1,
   status: "planificado",
 };

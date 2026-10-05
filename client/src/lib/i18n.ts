@@ -103,6 +103,9 @@ const dict = {
     "encountersList.round": "Ronda",
     "encountersList.noSession": "Sin sesión asociada",
     "encountersList.empty": "Sin encuentros todavía.",
+    "encountersList.unnamed": "Encuentro",
+    "encounterDetail.name": "Nombre",
+    "encounterDetail.namePlaceholder": "Ej.: Emboscada en el puente",
 
     "factionsList.title": "Facciones",
     "factionsList.count": "facciones",
@@ -487,6 +490,9 @@ const dict = {
     "encountersList.round": "Round",
     "encountersList.noSession": "No associated session",
     "encountersList.empty": "No encounters yet.",
+    "encountersList.unnamed": "Encounter",
+    "encounterDetail.name": "Name",
+    "encounterDetail.namePlaceholder": "E.g.: Ambush at the bridge",
 
     "factionsList.title": "Factions",
     "factionsList.count": "factions",
