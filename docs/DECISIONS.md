@@ -68,6 +68,8 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - Order: `initiative_value` for D&D; `turn_type` fast/slow for Cosmere (phases per round, no numeric initiative). `turn_type` clears when the round advances.
 - PC and NPC HP persists in their entity (`player_characters` / `npcs`, both optional) and syncs from the tracker: an NPC that survives a fight keeps its wounds for the next one. Loose enemies only have the participant's HP.
 - "Already acted" is local browser state, never persisted.
+- A closed encounter is read-only (it would otherwise overwrite the entities' current HP with old values); "Reopen" sets it back to `activo`.
+- HP is changed with damage/heal amounts: healing caps at max HP, and damage stops at 0 (down) before a further hit can take it negative. HP above max (typed by hand) shows as a separate segment on the bar.
 
 ## Frontend
 

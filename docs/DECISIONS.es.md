@@ -68,6 +68,8 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - Orden: `initiative_value` para D&D; `turn_type` rápido/lento para Cosmere (fases por ronda, sin iniciativa numérica). Al avanzar de ronda se limpia `turn_type`.
 - El HP de PJs y NPCs persiste en su entidad (`player_characters` / `npcs`, ambos opcionales) y se sincroniza desde el tracker: un NPC que sobrevive a un combate llega al siguiente con sus heridas. Los enemigos sueltos solo tienen el HP del participante.
 - "Ya jugó" es estado local del navegador, no se guarda.
+- Un encuentro cerrado es de solo lectura (si no, pisaría el HP actual de las entidades con valores viejos); "Reabrir" lo vuelve a `activo`.
+- El HP se modifica con montos de daño/curación: la curación no pasa del HP máximo, y el daño frena en 0 (caído) antes de que otro golpe lo lleve a negativo. Un HP por encima del máximo (cargado a mano) se ve como un segmento aparte en la barra.
 
 ## Frontend
 
