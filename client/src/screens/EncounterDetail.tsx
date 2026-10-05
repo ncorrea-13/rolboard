@@ -23,10 +23,12 @@ import {
 } from "../lib/apiMappers";
 import {
   crystalColorFor,
+  sessionCode,
   type Encounter,
   type EncounterParticipant,
   type Npc,
   type PlayerCharacter,
+  type Session,
   type StatMap,
   type TurnType,
 } from "../data/domain";
@@ -39,11 +41,13 @@ interface EncounterDetailProps {
   encounter: Encounter;
   npcs: Npc[];
   playerCharacters: PlayerCharacter[];
+  sessions: Session[];
   onBack: () => void;
   onStart: () => void;
   onClose: () => void;
   onNextRound: () => void;
   onDelete: () => void;
+  onChangeSession: (sessionId?: string) => void;
   onSyncPlayerHp: (
     pcId: string,
     patch: { currentHp?: number; maxHp?: number },
@@ -94,11 +98,13 @@ export function EncounterDetail({
   encounter,
   npcs,
   playerCharacters,
+  sessions,
   onBack,
   onStart,
   onClose,
   onNextRound,
   onDelete,
+  onChangeSession,
   onSyncPlayerHp,
   onSyncNpcHp,
   imageVersion = 0,
@@ -506,6 +512,23 @@ export function EncounterDetail({
         }
         onDelete={onDelete}
         fields={[
+          {
+            label: t("encounterDetail.session"),
+            value: (
+              <select
+                className="npc-edit__select npc-edit__select--native"
+                value={encounter.sessionId ?? ""}
+                onChange={(e) => onChangeSession(e.target.value || undefined)}
+              >
+                <option value="">{t("encountersList.noSession")}</option>
+                {sessions.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {sessionCode(s)}
+                  </option>
+                ))}
+              </select>
+            ),
+          },
           {
             label: `${t("encounterDetail.participants")} (${participants.length})`,
             value: (

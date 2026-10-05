@@ -910,6 +910,7 @@ export default function App() {
                   encounter={encounter}
                   npcs={campaignNpcs}
                   playerCharacters={campaignPlayerCharacters}
+                  sessions={campaignSessions}
                   onBack={() =>
                     navigate({ name: "section", section: "encuentros" })
                   }
@@ -925,6 +926,9 @@ export default function App() {
                     })
                   }
                   onDelete={() => deleteEncounter(encounter.id)}
+                  onChangeSession={(sessionId) =>
+                    saveEncounter(encounter.id, { sessionId })
+                  }
                   onSyncPlayerHp={(pcId, patch) => savePlayer(pcId, patch)}
                   onSyncNpcHp={(npcId, patch) => saveNpc(npcId, patch)}
                   imageVersion={imageVersion}
