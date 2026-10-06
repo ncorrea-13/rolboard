@@ -8,5 +8,10 @@
   "frontend:build": "pnpm build --outDir ../server/cmd/desktop/frontend/dist --emptyOutDir",
   "author": {
     "name": "Nicolás Correa"
+  },
+  "info": {
+    "productName": "Rolboard",
+    "productVersion": "0.0.0",
+    "copyright": "© Nicolás Correa"
   }
 }
