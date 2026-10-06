@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest an idea or an improvement.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Rolboard is a narrative tool for the GM: no rules engine, no player accounts, no VTT. Ideas within that scope are welcome. Spanish is fine too.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve?
+      description: What you're trying to do at your table and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: How you imagine it working.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Workarounds you use today, or other options you considered.
