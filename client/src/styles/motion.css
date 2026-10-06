@@ -12,12 +12,37 @@
   animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-html[data-motion="route"]::view-transition-old(page) {
+html[data-motion="tracker"]::view-transition-old(page),
+html[data-motion="tracker"]::view-transition-new(page) {
+  animation: none;
+}
+
+html[data-motion="tracker"]::view-transition-old(.encounter-card),
+html[data-motion="tracker"]::view-transition-old(.encounter-phase) {
+  animation: none;
+  opacity: 0;
+}
+
+html[data-motion="tracker"]::view-transition-new(.encounter-card),
+html[data-motion="tracker"]::view-transition-new(.encounter-phase) {
+  animation: none;
+}
+
+html[data-motion="route"]::view-transition-old(page),
+html[data-motion="route"]::view-transition-old(.encounter-card),
+html[data-motion="route"]::view-transition-old(.encounter-phase) {
   animation: motion-out 0.12s ease both;
 }
 
-html[data-motion="route"]::view-transition-new(page) {
+html[data-motion="route"]::view-transition-new(page),
+html[data-motion="route"]::view-transition-new(.encounter-card),
+html[data-motion="route"]::view-transition-new(.encounter-phase) {
   animation: motion-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) 0.06s both;
+}
+
+html[data-motion="route"]::view-transition-group(.encounter-card),
+html[data-motion="route"]::view-transition-group(.encounter-phase) {
+  animation-duration: 0s;
 }
 
 .modal-backdrop {
