@@ -43,11 +43,11 @@ Para una sola computadora, sin servidor ni Docker. Todo queda en tu máquina.
 
 | Sistema | Descarga |
 | ------- | -------- |
-| Windows 10 / 11 | [`rolboard-windows-amd64.exe`](https://github.com/ncorrea-13/rolboard/releases/latest/download/rolboard-windows-amd64.exe) |
-| Linux x86_64    | [`rolboard-linux-x86_64.AppImage`](https://github.com/ncorrea-13/rolboard/releases/latest/download/rolboard-linux-x86_64.AppImage) |
+| Windows 10 / 11 | [Descargar `.exe`](https://github.com/ncorrea-13/rolboard/releases/latest) |
+| Linux x86_64    | [Descargar AppImage](https://github.com/ncorrea-13/rolboard/releases/latest) |
 
 - **Windows:** no está firmado, así que SmartScreen avisa en el primer arranque: *Más información → Ejecutar de todas formas*. Necesita WebView2 (viene con Windows 10/11).
-- **Linux:** necesita `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` en Debian/Ubuntu). Después `chmod +x rolboard-linux-x86_64.AppImage` y ejecutarlo.
+- **Linux:** necesita `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` en Debian/Ubuntu). Después `chmod +x rolboard-linux-x86_64-*.AppImage` y ejecutarlo.
 - Sin login ni códigos de acceso: la app de escritorio siempre está en modo local.
 - Para leer un vault de Obsidian, elegir la carpeta que contiene los vaults en **Carpeta de vaults**, al crear o editar una campaña.
 - Los datos quedan en `~/.config/rolboard` (Linux) o `%AppData%\rolboard` (Windows): `config.json`, `rolboard.db` y `uploads/`. Para pasar una instalación de Docker, copiar el `.db` y la carpeta de uploads.
