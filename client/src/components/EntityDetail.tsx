@@ -16,6 +16,7 @@ interface EntityDetailProps {
   backLabel: string;
   onBack: () => void;
   title: string;
+  titleNode?: ReactNode;
   subtitle?: string;
   accentColor?: string;
   imageUrl?: string;
@@ -34,6 +35,7 @@ export function EntityDetail({
   backLabel,
   onBack,
   title,
+  titleNode,
   subtitle,
   accentColor,
   imageUrl,
@@ -77,7 +79,7 @@ export function EntityDetail({
           {accentColor ? (
             <span className="title-underline">
               <span className="display" style={{ fontSize: 22 }}>
-                {title}
+                {titleNode ?? title}
               </span>
               <span
                 className="title-underline__bar"
@@ -86,7 +88,7 @@ export function EntityDetail({
             </span>
           ) : (
             <span className="display" style={{ fontSize: 22 }}>
-              {title}
+              {titleNode ?? title}
             </span>
           )}
           {status}

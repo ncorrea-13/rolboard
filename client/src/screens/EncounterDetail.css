@@ -519,6 +519,23 @@
   }
 }
 
+.encounter-round {
+  display: inline-block;
+  transform-origin: 0 70%;
+  animation: encounter-round 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes encounter-round {
+  0% {
+    transform: scale(1.8);
+    color: var(--accent-obsidian);
+    text-shadow: 0 0 18px var(--accent-obsidian);
+  }
+  60% {
+    color: var(--accent-obsidian);
+  }
+}
+
 @keyframes encounter-check {
   from {
     transform: scale(0.6);
@@ -528,7 +545,8 @@
 @media (prefers-reduced-motion: reduce) {
   .encounter-card,
   .encounter-card__check,
-  .encounter-card__hp-fill {
+  .encounter-card__hp-fill,
+  .encounter-round {
     animation: none !important;
     transition: none !important;
   }

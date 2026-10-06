@@ -634,6 +634,16 @@ export function EncounterDetail({
         backLabel={t("encounterDetail.breadcrumb")}
         onBack={onBack}
         title={`${encounter.name || `${t("encountersList.unnamed")} #${encounter.id}`} · ${t("encountersList.round")} ${encounter.round}`}
+        titleNode={
+          <>
+            {encounter.name ||
+              `${t("encountersList.unnamed")} #${encounter.id}`}{" "}
+            · {t("encountersList.round")}{" "}
+            <span key={encounter.round} className="encounter-round">
+              {encounter.round}
+            </span>
+          </>
+        }
         status={<EncounterStatusPill status={encounter.status} />}
         extraActions={
           <>
