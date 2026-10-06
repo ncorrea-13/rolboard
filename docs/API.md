@@ -24,7 +24,7 @@ An admin session passes any campaign check. A campaign session only accesses res
 ```
 POST /api/admin/login              {"token": "..."}      rate limit 5 / 15 min
 POST /api/admin/logout
-GET  /api/admin/session            admin — 204 if the session is valid
+GET  /api/admin/session            admin — 200 {"localMode": bool} if the session is valid
 POST /api/campaigns/{id}/login     {"code": "..."}       rate limit 5 / min
 POST /api/campaigns/{id}/logout
 POST /api/campaigns/{id}/access-code   admin — {"code": "..."}, minimum 8 characters

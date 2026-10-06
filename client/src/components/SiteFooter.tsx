@@ -1,6 +1,7 @@
 import { BookOpenText } from "lucide-react";
 import "./SiteFooter.css";
 import { useT } from "../lib/i18n";
+import { openExternal } from "../lib/api";
 
 export const GITHUB_URL = "https://github.com/ncorrea-13/rolboard";
 export const PORTFOLIO_URL = "https://ncorrea.com.ar";
@@ -56,6 +57,7 @@ export function SiteFooter({ onHelp }: { onHelp: () => void }) {
       <a
         href={GITHUB_URL}
         target="_blank"
+        onClick={openExternal}
         rel="noopener noreferrer"
         aria-label={t("footer.github")}
         className="site-footer__icon"
@@ -65,6 +67,7 @@ export function SiteFooter({ onHelp }: { onHelp: () => void }) {
       <a
         href={PORTFOLIO_URL}
         target="_blank"
+        onClick={openExternal}
         rel="noopener noreferrer"
         aria-label={t("footer.portfolio")}
         title="Nicolás Correa"

@@ -35,7 +35,7 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 
 ## Obsidian vault: source of the prose, not of everything
 
-- The dashboard indexes frontmatter and stores `obsidian_path` to open or render the note. Opening in Obsidian (`obsidian://`) is a first-class feature.
+- The dashboard indexes frontmatter and stores `obsidian_path` to open or render the note. Opening in Obsidian (`obsidian://`) is a first-class feature on the web; the desktop app hides it (the webview can't hand off custom schemes).
 - What the vault doesn't model well lives only in the DB: quests, prep notes, PC `class`/`backstory`, sheets, HP, images. More content moves to the DB only when a concrete need shows up.
 - Quests have no note in the vault; `session_quests` is only managed from the dashboard.
 
@@ -95,3 +95,14 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - Structured `log/slog`; `LOG_JSON=true` for JSON in production.
 - Request log middleware: `method, path, status, duration, remote`.
 - Auth events at `Warn`: failed login, invalid session, campaign mismatch, admin rejected. Codes and tokens are never logged.
+
+## Desktop app
+
+- **Same codebase, second entrypoint.** `cmd/server` (Docker) and `cmd/desktop` (Wails) both call `app.New`; only config and transport change.
+- **Wails v2 over v3.** v2 is stable; v3 was still beta. Re-evaluate when v3 goes stable.
+- **No network.** The webview talks to the router in-process through `AssetServer.Handler`: no port, so no DNS rebinding or CSRF surface.
+- **Local mode is set only by `cmd/desktop`, never by an env var**, so a misconfigured container can't end up without auth. In local mode every request is admin; `GET /api/admin/session` returns `{"localMode": true}` and the client hides access codes, logout and "Open in Obsidian".
+- **Data in `os.UserConfigDir()/rolboard/`**: `config.json` (vaults root), `rolboard.db`, `uploads/`. The vaults folder is optional: it is picked with a native dialog from the "Vaults folder" field in the campaign forms (`POST /api/desktop/vaults-root`), which rebuilds the app in place, no restart. Without it, campaigns work dashboard-only. No app menu bar.
+- **External links** go through `POST /api/desktop/open`, which only accepts `https` URLs and calls `runtime.BrowserOpenURL`. Wails' JS runtime is only injected on `/`, so it's missing after reloading a deep link.
+- **WebKitGTK workarounds (Linux):** image uploads send the multipart already serialized to bytes, because Wails reads request bodies off the GTK main thread and crashes on a body that references a `File`. Selects use `appearance: base-select` so the dropdown is HTML and not a GTK menu.
+- **Packaging:** unsigned `.exe` (cross-compiled from Linux, no CGO) and AppImage that relies on the system's `libwebkit2gtk-4.1`.

@@ -133,6 +133,12 @@
   cursor: pointer;
 }
 
+@supports (appearance: base-select) {
+  .npc-edit__select--native {
+    appearance: base-select;
+  }
+}
+
 .npc-edit__input:focus,
 .npc-edit__select:focus,
 .npc-edit__textarea:focus {

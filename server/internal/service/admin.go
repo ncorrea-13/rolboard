@@ -3,12 +3,15 @@ package service
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"os"
 	"path/filepath"
 
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
 	"github.com/ncorrea-13/rolboard/server/internal/vault"
 )
+
+var ErrNoVaultsRoot = errors.New("vaults root not configured")
 
 type AdminService struct {
 	db           *sql.DB
@@ -21,6 +24,9 @@ func NewAdminService(db *sql.DB, campaignRepo *repository.CampaignRepository, va
 }
 
 func (s *AdminService) Reindex(ctx context.Context, campaignID int64) (*vault.Result, error) {
+	if s.vaultsRoot == "" {
+		return nil, ErrNoVaultsRoot
+	}
 	campaign, err := s.campaignRepo.GetByID(ctx, campaignID)
 	if err != nil {
 		return nil, err
@@ -31,6 +37,9 @@ func (s *AdminService) Reindex(ctx context.Context, campaignID int64) (*vault.Re
 }
 
 func (s *AdminService) ListVaultDirs(ctx context.Context, excludeCampaignID int64) ([]string, error) {
+	if s.vaultsRoot == "" {
+		return []string{}, nil
+	}
 	entries, err := os.ReadDir(s.vaultsRoot)
 	if err != nil {
 		return nil, err

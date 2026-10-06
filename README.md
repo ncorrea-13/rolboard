@@ -12,6 +12,7 @@
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
 [![Caddy](https://img.shields.io/badge/Caddy-2-1F88C0?logo=caddy&logoColor=white)](https://caddyserver.com)
 [![SQLite](https://img.shields.io/badge/SQLite-modernc-003B57?logo=sqlite&logoColor=white)](https://modernc.org/sqlite)
+[![Wails](https://img.shields.io/badge/Wails-2-DF0000?logo=wails&logoColor=white)](https://wails.io)
 [![Docker](https://img.shields.io/badge/Docker-GHCR-2496ED?logo=docker&logoColor=white)](https://github.com/ncorrea-13?tab=packages&repo_name=rolboard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
@@ -21,7 +22,7 @@
 
 ---
 
-Web app for running tabletop RPG campaigns, focused on narrative: sessions, arcs, players, NPCs, locations, factions and quests, plus a light combat tracker. No ruleset baked in — no rolls, no stat blocks; it's a place to keep the story, not a VTT. Built for the GM: players don't get accounts.
+Web and desktop app for running tabletop RPG campaigns, focused on narrative: sessions, arcs, players, NPCs, locations, factions and quests, plus a light combat tracker. No ruleset baked in — no rolls, no stat blocks; it's a place to keep the story, not a VTT. Built for the GM: players don't get accounts.
 
 Started as a move away from Obsidian, for faster management, while still including a frontmatter indexer to pull that data in and coexist with the vault. Keeps the vault structure and lets you navigate back to it. Each campaign stores its own `vault_path`, a subfolder under `VAULTS_ROOT`. [`vault-template/`](vault-template/) has a vault layout the indexer recognizes out of the box.
 
@@ -32,10 +33,28 @@ Started as a move away from Obsidian, for faster management, while still includi
 | Server   | Go 1.27, `net/http` stdlib                 |
 | Database | SQLite (`modernc.org/sqlite`)              |
 | Client   | React + TypeScript + Vite, served by Caddy |
+| Desktop  | Wails v2 (system webview)                  |
 
 More: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## Quick start
+## Desktop app
+
+For a single computer, no server or Docker. Everything stays on your machine.
+
+| System  | Download |
+| ------- | -------- |
+| Windows 10 / 11 | [`rolboard-windows-amd64.exe`](https://github.com/ncorrea-13/rolboard/releases/latest/download/rolboard-windows-amd64.exe) |
+| Linux x86_64    | [`rolboard-linux-x86_64.AppImage`](https://github.com/ncorrea-13/rolboard/releases/latest/download/rolboard-linux-x86_64.AppImage) |
+
+- **Windows:** unsigned, so SmartScreen warns on first launch: *More info → Run anyway*. Needs WebView2 (bundled with Windows 10/11).
+- **Linux:** needs `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` on Debian/Ubuntu). Then `chmod +x rolboard-linux-x86_64.AppImage` and run it.
+- No login or access codes: the desktop app is always in local mode.
+- To read an Obsidian vault, pick the folder that holds your vaults under **Vaults folder** when creating or editing a campaign.
+- Data lives in `~/.config/rolboard` (Linux) or `%AppData%\rolboard` (Windows): `config.json`, `rolboard.db` and `uploads/`. To move a Docker install over, copy the `.db` and the uploads folder.
+
+Building from source and how it works: [`docs/DESKTOP.md`](docs/DESKTOP.md).
+
+## Quick start (Docker)
 
 Prebuilt images from GHCR. Works with Docker and Podman.
 
@@ -170,7 +189,7 @@ Personal project, built as a deliberate Go-learning exercise. [`AGENTS.md`](AGEN
 
 MIT - see [LICENSE](LICENSE) for details.
 
-Logos and icons (`client/public/logo-*.png`, `client/public/favicon.png`) are © Mateo Guareschi, used with permission. They are **not** covered by the MIT license.
+Logos and icons (`client/public/logo-*.png`, `client/public/favicon.png`, `server/cmd/desktop/build/appicon.png`, `server/cmd/desktop/build/windows/icon.ico`) are © Mateo Guareschi, used with permission. They are **not** covered by the MIT license.
 
 
 ---

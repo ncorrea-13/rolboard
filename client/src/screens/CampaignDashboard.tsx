@@ -18,6 +18,7 @@ import {
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
 import { openInObsidian } from "../lib/obsidian";
+import { isLocalMode } from "../lib/api";
 import { useT } from "../lib/i18n";
 import { entityImageUrl } from "../lib/images";
 import { Link } from "../components/Link";
@@ -102,7 +103,7 @@ export function CampaignDashboard({
           </div>
         </div>
         <div className="campaign-dashboard__actions">
-          {currentArc?.obsidianPath && (
+          {currentArc?.obsidianPath && !isLocalMode() && (
             <button
               className="btn btn-secondary"
               onClick={() =>

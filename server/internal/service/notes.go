@@ -62,6 +62,9 @@ func (s *NotesService) Render(ctx context.Context, campaignID int64, relPath str
 		return "", os.ErrInvalid
 	}
 
+	if s.vaultsRoot == "" {
+		return "", ErrNoVaultsRoot
+	}
 	root, err := os.OpenRoot(filepath.Join(s.vaultsRoot, campaign.VaultPath))
 	if err != nil {
 		return "", err

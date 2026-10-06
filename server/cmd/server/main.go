@@ -10,9 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/ncorrea-13/rolboard/server/internal/handlers"
-	"github.com/ncorrea-13/rolboard/server/internal/repository"
-	"github.com/ncorrea-13/rolboard/server/internal/service"
+	"github.com/ncorrea-13/rolboard/server/internal/app"
 )
 
 func main() {
@@ -40,68 +38,27 @@ func main() {
 
 	defer stop()
 
-	db, err := repository.Open(dbPath)
+	handler, closer, err := app.New(app.Config{
+		DBPath:            dbPath,
+		VaultsRoot:        vaultsRoot,
+		UploadsRoot:       uploadsRoot,
+		AdminToken:        adminToken,
+		CookieSecure:      cookieSecure,
+		TrustProxyHeaders: trustProxyHeaders,
+	})
 	if err != nil {
-		slog.Error("error abriendo la base de datos", "err", err)
+		slog.Error("error inicializando la app", "err", err)
 		os.Exit(1)
 	}
 	defer func() {
-		if err := db.Close(); err != nil {
+		if err := closer.Close(); err != nil {
 			slog.Error("error cerrando DB", "err", err)
 		}
 	}()
 
-	if err := repository.Migrate(db); err != nil {
-		slog.Error("error al realizar migraciones", "err", err)
-		os.Exit(1)
-	}
-
-	campaignRepo := repository.NewCampaignRepository(db)
-	campaignSvc := service.NewCampaignService(campaignRepo)
-
-	arcRepo := repository.NewArcRepository(db)
-	arcSvc := service.NewArcService(arcRepo)
-
-	locationRepo := repository.NewLocationRepository(db)
-	locationSvc := service.NewLocationService(locationRepo, uploadsRoot)
-
-	npcRepo := repository.NewNPCRepository(db)
-	npcSvc := service.NewNPCService(npcRepo, uploadsRoot)
-
-	pcRepo := repository.NewPlayerCharacterRepository(db)
-	pcSvc := service.NewPlayerCharacterService(pcRepo, uploadsRoot)
-
-	questRepo := repository.NewQuestRepository(db)
-	questSvc := service.NewQuestService(questRepo)
-
-	sessionRepo := repository.NewSessionRepository(db)
-	sessionSvc := service.NewSessionService(sessionRepo)
-
-	groupRepo := repository.NewGroupRepository(db)
-	groupSvc := service.NewGroupService(groupRepo, uploadsRoot)
-
-	encounterRepo := repository.NewEncounterRepository(db)
-	encounterSvc := service.NewEncounterService(encounterRepo)
-
-	encounterParticipantRepo := repository.NewEncounterParticipantRepository(db)
-	encounterParticipantSvc := service.NewEncounterParticipantService(encounterParticipantRepo)
-
-	authSessionRepo := repository.NewAuthSessionRepository(db)
-	authSvc := service.NewAuthService(campaignRepo, authSessionRepo)
-
-	npcTypeSvc := service.NewNPCTypeService(repository.NewNPCTypeRepository(db))
-
-	adminSvc := service.NewAdminService(db, campaignRepo, vaultsRoot)
-	dashboardSvc := service.NewDashboardService(questSvc, npcSvc, sessionSvc)
-	notesSvc := service.NewNotesService(campaignRepo, locationRepo, npcRepo, groupRepo, sessionRepo, arcRepo, pcRepo, vaultsRoot)
-
-	h := handlers.NewHandlers(db, adminToken, cookieSecure, trustProxyHeaders, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
-
-	mux := handlers.NewRouter(h)
-
 	srv := &http.Server{
 		Addr:    ":" + port,
-		Handler: handlers.RequestLogger(mux),
+		Handler: handler,
 	}
 	go func() {
 		slog.Info("listening", "port", port)

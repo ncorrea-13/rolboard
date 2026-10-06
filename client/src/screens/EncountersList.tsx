@@ -63,8 +63,7 @@ export function EncountersList({
             {t("encountersList.title")}
           </div>
           <span className="list-page__count">
-            {filtered.length} / {encounters.length}{" "}
-            {t("encountersList.count")}
+            {filtered.length} / {encounters.length} {t("encountersList.count")}
           </span>
         </div>
         <div className="list-page__header-actions">

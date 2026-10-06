@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import type { Campaign, CampaignStatus } from "../data/domain";
-import { apiFetch, describeError, hasAdminSecret } from "../lib/api";
+import {
+  apiFetch,
+  describeError,
+  hasAdminSecret,
+  isLocalMode,
+} from "../lib/api";
 import { useT } from "../lib/i18n";
 import { reportError } from "../lib/notify";
+import { VaultsRootPicker } from "./VaultsRootPicker";
 
 interface CampaignSettingsFormProps {
   campaign: Campaign;
@@ -30,6 +36,7 @@ export function CampaignSettingsForm({
   const [status, setStatus] = useState<CampaignStatus>(campaign.status);
   const [vaultPath, setVaultPath] = useState(campaign.vaultPath);
   const [vaultDirs, setVaultDirs] = useState<string[]>([]);
+  const [dirsKey, setDirsKey] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const [accessCode, setAccessCode] = useState("");
@@ -43,7 +50,7 @@ export function CampaignSettingsForm({
       .catch((err) =>
         console.error("Error listando directorios del vault:", err),
       );
-  }, [campaign.id]);
+  }, [campaign.id, dirsKey]);
 
   async function handleSave() {
     if (saving) return;
@@ -120,6 +127,9 @@ export function CampaignSettingsForm({
           </option>
         </select>
       </div>
+      {isLocalMode() && (
+        <VaultsRootPicker onChange={() => setDirsKey((k) => k + 1)} />
+      )}
       <div>
         <span className="label">{t("newCampaignForm.vaultDir")}</span>
         <select
@@ -156,49 +166,59 @@ export function CampaignSettingsForm({
         </button>
       </div>
 
-      <hr
-        style={{
-          margin: "16px 0",
-          border: "none",
-          borderTop: "1px solid var(--border-subtle)",
-        }}
-      />
+      {!isLocalMode() && (
+        <>
+          <hr
+            style={{
+              margin: "16px 0",
+              border: "none",
+              borderTop: "1px solid var(--border-subtle)",
+            }}
+          />
 
-      <div>
-        <span className="label">{t("campaignSettings.accessCodeTitle")}</span>
-        <input
-          className="npc-edit__input"
-          type="password"
-          placeholder={t("campaignSettings.accessCodePlaceholder")}
-          value={accessCode}
-          onChange={(e) => {
-            setAccessCode(e.target.value);
-            setCodeSaved(false);
-          }}
-          onKeyDown={(e) => e.key === "Enter" && handleSaveCode()}
-        />
-        {codeError && (
-          <div style={{ color: "var(--status-dead)", marginTop: 4 }}>
-            {codeError}
+          <div>
+            <span className="label">
+              {t("campaignSettings.accessCodeTitle")}
+            </span>
+            <input
+              className="npc-edit__input"
+              type="password"
+              placeholder={t("campaignSettings.accessCodePlaceholder")}
+              value={accessCode}
+              onChange={(e) => {
+                setAccessCode(e.target.value);
+                setCodeSaved(false);
+              }}
+              onKeyDown={(e) => e.key === "Enter" && handleSaveCode()}
+            />
+            {codeError && (
+              <div style={{ color: "var(--status-dead)", marginTop: 4 }}>
+                {codeError}
+              </div>
+            )}
+            {codeSaved && (
+              <div style={{ color: "var(--status-alive)", marginTop: 4 }}>
+                {t("campaignSettings.accessCodeSaved")}
+              </div>
+            )}
           </div>
-        )}
-        {codeSaved && (
-          <div style={{ color: "var(--status-alive)", marginTop: 4 }}>
-            {t("campaignSettings.accessCodeSaved")}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: 4,
+            }}
+          >
+            <button
+              className="btn btn-primary"
+              onClick={handleSaveCode}
+              disabled={codeSaving}
+            >
+              {t("campaignSettings.accessCodeSave")}
+            </button>
           </div>
-        )}
-      </div>
-      <div
-        style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}
-      >
-        <button
-          className="btn btn-primary"
-          onClick={handleSaveCode}
-          disabled={codeSaving}
-        >
-          {t("campaignSettings.accessCodeSave")}
-        </button>
-      </div>
+        </>
+      )}
     </>
   );
 }
