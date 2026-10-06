@@ -12,6 +12,7 @@
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev)
 [![Caddy](https://img.shields.io/badge/Caddy-2-1F88C0?logo=caddy&logoColor=white)](https://caddyserver.com)
 [![SQLite](https://img.shields.io/badge/SQLite-modernc-003B57?logo=sqlite&logoColor=white)](https://modernc.org/sqlite)
+[![Wails](https://img.shields.io/badge/Wails-2-DF0000?logo=wails&logoColor=white)](https://wails.io)
 [![Docker](https://img.shields.io/badge/Docker-GHCR-2496ED?logo=docker&logoColor=white)](https://github.com/ncorrea-13?tab=packages&repo_name=rolboard)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](#licencia)
 
@@ -21,7 +22,7 @@
 
 ---
 
-App web para dirigir campañas de rol de mesa, enfocada en la narrativa: sesiones, arcos, jugadores, NPCs, locaciones, facciones y quests, más un tracker de combate liviano. No trae reglas: no hay tiradas ni stats; es un lugar para la historia, no un VTT. Pensado para quien dirige: los jugadores no tienen cuenta.
+App web y de escritorio para dirigir campañas de rol de mesa, enfocada en la narrativa: sesiones, arcos, jugadores, NPCs, locaciones, facciones y quests, más un tracker de combate liviano. No trae reglas: no hay tiradas ni stats; es un lugar para la historia, no un VTT. Pensado para quien dirige: los jugadores no tienen cuenta.
 
 Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gestión más rápida con lo que incluye un indexador del frontmatter para poder traer esta información y poder convivir con la vault. Mantiene la estructura del vault y permite navegar hacia él. Cada campaña guarda su `vault_path`, una subcarpeta dentro de `VAULTS_ROOT`. [`vault-template/`](vault-template/) tiene una estructura de vault que el indexador reconoce sin tocar código.
 
@@ -32,10 +33,28 @@ Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gesti�
 | Servidor      | Go 1.27, `net/http` stdlib                   |
 | Base de datos | SQLite (`modernc.org/sqlite`)                |
 | Cliente       | React + TypeScript + Vite, servido por Caddy |
+| Escritorio    | Wails v2 (webview del sistema)               |
 
 Más: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## Inicio rápido
+## App de escritorio
+
+Para una sola computadora, sin servidor ni Docker. Todo queda en tu máquina.
+
+| Sistema | Descarga |
+| ------- | -------- |
+| Windows 10 / 11 | [`rolboard-windows-amd64.exe`](https://github.com/ncorrea-13/rolboard/releases/latest/download/rolboard-windows-amd64.exe) |
+| Linux x86_64    | [`rolboard-linux-x86_64.AppImage`](https://github.com/ncorrea-13/rolboard/releases/latest/download/rolboard-linux-x86_64.AppImage) |
+
+- **Windows:** no está firmado, así que SmartScreen avisa en el primer arranque: *Más información → Ejecutar de todas formas*. Necesita WebView2 (viene con Windows 10/11).
+- **Linux:** necesita `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` en Debian/Ubuntu). Después `chmod +x rolboard-linux-x86_64.AppImage` y ejecutarlo.
+- Sin login ni códigos de acceso: la app de escritorio siempre está en modo local.
+- Para leer un vault de Obsidian, elegir la carpeta que contiene los vaults en **Carpeta de vaults**, al crear o editar una campaña.
+- Los datos quedan en `~/.config/rolboard` (Linux) o `%AppData%\rolboard` (Windows): `config.json`, `rolboard.db` y `uploads/`. Para pasar una instalación de Docker, copiar el `.db` y la carpeta de uploads.
+
+Compilar desde el código y cómo funciona: [`docs/DESKTOP.es.md`](docs/DESKTOP.es.md).
+
+## Inicio rápido (Docker)
 
 Imágenes precompiladas en GHCR. Funciona con Docker y Podman.
 
@@ -170,7 +189,7 @@ Proyecto personal, pensado como ejercicio deliberado de aprendizaje de Go. [`AGE
 
 MIT - [LICENSE](LICENSE) para más información.
 
-Los logos e íconos (`client/public/logo-*.png`, `client/public/favicon.png`) son © Mateo Guareschi y se usan con su permiso. **No** están cubiertos por la licencia MIT.
+Los logos e íconos (`client/public/logo-*.png`, `client/public/favicon.png`, `server/cmd/desktop/build/appicon.png`, `server/cmd/desktop/build/windows/icon.ico`) son © Mateo Guareschi y se usan con su permiso. **No** están cubiertos por la licencia MIT.
 
 ---
 

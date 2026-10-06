@@ -20,8 +20,11 @@ SPA y API comparten origen (Caddy sirve ambas). Cualquier archivo que sirva la a
 ```
 rolboard/
 ├── server/
-│   ├── cmd/server/         entrypoint: env vars, wiring, graceful shutdown
+│   ├── cmd/server/         entrypoint de Docker: env vars, servidor HTTP, graceful shutdown
+│   ├── cmd/desktop/        entrypoint de escritorio (Wails): webview, config.json, modo local
 │   └── internal/
+│       ├── app/            wiring: DB, migraciones, repositorios, servicios, router
+│       ├── desktop/        config.json de escritorio y rutas de datos
 │       ├── handlers/       HTTP: router, auth middleware, rate limit, payloads
 │       ├── service/        lógica de negocio, manejo de archivos
 │       ├── repository/     SQL crudo sobre database/sql + migraciones embebidas
@@ -67,6 +70,7 @@ Capas del backend: `handlers → service → repository`. El handler solo traduc
 - Producción: compose del README con imágenes de GHCR y el token como secret.
 - Desarrollo: `docker-compose.yml` buildea desde código, cliente en el namespace de red del servidor (`BACKEND_HOST=localhost`), volumen `campaign_data`.
 - El proxy de Caddy apunta a `{BACKEND_HOST}:8080`; el backend tiene que escuchar en `8080`.
+- Escritorio: `server/cmd/desktop` arma el mismo router dentro de una app Wails, sin red ni Caddy. Detalle: [`DESKTOP.es.md`](./DESKTOP.es.md).
 
 ## Vault de Obsidian
 
