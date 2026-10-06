@@ -70,6 +70,7 @@ import type { Route } from "./types";
 import { currentLocation, routeToPath } from "./lib/routes";
 import { RouterContext } from "./lib/router";
 import { setErrorReporter } from "./lib/notify";
+import { withViewTransition } from "./lib/motion";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 type HistoryMode = "push" | "replace" | "none";
@@ -113,7 +114,7 @@ export default function App() {
         window.history.replaceState(state, "", path);
       }
     }
-    setRoute(next);
+    withViewTransition(() => setRoute(next), "route");
   }
 
   function navigate(next: Route, opts?: { replace?: boolean }) {
@@ -130,7 +131,7 @@ export default function App() {
     if (loc.campaignId && loc.campaignId !== activeCampaignId) {
       selectCampaign(loc.campaignId, loc.route, "none");
     } else {
-      setRoute(loc.route);
+      withViewTransition(() => setRoute(loc.route), "route");
     }
   });
 
