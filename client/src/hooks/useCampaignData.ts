@@ -171,6 +171,8 @@ export function useCampaignData(
     notify(t("toast.errorLoading"), "error", err);
   });
 
+  const [reloadKey, setReloadKey] = useState(0);
+
   const [npcs, setNpcs] = useState<Npc[]>([]);
 
   useEffect(() => {
@@ -182,7 +184,7 @@ export function useCampaignData(
         ),
       )
       .catch((err) => loadFailed("NPCs", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [npcTypes, setNpcTypes] = useState<NpcType[]>([]);
   setNpcTypeRegistry(npcTypes);
@@ -250,7 +252,7 @@ export function useCampaignData(
     apiFetch<ApiArc[]>(`/campaigns/${activeCampaignId}/arcs`)
       .then((data) => setArcs((data ?? []).map(mapArc)))
       .catch((err) => loadFailed("arcos", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [groups, setGroups] = useState<Group[]>([]);
 
@@ -259,7 +261,7 @@ export function useCampaignData(
     apiFetch<ApiGroup[]>(`/campaigns/${activeCampaignId}/groups`)
       .then((data) => setGroups((data ?? []).map(mapGroup)))
       .catch((err) => loadFailed("facciones", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [locations, setLocations] = useState<Location[]>([]);
 
@@ -268,7 +270,7 @@ export function useCampaignData(
     apiFetch<ApiLocation[]>(`/campaigns/${activeCampaignId}/locations`)
       .then((data) => setLocations((data ?? []).map(mapLocation)))
       .catch((err) => loadFailed("locaciones", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [quests, setQuests] = useState<Quest[]>([]);
 
@@ -277,7 +279,7 @@ export function useCampaignData(
     apiFetch<ApiQuest[]>(`/campaigns/${activeCampaignId}/quests`)
       .then((data) => setQuests((data ?? []).map(mapQuest)))
       .catch((err) => loadFailed("quests", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
     [],
@@ -290,7 +292,7 @@ export function useCampaignData(
     )
       .then((data) => setPlayerCharacters((data ?? []).map(mapPlayerCharacter)))
       .catch((err) => loadFailed("personajes", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [sessions, setSessions] = useState<Session[]>([]);
 
@@ -299,7 +301,7 @@ export function useCampaignData(
     apiFetch<ApiSession[]>(`/campaigns/${activeCampaignId}/sessions`)
       .then((data) => setSessions((data ?? []).map(mapSession)))
       .catch((err) => loadFailed("sesiones", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [encounters, setEncounters] = useState<Encounter[]>([]);
 
@@ -308,7 +310,7 @@ export function useCampaignData(
     apiFetch<ApiEncounter[]>(`/campaigns/${activeCampaignId}/encounters`)
       .then((data) => setEncounters((data ?? []).map(mapEncounter)))
       .catch((err) => loadFailed("encuentros", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [dashboardSummary, setDashboardSummary] =
     useState<ApiDashboardSummary | null>(null);
@@ -318,7 +320,7 @@ export function useCampaignData(
     apiFetch<ApiDashboardSummary>(`/campaigns/${activeCampaignId}/dashboard`)
       .then(setDashboardSummary)
       .catch((err) => loadFailed("dashboard", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [reindexing, setReindexing] = useState(false);
 
@@ -326,7 +328,10 @@ export function useCampaignData(
     if (!activeCampaign || reindexing) return;
     setReindexing(true);
     apiFetch(`/campaigns/${activeCampaign.id}/reindex`, { method: "POST" })
-      .then(() => notify(t("toast.reindexed")))
+      .then(() => {
+        setReloadKey((k) => k + 1);
+        notify(t("toast.reindexed"));
+      })
       .catch((err) => {
         console.error("Error reindexando:", err);
         notify(t("toast.errorReindexing"), "error", err);
