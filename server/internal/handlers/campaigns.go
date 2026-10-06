@@ -141,7 +141,7 @@ func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isAdminRequest(r) {
+	if !h.isAdminRequest(r) {
 		current, err := h.campaigns.GetByID(r.Context(), id)
 		if err != nil {
 			http.Error(w, "Campaign not found", http.StatusNotFound)
@@ -179,7 +179,7 @@ func (h *Handlers) UpdateCampaign(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) DeleteCampaign(w http.ResponseWriter, r *http.Request) {
-	if !isAdminRequest(r) {
+	if !h.isAdminRequest(r) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}

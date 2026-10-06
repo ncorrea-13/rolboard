@@ -82,3 +82,18 @@ func TestRequireCampaignPerCampaignCookies(t *testing.T) {
 		}
 	}
 }
+
+func TestRequireAdminLocalMode(t *testing.T) {
+	ok := func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) }
+	for _, tc := range []struct {
+		local bool
+		want  int
+	}{{true, http.StatusOK}, {false, http.StatusUnauthorized}} {
+		h := &Handlers{localMode: tc.local}
+		rec := httptest.NewRecorder()
+		h.requireAdmin(ok)(rec, httptest.NewRequest("GET", "/api/admin/session", nil))
+		if rec.Code != tc.want {
+			t.Errorf("localMode=%v: got %d, want %d", tc.local, rec.Code, tc.want)
+		}
+	}
+}

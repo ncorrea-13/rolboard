@@ -18,6 +18,7 @@ type Handlers struct {
 	adminToken            string
 	cookieSecure          bool
 	trustProxyHeaders     bool
+	localMode             bool
 	auth                  *service.AuthService
 	campaigns             *service.CampaignService
 	arcs                  *service.ArcService
@@ -40,6 +41,7 @@ func NewHandlers(
 	adminToken string,
 	cookieSecure bool,
 	trustProxyHeaders bool,
+	localMode bool,
 	auth *service.AuthService,
 	campaigns *service.CampaignService,
 	arcs *service.ArcService,
@@ -61,6 +63,7 @@ func NewHandlers(
 		adminToken:            adminToken,
 		cookieSecure:          cookieSecure,
 		trustProxyHeaders:     trustProxyHeaders,
+		localMode:             localMode,
 		auth:                  auth,
 		campaigns:             campaigns,
 		arcs:                  arcs,

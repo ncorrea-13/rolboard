@@ -17,6 +17,7 @@ type Config struct {
 	AdminToken        string
 	CookieSecure      bool
 	TrustProxyHeaders bool
+	LocalMode         bool
 }
 
 func New(cfg Config) (http.Handler, io.Closer, error) {
@@ -69,7 +70,7 @@ func New(cfg Config) (http.Handler, io.Closer, error) {
 	dashboardSvc := service.NewDashboardService(questSvc, npcSvc, sessionSvc)
 	notesSvc := service.NewNotesService(campaignRepo, locationRepo, npcRepo, groupRepo, sessionRepo, arcRepo, pcRepo, cfg.VaultsRoot)
 
-	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
+	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc)
 
 	return handlers.RequestLogger(handlers.NewRouter(h)), db, nil
 }
