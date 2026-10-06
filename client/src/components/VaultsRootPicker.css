@@ -1,0 +1,35 @@
+.vaults-root {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  padding: 4px 4px 4px 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.vaults-root__icon {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.vaults-root__path {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 400 13px var(--font-mono);
+  color: var(--text-body);
+}
+
+.vaults-root__path--empty {
+  font-family: var(--font-body);
+  color: var(--text-secondary);
+}
+
+.vaults-root__btn {
+  flex-shrink: 0;
+  min-height: 0;
+}

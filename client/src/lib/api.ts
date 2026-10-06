@@ -33,15 +33,33 @@ export function describeError(
 }
 
 let adminAuthenticated = false;
+let localMode = false;
 
 export function hasAdminSecret() {
   return adminAuthenticated;
 }
 
+export function isLocalMode() {
+  return localMode;
+}
+
+export function openExternal(e: {
+  preventDefault(): void;
+  currentTarget: HTMLAnchorElement;
+}) {
+  if (!localMode) return;
+  e.preventDefault();
+  apiFetch<void>("/desktop/open", {
+    method: "POST",
+    body: JSON.stringify({ url: e.currentTarget.href }),
+  }).catch((err) => console.error("Error abriendo el link:", err));
+}
+
 export async function checkAdminSession() {
   try {
-    await apiFetch<void>("/admin/session");
+    const session = await apiFetch<{ localMode: boolean }>("/admin/session");
     adminAuthenticated = true;
+    localMode = session.localMode;
   } catch {
     adminAuthenticated = false;
   }

@@ -48,6 +48,10 @@ const dict = {
     "newCampaignForm.systemPlaceholder": "ej. Cosmere RPG",
     "newCampaignForm.vaultDir": "Directorio del vault",
     "newCampaignForm.noVault": "Sin vault (campaña solo dashboard)",
+    "vaultsRoot.label": "Carpeta de vaults",
+    "vaultsRoot.change": "Cambiar",
+    "vaultsRoot.pick": "Elegir carpeta",
+    "vaultsRoot.none": "Sin carpeta elegida",
     "newCampaignForm.confirm": "Crear campaña",
 
     "campaignSettings.title": "Ajustes de la campaña",
@@ -343,6 +347,7 @@ const dict = {
 
     "toast.reindexed": "Vault reindexado",
     "toast.errorReindexing": "Error reindexando el vault",
+    "toast.errorVaultsRoot": "Error cambiando la carpeta de vaults",
     "toast.errorLoading": "No se pudieron cargar los datos",
     "toast.unauthorized": "la sesión expiró o no tenés acceso, volvé a entrar",
     "toast.networkError": "no se pudo conectar con el servidor",
@@ -440,6 +445,10 @@ const dict = {
     "newCampaignForm.systemPlaceholder": "e.g. Cosmere RPG",
     "newCampaignForm.vaultDir": "Vault directory",
     "newCampaignForm.noVault": "No vault (dashboard-only campaign)",
+    "vaultsRoot.label": "Vaults folder",
+    "vaultsRoot.change": "Change",
+    "vaultsRoot.pick": "Choose folder",
+    "vaultsRoot.none": "No folder chosen",
     "newCampaignForm.confirm": "Create campaign",
 
     "campaignSettings.title": "Campaign settings",
@@ -735,6 +744,7 @@ const dict = {
 
     "toast.reindexed": "Vault reindexed",
     "toast.errorReindexing": "Error reindexing the vault",
+    "toast.errorVaultsRoot": "Error changing the vaults folder",
     "toast.errorLoading": "Couldn't load data",
     "toast.unauthorized":
       "your session expired or you don't have access, log in again",

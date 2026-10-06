@@ -2,7 +2,7 @@ import { useState, type ReactNode } from "react";
 import "./EntityDetail.css";
 import "../screens/NpcDetail.css";
 import { openInObsidian } from "../lib/obsidian";
-import { apiFetch } from "../lib/api";
+import { apiFetch, isLocalMode } from "../lib/api";
 import { Modal } from "./Modal";
 import { useT } from "../lib/i18n";
 
@@ -123,12 +123,16 @@ export function EntityDetail({
                 {obsidianPath}
               </span>
               <div className="entity-detail__obsidian-actions">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => openInObsidian(vaultName ?? "", obsidianPath)}
-                >
-                  {t("entityDetail.openInObsidian")}
-                </button>
+                {!isLocalMode() && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() =>
+                      openInObsidian(vaultName ?? "", obsidianPath)
+                    }
+                  >
+                    {t("entityDetail.openInObsidian")}
+                  </button>
+                )}
                 {campaignId && (
                   <button className="btn btn-secondary" onClick={openNote}>
                     {t("entityDetail.viewRenderedNote")}

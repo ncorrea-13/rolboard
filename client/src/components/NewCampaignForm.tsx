@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import type { Campaign } from "../data/domain";
-import { apiFetch } from "../lib/api";
+import { apiFetch, isLocalMode } from "../lib/api";
 import { useT } from "../lib/i18n";
 import { reportError } from "../lib/notify";
+import { VaultsRootPicker } from "./VaultsRootPicker";
 
 interface NewCampaignFormProps {
   onConfirm: (campaign: Omit<Campaign, "id">, vaultPath: string) => void;
@@ -15,6 +16,7 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
   const [system, setSystem] = useState("");
   const [vaultPath, setVaultPath] = useState("");
   const [vaultDirs, setVaultDirs] = useState<string[]>([]);
+  const [dirsKey, setDirsKey] = useState(0);
 
   useEffect(() => {
     apiFetch<string[]>("/admin/vault-dirs")
@@ -22,7 +24,7 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
       .catch((err) =>
         console.error("Error listando directorios del vault:", err),
       );
-  }, []);
+  }, [dirsKey]);
 
   function handleConfirm() {
     if (!name.trim()) {
@@ -62,6 +64,9 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
           onChange={(e) => setSystem(e.target.value)}
         />
       </div>
+      {isLocalMode() && (
+        <VaultsRootPicker onChange={() => setDirsKey((k) => k + 1)} />
+      )}
       <div>
         <span className="label">{t("newCampaignForm.vaultDir")}</span>
         <select

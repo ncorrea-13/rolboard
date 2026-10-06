@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import { Callout, Code } from "../components/HelpBlocks";
-import { PORTFOLIO_URL } from "../components/SiteFooter";
+import { Author, Callout, Code, ForMode } from "../components/HelpBlocks";
 import type { Lang } from "../lib/i18n";
 
 export interface HelpSection {
@@ -83,17 +82,30 @@ const es: HelpSection[] = [
     title: "Primeros pasos",
     body: (
       <>
-        <p>
-          En la pantalla inicial elige <em>Nueva campaña</em> (te pide la clave
-          de admin de la instalación). Después, en el botón de ajustes del
-          sidebar, pon un <strong>código de acceso</strong>: con ese código
-          entras a la campaña desde el selector.
-        </p>
-        <p>
-          El tablero es para quien dirige: los jugadores no tienen cuenta
-          propia. Quien tenga el código ve y edita toda la campaña, así que no
-          lo compartas con la mesa.
-        </p>
+        <ForMode
+          web={
+            <>
+              <p>
+                En la pantalla inicial elige <em>Nueva campaña</em> (te pide la
+                clave de admin de la instalación). Después, en el botón de
+                ajustes del sidebar, pon un <strong>código de acceso</strong>:
+                con ese código entras a la campaña desde el selector.
+              </p>
+              <p>
+                El tablero es para quien dirige: los jugadores no tienen cuenta
+                propia. Quien tenga el código ve y edita toda la campaña, así
+                que no lo compartas con la mesa.
+              </p>
+            </>
+          }
+          desktop={
+            <p>
+              En la pantalla inicial elige <em>Nueva campaña</em>. Todo queda
+              guardado en tu computadora y no hace falta clave ni código de
+              acceso.
+            </p>
+          }
+        />
       </>
     ),
   },
@@ -203,6 +215,17 @@ const es: HelpSection[] = [
           modifica tus notas. Cada nota se convierte según su carpeta y el
           nombre del archivo es el nombre de la entidad:
         </p>
+        <ForMode
+          web={null}
+          desktop={
+            <p>
+              Primero elige la carpeta donde están tus vaults en{" "}
+              <em>Carpeta de vaults</em>, arriba del directorio del vault al
+              crear o editar una campaña. Cada campaña usa una subcarpeta de esa
+              carpeta.
+            </p>
+          }
+        />
         <table>
           <thead>
             <tr>
@@ -250,9 +273,17 @@ const es: HelpSection[] = [
           </tbody>
         </table>
         <p>
-          Desde cada ficha puedes <em>Abrir en Obsidian</em> o ver la nota
-          completa con <em>Ver nota renderizada</em>. Si en un NPC escribes{" "}
-          <code>tipo:</code> con un tipo nuevo, se crea solo.
+          Desde cada ficha puedes{" "}
+          <ForMode
+            web={
+              <>
+                <em>Abrir en Obsidian</em> o{" "}
+              </>
+            }
+            desktop={null}
+          />
+          ver la nota completa con <em>Ver nota renderizada</em>. Si en un NPC
+          escribes <code>tipo:</code> con un tipo nuevo, se crea solo.
         </p>
       </>
     ),
@@ -263,11 +294,8 @@ const es: HelpSection[] = [
     body: (
       <>
         <p>
-          Desarrollado por{" "}
-          <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">
-            <strong>Nicolás Correa</strong>
-          </a>
-          . Logos e íconos diseñados por <strong>Mateo Guareschi</strong>.
+          Desarrollado por <Author />. Logos e íconos diseñados por{" "}
+          <strong>Mateo Guareschi</strong>.
         </p>
         <p>
           Rolboard es software de código abierto distribuido bajo la licencia
@@ -314,17 +342,29 @@ const en: HelpSection[] = [
     title: "Getting started",
     body: (
       <>
-        <p>
-          On the first screen pick <em>New campaign</em> (it asks for the
-          installation's admin key). Then, in the sidebar's settings button, set
-          an <strong>access code</strong>: that code is how you enter the
-          campaign from the selector.
-        </p>
-        <p>
-          The board is for whoever runs the game: players don't get their own
-          accounts. Anyone with the code sees and edits the whole campaign, so
-          don't share it with the table.
-        </p>
+        <ForMode
+          web={
+            <>
+              <p>
+                On the first screen pick <em>New campaign</em> (it asks for the
+                installation's admin key). Then, in the sidebar's settings
+                button, set an <strong>access code</strong>: that code is how
+                you enter the campaign from the selector.
+              </p>
+              <p>
+                The board is for whoever runs the game: players don't get their
+                own accounts. Anyone with the code sees and edits the whole
+                campaign, so don't share it with the table.
+              </p>
+            </>
+          }
+          desktop={
+            <p>
+              On the first screen pick <em>New campaign</em>. Everything is
+              stored on your computer, with no admin key or access code.
+            </p>
+          }
+        />
       </>
     ),
   },
@@ -429,6 +469,16 @@ const en: HelpSection[] = [
           it never changes your notes. Each note becomes something according to
           its folder, and the file name is the entity's name:
         </p>
+        <ForMode
+          web={null}
+          desktop={
+            <p>
+              First pick the folder that holds your vaults under{" "}
+              <em>Vaults folder</em>, above the vault directory when creating or
+              editing a campaign. Each campaign uses a subfolder of it.
+            </p>
+          }
+        />
         <table>
           <thead>
             <tr>
@@ -476,9 +526,17 @@ const en: HelpSection[] = [
           </tbody>
         </table>
         <p>
-          From each sheet you can <em>Open in Obsidian</em> or see the full note
-          with <em>View rendered note</em>. If an NPC's <code>tipo:</code> is a
-          new type, it is created on its own.
+          From each sheet you can{" "}
+          <ForMode
+            web={
+              <>
+                <em>Open in Obsidian</em> or{" "}
+              </>
+            }
+            desktop={null}
+          />
+          see the full note with <em>View rendered note</em>. If an NPC's{" "}
+          <code>tipo:</code> is a new type, it is created on its own.
         </p>
       </>
     ),
@@ -489,11 +547,8 @@ const en: HelpSection[] = [
     body: (
       <>
         <p>
-          Developed by{" "}
-          <a href={PORTFOLIO_URL} target="_blank" rel="noopener noreferrer">
-            <strong>Nicolás Correa</strong>
-          </a>
-          . Logos and icons designed by <strong>Mateo Guareschi</strong>.
+          Developed by <Author />. Logos and icons designed by{" "}
+          <strong>Mateo Guareschi</strong>.
         </p>
         <p>
           Rolboard is open source software distributed under the MIT license.

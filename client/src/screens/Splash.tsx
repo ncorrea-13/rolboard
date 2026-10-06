@@ -8,6 +8,7 @@ import {
 } from "../components/SiteFooter";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { useT } from "../lib/i18n";
+import { openExternal } from "../lib/api";
 
 interface SplashProps {
   onContinue: () => void;
@@ -48,6 +49,7 @@ export function Splash({ onContinue, onHelp }: SplashProps) {
         <a
           href={GITHUB_URL}
           target="_blank"
+          onClick={openExternal}
           rel="noopener noreferrer"
           className="splash__link"
         >
@@ -57,6 +59,7 @@ export function Splash({ onContinue, onHelp }: SplashProps) {
         <a
           href={PORTFOLIO_URL}
           target="_blank"
+          onClick={openExternal}
           rel="noopener noreferrer"
           className="splash__link"
         >

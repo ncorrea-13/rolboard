@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { PORTFOLIO_URL } from "./SiteFooter";
+import { isLocalMode, openExternal } from "../lib/api";
 
 export function Callout({
   kind,
@@ -22,5 +24,28 @@ export function Code({ children }: { children: string }) {
     <pre>
       <code>{children}</code>
     </pre>
+  );
+}
+
+export function ForMode({
+  web,
+  desktop,
+}: {
+  web: ReactNode;
+  desktop: ReactNode;
+}) {
+  return <>{isLocalMode() ? desktop : web}</>;
+}
+
+export function Author() {
+  return (
+    <a
+      href={PORTFOLIO_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={openExternal}
+    >
+      <strong>Nicolás Correa</strong>
+    </a>
   );
 }
