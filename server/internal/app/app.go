@@ -27,7 +27,7 @@ func New(cfg Config) (http.Handler, io.Closer, error) {
 	}
 
 	if err := repository.Migrate(db); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, nil, fmt.Errorf("migrando: %w", err)
 	}
 
