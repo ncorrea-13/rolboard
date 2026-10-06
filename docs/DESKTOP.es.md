@@ -84,10 +84,10 @@ El AppImage se arma con `appimagetool` 1.9.1; los pasos están en [`.github/work
 
 `.github/workflows/release.yml`, un solo job en `ubuntu-latest`:
 
-- **Tag `v*`:** compila los dos targets y publica un GitHub Release con `rolboard-windows-amd64.exe` y `rolboard-linux-x86_64.AppImage`.
+- **Tag `v*`:** compila los dos targets y crea un GitHub Release **en borrador** con `rolboard-windows-amd64-vX.Y.Z.exe` y `rolboard-linux-x86_64-vX.Y.Z.AppImage`. Las notas se revisan y se publica a mano.
 - **Ejecución manual:** compila los dos y los sube como artifact del workflow, sin release.
 
-Hay que mantener esos nombres: la landing y el README enlazan a `releases/latest/download/<nombre>`. Las acciones de terceros están fijadas por SHA y `appimagetool` se verifica contra su SHA-256.
+La versión también se escribe en `wails.json` (`info.productVersion`), así que el `.exe` la muestra en sus propiedades; las ejecuciones manuales usan `dev-<sha>` en los nombres y `0.0.0` como versión de producto. La versión del CLI de Wails se lee de `go.mod`, así que los bumps de Dependabot la mantienen al día. El README enlaza a la página del último release y la landing lee las URLs de los assets desde la API de GitHub, así que hay que mantener las partes `windows-amd64` / `linux-x86_64` de los nombres. Las acciones de terceros están fijadas por SHA y `appimagetool` se verifica contra su SHA-256.
 
 ## Limitaciones conocidas
 
