@@ -89,12 +89,16 @@ export async function apiImageRequest<T>(
   method: "POST" | "DELETE",
   file?: File,
 ): Promise<T> {
-  let body: FormData | undefined;
+  let body: ArrayBuffer | undefined;
+  let headers: HeadersInit | undefined;
   if (file) {
-    body = new FormData();
-    body.append("file", file);
+    const form = new FormData();
+    form.append("file", file);
+    const encoded = new Response(form);
+    body = await encoded.arrayBuffer();
+    headers = { "Content-Type": encoded.headers.get("Content-Type") ?? "" };
   }
-  const res = await fetch(`/api${path}`, { method, body });
+  const res = await fetch(`/api${path}`, { method, body, headers });
   if (!res.ok) throw await failure(res, method, path);
   return res.json();
 }
