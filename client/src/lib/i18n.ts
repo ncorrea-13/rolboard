@@ -48,6 +48,10 @@ const dict = {
     "newCampaignForm.systemPlaceholder": "ej. Cosmere RPG",
     "newCampaignForm.vaultDir": "Directorio del vault",
     "newCampaignForm.noVault": "Sin vault (campaña solo dashboard)",
+    "vaultsRoot.label": "Carpeta de vaults",
+    "vaultsRoot.change": "Cambiar",
+    "vaultsRoot.pick": "Elegir carpeta",
+    "vaultsRoot.none": "Sin carpeta elegida",
     "newCampaignForm.confirm": "Crear campaña",
 
     "campaignSettings.title": "Ajustes de la campaña",
@@ -343,6 +347,7 @@ const dict = {
 
     "toast.reindexed": "Vault reindexado",
     "toast.errorReindexing": "Error reindexando el vault",
+    "toast.errorVaultsRoot": "Error cambiando la carpeta de vaults",
     "toast.errorLoading": "No se pudieron cargar los datos",
     "toast.unauthorized": "la sesión expiró o no tenés acceso, volvé a entrar",
     "toast.networkError": "no se pudo conectar con el servidor",
@@ -351,7 +356,8 @@ const dict = {
     "toast.invalidOrder": "Número de arco (distinto de 0)",
     "npcTypes.manage": "Tipos",
     "npcTypes.title": "Tipos de NPC",
-    "npcTypes.hint": "El nombre y el color se pueden cambiar cuando quieras. En el vault se usa la clave en `tipo:`.",
+    "npcTypes.hint":
+      "El nombre y el color se pueden cambiar cuando quieras. En el vault se usa la clave en `tipo:`.",
     "npcTypes.newPlaceholder": "Nuevo tipo (ej. Monstruo)",
     "npcTypes.add": "Añadir",
     "npcTypes.delete": "Borrar tipo",
@@ -362,7 +368,8 @@ const dict = {
     "wardails.title": "Wardails",
     "wardails.subtitle": "Temas sensibles de esta campaña",
     "wardails.empty": "Todavía no definiste wardails para esta campaña.",
-    "wardails.placeholder": "Un tema por línea, o usa > [!WARNING] para destacar los más delicados",
+    "wardails.placeholder":
+      "Un tema por línea, o usa > [!WARNING] para destacar los más delicados",
     "wardails.saved": "Wardails guardados",
     "wardails.errorSaving": "Error guardando los wardails",
     "footer.github": "Repositorio en GitHub",
@@ -438,6 +445,10 @@ const dict = {
     "newCampaignForm.systemPlaceholder": "e.g. Cosmere RPG",
     "newCampaignForm.vaultDir": "Vault directory",
     "newCampaignForm.noVault": "No vault (dashboard-only campaign)",
+    "vaultsRoot.label": "Vaults folder",
+    "vaultsRoot.change": "Change",
+    "vaultsRoot.pick": "Choose folder",
+    "vaultsRoot.none": "No folder chosen",
     "newCampaignForm.confirm": "Create campaign",
 
     "campaignSettings.title": "Campaign settings",
@@ -733,15 +744,18 @@ const dict = {
 
     "toast.reindexed": "Vault reindexed",
     "toast.errorReindexing": "Error reindexing the vault",
+    "toast.errorVaultsRoot": "Error changing the vaults folder",
     "toast.errorLoading": "Couldn't load data",
-    "toast.unauthorized": "your session expired or you don't have access, log in again",
+    "toast.unauthorized":
+      "your session expired or you don't have access, log in again",
     "toast.networkError": "couldn't reach the server",
     "toast.missingFields": "Required fields missing",
     "toast.missingDate": "Date (required for played sessions)",
     "toast.invalidOrder": "Arc number (non-zero)",
     "npcTypes.manage": "Types",
     "npcTypes.title": "NPC types",
-    "npcTypes.hint": "Name and color can be changed any time. In the vault, use the key in `tipo:`.",
+    "npcTypes.hint":
+      "Name and color can be changed any time. In the vault, use the key in `tipo:`.",
     "npcTypes.newPlaceholder": "New type (e.g. Monster)",
     "npcTypes.add": "Add",
     "npcTypes.delete": "Delete type",
@@ -752,7 +766,8 @@ const dict = {
     "wardails.title": "Wardails",
     "wardails.subtitle": "Sensitive topics for this campaign",
     "wardails.empty": "You haven't defined any wardails for this campaign yet.",
-    "wardails.placeholder": "One topic per line, or use > [!WARNING] to highlight the most sensitive ones",
+    "wardails.placeholder":
+      "One topic per line, or use > [!WARNING] to highlight the most sensitive ones",
     "wardails.saved": "Wardails saved",
     "wardails.errorSaving": "Error saving the wardails",
     "footer.github": "GitHub repository",

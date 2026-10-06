@@ -7,6 +7,7 @@ import {
   loginAsAdmin,
   logoutAdmin,
   hasAdminSecret,
+  isLocalMode,
   checkAdminSession,
   describeError,
 } from "./lib/api";
@@ -460,7 +461,7 @@ export default function App() {
           onOpenSettings={() => setSettingsOpen(true)}
           onHelp={openHelp}
           onAdminLogout={
-            hasAdminSecret()
+            hasAdminSecret() && !isLocalMode()
               ? async () => {
                   await logoutAdmin();
                   setSettingsOpen(false);

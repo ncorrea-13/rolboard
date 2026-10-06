@@ -125,13 +125,12 @@ func (h *Handlers) AdminLogout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) AdminSession(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusNoContent)
+	writeJSON(w, http.StatusOK, map[string]bool{"localMode": h.localMode})
 }
 
 func (h *Handlers) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		cookie, err := r.Cookie(adminSessionCookieName)
-		if err != nil || !adminSessions.valid(cookie.Value) {
+		if !h.isAdminRequest(r) {
 			slog.Warn("admin auth failed",
 				"path", r.URL.Path,
 				"method", r.Method,
@@ -144,14 +143,17 @@ func (h *Handlers) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func isAdminRequest(r *http.Request) bool {
+func (h *Handlers) isAdminRequest(r *http.Request) bool {
+	if h.localMode {
+		return true
+	}
 	cookie, err := r.Cookie(adminSessionCookieName)
 	return err == nil && adminSessions.valid(cookie.Value)
 }
 
 func (h *Handlers) requireCampaign(resolve func(r *http.Request) (int64, error), next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if adminCookie, err := r.Cookie(adminSessionCookieName); err == nil && adminSessions.valid(adminCookie.Value) {
+		if h.isAdminRequest(r) {
 			next(w, r)
 			return
 		}

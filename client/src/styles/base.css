@@ -136,3 +136,39 @@ body {
   color: inherit;
   text-decoration: none;
 }
+
+select,
+::picker(select) {
+  appearance: base-select;
+}
+
+select::picker-icon {
+  display: none;
+}
+
+::picker(select) {
+  margin-top: 4px;
+  padding: 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-body);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+}
+
+option {
+  padding: 6px 10px;
+  border-radius: 4px;
+  font: 400 14px var(--font-body);
+}
+
+option:hover,
+option:focus-visible {
+  outline: none;
+  background: var(--accent-obsidian-soft);
+  color: var(--text-primary);
+}
+
+option:checked {
+  color: var(--accent-obsidian);
+}

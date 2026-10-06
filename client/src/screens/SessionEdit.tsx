@@ -85,7 +85,10 @@ export function SessionEdit({
         ]);
     for (const id of savedNpcIds)
       if (!selectedNpcIds.has(id))
-        calls.push([`/sessions/${session.id}/npcs/${id}`, { method: "DELETE" }]);
+        calls.push([
+          `/sessions/${session.id}/npcs/${id}`,
+          { method: "DELETE" },
+        ]);
     for (const id of selectedQuestIds)
       if (!savedQuestIds.has(id))
         calls.push([

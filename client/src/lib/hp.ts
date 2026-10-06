@@ -20,7 +20,11 @@ export function nextHp(
 export function hpBar(current?: number, max?: number) {
   if (current == null || !max) return { fill: 0, overflow: 0, negative: false };
   if (current < 0)
-    return { fill: Math.min(100, (-current / max) * 100), overflow: 0, negative: true };
+    return {
+      fill: Math.min(100, (-current / max) * 100),
+      overflow: 0,
+      negative: true,
+    };
   if (current > max) {
     const fill = (max / current) * 100;
     return { fill, overflow: 100 - fill, negative: false };

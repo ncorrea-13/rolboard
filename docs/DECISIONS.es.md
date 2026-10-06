@@ -35,7 +35,7 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 
 ## Vault de Obsidian: fuente de la prosa, no de todo
 
-- El dashboard indexa frontmatter y guarda `obsidian_path` para abrir o renderizar la nota. Abrir en Obsidian (`obsidian://`) es una función de primera clase.
+- El dashboard indexa frontmatter y guarda `obsidian_path` para abrir o renderizar la nota. Abrir en Obsidian (`obsidian://`) es una función de primera clase en la web; la app de escritorio lo oculta (el webview no puede delegar esquemas propios).
 - Lo que el vault no modela bien vive solo en la DB: quests, notas de preparación, `class`/`backstory` de PJs, fichas, HP, imágenes. Se mueve más contenido a la DB solo cuando aparece una necesidad concreta.
 - Quests no tienen nota en el vault; `session_quests` se maneja solo desde el dashboard.
 
@@ -95,3 +95,14 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - `log/slog` estructurado; `LOG_JSON=true` para JSON en producción.
 - Middleware de request log: `method, path, status, duración, remote`.
 - Eventos de auth en `Warn`: login fallido, sesión inválida, mismatch de campaña, admin rechazado. Nunca se loguean códigos ni tokens.
+
+## App de escritorio
+
+- **Mismo código, segundo entrypoint.** `cmd/server` (Docker) y `cmd/desktop` (Wails) llaman a `app.New`; solo cambian la config y el transporte.
+- **Wails v2 sobre v3.** v2 es estable; v3 seguía en beta. Reevaluar cuando v3 sea estable.
+- **Sin red.** El webview habla con el router dentro del proceso vía `AssetServer.Handler`: no hay puerto, así que no hay superficie de DNS rebinding ni CSRF.
+- **El modo local lo activa solo `cmd/desktop`, nunca una env var**, para que un contenedor mal configurado no quede sin auth. En modo local todo request es admin; `GET /api/admin/session` devuelve `{"localMode": true}` y el cliente oculta códigos de acceso, logout y "Abrir en Obsidian".
+- **Datos en `os.UserConfigDir()/rolboard/`**: `config.json` (carpeta de vaults), `rolboard.db`, `uploads/`. La carpeta de vaults es opcional: se elige con un diálogo nativo desde el campo "Carpeta de vaults" de los formularios de campaña (`POST /api/desktop/vaults-root`), que reconstruye la app en caliente, sin reiniciar. Sin ella, las campañas funcionan solo como dashboard. La app no tiene barra de menú.
+- **Links externos** pasan por `POST /api/desktop/open`, que solo acepta URLs `https` y llama a `runtime.BrowserOpenURL`. El runtime JS de Wails solo se inyecta en `/`, así que falta después de recargar una deep link.
+- **Parches para WebKitGTK (Linux):** las subidas de imágenes mandan el multipart ya serializado a bytes, porque Wails lee los bodies fuera del hilo principal de GTK y crashea con un body que referencia un `File`. Los selects usan `appearance: base-select` para que el desplegable sea HTML y no un menú de GTK.
+- **Empaquetado:** `.exe` sin firmar (compilado desde Linux, sin CGO) y AppImage que usa la `libwebkit2gtk-4.1` del sistema.

@@ -152,11 +152,7 @@ export function useCampaignData(
   activeCampaignId: string | null,
   activeCampaign: Campaign | undefined,
   navigate: (route: Route, opts?: { replace?: boolean }) => void,
-  notify: (
-    message: string,
-    type?: "success" | "error",
-    err?: unknown,
-  ) => void,
+  notify: (message: string, type?: "success" | "error", err?: unknown) => void,
 ) {
   const t = useT();
 
@@ -175,6 +171,8 @@ export function useCampaignData(
     notify(t("toast.errorLoading"), "error", err);
   });
 
+  const [reloadKey, setReloadKey] = useState(0);
+
   const [npcs, setNpcs] = useState<Npc[]>([]);
 
   useEffect(() => {
@@ -186,7 +184,7 @@ export function useCampaignData(
         ),
       )
       .catch((err) => loadFailed("NPCs", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [npcTypes, setNpcTypes] = useState<NpcType[]>([]);
   setNpcTypeRegistry(npcTypes);
@@ -254,7 +252,7 @@ export function useCampaignData(
     apiFetch<ApiArc[]>(`/campaigns/${activeCampaignId}/arcs`)
       .then((data) => setArcs((data ?? []).map(mapArc)))
       .catch((err) => loadFailed("arcos", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [groups, setGroups] = useState<Group[]>([]);
 
@@ -263,7 +261,7 @@ export function useCampaignData(
     apiFetch<ApiGroup[]>(`/campaigns/${activeCampaignId}/groups`)
       .then((data) => setGroups((data ?? []).map(mapGroup)))
       .catch((err) => loadFailed("facciones", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [locations, setLocations] = useState<Location[]>([]);
 
@@ -272,7 +270,7 @@ export function useCampaignData(
     apiFetch<ApiLocation[]>(`/campaigns/${activeCampaignId}/locations`)
       .then((data) => setLocations((data ?? []).map(mapLocation)))
       .catch((err) => loadFailed("locaciones", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [quests, setQuests] = useState<Quest[]>([]);
 
@@ -281,7 +279,7 @@ export function useCampaignData(
     apiFetch<ApiQuest[]>(`/campaigns/${activeCampaignId}/quests`)
       .then((data) => setQuests((data ?? []).map(mapQuest)))
       .catch((err) => loadFailed("quests", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
     [],
@@ -294,7 +292,7 @@ export function useCampaignData(
     )
       .then((data) => setPlayerCharacters((data ?? []).map(mapPlayerCharacter)))
       .catch((err) => loadFailed("personajes", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [sessions, setSessions] = useState<Session[]>([]);
 
@@ -303,7 +301,7 @@ export function useCampaignData(
     apiFetch<ApiSession[]>(`/campaigns/${activeCampaignId}/sessions`)
       .then((data) => setSessions((data ?? []).map(mapSession)))
       .catch((err) => loadFailed("sesiones", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [encounters, setEncounters] = useState<Encounter[]>([]);
 
@@ -312,7 +310,7 @@ export function useCampaignData(
     apiFetch<ApiEncounter[]>(`/campaigns/${activeCampaignId}/encounters`)
       .then((data) => setEncounters((data ?? []).map(mapEncounter)))
       .catch((err) => loadFailed("encuentros", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [dashboardSummary, setDashboardSummary] =
     useState<ApiDashboardSummary | null>(null);
@@ -322,7 +320,7 @@ export function useCampaignData(
     apiFetch<ApiDashboardSummary>(`/campaigns/${activeCampaignId}/dashboard`)
       .then(setDashboardSummary)
       .catch((err) => loadFailed("dashboard", err));
-  }, [activeCampaignId]);
+  }, [activeCampaignId, reloadKey]);
 
   const [reindexing, setReindexing] = useState(false);
 
@@ -330,7 +328,10 @@ export function useCampaignData(
     if (!activeCampaign || reindexing) return;
     setReindexing(true);
     apiFetch(`/campaigns/${activeCampaign.id}/reindex`, { method: "POST" })
-      .then(() => notify(t("toast.reindexed")))
+      .then(() => {
+        setReloadKey((k) => k + 1);
+        notify(t("toast.reindexed"));
+      })
       .catch((err) => {
         console.error("Error reindexando:", err);
         notify(t("toast.errorReindexing"), "error", err);
@@ -396,10 +397,13 @@ export function useCampaignData(
     const current = npcs.find((n) => n.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
-    if (!hasRequired([
-      ["common.name", merged.name],
-      ["common.type", merged.crystal],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["common.name", merged.name],
+        ["common.type", merged.crystal],
+      ])
+    )
+      return false;
     apiFetch(`/npcs/${id}`, {
       method: "PUT",
       body: JSON.stringify(npcToApiPayload(merged)),
@@ -426,10 +430,13 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
-    if (!hasRequired([
-      ["common.name", draft.name],
-      ["common.type", draft.crystal],
-    ])) return Promise.resolve(undefined);
+    if (
+      !hasRequired([
+        ["common.name", draft.name],
+        ["common.type", draft.crystal],
+      ])
+    )
+      return Promise.resolve(undefined);
     return apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
       method: "POST",
       body: JSON.stringify(npcToApiPayload(draft)),
@@ -476,10 +483,13 @@ export function useCampaignData(
     const current = playerCharacters.find((p) => p.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
-    if (!hasRequired([
-      ["playerEdit.characterName", merged.characterName],
-      ["playerEdit.player", merged.playerName],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["playerEdit.characterName", merged.characterName],
+        ["playerEdit.player", merged.playerName],
+      ])
+    )
+      return false;
     apiFetch(`/player-characters/${id}`, {
       method: "PUT",
       body: JSON.stringify(playerCharacterToApiPayload(merged)),
@@ -505,10 +515,13 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
-    if (!hasRequired([
-      ["playerEdit.characterName", draft.characterName],
-      ["playerEdit.player", draft.playerName],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["playerEdit.characterName", draft.characterName],
+        ["playerEdit.player", draft.playerName],
+      ])
+    )
+      return false;
     apiFetch<ApiPlayerCharacter>(
       `/campaigns/${activeCampaign!.id}/player-characters`,
       {
@@ -716,10 +729,13 @@ export function useCampaignData(
     const current = locations.find((l) => l.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
-    if (!hasRequired([
-      ["common.name", merged.name],
-      ["common.type", merged.locationType],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["common.name", merged.name],
+        ["common.type", merged.locationType],
+      ])
+    )
+      return false;
     apiFetch<ApiLocation>(`/locations/${id}`, {
       method: "PUT",
       body: JSON.stringify(locationToApiPayload(merged)),
@@ -744,10 +760,13 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
-    if (!hasRequired([
-      ["common.name", draft.name],
-      ["common.type", draft.locationType],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["common.name", draft.name],
+        ["common.type", draft.locationType],
+      ])
+    )
+      return false;
     apiFetch<ApiLocation>(`/campaigns/${activeCampaign!.id}/locations`, {
       method: "POST",
       body: JSON.stringify(locationToApiPayload(draft)),
@@ -775,10 +794,13 @@ export function useCampaignData(
     const current = arcs.find((a) => a.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
-    if (!hasRequired([
-      ["arcEdit.nameLabel", merged.label],
-      ["toast.invalidOrder", merged.order || ""],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["arcEdit.nameLabel", merged.label],
+        ["toast.invalidOrder", merged.order || ""],
+      ])
+    )
+      return false;
     apiFetch<ApiArc>(`/arcs/${id}`, {
       method: "PUT",
       body: JSON.stringify(arcToApiPayload(merged)),
@@ -803,10 +825,13 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
-    if (!hasRequired([
-      ["arcEdit.nameLabel", draft.label],
-      ["toast.invalidOrder", draft.order || ""],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["arcEdit.nameLabel", draft.label],
+        ["toast.invalidOrder", draft.order || ""],
+      ])
+    )
+      return false;
     apiFetch<ApiArc>(`/campaigns/${activeCampaign!.id}/arcs`, {
       method: "POST",
       body: JSON.stringify(arcToApiPayload(draft)),

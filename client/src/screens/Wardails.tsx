@@ -11,11 +11,7 @@ const MAX_LENGTH = 20000;
 
 interface WardailsProps {
   campaignId: string;
-  notify: (
-    message: string,
-    type?: "success" | "error",
-    err?: unknown,
-  ) => void;
+  notify: (message: string, type?: "success" | "error", err?: unknown) => void;
 }
 
 export function Wardails({ campaignId, notify }: WardailsProps) {

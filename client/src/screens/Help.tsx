@@ -2,6 +2,7 @@ import "./Help.css";
 import "./NpcDetail.css";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { useLang, useT } from "../lib/i18n";
+import { openExternal } from "../lib/api";
 import { helpContent } from "./helpContent";
 
 const DOCS_URL = "https://github.com/ncorrea-13/rolboard/tree/main/docs";
@@ -63,6 +64,7 @@ export function Help({ onBack }: { onBack: () => void }) {
               className="help__docs"
               href={DOCS_URL}
               target="_blank"
+              onClick={openExternal}
               rel="noopener noreferrer"
             >
               {t("help.docs")} ↗

@@ -12,7 +12,7 @@ import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
 import { openInObsidian } from "../lib/obsidian";
-import { apiFetch } from "../lib/api";
+import { apiFetch, isLocalMode } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 import { reportError } from "../lib/notify";
@@ -97,10 +97,7 @@ export function NpcDetail({
             {t("sidebar.npcs")}
           </button>
           <span>/</span>
-          <span
-            className="type-chip"
-            style={{ "--c": color } as CSSProperties}
-          >
+          <span className="type-chip" style={{ "--c": color } as CSSProperties}>
             {crystalLabelFor(npc.crystal, lang)}
           </span>
         </div>
@@ -125,12 +122,14 @@ export function NpcDetail({
           <div className="npc-detail__header-actions">
             {npc.obsidianPath && (
               <>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
-                >
-                  {t("entityDetail.openInObsidian")}
-                </button>
+                {!isLocalMode() && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
+                  >
+                    {t("entityDetail.openInObsidian")}
+                  </button>
+                )}
                 <button className="btn btn-secondary" onClick={openNote}>
                   {t("entityDetail.viewRenderedNote")}
                 </button>
@@ -195,7 +194,9 @@ export function NpcDetail({
                       </span>
                       <span
                         className="title-underline__bar"
-                        style={{ background: crystalColorFor(l.target.crystal) }}
+                        style={{
+                          background: crystalColorFor(l.target.crystal),
+                        }}
                       />
                     </span>
                     <StatusPill status={l.target.status} />
@@ -281,12 +282,14 @@ export function NpcDetail({
                 <span className="entity-detail__obsidian-path">
                   {npc.obsidianPath}
                 </span>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
-                >
-                  {t("entityDetail.openInObsidian")}
-                </button>
+                {!isLocalMode() && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => openInObsidian(vaultName, npc.obsidianPath)}
+                  >
+                    {t("entityDetail.openInObsidian")}
+                  </button>
+                )}
               </div>
             </div>
           )}
