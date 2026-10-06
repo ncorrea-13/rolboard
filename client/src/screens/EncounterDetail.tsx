@@ -144,7 +144,9 @@ export function EncounterDetail({
     const amount = Number(hpDeltas[p.id]);
     if (!amount || amount < 0) return;
     const current = p.currentHp ?? p.maxHp ?? 0;
-    updateParticipant(p.id, { currentHp: nextHp(current, p.maxHp, amount, sign) });
+    updateParticipant(p.id, {
+      currentHp: nextHp(current, p.maxHp, amount, sign),
+    });
     setHpDeltas((prev) => ({ ...prev, [p.id]: "" }));
   }
 

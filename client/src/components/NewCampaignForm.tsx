@@ -88,10 +88,7 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
         <button className="btn btn-secondary" onClick={onCancel}>
           {t("common.cancel")}
         </button>
-        <button
-          className="btn btn-primary"
-          onClick={handleConfirm}
-        >
+        <button className="btn btn-primary" onClick={handleConfirm}>
           {t("newCampaignForm.confirm")}
         </button>
       </div>

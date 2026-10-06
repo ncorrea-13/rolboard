@@ -60,6 +60,9 @@ jobs:
       - name: Lint
         run: cd client && pnpm lint
 
+      - name: Format
+        run: cd client && pnpm format:check
+
       - name: Build
         run: cd client && pnpm build
 

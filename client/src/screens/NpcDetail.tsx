@@ -97,10 +97,7 @@ export function NpcDetail({
             {t("sidebar.npcs")}
           </button>
           <span>/</span>
-          <span
-            className="type-chip"
-            style={{ "--c": color } as CSSProperties}
-          >
+          <span className="type-chip" style={{ "--c": color } as CSSProperties}>
             {crystalLabelFor(npc.crystal, lang)}
           </span>
         </div>
@@ -195,7 +192,9 @@ export function NpcDetail({
                       </span>
                       <span
                         className="title-underline__bar"
-                        style={{ background: crystalColorFor(l.target.crystal) }}
+                        style={{
+                          background: crystalColorFor(l.target.crystal),
+                        }}
                       />
                     </span>
                     <StatusPill status={l.target.status} />

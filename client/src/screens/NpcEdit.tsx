@@ -76,9 +76,7 @@ export function NpcEdit({
   const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
   const [attributes, setAttributes] = useState<StatMap>(npc.attributes);
   const [skills, setSkills] = useState<StatMap>(npc.skills);
-  const [currentHp, setCurrentHp] = useState<number | undefined>(
-    npc.currentHp,
-  );
+  const [currentHp, setCurrentHp] = useState<number | undefined>(npc.currentHp);
   const [maxHp, setMaxHp] = useState<number | undefined>(npc.maxHp);
 
   useEffect(() => {

@@ -152,11 +152,7 @@ export function useCampaignData(
   activeCampaignId: string | null,
   activeCampaign: Campaign | undefined,
   navigate: (route: Route, opts?: { replace?: boolean }) => void,
-  notify: (
-    message: string,
-    type?: "success" | "error",
-    err?: unknown,
-  ) => void,
+  notify: (message: string, type?: "success" | "error", err?: unknown) => void,
 ) {
   const t = useT();
 
@@ -396,10 +392,13 @@ export function useCampaignData(
     const current = npcs.find((n) => n.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
-    if (!hasRequired([
-      ["common.name", merged.name],
-      ["common.type", merged.crystal],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["common.name", merged.name],
+        ["common.type", merged.crystal],
+      ])
+    )
+      return false;
     apiFetch(`/npcs/${id}`, {
       method: "PUT",
       body: JSON.stringify(npcToApiPayload(merged)),
@@ -426,10 +425,13 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
-    if (!hasRequired([
-      ["common.name", draft.name],
-      ["common.type", draft.crystal],
-    ])) return Promise.resolve(undefined);
+    if (
+      !hasRequired([
+        ["common.name", draft.name],
+        ["common.type", draft.crystal],
+      ])
+    )
+      return Promise.resolve(undefined);
     return apiFetch<ApiNpc>(`/campaigns/${activeCampaign!.id}/npcs`, {
       method: "POST",
       body: JSON.stringify(npcToApiPayload(draft)),
@@ -476,10 +478,13 @@ export function useCampaignData(
     const current = playerCharacters.find((p) => p.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
-    if (!hasRequired([
-      ["playerEdit.characterName", merged.characterName],
-      ["playerEdit.player", merged.playerName],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["playerEdit.characterName", merged.characterName],
+        ["playerEdit.player", merged.playerName],
+      ])
+    )
+      return false;
     apiFetch(`/player-characters/${id}`, {
       method: "PUT",
       body: JSON.stringify(playerCharacterToApiPayload(merged)),
@@ -505,10 +510,13 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
-    if (!hasRequired([
-      ["playerEdit.characterName", draft.characterName],
-      ["playerEdit.player", draft.playerName],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["playerEdit.characterName", draft.characterName],
+        ["playerEdit.player", draft.playerName],
+      ])
+    )
+      return false;
     apiFetch<ApiPlayerCharacter>(
       `/campaigns/${activeCampaign!.id}/player-characters`,
       {
@@ -716,10 +724,13 @@ export function useCampaignData(
     const current = locations.find((l) => l.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
-    if (!hasRequired([
-      ["common.name", merged.name],
-      ["common.type", merged.locationType],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["common.name", merged.name],
+        ["common.type", merged.locationType],
+      ])
+    )
+      return false;
     apiFetch<ApiLocation>(`/locations/${id}`, {
       method: "PUT",
       body: JSON.stringify(locationToApiPayload(merged)),
@@ -744,10 +755,13 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
-    if (!hasRequired([
-      ["common.name", draft.name],
-      ["common.type", draft.locationType],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["common.name", draft.name],
+        ["common.type", draft.locationType],
+      ])
+    )
+      return false;
     apiFetch<ApiLocation>(`/campaigns/${activeCampaign!.id}/locations`, {
       method: "POST",
       body: JSON.stringify(locationToApiPayload(draft)),
@@ -775,10 +789,13 @@ export function useCampaignData(
     const current = arcs.find((a) => a.id === id);
     if (!current) return;
     const merged = { ...current, ...patch };
-    if (!hasRequired([
-      ["arcEdit.nameLabel", merged.label],
-      ["toast.invalidOrder", merged.order || ""],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["arcEdit.nameLabel", merged.label],
+        ["toast.invalidOrder", merged.order || ""],
+      ])
+    )
+      return false;
     apiFetch<ApiArc>(`/arcs/${id}`, {
       method: "PUT",
       body: JSON.stringify(arcToApiPayload(merged)),
@@ -803,10 +820,13 @@ export function useCampaignData(
       ...patch,
       campaignId: activeCampaign!.id,
     };
-    if (!hasRequired([
-      ["arcEdit.nameLabel", draft.label],
-      ["toast.invalidOrder", draft.order || ""],
-    ])) return false;
+    if (
+      !hasRequired([
+        ["arcEdit.nameLabel", draft.label],
+        ["toast.invalidOrder", draft.order || ""],
+      ])
+    )
+      return false;
     apiFetch<ApiArc>(`/campaigns/${activeCampaign!.id}/arcs`, {
       method: "POST",
       body: JSON.stringify(arcToApiPayload(draft)),

@@ -351,7 +351,8 @@ const dict = {
     "toast.invalidOrder": "Número de arco (distinto de 0)",
     "npcTypes.manage": "Tipos",
     "npcTypes.title": "Tipos de NPC",
-    "npcTypes.hint": "El nombre y el color se pueden cambiar cuando quieras. En el vault se usa la clave en `tipo:`.",
+    "npcTypes.hint":
+      "El nombre y el color se pueden cambiar cuando quieras. En el vault se usa la clave en `tipo:`.",
     "npcTypes.newPlaceholder": "Nuevo tipo (ej. Monstruo)",
     "npcTypes.add": "Añadir",
     "npcTypes.delete": "Borrar tipo",
@@ -362,7 +363,8 @@ const dict = {
     "wardails.title": "Wardails",
     "wardails.subtitle": "Temas sensibles de esta campaña",
     "wardails.empty": "Todavía no definiste wardails para esta campaña.",
-    "wardails.placeholder": "Un tema por línea, o usa > [!WARNING] para destacar los más delicados",
+    "wardails.placeholder":
+      "Un tema por línea, o usa > [!WARNING] para destacar los más delicados",
     "wardails.saved": "Wardails guardados",
     "wardails.errorSaving": "Error guardando los wardails",
     "footer.github": "Repositorio en GitHub",
@@ -734,14 +736,16 @@ const dict = {
     "toast.reindexed": "Vault reindexed",
     "toast.errorReindexing": "Error reindexing the vault",
     "toast.errorLoading": "Couldn't load data",
-    "toast.unauthorized": "your session expired or you don't have access, log in again",
+    "toast.unauthorized":
+      "your session expired or you don't have access, log in again",
     "toast.networkError": "couldn't reach the server",
     "toast.missingFields": "Required fields missing",
     "toast.missingDate": "Date (required for played sessions)",
     "toast.invalidOrder": "Arc number (non-zero)",
     "npcTypes.manage": "Types",
     "npcTypes.title": "NPC types",
-    "npcTypes.hint": "Name and color can be changed any time. In the vault, use the key in `tipo:`.",
+    "npcTypes.hint":
+      "Name and color can be changed any time. In the vault, use the key in `tipo:`.",
     "npcTypes.newPlaceholder": "New type (e.g. Monster)",
     "npcTypes.add": "Add",
     "npcTypes.delete": "Delete type",
@@ -752,7 +756,8 @@ const dict = {
     "wardails.title": "Wardails",
     "wardails.subtitle": "Sensitive topics for this campaign",
     "wardails.empty": "You haven't defined any wardails for this campaign yet.",
-    "wardails.placeholder": "One topic per line, or use > [!WARNING] to highlight the most sensitive ones",
+    "wardails.placeholder":
+      "One topic per line, or use > [!WARNING] to highlight the most sensitive ones",
     "wardails.saved": "Wardails saved",
     "wardails.errorSaving": "Error saving the wardails",
     "footer.github": "GitHub repository",
