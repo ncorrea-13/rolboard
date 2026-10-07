@@ -85,7 +85,7 @@ secrets:
 services:
   server:
     container_name: rolboard-server
-    image: ghcr.io/ncorrea-13/rolboard-server:main
+    image: ghcr.io/ncorrea-13/rolboard-server:latest
     user: "${ROLBOARD_USER:-1000:1000}"
     env_file:
       - .env
@@ -108,7 +108,7 @@ services:
 
   client:
     container_name: rolboard-client
-    image: ghcr.io/ncorrea-13/rolboard-client:main
+    image: ghcr.io/ncorrea-13/rolboard-client:latest
     environment:
       BACKEND_HOST: rolboard-server
     ports:
