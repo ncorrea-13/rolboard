@@ -109,3 +109,111 @@ jobs:
           files: dist/*
           draft: true
           generate_release_notes: true
+
+  android:
+    name: Android
+    needs: desktop
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "1.27"
+          cache-dependency-path: server/go.sum
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          version: 12
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "26"
+          cache: pnpm
+          cache-dependency-path: client/pnpm-lock.yaml
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            tag="$GITHUB_REF_NAME"
+            name="${tag#v}"
+            IFS=. read -r major minor patch <<< "${name%%-*}"
+            code=$((major * 10000 + minor * 100 + patch))
+          else
+            tag="dev-${GITHUB_SHA::7}"
+            name="0.0.0"
+            code=1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+
+      - name: Build client
+        working-directory: client
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+          mkdir -p ../android/app/src/main/assets/web
+          cp -r dist/. ../android/app/src/main/assets/web/
+
+      - name: Build Go library
+        working-directory: server
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_LATEST_HOME }}
+        run: |
+          go install golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
+          mkdir -p ../android/app/libs
+          gomobile bind -target=android/arm64 -androidapi 26 -o ../android/app/libs/rolboard.aar ./mobile
+
+      - name: Install Gradle
+        run: |
+          curl -fsSL -o gradle.zip https://services.gradle.org/distributions/gradle-9.8.0-bin.zip
+          echo "bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c  gradle.zip" | sha256sum -c
+          unzip -q gradle.zip -d "$RUNNER_TEMP"
+
+      - name: Build APK
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: |
+          : "${ANDROID_KEYSTORE_BASE64:?falta el secret ANDROID_KEYSTORE_BASE64}"
+          export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/release.keystore"
+          base64 -d <<< "$ANDROID_KEYSTORE_BASE64" > "$ANDROID_KEYSTORE_FILE"
+          "$RUNNER_TEMP/gradle-9.8.0/bin/gradle" -p android assembleRelease --no-daemon --console=plain \
+            -PversionName="$VERSION_NAME" -PversionCode="$VERSION_CODE"
+          rm "$ANDROID_KEYSTORE_FILE"
+
+      - name: Collect artifacts
+        env:
+          VERSION: ${{ steps.version.outputs.tag }}
+        run: |
+          mkdir dist
+          mv android/app/build/outputs/apk/release/app-release.apk "dist/rolboard-android-arm64-$VERSION.apk"
+
+      - name: Upload artifacts
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v7
+        with:
+          name: rolboard-android
+          path: dist/*
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          files: dist/*
+          draft: true
