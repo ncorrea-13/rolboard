@@ -55,6 +55,7 @@ const dict = {
     "syncDir.hint":
       "Rolboard guarda aquí una copia de tus datos y las imágenes. Elige la misma carpeta en todos tus dispositivos, una que tengas sincronizada entre ellos. Si ya tiene datos de otro dispositivo, se cargan esos y los tuyos quedan en un respaldo.",
     "appSettings.title": "Ajustes de la app",
+    "update.available": "Hay una versión nueva:",
     "vaultsRoot.change": "Cambiar",
     "vaultsRoot.pick": "Elegir carpeta",
     "vaultsRoot.none": "Sin carpeta elegida",
@@ -461,6 +462,7 @@ const dict = {
     "syncDir.hint":
       "Rolboard keeps a copy of your data and images here. Pick the same folder on all your devices, one you keep in sync between them. If it already has data from another device, that data is loaded and yours is kept in a backup.",
     "appSettings.title": "App settings",
+    "update.available": "A new version is available:",
     "vaultsRoot.change": "Change",
     "vaultsRoot.pick": "Choose folder",
     "vaultsRoot.none": "No folder chosen",

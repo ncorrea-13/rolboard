@@ -6,6 +6,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN npm install -g pnpm@12 && pnpm install --frozen-lockfile
 
 COPY . ./
+ARG VITE_APP_VERSION
 RUN pnpm build
 
 FROM docker.io/library/caddy:2-alpine
