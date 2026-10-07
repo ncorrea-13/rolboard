@@ -31,6 +31,18 @@ func Open(path string) (*sql.DB, error) {
 	return db, nil
 }
 
+func KnownMigrations() (map[string]bool, error) {
+	entries, err := fs.ReadDir(migrationsFS, "migrations")
+	if err != nil {
+		return nil, err
+	}
+	known := make(map[string]bool, len(entries))
+	for _, entry := range entries {
+		known[entry.Name()] = true
+	}
+	return known, nil
+}
+
 func Migrate(db *sql.DB) error {
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
               version TEXT PRIMARY KEY,
