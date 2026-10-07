@@ -102,7 +102,30 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - **Wails v2 over v3.** v2 is stable; v3 was still beta. Re-evaluate when v3 goes stable.
 - **No network.** The webview talks to the router in-process through `AssetServer.Handler`: no port, so no DNS rebinding or CSRF surface.
 - **Local mode is set only by `cmd/desktop`, never by an env var**, so a misconfigured container can't end up without auth. In local mode every request is admin; `GET /api/admin/session` returns `{"localMode": true}` and the client hides access codes, logout and "Open in Obsidian".
-- **Data in `os.UserConfigDir()/rolboard/`**: `config.json` (vaults root), `rolboard.db`, `uploads/`. The vaults folder is optional: it is picked with a native dialog from the "Vaults folder" field in the campaign forms (`POST /api/desktop/vaults-root`), which rebuilds the app in place, no restart. Without it, campaigns work dashboard-only. No app menu bar.
+- **Data in `os.UserConfigDir()/rolboard/`**: `config.json` (vaults and sync folders), `rolboard.db`, `uploads/`. Both folders are optional and are picked with a native dialog from **App settings**, the gear on the campaign selector (`POST /api/desktop/vaults-root`, `POST /api/desktop/sync-dir`). Changing one rebuilds the app in place, no restart. They are per-device settings, so they aren't in the campaign forms or in Docker, which uses `VAULTS_ROOT`. Without a vaults folder, campaigns work dashboard-only. No app menu bar.
 - **External links** go through `POST /api/desktop/open`, which only accepts `https` URLs and calls `runtime.BrowserOpenURL`. Wails' JS runtime is only injected on `/`, so it's missing after reloading a deep link.
 - **WebKitGTK workarounds (Linux):** image uploads send the multipart already serialized to bytes, because Wails reads request bodies off the GTK main thread and crashes on a body that references a `File`. Selects use `appearance: base-select` so the dropdown is HTML and not a GTK menu.
+- **Update notice, not auto-update.** The app only links to a newer GitHub release; replacing a binary in place (or an APK) is a lot of code and a security surface for little gain.
 - **Packaging:** unsigned `.exe` (cross-compiled from Linux, no CGO) and AppImage that relies on the system's `libwebkit2gtk-4.1`.
+
+## Sync between devices
+
+- **The working DB never leaves the device.** Sync tools copying an open SQLite file (with its WAL) corrupt it, so each device exports a snapshot (`VACUUM INTO` a temp file, fsync, rename) and imports the other's. Any tool that syncs a folder works: Syncthing, a cloud drive, or copying the file by hand.
+- **Change detection by SHA-256**, not mtime, which sync tools and copies don't preserve reliably.
+- **Push only after local writes.** A device that only read data would otherwise overwrite a newer copy from another device.
+- **Last writer wins, plus a conflict copy.** If both sides changed, the other device's snapshot is kept as `rolboard.conflict.db`. Real merging is out of scope: the app is meant for one device at a time.
+- **Imports check the schema** against the embedded migrations and refuse a snapshot from a newer version. The previous local DB is kept as `.bak`.
+- **Images go in `uploads/` inside the sync folder**; `config.json` is not synced, since it holds per-machine paths.
+- Shared by desktop and Android through `internal/desktop.Runtime` and `internal/snapshot`.
+
+## Android app
+
+- **gomobile, not Wails v3.** v3 supports Android but was still beta, with open lifecycle bugs. gomobile is maintained by the Go team and Android's `WebView` is stable. Re-evaluate when v3 goes stable.
+- **No server on `localhost`**, same as desktop: the `WebView` loads a virtual origin (`https://rolboard.local`) and requests are intercepted. GETs go through `shouldInterceptRequest`; writes go through a `JavascriptInterface`, because Android doesn't expose POST bodies to interception.
+- **The vault is read by path** with "All files access", instead of copying it through the Storage Access Framework: a vault already synced to the phone stays up to date with no extra step. Google Play rarely approves that permission; for an APK on GitHub it's fine.
+- **`modernc.org/sqlite` kept, ARM64 only.** It works on ARM64 (tested on a phone), but on x86_64 `modernc.org/libc` calls `SYS_lstat`, which Android's seccomp filter blocks. Only `arm64-v8a` is shipped; `ncruces/go-sqlite3` is the fallback if x86_64 is ever needed.
+- **Kotlin, no AndroidX**, one `Activity`. AGP 9 has built-in Kotlin, so there's no extra plugin.
+- **Build in a container** (`docker-compose.android.yml`): no Android SDK needed on the developer machine.
+- **Signed with its own key**, not a public debug key: the signature is what proves an update comes from the project, and the app holds "All files access". Two secrets: the keystore in base64 and one password; the alias is fixed.
+- **Application ID `io.github.ncorrea_13.rolboard`:** a domain tied to the GitHub account that publishes it. Hyphens aren't allowed in IDs, hence the underscore. It can never change without becoming a different app.
+- **APK on GitHub Releases, not Google Play**, for now.

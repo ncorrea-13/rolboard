@@ -99,11 +99,21 @@ const es: HelpSection[] = [
             </>
           }
           desktop={
-            <p>
-              En la pantalla inicial elige <em>Nueva campaña</em>. Todo queda
-              guardado en tu computadora y no hace falta clave ni código de
-              acceso.
-            </p>
+            <>
+              <p>
+                En la pantalla inicial elige <em>Nueva campaña</em>. Todo queda
+                guardado en tu dispositivo y no hace falta clave ni código de
+                acceso.
+              </p>
+              <p>
+                Para usar las mismas campañas en otro dispositivo (por ejemplo,
+                la computadora y el celular), elige una{" "}
+                <em>Carpeta de sincronización</em> en <em>Ajustes de la app</em>{" "}
+                en los dos y mantenla sincronizada con la herramienta que
+                prefieras. Está pensada para usar un dispositivo por vez: gana
+                la última copia guardada.
+              </p>
+            </>
           }
         />
       </>
@@ -220,9 +230,9 @@ const es: HelpSection[] = [
           desktop={
             <p>
               Primero elige la carpeta donde están tus vaults en{" "}
-              <em>Carpeta de vaults</em>, arriba del directorio del vault al
-              crear o editar una campaña. Cada campaña usa una subcarpeta de esa
-              carpeta.
+              <em>Ajustes de la app</em> (el engranaje de la pantalla de
+              campañas). Después, cada campaña elige su vault entre las
+              subcarpetas de esa carpeta.
             </p>
           }
         />
@@ -359,10 +369,19 @@ const en: HelpSection[] = [
             </>
           }
           desktop={
-            <p>
-              On the first screen pick <em>New campaign</em>. Everything is
-              stored on your computer, with no admin key or access code.
-            </p>
+            <>
+              <p>
+                On the first screen pick <em>New campaign</em>. Everything is
+                stored on your device, with no admin key or access code.
+              </p>
+              <p>
+                To use the same campaigns on another device (say, your computer
+                and your phone), pick a <em>Sync folder</em> in{" "}
+                <em>App settings</em> on both and keep it in sync with the tool
+                you prefer. It's meant for one device at a time: the last copy
+                saved wins.
+              </p>
+            </>
           }
         />
       </>
@@ -473,9 +492,9 @@ const en: HelpSection[] = [
           web={null}
           desktop={
             <p>
-              First pick the folder that holds your vaults under{" "}
-              <em>Vaults folder</em>, above the vault directory when creating or
-              editing a campaign. Each campaign uses a subfolder of it.
+              First pick the folder that holds your vaults in{" "}
+              <em>App settings</em> (the gear on the campaigns screen). Then
+              each campaign picks its vault among that folder's subfolders.
             </p>
           }
         />

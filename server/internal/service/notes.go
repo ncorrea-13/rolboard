@@ -58,7 +58,7 @@ func (s *NotesService) Render(ctx context.Context, campaignID int64, relPath str
 	}
 
 	clean, ok := safeVaultRelPath(relPath)
-	if !ok {
+	if !ok || !safeVaultPath(campaign.VaultPath) {
 		return "", os.ErrInvalid
 	}
 

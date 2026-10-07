@@ -21,10 +21,12 @@ SPA and API share an origin (Caddy serves both). Any file the app serves runs wi
 rolboard/
 ├── server/
 │   ├── cmd/server/         Docker entrypoint: env vars, HTTP server, graceful shutdown
-│   ├── cmd/desktop/        desktop entrypoint (Wails): webview, config.json, local mode
+│   ├── cmd/desktop/        desktop entrypoint (Wails): webview, desktop endpoints
+│   ├── mobile/             Android entrypoint (gomobile): Start, Request, settings, sync
 │   └── internal/
 │       ├── app/            wiring: DB, migrations, repositories, services, router
-│       ├── desktop/        desktop config.json and data paths
+│       ├── desktop/        local-mode runtime (desktop and Android): config.json, app lifecycle, sync
+│       ├── snapshot/       sync folder: export, import, conflict copy
 │       ├── handlers/       HTTP: router, auth middleware, rate limit, payloads
 │       ├── service/        business logic, file handling
 │       ├── repository/     raw SQL over database/sql + embedded migrations
@@ -40,6 +42,7 @@ rolboard/
 │   │   ├── data/           domain types
 │   │   └── styles/         CSS tokens
 │   └── Caddyfile
+├── android/                Android project (Gradle, Kotlin MainActivity with a WebView)
 ├── vault-template/         vault layout the indexer recognizes
 └── docs/
 ```
@@ -66,11 +69,13 @@ Backend layers: `handlers → service → repository`. The handler only translat
 
 ## Deployment
 
-- CI (`.github/workflows/ci.yml`): build, lint, vet and tests; on push, publishes `rolboard-server` and `rolboard-client` to GHCR tagged with branch and commit.
+- CI (`.github/workflows/ci.yml`): build, lint, vet and tests; on push to `main` and on `v*` tags, publishes `rolboard-server` and `rolboard-client` to GHCR as `latest`, the short commit and, on tags, the version. The client image carries the latest tag it contains (`VITE_APP_VERSION`) for the update notice.
 - Production: the compose from the README with GHCR images and the token as a secret.
 - Development: `docker-compose.yml` builds from source, runs the client in the server's network namespace (`BACKEND_HOST=localhost`), `campaign_data` volume.
 - Caddy's proxy points at `{BACKEND_HOST}:8080`; the backend must listen on `8080`.
 - Desktop: `server/cmd/desktop` builds the same router into a Wails app, with no network or Caddy. Details: [`DESKTOP.md`](./DESKTOP.md).
+- Android: `server/mobile` is bound with gomobile into an APK whose `WebView` reaches the router in-process. Details: [`ANDROID.md`](./ANDROID.md).
+- Release (`.github/workflows/release.yml`): on a `v*` tag, a draft GitHub Release with the `.exe`, the AppImage and the signed APK.
 
 ## Obsidian vault
 

@@ -152,3 +152,20 @@ func TestContentType(t *testing.T) {
 		}
 	}
 }
+
+func TestDeleteRejectsPathsOutsideRoot(t *testing.T) {
+	dir := t.TempDir()
+	root := filepath.Join(dir, "uploads")
+	outside := filepath.Join(dir, "keep.txt")
+	if err := os.WriteFile(outside, []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	for _, rel := range []string{"../keep.txt", outside} {
+		if err := Delete(root, rel); !errors.Is(err, ErrInvalidPath) {
+			t.Errorf("Delete(%q) = %v, want ErrInvalidPath", rel, err)
+		}
+	}
+	if _, err := os.Stat(outside); err != nil {
+		t.Fatalf("file outside root was removed: %v", err)
+	}
+}

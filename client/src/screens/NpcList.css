@@ -133,6 +133,12 @@
   color: var(--text-secondary);
 }
 
+@media (min-width: 641px) and (max-width: 900px) {
+  .npc-list__row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 640px) {
   .npc-list {
     padding: 16px;

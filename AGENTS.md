@@ -25,7 +25,8 @@ Leer antes de proponer cambios de arquitectura, modelo o alcance. Si la doc y el
 - `docs/API.md` — endpoints
 - `docs/VAULT_INDEXER.md` — cómo se lee el vault de Obsidian
 - `docs/DECISIONS.md` — decisiones vigentes y su porqué
-- `docs/DESKTOP.md` — app de escritorio (Wails): cómo funciona, build y release
+- `docs/DESKTOP.md` — app de escritorio (Wails): cómo funciona, sincronización, build y release
+- `docs/ANDROID.md` — app de Android (gomobile + WebView): cómo funciona, build, firma y release
 ## Tono
 
 Rioplatense, directo, sin relleno. Explicar el razonamiento antes de ejecutar y preguntar cuando algo es ambiguo.

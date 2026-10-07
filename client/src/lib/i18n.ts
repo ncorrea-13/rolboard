@@ -49,6 +49,13 @@ const dict = {
     "newCampaignForm.vaultDir": "Directorio del vault",
     "newCampaignForm.noVault": "Sin vault (campaña solo dashboard)",
     "vaultsRoot.label": "Carpeta de vaults",
+    "vaultsRoot.hint":
+      "La carpeta que contiene tus vaults de Obsidian. Cada campaña elige uno en sus ajustes.",
+    "syncDir.label": "Carpeta de sincronización",
+    "syncDir.hint":
+      "Rolboard guarda aquí una copia de tus datos y las imágenes. Elige la misma carpeta en todos tus dispositivos, una que tengas sincronizada entre ellos. Si ya tiene datos de otro dispositivo, se cargan esos y los tuyos quedan en un respaldo.",
+    "appSettings.title": "Ajustes de la app",
+    "update.available": "Hay una versión nueva:",
     "vaultsRoot.change": "Cambiar",
     "vaultsRoot.pick": "Elegir carpeta",
     "vaultsRoot.none": "Sin carpeta elegida",
@@ -348,6 +355,9 @@ const dict = {
     "toast.reindexed": "Vault reindexado",
     "toast.errorReindexing": "Error reindexando el vault",
     "toast.errorVaultsRoot": "Error cambiando la carpeta de vaults",
+    "toast.errorSyncDir": "Error cambiando la carpeta de sincronización",
+    "toast.vaultsRootPermission":
+      "Da a Rolboard acceso a todos los archivos y vuelve a elegir la carpeta",
     "toast.errorLoading": "No se pudieron cargar los datos",
     "toast.unauthorized": "la sesión expiró o no tenés acceso, volvé a entrar",
     "toast.networkError": "no se pudo conectar con el servidor",
@@ -446,6 +456,13 @@ const dict = {
     "newCampaignForm.vaultDir": "Vault directory",
     "newCampaignForm.noVault": "No vault (dashboard-only campaign)",
     "vaultsRoot.label": "Vaults folder",
+    "vaultsRoot.hint":
+      "The folder that holds your Obsidian vaults. Each campaign picks one in its settings.",
+    "syncDir.label": "Sync folder",
+    "syncDir.hint":
+      "Rolboard keeps a copy of your data and images here. Pick the same folder on all your devices, one you keep in sync between them. If it already has data from another device, that data is loaded and yours is kept in a backup.",
+    "appSettings.title": "App settings",
+    "update.available": "A new version is available:",
     "vaultsRoot.change": "Change",
     "vaultsRoot.pick": "Choose folder",
     "vaultsRoot.none": "No folder chosen",
@@ -745,6 +762,9 @@ const dict = {
     "toast.reindexed": "Vault reindexed",
     "toast.errorReindexing": "Error reindexing the vault",
     "toast.errorVaultsRoot": "Error changing the vaults folder",
+    "toast.errorSyncDir": "Error changing the sync folder",
+    "toast.vaultsRootPermission":
+      "Give Rolboard access to all files and choose the folder again",
     "toast.errorLoading": "Couldn't load data",
     "toast.unauthorized":
       "your session expired or you don't have access, log in again",

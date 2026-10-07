@@ -22,7 +22,7 @@
 
 ---
 
-App web y de escritorio para dirigir campañas de rol de mesa, enfocada en la narrativa: sesiones, arcos, jugadores, NPCs, locaciones, facciones y quests, más un tracker de combate liviano. No trae reglas: no hay tiradas ni stats; es un lugar para la historia, no un VTT. Pensado para quien dirige: los jugadores no tienen cuenta.
+App web, de escritorio y de Android para dirigir campañas de rol de mesa, enfocada en la narrativa: sesiones, arcos, jugadores, NPCs, locaciones, facciones y quests, más un tracker de combate liviano. No trae reglas: no hay tiradas ni stats; es un lugar para la historia, no un VTT. Pensado para quien dirige: los jugadores no tienen cuenta.
 
 Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gestión más rápida con lo que incluye un indexador del frontmatter para poder traer esta información y poder convivir con la vault. Mantiene la estructura del vault y permite navegar hacia él. Cada campaña guarda su `vault_path`, una subcarpeta dentro de `VAULTS_ROOT`. [`vault-template/`](vault-template/) tiene una estructura de vault que el indexador reconoce sin tocar código.
 
@@ -34,6 +34,7 @@ Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gesti�
 | Base de datos | SQLite (`modernc.org/sqlite`)                |
 | Cliente       | React + TypeScript + Vite, servido por Caddy |
 | Escritorio    | Wails v2 (webview del sistema)               |
+| Android       | gomobile + WebView de Android                |
 
 Más: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -49,10 +50,26 @@ Para una sola computadora, sin servidor ni Docker. Todo queda en tu máquina.
 - **Windows:** no está firmado, así que SmartScreen avisa en el primer arranque: *Más información → Ejecutar de todas formas*. Necesita WebView2 (viene con Windows 10/11).
 - **Linux:** necesita `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` en Debian/Ubuntu). Después `chmod +x rolboard-linux-x86_64-*.AppImage` y ejecutarlo.
 - Sin login ni códigos de acceso: la app de escritorio siempre está en modo local.
-- Para leer un vault de Obsidian, elegir la carpeta que contiene los vaults en **Carpeta de vaults**, al crear o editar una campaña.
+- Para leer un vault de Obsidian, abrir **Ajustes de la app** (el engranaje del selector de campañas) y elegir la carpeta que contiene los vaults.
+- Para usar las mismas campañas en otro dispositivo, elegir una **carpeta de sincronización** en el mismo lugar y mantenerla sincronizada con cualquier herramienta (Syncthing, una nube o a mano). Un dispositivo por vez: gana la última copia guardada.
 - Los datos quedan en `~/.config/rolboard` (Linux) o `%AppData%\rolboard` (Windows): `config.json`, `rolboard.db` y `uploads/`. Para pasar una instalación de Docker, copiar el `.db` y la carpeta de uploads.
 
 Compilar desde el código y cómo funciona: [`docs/DESKTOP.es.md`](docs/DESKTOP.es.md).
+
+## App de Android
+
+La misma app en el teléfono o la tablet, sin conexión. ARM64 (casi cualquier teléfono de los últimos años).
+
+| Sistema | Descarga |
+| ------- | -------- |
+| Android 8+ (ARM64) | [Descargar APK](https://github.com/ncorrea-13/rolboard/releases/latest) |
+
+- No está en Google Play: abrir el APK y permitir instalar desde esa app. **Play Protect** avisa que es de un desarrollador desconocido: *Más detalles → Instalar de todas formas*.
+- Para actualizar, instalar el APK nuevo encima del anterior; los datos se conservan.
+- La carpeta de vaults necesita el permiso **Acceso a todos los archivos**; la app lo pide la primera vez que se elige la carpeta.
+- Se sincroniza con la app de escritorio mediante una carpeta de sincronización, como arriba.
+
+Compilar desde el código y cómo funciona: [`docs/ANDROID.es.md`](docs/ANDROID.es.md).
 
 ## Inicio rápido (Docker)
 
@@ -172,13 +189,15 @@ cp .env.example .env
 docker compose up --build   # o: podman compose up --build
 ```
 
+`node scripts/seed-demo.mjs` (con `ADMIN_TOKEN` definido) le carga campañas de demo, para capturas.
+
 ## API
 
 REST + JSON bajo `/api`. Lista completa: [`docs/API.md`](docs/API.md).
 
 ## Estructura del Proyecto
 
-`server/` (Go) y `client/` (React/TS). Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+`server/` (Go), `client/` (React/TS) y `android/` (proyecto Gradle). Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 Razonamiento detrás de cada decisión de alcance: [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ## Sobre el proyecto
@@ -189,7 +208,7 @@ Proyecto personal, pensado como ejercicio deliberado de aprendizaje de Go. [`AGE
 
 MIT - [LICENSE](LICENSE) para más información.
 
-Los logos e íconos (`client/public/logo-*.png`, `client/public/favicon.png`, `server/cmd/desktop/build/appicon.png`, `server/cmd/desktop/build/windows/icon.ico`) son © Mateo Guareschi y se usan con su permiso. **No** están cubiertos por la licencia MIT.
+Los logos e íconos (`client/public/logo-*.png`, `client/public/favicon.png`, `server/cmd/desktop/build/appicon.png`, `server/cmd/desktop/build/windows/icon.ico`, `android/app/src/main/res/mipmap-*/ic_launcher_foreground.png`) son © Mateo Guareschi y se usan con su permiso. **No** están cubiertos por la licencia MIT.
 
 ---
 
