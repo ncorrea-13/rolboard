@@ -17,6 +17,8 @@ const MaxUploadBytes = 5 << 20
 
 var ErrUnsupportedFormat = errors.New("unsupported image format: only PNG and JPEG are accepted")
 
+var ErrInvalidPath = errors.New("image path escapes the uploads root")
+
 var knownExts = []string{".png", ".jpg"}
 
 func Store(root, entity string, id int64, data []byte) (string, error) {
@@ -46,11 +48,23 @@ func Store(root, entity string, id int64, data []byte) (string, error) {
 	return relPath, nil
 }
 
+// Path joins root with a stored image path, rejecting paths that leave root.
+func Path(root, relPath string) (string, error) {
+	if !filepath.IsLocal(relPath) {
+		return "", ErrInvalidPath
+	}
+	return filepath.Join(root, relPath), nil
+}
+
 func Delete(root, relPath string) error {
 	if relPath == "" {
 		return nil
 	}
-	err := os.Remove(filepath.Join(root, relPath))
+	path, err := Path(root, relPath)
+	if err != nil {
+		return err
+	}
+	err = os.Remove(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
