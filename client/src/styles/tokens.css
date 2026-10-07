@@ -56,8 +56,8 @@
   --status-paused-text: #8a9391;
 
   /* tipografía 4e */
-  --font-display: "Fraunces", serif;
-  --font-body: "Inter", sans-serif;
+  --font-display: "Fraunces Variable", "Fraunces", serif;
+  --font-body: "Inter Variable", "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
   --radius-md: 7px;
