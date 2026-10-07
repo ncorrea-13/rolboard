@@ -70,6 +70,7 @@ import type { Route } from "./types";
 import { currentLocation, routeToPath } from "./lib/routes";
 import { RouterContext } from "./lib/router";
 import { setErrorReporter } from "./lib/notify";
+import { withViewTransition } from "./lib/motion";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 type HistoryMode = "push" | "replace" | "none";
@@ -113,7 +114,7 @@ export default function App() {
         window.history.replaceState(state, "", path);
       }
     }
-    setRoute(next);
+    withViewTransition(() => setRoute(next), "route");
   }
 
   function navigate(next: Route, opts?: { replace?: boolean }) {
@@ -123,14 +124,23 @@ export default function App() {
   const onPopState = useEffectEvent(() => {
     const loc = currentLocation();
     if (loc.help) {
-      setHelpOpen(true);
+      withViewTransition(() => setHelpOpen(true), "help");
       return;
     }
-    setHelpOpen(false);
+    if (helpOpen) {
+      withViewTransition(() => {
+        setHelpOpen(false);
+        setRoute(loc.route);
+      }, "help");
+      if (loc.campaignId && loc.campaignId !== activeCampaignId) {
+        selectCampaign(loc.campaignId, loc.route, "none");
+      }
+      return;
+    }
     if (loc.campaignId && loc.campaignId !== activeCampaignId) {
       selectCampaign(loc.campaignId, loc.route, "none");
     } else {
-      setRoute(loc.route);
+      withViewTransition(() => setRoute(loc.route), "route");
     }
   });
 
@@ -153,13 +163,16 @@ export default function App() {
   function openHelp() {
     window.history.pushState({ help: true }, "", "/help");
     window.scrollTo(0, 0);
-    setHelpOpen(true);
+    withViewTransition(() => setHelpOpen(true), "help");
   }
 
   function closeHelp() {
-    if (window.history.state?.help) window.history.back();
-    else window.history.replaceState(null, "", "/");
-    setHelpOpen(false);
+    if (window.history.state?.help) {
+      window.history.back();
+      return;
+    }
+    window.history.replaceState(null, "", "/");
+    withViewTransition(() => setHelpOpen(false), "help");
   }
 
   const campaignsLoadFailed = useEffectEvent((err: unknown) => {

@@ -31,6 +31,9 @@ func (s *AdminService) Reindex(ctx context.Context, campaignID int64) (*vault.Re
 	if err != nil {
 		return nil, err
 	}
+	if !safeVaultPath(campaign.VaultPath) {
+		return nil, ErrInvalidVaultPath
+	}
 	root := filepath.Join(s.vaultsRoot, campaign.VaultPath)
 	indexer := vault.NewIndexer(root, campaignID, s.db)
 	return indexer.Reindex(ctx)

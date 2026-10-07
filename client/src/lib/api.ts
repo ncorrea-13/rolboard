@@ -1,4 +1,5 @@
 import type { TranslationKey } from "./i18n";
+import { androidBridge, send } from "./android";
 
 export class ApiError extends Error {
   status: number;
@@ -47,6 +48,12 @@ export function openExternal(e: {
   preventDefault(): void;
   currentTarget: HTMLAnchorElement;
 }) {
+  const bridge = androidBridge();
+  if (bridge) {
+    e.preventDefault();
+    bridge.openExternal(e.currentTarget.href);
+    return;
+  }
   if (!localMode) return;
   e.preventDefault();
   apiFetch<void>("/desktop/open", {
@@ -70,7 +77,7 @@ export async function apiFetch<T>(
   path: string,
   init?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(`/api${path}`, {
+  const res = await send(`/api${path}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
@@ -116,7 +123,7 @@ export async function apiImageRequest<T>(
     body = await encoded.arrayBuffer();
     headers = { "Content-Type": encoded.headers.get("Content-Type") ?? "" };
   }
-  const res = await fetch(`/api${path}`, { method, body, headers });
+  const res = await send(`/api${path}`, { method, body, headers });
   if (!res.ok) throw await failure(res, method, path);
   return res.json();
 }

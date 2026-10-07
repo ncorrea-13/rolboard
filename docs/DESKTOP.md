@@ -2,7 +2,7 @@
 
 [Español](DESKTOP.es.md)
 
-Native build of Rolboard for a single computer, next to the Docker deployment. Same repository, services, handlers and vault indexer; only the entrypoint changes. The reasoning behind each choice is in [`DECISIONS.md`](DECISIONS.md#desktop-app).
+Native build of Rolboard for a single computer, next to the Docker deployment. Same repository, services, handlers and vault indexer; only the entrypoint changes. The Android app shares the same runtime: [`ANDROID.md`](ANDROID.md). The reasoning behind each choice is in [`DECISIONS.md`](DECISIONS.md#desktop-app).
 
 Status: Linux tested; Windows cross-compiled but not yet run on a real machine; macOS not distributed.
 
@@ -32,19 +32,44 @@ Wails window (WebKitGTK / WebView2)
 
 - `cmd/server` and `cmd/desktop` both build the app with `internal/app.New`. Only `cmd/desktop` sets `LocalMode`, so every request is admin and `GET /api/admin/session` returns `{"localMode": true}`. The client uses that to hide access codes, logout and "Open in Obsidian".
 - Data lives in `os.UserConfigDir()/rolboard/` (`~/.config/rolboard` on Linux, `%AppData%\rolboard` on Windows): `config.json`, `rolboard.db`, `uploads/`.
-- `config.json` only stores the vaults folder and is optional. Without it the app starts with no vaults folder and campaigns work dashboard-only.
+- `config.json` stores the vaults folder and the sync folder, both optional. Without a vaults folder campaigns work dashboard-only.
+- Both folders are set from **App settings** (the gear on the campaign selector), which only shows in local mode.
+- **Update notice:** the campaign selector checks GitHub's latest release at most once a day and links to it if it's newer than the running version. Nothing is downloaded. The version is baked into the client at build time (`VITE_APP_VERSION`, set by the release workflow on tags); local builds don't have it and skip the check. In Docker everyone who opens the campaign selector sees it; CI bakes in the latest tag the image contains.
+- `cmd/desktop` is a thin Wails shell over `internal/desktop.Runtime`, which owns the config, the app instance and the sync. `server/mobile` wraps the same runtime for Android.
 
 ### Desktop-only endpoints
 
 Served by `cmd/desktop` before the router; they don't exist in Docker.
 
 ```
-GET  /api/desktop/vaults-root   {"vaultsRoot": "..."}  ("" if none)
-POST /api/desktop/vaults-root   opens the native folder dialog; 200 {"vaultsRoot": "..."} or 204 if cancelled
+GET  /api/desktop/settings      {"vaultsRoot": "...", "syncDir": "..."}  ("" if unset)
+POST /api/desktop/vaults-root   opens the native folder dialog; 200 with the settings or 204 if cancelled
+POST /api/desktop/sync-dir      same, for the sync folder
 POST /api/desktop/open          {"url": "https://..."}  opens it in the default browser; https only
 ```
 
-Changing the vaults folder saves `config.json` and rebuilds the app in place (new `app.New`, handler swap, old DB closed): no restart.
+Changing a folder saves `config.json` and rebuilds the app in place (new `app.New`, handler swap, old DB closed): no restart.
+
+## Sync between devices
+
+Optional. Pick a **sync folder** that some external tool keeps in sync (Syncthing, a cloud drive, or copying files by hand). Rolboard never opens a database inside it; it only writes and reads a snapshot.
+
+```
+<sync folder>/
+├── rolboard.db            last exported snapshot
+├── rolboard.conflict.db   the other device's copy, kept when both changed
+└── uploads/               images (replaces the local uploads/ while sync is on)
+```
+
+- **Export:** `VACUUM INTO` a temp file, fsync, rename. Sync tools only ever see a complete file.
+- **Import:** if the snapshot's SHA-256 differs from the last one this device saw. The schema is checked against the embedded migrations first (a snapshot from a newer version is refused), and the local DB is kept as `rolboard.db.bak`.
+- **When:** the desktop imports at startup and exports 30 s after the last change and on close. Android imports when the app comes back to the foreground and exports when it goes to the background.
+- **Only after changes:** a device that only read data doesn't export, so it can't overwrite a newer copy.
+- **Conflicts:** last writer wins. If the snapshot changed since the last sync and this device also has changes, the other copy is kept as `rolboard.conflict.db` before overwriting.
+- **Choosing the folder:** if it already has a snapshot, it's imported. If it's empty, this device exports. Existing images are copied into `uploads/`.
+- `config.json` isn't synced: it holds paths specific to each machine.
+
+Meant for one device at a time; merging changes made on two devices at once is out of scope.
 
 ## Layout
 
@@ -59,15 +84,17 @@ server/cmd/desktop/
     └── windows/        icon.ico, manifest, version info for the .exe
 ```
 
-`server/internal/desktop/` loads and saves `config.json` and builds the data paths.
+- `server/internal/desktop/`: `config.json`, data paths and `Runtime` (app lifecycle, settings, sync).
+- `server/internal/snapshot/`: export, import, conflict copy and upload copy for the sync folder.
 
 ## Build from source
 
 Requirements: Go 1.27, Node + pnpm, the Wails CLI, and on Linux `gcc`, `libgtk-3-dev` and `libwebkit2gtk-4.1-dev`.
 
 ```bash
-go install github.com/wailsapp/wails/v2/cmd/wails@v2.14.0
-cd server/cmd/desktop
+cd server
+go install "github.com/wailsapp/wails/v2/cmd/wails@$(go list -m -f '{{.Version}}' github.com/wailsapp/wails/v2)"
+cd cmd/desktop
 
 # Linux (CGO, WebKitGTK 4.1)
 wails build -tags webkit2_41 -skipbindings
@@ -82,7 +109,7 @@ The AppImage is packaged with `appimagetool` 1.9.1; the steps are in [`.github/w
 
 ## Release
 
-`.github/workflows/release.yml`, a single `ubuntu-latest` job:
+`.github/workflows/release.yml`, `desktop` job on `ubuntu-latest` (the `android` job runs after it, see [`ANDROID.md`](ANDROID.md#release)):
 
 - **Tag `v*`:** builds both targets and creates a **draft** GitHub Release with `rolboard-windows-amd64-vX.Y.Z.exe` and `rolboard-linux-x86_64-vX.Y.Z.AppImage`. Review the notes and publish it by hand.
 - **Manual run:** builds both and uploads them as a workflow artifact, no release.
@@ -99,5 +126,6 @@ The version also goes into `wails.json` (`info.productVersion`), so the `.exe` s
 ## Out of scope for now
 
 - Moving data from a Docker install: copy the `.db` and the uploads folder by hand.
-- Auto-update.
+- Merging changes made on two devices at once.
+- Auto-update (there's only a notice).
 - Code signing (Windows certificate, Apple notarization).

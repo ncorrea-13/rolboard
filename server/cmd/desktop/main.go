@@ -4,8 +4,6 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
-	"errors"
-	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -14,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -21,7 +20,6 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"github.com/ncorrea-13/rolboard/server/internal/app"
 	"github.com/ncorrea-13/rolboard/server/internal/desktop"
 )
 
@@ -31,15 +29,21 @@ var assets embed.FS
 //go:embed build/appicon.png
 var icon []byte
 
-type desktopApp struct {
-	ctx     context.Context
-	dir     string
-	dist    fs.FS
-	handler atomic.Pointer[http.Handler]
+const pushDelay = 30 * time.Second
 
-	mu     sync.Mutex
-	cfg    desktop.Config
-	closer io.Closer
+type desktopApp struct {
+	ctx  context.Context
+	dir  string
+	dist fs.FS
+	rt   atomic.Pointer[desktop.Runtime]
+
+	pushMu    sync.Mutex
+	pushTimer *time.Timer
+}
+
+type settings struct {
+	VaultsRoot string `json:"vaultsRoot"`
+	SyncDir    string `json:"syncDir"`
 }
 
 func main() {
@@ -72,52 +76,45 @@ func main() {
 
 func (d *desktopApp) startup(ctx context.Context) {
 	d.ctx = ctx
-
-	cfg, err := desktop.Load(d.dir)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	rt, err := desktop.Start(ctx, d.dir)
+	if err != nil {
 		d.fail(err)
 		return
 	}
-	if err := d.load(cfg); err != nil {
-		d.fail(err)
-	}
-}
-
-func (d *desktopApp) load(cfg desktop.Config) error {
-	handler, closer, err := app.New(app.Config{
-		DBPath:      desktop.DBPath(d.dir),
-		VaultsRoot:  cfg.VaultsRoot,
-		UploadsRoot: desktop.UploadsDir(d.dir),
-		LocalMode:   true,
-	})
-	if err != nil {
-		return err
-	}
-
-	d.mu.Lock()
-	old := d.closer
-	d.cfg = cfg
-	d.closer = closer
-	d.handler.Store(&handler)
-	d.mu.Unlock()
-
-	if old != nil {
-		if err := old.Close(); err != nil {
-			slog.Error("error cerrando DB", "err", err)
-		}
-	}
-	return nil
+	d.rt.Store(rt)
 }
 
 func (d *desktopApp) shutdown(ctx context.Context) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	if d.closer == nil {
+	rt := d.rt.Load()
+	if rt == nil {
 		return
 	}
-	if err := d.closer.Close(); err != nil {
+	d.pushMu.Lock()
+	if d.pushTimer != nil {
+		d.pushTimer.Stop()
+	}
+	d.pushMu.Unlock()
+	if err := rt.Push(ctx); err != nil {
+		slog.Error("error exportando a la carpeta de sincronización", "err", err)
+	}
+	if err := rt.Close(); err != nil {
 		slog.Error("error cerrando DB", "err", err)
 	}
+}
+
+func (d *desktopApp) schedulePush() {
+	d.pushMu.Lock()
+	defer d.pushMu.Unlock()
+	if d.pushTimer != nil {
+		d.pushTimer.Stop()
+	}
+	d.pushTimer = time.AfterFunc(pushDelay, func() {
+		if rt := d.rt.Load(); rt != nil {
+			if err := rt.Push(d.ctx); err != nil {
+				slog.Error("error exportando a la carpeta de sincronización", "err", err)
+			}
+		}
+	})
 }
 
 func (d *desktopApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -125,22 +122,32 @@ func (d *desktopApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/open":
 		d.openURL(w, r)
 		return
-	case r.Method == http.MethodGet && r.URL.Path == "/api/desktop/vaults-root":
-		d.getVaultsRoot(w)
+	case r.Method == http.MethodGet && r.URL.Path == "/api/desktop/settings":
+		d.writeSettings(w)
 		return
 	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/vaults-root":
-		d.pickVaultsRoot(w)
+		d.pickFolder(w, "Elegí la carpeta donde están tus vaults de Obsidian", func(rt *desktop.Runtime, path string) error {
+			return rt.SetVaultsRoot(path)
+		})
+		return
+	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/sync-dir":
+		d.pickFolder(w, "Elegí la carpeta de sincronización", func(rt *desktop.Runtime, path string) error {
+			return rt.SetSyncDir(d.ctx, path)
+		})
 		return
 	case !strings.HasPrefix(r.URL.Path, "/api/"):
 		http.ServeFileFS(w, r, d.dist, "index.html")
 		return
 	}
-	h := d.handler.Load()
-	if h == nil {
+	rt := d.rt.Load()
+	if rt == nil {
 		http.Error(w, "Starting", http.StatusServiceUnavailable)
 		return
 	}
-	(*h).ServeHTTP(w, r)
+	rt.ServeHTTP(w, r)
+	if r.Method != http.MethodGet {
+		d.schedulePush()
+	}
 }
 
 func (d *desktopApp) openURL(w http.ResponseWriter, r *http.Request) {
@@ -160,17 +167,24 @@ func (d *desktopApp) openURL(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (d *desktopApp) getVaultsRoot(w http.ResponseWriter) {
-	d.mu.Lock()
-	root := d.cfg.VaultsRoot
-	d.mu.Unlock()
-	writeVaultsRoot(w, root)
+func (d *desktopApp) writeSettings(w http.ResponseWriter) {
+	rt := d.rt.Load()
+	if rt == nil {
+		http.Error(w, "Starting", http.StatusServiceUnavailable)
+		return
+	}
+	cfg := rt.Settings()
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(settings{VaultsRoot: cfg.VaultsRoot, SyncDir: cfg.SyncDir})
 }
 
-func (d *desktopApp) pickVaultsRoot(w http.ResponseWriter) {
-	path, err := runtime.OpenDirectoryDialog(d.ctx, runtime.OpenDialogOptions{
-		Title: "Elegí la carpeta donde están tus vaults de Obsidian",
-	})
+func (d *desktopApp) pickFolder(w http.ResponseWriter, title string, apply func(*desktop.Runtime, string) error) {
+	rt := d.rt.Load()
+	if rt == nil {
+		http.Error(w, "Starting", http.StatusServiceUnavailable)
+		return
+	}
+	path, err := runtime.OpenDirectoryDialog(d.ctx, runtime.OpenDialogOptions{Title: title})
 	if err != nil {
 		http.Error(w, "Error opening dialog", http.StatusInternalServerError)
 		return
@@ -179,24 +193,12 @@ func (d *desktopApp) pickVaultsRoot(w http.ResponseWriter) {
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
-
-	cfg := desktop.Config{VaultsRoot: path}
-	if err := desktop.Save(d.dir, cfg); err != nil {
-		slog.Error("error guardando config", "err", err)
-		http.Error(w, "Error saving config", http.StatusInternalServerError)
+	if err := apply(rt, path); err != nil {
+		slog.Error("error aplicando la carpeta", "path", path, "err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if err := d.load(cfg); err != nil {
-		slog.Error("error recargando la app", "err", err)
-		http.Error(w, "Error reloading", http.StatusInternalServerError)
-		return
-	}
-	writeVaultsRoot(w, path)
-}
-
-func writeVaultsRoot(w http.ResponseWriter, root string) {
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]string{"vaultsRoot": root})
+	d.writeSettings(w)
 }
 
 func (d *desktopApp) fail(err error) {

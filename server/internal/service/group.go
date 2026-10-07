@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"path/filepath"
 
 	"github.com/ncorrea-13/rolboard/server/internal/imagestore"
 	"github.com/ncorrea-13/rolboard/server/internal/models"
@@ -47,7 +46,11 @@ func (s *GroupService) ImageFile(ctx context.Context, id int64) (absPath, conten
 	if current.ImagePath == nil {
 		return "", "", repository.ErrNotFound
 	}
-	return filepath.Join(s.uploadsRoot, *current.ImagePath), imagestore.ContentType(*current.ImagePath), nil
+	path, err := imagestore.Path(s.uploadsRoot, *current.ImagePath)
+	if err != nil {
+		return "", "", err
+	}
+	return path, imagestore.ContentType(*current.ImagePath), nil
 }
 
 func (s *GroupService) List(ctx context.Context, campaignID int64) ([]models.Group, error) {

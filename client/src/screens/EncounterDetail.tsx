@@ -38,6 +38,7 @@ import { useT, type TranslationKey } from "../lib/i18n";
 import { reportError } from "../lib/notify";
 import { entityImageUrl } from "../lib/images";
 import { hpBar, nextHp } from "../lib/hp";
+import { withViewTransition } from "../lib/motion";
 
 type AddKind = "npc" | "pc" | "custom";
 
@@ -132,6 +133,9 @@ export function EncounterDetail({
   const [addRefId, setAddRefId] = useState("");
   const [addName, setAddName] = useState("");
   const [hpDeltas, setHpDeltas] = useState<Record<string, string>>({});
+  const [hpFlash, setHpFlash] = useState<
+    Record<string, { kind: "hit" | "heal"; n: number }>
+  >({});
   const closed = encounter.status === "cerrado";
   const [nameDraft, setNameDraft] = useState(encounter.name);
 
@@ -155,7 +159,10 @@ export function EncounterDetail({
       `/encounters/${encounter.id}/participants`,
     )
       .then((data) =>
-        setParticipants((data ?? []).map(mapEncounterParticipant)),
+        withViewTransition(
+          () => setParticipants((data ?? []).map(mapEncounterParticipant)),
+          "tracker",
+        ),
       )
       .catch((err) => {
         console.error("Error cargando participantes:", err);
@@ -230,7 +237,23 @@ export function EncounterDetail({
       body: JSON.stringify(participantToApiPayload(merged)),
     })
       .then(() => {
-        setParticipants((prev) => prev.map((p) => (p.id === id ? merged : p)));
+        const apply = () =>
+          setParticipants((prev) =>
+            prev.map((p) => (p.id === id ? merged : p)),
+          );
+        if ("turnType" in patch) withViewTransition(apply, "tracker");
+        else apply();
+        const before = current.currentHp;
+        const after = merged.currentHp;
+        if (before != null && after != null && before !== after) {
+          setHpFlash((prev) => ({
+            ...prev,
+            [id]: {
+              kind: after < before ? "hit" : "heal",
+              n: (prev[id]?.n ?? 0) + 1,
+            },
+          }));
+        }
         if ("currentHp" in patch || "maxHp" in patch) {
           const hp = { currentHp: merged.currentHp, maxHp: merged.maxHp };
           if (merged.pcId) onSyncPlayerHp(merged.pcId, hp);
@@ -245,7 +268,12 @@ export function EncounterDetail({
 
   function removeParticipant(id: string) {
     apiFetch(`/encounter-participants/${id}`, { method: "DELETE" })
-      .then(() => setParticipants((prev) => prev.filter((p) => p.id !== id)))
+      .then(() =>
+        withViewTransition(
+          () => setParticipants((prev) => prev.filter((p) => p.id !== id)),
+          "tracker",
+        ),
+      )
       .catch((err) => {
         console.error("Error sacando participante:", err);
         reportError("common.toastErrorDeleting", err);
@@ -265,8 +293,12 @@ export function EncounterDetail({
       ),
     )
       .then(() => {
-        setParticipants((prev) =>
-          prev.map((p) => ({ ...p, turnType: undefined })),
+        withViewTransition(
+          () =>
+            setParticipants((prev) =>
+              prev.map((p) => ({ ...p, turnType: undefined })),
+            ),
+          "tracker",
         );
         onNextRound();
       })
@@ -329,10 +361,12 @@ export function EncounterDetail({
   function renderParticipant(p: EncounterParticipant) {
     const isActed = acted.has(p.id);
     const color = identityColor(p);
+    const flash = hpFlash[p.id];
     return (
       <div
         key={p.id}
-        className={`encounter-card${isActed ? " encounter-card--acted" : ""}`}
+        className={`encounter-card${isActed ? " encounter-card--acted" : ""}${flash ? ` encounter-card--${flash.kind}-${flash.n % 2}` : ""}`}
+        style={{ viewTransitionName: `encounter-p-${p.id}` }}
       >
         <div className="encounter-card__top">
           <button
@@ -600,6 +634,16 @@ export function EncounterDetail({
         backLabel={t("encounterDetail.breadcrumb")}
         onBack={onBack}
         title={`${encounter.name || `${t("encountersList.unnamed")} #${encounter.id}`} · ${t("encountersList.round")} ${encounter.round}`}
+        titleNode={
+          <>
+            {encounter.name ||
+              `${t("encountersList.unnamed")} #${encounter.id}`}{" "}
+            · {t("encountersList.round")}{" "}
+            <span key={encounter.round} className="encounter-round">
+              {encounter.round}
+            </span>
+          </>
+        }
         status={<EncounterStatusPill status={encounter.status} />}
         extraActions={
           <>
@@ -663,7 +707,10 @@ export function EncounterDetail({
               <div className="encounter-tracker">
                 {unassigned.length > 0 && (
                   <div>
-                    <div className="encounter-phase__header">
+                    <div
+                      className="encounter-phase__header"
+                      style={{ viewTransitionName: "encounter-phase-none" }}
+                    >
                       <span className="encounter-phase__title">
                         {t("encounterDetail.noTurnAssigned")}
                       </span>
@@ -687,7 +734,12 @@ export function EncounterDetail({
                   if (rows.length === 0) return null;
                   return (
                     <div key={phase.titleKey}>
-                      <div className="encounter-phase__header">
+                      <div
+                        className="encounter-phase__header"
+                        style={{
+                          viewTransitionName: `encounter-phase-${phase.key}-${phase.isPc ? "pc" : "npc"}`,
+                        }}
+                      >
                         <phase.Icon
                           size={13}
                           className="encounter-phase__icon"

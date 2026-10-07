@@ -8,6 +8,8 @@ import (
 
 type Config struct {
 	VaultsRoot string `json:"vaultsRoot"`
+	SyncDir    string `json:"syncDir,omitempty"`
+	LastSync   string `json:"lastSync,omitempty"`
 }
 
 func Dir() (string, error) {

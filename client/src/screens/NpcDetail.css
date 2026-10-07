@@ -67,6 +67,27 @@
   }
 }
 
+@media (min-width: 641px) and (max-width: 1000px) {
+  .npc-detail__identity {
+    flex-wrap: wrap;
+  }
+
+  .npc-detail__identity > :first-child {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .npc-detail__header-actions {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .npc-detail__header-actions > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
 .npc-detail__body {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
@@ -79,6 +100,21 @@
 .npc-detail__col--main {
   padding: 19px 24px;
   border-right: 1px solid var(--border-subtle);
+}
+
+@media (min-width: 641px) and (max-width: 1000px) {
+  .npc-detail__body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .npc-detail__col--main {
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .npc-detail__stats {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
