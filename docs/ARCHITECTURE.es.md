@@ -21,10 +21,12 @@ SPA y API comparten origen (Caddy sirve ambas). Cualquier archivo que sirva la a
 rolboard/
 ├── server/
 │   ├── cmd/server/         entrypoint de Docker: env vars, servidor HTTP, graceful shutdown
-│   ├── cmd/desktop/        entrypoint de escritorio (Wails): webview, config.json, modo local
+│   ├── cmd/desktop/        entrypoint de escritorio (Wails): webview, endpoints de escritorio
+│   ├── mobile/             entrypoint de Android (gomobile): Start, Request, ajustes, sincronización
 │   └── internal/
 │       ├── app/            wiring: DB, migraciones, repositorios, servicios, router
-│       ├── desktop/        config.json de escritorio y rutas de datos
+│       ├── desktop/        runtime de modo local (escritorio y Android): config.json, ciclo de vida, sincronización
+│       ├── snapshot/       carpeta de sincronización: exportar, importar, copia de conflicto
 │       ├── handlers/       HTTP: router, auth middleware, rate limit, payloads
 │       ├── service/        lógica de negocio, manejo de archivos
 │       ├── repository/     SQL crudo sobre database/sql + migraciones embebidas
@@ -40,6 +42,7 @@ rolboard/
 │   │   ├── data/           tipos de dominio
 │   │   └── styles/         tokens CSS
 │   └── Caddyfile
+├── android/                proyecto Android (Gradle, MainActivity en Kotlin con un WebView)
 ├── vault-template/         estructura de vault que reconoce el indexador
 └── docs/
 ```
@@ -66,11 +69,13 @@ Capas del backend: `handlers → service → repository`. El handler solo traduc
 
 ## Despliegue
 
-- CI (`.github/workflows/ci.yml`): build, lint, vet y tests; en push publica `rolboard-server` y `rolboard-client` en GHCR con tag de rama y de commit.
+- CI (`.github/workflows/ci.yml`): build, lint, vet y tests; en push a `main` y en tags `v*` publica `rolboard-server` y `rolboard-client` en GHCR como `latest`, el commit corto y, en los tags, la versión. La imagen del cliente lleva el último tag que contiene (`VITE_APP_VERSION`) para el aviso de actualización.
 - Producción: compose del README con imágenes de GHCR y el token como secret.
 - Desarrollo: `docker-compose.yml` buildea desde código, cliente en el namespace de red del servidor (`BACKEND_HOST=localhost`), volumen `campaign_data`.
 - El proxy de Caddy apunta a `{BACKEND_HOST}:8080`; el backend tiene que escuchar en `8080`.
 - Escritorio: `server/cmd/desktop` arma el mismo router dentro de una app Wails, sin red ni Caddy. Detalle: [`DESKTOP.es.md`](./DESKTOP.es.md).
+- Android: `server/mobile` se compila con gomobile dentro de un APK cuyo `WebView` llega al router dentro del proceso. Detalle: [`ANDROID.es.md`](./ANDROID.es.md).
+- Release (`.github/workflows/release.yml`): con un tag `v*`, un GitHub Release en borrador con el `.exe`, el AppImage y el APK firmado.
 
 ## Vault de Obsidian
 

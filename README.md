@@ -22,7 +22,7 @@
 
 ---
 
-Web and desktop app for running tabletop RPG campaigns, focused on narrative: sessions, arcs, players, NPCs, locations, factions and quests, plus a light combat tracker. No ruleset baked in — no rolls, no stat blocks; it's a place to keep the story, not a VTT. Built for the GM: players don't get accounts.
+Web, desktop and Android app for running tabletop RPG campaigns, focused on narrative: sessions, arcs, players, NPCs, locations, factions and quests, plus a light combat tracker. No ruleset baked in — no rolls, no stat blocks; it's a place to keep the story, not a VTT. Built for the GM: players don't get accounts.
 
 Started as a move away from Obsidian, for faster management, while still including a frontmatter indexer to pull that data in and coexist with the vault. Keeps the vault structure and lets you navigate back to it. Each campaign stores its own `vault_path`, a subfolder under `VAULTS_ROOT`. [`vault-template/`](vault-template/) has a vault layout the indexer recognizes out of the box.
 
@@ -34,6 +34,7 @@ Started as a move away from Obsidian, for faster management, while still includi
 | Database | SQLite (`modernc.org/sqlite`)              |
 | Client   | React + TypeScript + Vite, served by Caddy |
 | Desktop  | Wails v2 (system webview)                  |
+| Android  | gomobile + Android WebView                 |
 
 More: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -49,10 +50,26 @@ For a single computer, no server or Docker. Everything stays on your machine.
 - **Windows:** unsigned, so SmartScreen warns on first launch: *More info → Run anyway*. Needs WebView2 (bundled with Windows 10/11).
 - **Linux:** needs `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` on Debian/Ubuntu). Then `chmod +x rolboard-linux-x86_64-*.AppImage` and run it.
 - No login or access codes: the desktop app is always in local mode.
-- To read an Obsidian vault, pick the folder that holds your vaults under **Vaults folder** when creating or editing a campaign.
+- To read an Obsidian vault, open **App settings** (the gear on the campaign selector) and pick the folder that holds your vaults.
+- To use the same campaigns on another device, pick a **sync folder** in the same place and keep it in sync with any tool (Syncthing, a cloud drive, or by hand). One device at a time: the last copy saved wins.
 - Data lives in `~/.config/rolboard` (Linux) or `%AppData%\rolboard` (Windows): `config.json`, `rolboard.db` and `uploads/`. To move a Docker install over, copy the `.db` and the uploads folder.
 
 Building from source and how it works: [`docs/DESKTOP.md`](docs/DESKTOP.md).
+
+## Android app
+
+The same app on your phone or tablet, offline. ARM64 (almost any phone from the last years).
+
+| System | Download |
+| ------ | -------- |
+| Android 8+ (ARM64) | [Download APK](https://github.com/ncorrea-13/rolboard/releases/latest) |
+
+- Not on Google Play: open the APK and allow installing from that app. **Play Protect** warns about an unknown developer: *More details → Install anyway*.
+- To update, install the new APK over the old one; your data stays.
+- The vaults folder needs the **All files access** permission; the app asks for it the first time you pick the folder.
+- Syncs with the desktop app through a sync folder, as above.
+
+Building from source and how it works: [`docs/ANDROID.md`](docs/ANDROID.md).
 
 ## Quick start (Docker)
 
@@ -172,13 +189,15 @@ cp .env.example .env
 docker compose up --build   # or: podman compose up --build
 ```
 
+`node scripts/seed-demo.mjs` (with `ADMIN_TOKEN` set) loads demo campaigns into it, for screenshots.
+
 ## API
 
 REST + JSON under `/api`. Full list: [`docs/API.md`](docs/API.md).
 
 ## Project Structure
 
-`server/` (Go) and `client/` (React/TS). Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+`server/` (Go), `client/` (React/TS) and `android/` (Gradle project). Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 Reasoning behind each scope call: [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ## About
@@ -189,7 +208,7 @@ Personal project, built as a deliberate Go-learning exercise. [`AGENTS.md`](AGEN
 
 MIT - see [LICENSE](LICENSE) for details.
 
-Logos and icons (`client/public/logo-*.png`, `client/public/favicon.png`, `server/cmd/desktop/build/appicon.png`, `server/cmd/desktop/build/windows/icon.ico`) are © Mateo Guareschi, used with permission. They are **not** covered by the MIT license.
+Logos and icons (`client/public/logo-*.png`, `client/public/favicon.png`, `server/cmd/desktop/build/appicon.png`, `server/cmd/desktop/build/windows/icon.ico`, `android/app/src/main/res/mipmap-*/ic_launcher_foreground.png`) are © Mateo Guareschi, used with permission. They are **not** covered by the MIT license.
 
 
 ---
