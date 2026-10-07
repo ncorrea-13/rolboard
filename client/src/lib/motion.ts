@@ -1,6 +1,6 @@
 import { flushSync } from "react-dom";
 
-export type MotionKind = "route" | "tracker";
+export type MotionKind = "route" | "tracker" | "help";
 
 export function withViewTransition(update: () => void, kind: MotionKind) {
   if (

@@ -2,6 +2,14 @@
   view-transition-name: page;
 }
 
+.site-footer {
+  view-transition-name: footer;
+}
+
+html[data-motion="help"] .app-shell__main {
+  view-transition-name: none;
+}
+
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
@@ -26,6 +34,16 @@ html[data-motion="tracker"]::view-transition-old(.encounter-phase) {
 html[data-motion="tracker"]::view-transition-new(.encounter-card),
 html[data-motion="tracker"]::view-transition-new(.encounter-phase) {
   animation: none;
+}
+
+html[data-motion="help"]::view-transition-old(root),
+html[data-motion="help"]::view-transition-old(.encounter-card),
+html[data-motion="help"]::view-transition-old(.encounter-phase) {
+  animation: motion-out 0.12s ease both;
+}
+
+html[data-motion="help"]::view-transition-new(root) {
+  animation: motion-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1) 0.06s both;
 }
 
 html[data-motion="route"]::view-transition-old(page),
