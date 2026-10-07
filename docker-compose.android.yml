@@ -1,0 +1,71 @@
+services:
+  apk:
+    image: docker.io/reactnativecommunity/react-native-android:v21.1
+    volumes:
+      # el código entra de solo lectura y se copia adentro: el build genera el .aar, copia el
+      # cliente compilado a los assets y escribe en android/app/build, y nada de eso toca el repo
+      - .:/src:ro
+      - ./android/dist:/out
+      # caches entre builds: sin ellos cada build baja Go, los módulos, pnpm y Gradle de nuevo
+      - go-sdk:/opt/go-sdk
+      - go-cache:/root/go
+      - go-build-cache:/root/.cache/go-build
+      - pnpm-store:/root/.local/share/pnpm
+      - gradle-cache:/opt/gradle-home # la imagen usa GRADLE_USER_HOME=/opt/gradle-home
+      # Gradle baja al SDK la platform y build-tools que pide el plugin de Android; el volumen
+      # arranca con el SDK de la imagen y conserva lo que se agregue
+      - android-sdk:/opt/android
+      - android-keys:/root/.android
+    command:
+      - bash
+      - -euo
+      - pipefail
+      - -c
+      - |
+        mkdir -p /work
+        tar -C /src \
+          --exclude=./.git --exclude=./client/node_modules --exclude=./client/dist \
+          --exclude=./android/dist --exclude=./android/.gradle --exclude=./android/build --exclude=./android/app/build \
+          --exclude=./server/cmd/desktop/build/bin --exclude=./server/cmd/desktop/frontend/dist \
+          -cf - . | tar -C /work -xf -
+
+        go_version="$$(sed -n 's/^go //p' /work/server/go.mod)"
+        if [ "$$(cat /opt/go-sdk/VERSION.txt 2>/dev/null)" != "$$go_version" ]; then
+          rm -rf /opt/go-sdk/go
+          curl -fsSL "https://go.dev/dl/go$${go_version}.linux-amd64.tar.gz" | tar -C /opt/go-sdk -xz
+          echo "$$go_version" > /opt/go-sdk/VERSION.txt
+        fi
+        export PATH="/opt/go-sdk/go/bin:/root/go/bin:$$PATH"
+
+        npm install -g pnpm@12 --silent
+        cd /work/client
+        pnpm install --frozen-lockfile
+        pnpm build
+        mkdir -p /work/android/app/src/main/assets/web
+        cp -r dist/. /work/android/app/src/main/assets/web/
+
+        cd /work/server
+        go install golang.org/x/mobile/cmd/gomobile golang.org/x/mobile/cmd/gobind
+        mkdir -p /work/android/app/libs
+        gomobile bind -target=android/arm64 -androidapi 26 -o /work/android/app/libs/rolboard.aar ./mobile
+
+        gradle_version=9.8.0
+        gradle=/opt/gradle-home/dists/gradle-$${gradle_version}/bin/gradle
+        if [ ! -x "$$gradle" ]; then
+          curl -fsSL -o /tmp/gradle.zip "https://services.gradle.org/distributions/gradle-$${gradle_version}-bin.zip"
+          echo "bafd5ce9cfaea0fbccfdc8439a1ac42fbd4cd9c89dc9a988228d8a2639a58e6c  /tmp/gradle.zip" | sha256sum -c
+          mkdir -p /opt/gradle-home/dists
+          unzip -q /tmp/gradle.zip -d /opt/gradle-home/dists
+        fi
+        "$$gradle" -p /work/android assembleDebug --no-daemon --console=plain
+        cp /work/android/app/build/outputs/apk/debug/app-debug.apk /out/rolboard-debug.apk
+        echo "APK listo: android/dist/rolboard-debug.apk"
+
+volumes:
+  go-sdk:
+  go-cache:
+  go-build-cache:
+  pnpm-store:
+  gradle-cache:
+  android-sdk:
+  android-keys:
