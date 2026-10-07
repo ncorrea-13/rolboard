@@ -8,7 +8,6 @@ import {
 } from "../lib/api";
 import { useT } from "../lib/i18n";
 import { reportError } from "../lib/notify";
-import { VaultsRootPicker } from "./VaultsRootPicker";
 
 interface CampaignSettingsFormProps {
   campaign: Campaign;
@@ -36,7 +35,6 @@ export function CampaignSettingsForm({
   const [status, setStatus] = useState<CampaignStatus>(campaign.status);
   const [vaultPath, setVaultPath] = useState(campaign.vaultPath);
   const [vaultDirs, setVaultDirs] = useState<string[]>([]);
-  const [dirsKey, setDirsKey] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const [accessCode, setAccessCode] = useState("");
@@ -50,7 +48,7 @@ export function CampaignSettingsForm({
       .catch((err) =>
         console.error("Error listando directorios del vault:", err),
       );
-  }, [campaign.id, dirsKey]);
+  }, [campaign.id]);
 
   async function handleSave() {
     if (saving) return;
@@ -127,9 +125,6 @@ export function CampaignSettingsForm({
           </option>
         </select>
       </div>
-      {isLocalMode() && (
-        <VaultsRootPicker onChange={() => setDirsKey((k) => k + 1)} />
-      )}
       <div>
         <span className="label">{t("newCampaignForm.vaultDir")}</span>
         <select
