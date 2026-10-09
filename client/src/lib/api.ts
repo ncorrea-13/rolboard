@@ -20,6 +20,16 @@ const API_ERROR_KEYS: Record<string, TranslationKey> = {
   location_in_use: "apiError.locationInUse",
   npc_in_use: "apiError.npcInUse",
   restore_parent_deleted: "apiError.restoreParentDeleted",
+  image_unsupported_format: "apiError.imageUnsupportedFormat",
+  image_too_large: "apiError.imageTooLarge",
+};
+
+const STATUS_KEYS: Record<number, TranslationKey> = {
+  400: "toast.badRequest",
+  403: "toast.forbidden",
+  404: "toast.notFound",
+  409: "toast.conflict",
+  413: "toast.imageTooLarge",
 };
 
 function parseCode(body: string): string {
@@ -48,11 +58,11 @@ export function describeError(
 ): string {
   if (err instanceof ApiError) {
     if (err.status === 401) return t("toast.unauthorized");
-    const key = API_ERROR_KEYS[err.code];
+    const key = API_ERROR_KEYS[err.code] ?? STATUS_KEYS[err.status];
     if (key) return t(key);
     if (err.status >= 500)
       return `${t("toast.serverError")} (HTTP ${err.status})`;
-    return err.detail || `HTTP ${err.status}`;
+    return `HTTP ${err.status}`;
   }
   if (err instanceof TypeError) return t("toast.networkError");
   return err instanceof Error ? err.message : String(err);
