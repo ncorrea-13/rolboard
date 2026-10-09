@@ -237,7 +237,7 @@ func (h *Handlers) SetLocationImage(w http.ResponseWriter, r *http.Request) {
 	loc, err := h.locations.SetImage(r.Context(), id, data)
 	switch {
 	case errors.Is(err, imagestore.ErrUnsupportedFormat):
-		http.Error(w, "Unsupported image format: use PNG or JPEG", http.StatusBadRequest)
+		apiError(w, http.StatusBadRequest, "image_unsupported_format")
 		return
 	case errors.Is(err, repository.ErrNotFound):
 		http.Error(w, "Location not found", http.StatusNotFound)

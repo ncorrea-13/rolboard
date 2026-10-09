@@ -10,7 +10,7 @@ import (
 func readUploadedImage(w http.ResponseWriter, r *http.Request) (data []byte, ok bool) {
 	r.Body = http.MaxBytesReader(w, r.Body, imagestore.MaxUploadBytes)
 	if err := r.ParseMultipartForm(imagestore.MaxUploadBytes); err != nil {
-		http.Error(w, "File too large or invalid form (max 5 MiB)", http.StatusBadRequest)
+		apiError(w, http.StatusBadRequest, "image_too_large")
 		return nil, false
 	}
 	file, _, err := r.FormFile("file")
