@@ -642,10 +642,10 @@ export function useCampaignData(
       method: "POST",
       body: JSON.stringify(sessionToApiPayload(draft)),
     })
-      .then((saved) => {
+      .then(async (saved) => {
         const session = mapSession(saved);
         setSessions((prev) => [...prev, session]);
-        Promise.all([
+        await Promise.all([
           ...expectedNpcIds.map((npcId) =>
             apiFetch(`/sessions/${session.id}/npcs`, {
               method: "POST",
