@@ -75,7 +75,6 @@ export function NpcDetail({
         ),
       )
       .catch((err) => {
-        console.error("Error cargando vínculos:", err);
         reportError("toast.errorLoading", err);
       });
   }, [npc.id]);

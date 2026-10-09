@@ -1,13 +1,32 @@
 import type { TranslationKey } from "./i18n";
 import { androidBridge, send } from "./android";
+import { reportError } from "./notify";
 
 export class ApiError extends Error {
   status: number;
   detail: string;
-  constructor(status: number, message: string, detail = "") {
+  code: string;
+  constructor(status: number, message: string, detail = "", code = "") {
     super(message);
     this.status = status;
     this.detail = detail;
+    this.code = code;
+  }
+}
+
+const API_ERROR_KEYS: Record<string, TranslationKey> = {
+  session_conflict: "apiError.sessionConflict",
+  arc_in_use: "apiError.arcInUse",
+  location_in_use: "apiError.locationInUse",
+  npc_in_use: "apiError.npcInUse",
+};
+
+function parseCode(body: string): string {
+  try {
+    const code = JSON.parse(body)?.code;
+    return typeof code === "string" ? code : "";
+  } catch {
+    return "";
   }
 }
 
@@ -17,6 +36,7 @@ async function failure(res: Response, method: string, path: string) {
     res.status,
     `${method} ${path} failed: ${res.status}`,
     detail,
+    parseCode(detail),
   );
 }
 
@@ -27,6 +47,10 @@ export function describeError(
 ): string {
   if (err instanceof ApiError) {
     if (err.status === 401) return t("toast.unauthorized");
+    const key = API_ERROR_KEYS[err.code];
+    if (key) return t(key);
+    if (err.status >= 500)
+      return `${t("toast.serverError")} (HTTP ${err.status})`;
     return err.detail || `HTTP ${err.status}`;
   }
   if (err instanceof TypeError) return t("toast.networkError");
@@ -59,7 +83,7 @@ export function openExternal(e: {
   apiFetch<void>("/desktop/open", {
     method: "POST",
     body: JSON.stringify({ url: e.currentTarget.href }),
-  }).catch((err) => console.error("Error abriendo el link:", err));
+  }).catch((err) => reportError("toast.errorOpeningLink", err));
 }
 
 export async function checkAdminSession() {

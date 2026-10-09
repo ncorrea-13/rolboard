@@ -165,7 +165,6 @@ export function EncounterDetail({
         ),
       )
       .catch((err) => {
-        console.error("Error cargando participantes:", err);
         reportError("toast.errorLoading", err);
       });
   }
@@ -223,7 +222,6 @@ export function EncounterDetail({
         reload();
       })
       .catch((err) => {
-        console.error("Error agregando participante:", err);
         reportError("common.toastErrorSaving", err);
       });
   }
@@ -261,7 +259,6 @@ export function EncounterDetail({
         }
       })
       .catch((err) => {
-        console.error("Error actualizando participante:", err);
         reportError("common.toastErrorSaving", err);
       });
   }
@@ -275,7 +272,6 @@ export function EncounterDetail({
         ),
       )
       .catch((err) => {
-        console.error("Error sacando participante:", err);
         reportError("common.toastErrorDeleting", err);
       });
   }
@@ -303,7 +299,6 @@ export function EncounterDetail({
         onNextRound();
       })
       .catch((err) => {
-        console.error("Error reiniciando turnos:", err);
         reportError("common.toastErrorSaving", err);
       });
   }

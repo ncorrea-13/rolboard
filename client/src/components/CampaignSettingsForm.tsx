@@ -45,9 +45,7 @@ export function CampaignSettingsForm({
   useEffect(() => {
     apiFetch<string[]>(`/admin/vault-dirs?campaignId=${campaign.id}`)
       .then(setVaultDirs)
-      .catch((err) =>
-        console.error("Error listando directorios del vault:", err),
-      );
+      .catch((err) => reportError("toast.errorLoading", err));
   }, [campaign.id]);
 
   async function handleSave() {

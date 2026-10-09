@@ -153,7 +153,6 @@ export function FactionDetail({
         setMemberIds((data ?? []).map(mapGroupMember).map((m) => m.npcId)),
       )
       .catch((err) => {
-        console.error("Error cargando miembros:", err);
         reportError("toast.errorLoading", err);
       });
   }
@@ -166,7 +165,6 @@ export function FactionDetail({
         setPcMemberIds((data ?? []).map(mapPCGroupMember).map((m) => m.pcId)),
       )
       .catch((err) => {
-        console.error("Error cargando PJs miembros:", err);
         reportError("toast.errorLoading", err);
       });
   }
@@ -184,7 +182,6 @@ export function FactionDetail({
         reloadMembers();
       })
       .catch((err) => {
-        console.error("Error agregando miembro:", err);
         reportError("common.toastErrorSaving", err);
       });
   }
@@ -193,7 +190,6 @@ export function FactionDetail({
     apiFetch(`/groups/${group.id}/members/${npcId}`, { method: "DELETE" })
       .then(reloadMembers)
       .catch((err) => {
-        console.error("Error sacando miembro:", err);
         reportError("common.toastErrorDeleting", err);
       });
   }
@@ -209,7 +205,6 @@ export function FactionDetail({
         reloadPcMembers();
       })
       .catch((err) => {
-        console.error("Error agregando PJ:", err);
         reportError("common.toastErrorSaving", err);
       });
   }
@@ -218,7 +213,6 @@ export function FactionDetail({
     apiFetch(`/groups/${group.id}/pc-members/${pcId}`, { method: "DELETE" })
       .then(reloadPcMembers)
       .catch((err) => {
-        console.error("Error sacando PJ:", err);
         reportError("common.toastErrorDeleting", err);
       });
   }

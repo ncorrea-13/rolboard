@@ -22,7 +22,6 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
   const [saving, setSaving] = useState(false);
 
   const loadFailed = useEffectEvent((err: unknown) => {
-    console.error("Error cargando wardails:", err);
     notify(t("toast.errorLoading"), "error", err);
   });
 
@@ -49,7 +48,6 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
         notify(t("wardails.saved"));
       })
       .catch((err) => {
-        console.error("Error guardando wardails:", err);
         notify(t("wardails.errorSaving"), "error", err);
       })
       .finally(() => setSaving(false));

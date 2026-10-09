@@ -176,7 +176,6 @@ export default function App() {
   }
 
   const campaignsLoadFailed = useEffectEvent((err: unknown) => {
-    console.error("Error cargando campañas:", err);
     notify(t("toast.errorLoading"), "error", err);
   });
 
@@ -251,6 +250,7 @@ export default function App() {
     deleteEncounter,
     planSession,
     startPlaySession,
+    openPlanSession,
     goToEntitySection,
     imageVersion,
     uploadNpcImage,
@@ -284,7 +284,6 @@ export default function App() {
       if (err instanceof ApiError && err.status === 401) {
         setLogin({ campaignId: id, route: target });
       } else {
-        console.error("Error entrando a la campaña:", err);
         notify(t("toast.errorLoading"), "error", err);
       }
       return;
@@ -298,7 +297,6 @@ export default function App() {
         );
       })
       .catch((err) => {
-        console.error("Error cargando datos completos de campaña:", err);
         notify(t("toast.errorLoading"), "error", err);
       });
   }
@@ -337,7 +335,6 @@ export default function App() {
         selectCampaign(mapped.id);
       })
       .catch((err) => {
-        console.error("Error creando campaña:", err);
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounCampaign")}`,
           "error",
@@ -371,7 +368,6 @@ export default function App() {
         setSettingsOpen(false);
       })
       .catch((err) => {
-        console.error("Error actualizando campaña:", err);
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounCampaign")}`,
           "error",
@@ -386,9 +382,6 @@ export default function App() {
     return apiFetch<void>(`/campaigns/${activeCampaignId}/access-code`, {
       method: "POST",
       body: JSON.stringify({ code }),
-    }).catch((err) => {
-      console.error("Error actualizando código de acceso:", err);
-      throw err;
     });
   }
 
@@ -520,7 +513,7 @@ export default function App() {
                 );
               }}
               onStartSession={startPlaySession}
-              onPlanSession={() => navigate({ name: "session-plan" })}
+              onPlanSession={openPlanSession}
               onReindex={handleReindex}
               reindexing={reindexing}
               imageVersion={imageVersion}
@@ -541,7 +534,7 @@ export default function App() {
               nextSessionNumber={nextSessionNumber}
               hasPlannedSession={hasPlannedSession}
               onPlaySession={startPlaySession}
-              onPlanSession={() => navigate({ name: "session-plan" })}
+              onPlanSession={openPlanSession}
             />
           )}
           {route.name === "section" && route.section === "arcos" && (

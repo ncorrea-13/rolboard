@@ -103,7 +103,6 @@ export function SessionEdit({
         ]);
     for (const [path, init] of calls) {
       await apiFetch(path, init).catch((err) => {
-        console.error("Error asociando sesión:", err);
         reportError("common.toastErrorSaving", err);
       });
     }
@@ -116,7 +115,6 @@ export function SessionEdit({
     apiFetch<{ wardails: string }>(`/campaigns/${campaignId}`)
       .then((c) => setWardails(c.wardails ?? ""))
       .catch((err) => {
-        console.error("Error cargando wardails:", err);
         reportError("toast.errorLoading", err);
       });
   }, [campaignId, confirmingPlay]);

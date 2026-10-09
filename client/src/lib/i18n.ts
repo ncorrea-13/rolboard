@@ -210,6 +210,7 @@ const dict = {
     "sessionsTimeline.sessionsWord": "sesiones",
     "sessionsTimeline.in": "en",
     "sessionsTimeline.plan": "Planificar sesión",
+    "sessionsTimeline.editPlan": "Editar planificación",
     "sessionsTimeline.play": "Jugar sesión",
     "sessionsTimeline.noArc": "Sin arco",
     "sessionsTimeline.noDate": "sin fecha",
@@ -359,6 +360,15 @@ const dict = {
     "toast.vaultsRootPermission":
       "Da a Rolboard acceso a todos los archivos y vuelve a elegir la carpeta",
     "toast.errorLoading": "No se pudieron cargar los datos",
+    "toast.errorOpeningLink": "No se pudo abrir el link",
+    "toast.serverError": "error del servidor",
+    "apiError.sessionConflict": "ya existe una sesión con ese número",
+    "apiError.arcInUse": "el arco tiene sesiones, movelas o borralas primero",
+    "apiError.locationInUse":
+      "la ubicación tiene NPCs o sub-ubicaciones, reasignalos primero",
+    "apiError.npcInUse": "el NPC es el spren de un personaje, cambialo primero",
+    "toast.errorLinkingSession":
+      "La sesión se creó, pero no se pudieron asociar los NPCs o quests esperados",
     "toast.unauthorized": "la sesión expiró o no tenés acceso, volvé a entrar",
     "toast.networkError": "no se pudo conectar con el servidor",
     "toast.missingFields": "Faltan campos obligatorios",
@@ -617,6 +627,7 @@ const dict = {
     "sessionsTimeline.sessionsWord": "sessions",
     "sessionsTimeline.in": "in",
     "sessionsTimeline.plan": "Plan session",
+    "sessionsTimeline.editPlan": "Edit plan",
     "sessionsTimeline.play": "Play session",
     "sessionsTimeline.noArc": "No arc",
     "sessionsTimeline.noDate": "no date",
@@ -766,6 +777,16 @@ const dict = {
     "toast.vaultsRootPermission":
       "Give Rolboard access to all files and choose the folder again",
     "toast.errorLoading": "Couldn't load data",
+    "toast.errorOpeningLink": "Couldn't open the link",
+    "toast.serverError": "server error",
+    "apiError.sessionConflict": "a session with that number already exists",
+    "apiError.arcInUse":
+      "the arc still has sessions, move or delete them first",
+    "apiError.locationInUse":
+      "the location still has NPCs or sub-locations, reassign them first",
+    "apiError.npcInUse": "the NPC is a character's spren, change that first",
+    "toast.errorLinkingSession":
+      "The session was created, but the expected NPCs or quests couldn't be linked",
     "toast.unauthorized":
       "your session expired or you don't have access, log in again",
     "toast.networkError": "couldn't reach the server",
