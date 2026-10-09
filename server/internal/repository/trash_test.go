@@ -76,3 +76,30 @@ func TestTrashListAndRestore(t *testing.T) {
 		t.Fatalf("Restored session should be readable: %v", err)
 	}
 }
+
+func TestTrashExcludesArchivedSessions(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+	sessionRepo := NewSessionRepository(db)
+	trash := NewTrashRepository(db)
+
+	archived := &models.Session{CampaignID: campaignID, SessionNumber: 14, SubNumber: 99, SessionType: "session", Date: "2026-01-01"}
+	if err := sessionRepo.Create(ctx, archived); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	if err := sessionRepo.Delete(ctx, archived.ID); err != nil {
+		t.Fatalf("Delete failed: %v", err)
+	}
+
+	items, err := trash.List(ctx, campaignID)
+	if err != nil {
+		t.Fatalf("List failed: %v", err)
+	}
+	if len(items) != 0 {
+		t.Fatalf("Expected archived session to be hidden, got %+v", items)
+	}
+	if err := trash.Restore(ctx, campaignID, "session", archived.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("Expected ErrNotFound restoring an archived session, got %v", err)
+	}
+}

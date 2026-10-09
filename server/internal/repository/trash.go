@@ -16,11 +16,13 @@ type trashSpec struct {
 	table         string
 	label         string
 	parentDeleted string
+	filter        string
 }
 
 var trashSpecs = []trashSpec{
 	{kind: "session", table: "sessions", label: "printf('S%02d', session_number)",
-		parentDeleted: `SELECT EXISTS(SELECT 1 FROM sessions s JOIN arcs a ON a.id = s.arc_id WHERE s.id = ? AND a.deleted_at IS NOT NULL)`},
+		parentDeleted: `SELECT EXISTS(SELECT 1 FROM sessions s JOIN arcs a ON a.id = s.arc_id WHERE s.id = ? AND a.deleted_at IS NOT NULL)`,
+		filter:        " AND sub_number <> 99"},
 	{kind: "arc", table: "arcs", label: "title"},
 	{kind: "npc", table: "npcs", label: "name",
 		parentDeleted: `SELECT EXISTS(SELECT 1 FROM npcs n JOIN locations l ON l.id = n.location_id WHERE n.id = ? AND l.deleted_at IS NOT NULL)`},
@@ -45,7 +47,7 @@ func (r *TrashRepository) List(ctx context.Context, campaignID int64) ([]models.
 	args := make([]any, len(trashSpecs))
 	for i, s := range trashSpecs {
 		parts[i] = "SELECT '" + s.kind + "', id, " + s.label + ", deleted_at FROM " + s.table +
-			" WHERE campaign_id = ? AND deleted_at IS NOT NULL"
+			" WHERE campaign_id = ? AND deleted_at IS NOT NULL" + s.filter
 		args[i] = campaignID
 	}
 	rows, err := r.db.QueryContext(ctx, strings.Join(parts, " UNION ALL ")+" ORDER BY 4 DESC, 2 DESC", args...)
@@ -73,7 +75,7 @@ func (r *TrashRepository) Restore(ctx context.Context, campaignID int64, kind st
 			continue
 		}
 		inTrash, err := hasActive(ctx, r.db,
-			"SELECT EXISTS(SELECT 1 FROM "+s.table+" WHERE id = ? AND campaign_id = ? AND deleted_at IS NOT NULL)",
+			"SELECT EXISTS(SELECT 1 FROM "+s.table+" WHERE id = ? AND campaign_id = ? AND deleted_at IS NOT NULL"+s.filter+")",
 			id, campaignID,
 		)
 		if err != nil {
@@ -92,7 +94,7 @@ func (r *TrashRepository) Restore(ctx context.Context, campaignID int64, kind st
 			}
 		}
 		err = r.db.QueryRowContext(ctx,
-			"UPDATE "+s.table+" SET deleted_at = NULL WHERE id = ? AND campaign_id = ? AND deleted_at IS NOT NULL RETURNING id",
+			"UPDATE "+s.table+" SET deleted_at = NULL WHERE id = ? AND campaign_id = ? AND deleted_at IS NOT NULL"+s.filter+" RETURNING id",
 			id, campaignID,
 		).Scan(&id)
 		if err == sql.ErrNoRows {
