@@ -19,6 +19,7 @@ const API_ERROR_KEYS: Record<string, TranslationKey> = {
   arc_in_use: "apiError.arcInUse",
   location_in_use: "apiError.locationInUse",
   npc_in_use: "apiError.npcInUse",
+  restore_parent_deleted: "apiError.restoreParentDeleted",
 };
 
 function parseCode(body: string): string {

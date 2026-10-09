@@ -47,6 +47,7 @@ import { PlayersList } from "./screens/PlayersList";
 import { EncountersList } from "./screens/EncountersList";
 import { EncounterDetail } from "./screens/EncounterDetail";
 import { Wardails } from "./screens/Wardails";
+import { Trash } from "./screens/Trash";
 import { Help } from "./screens/Help";
 import type { NpcTypesApi } from "./components/NpcTypesManager";
 import {
@@ -251,6 +252,7 @@ export default function App() {
     planSession,
     startPlaySession,
     openPlanSession,
+    reloadCampaignData,
     goToEntitySection,
     imageVersion,
     uploadNpcImage,
@@ -579,6 +581,13 @@ export default function App() {
           )}
           {route.name === "section" && route.section === "wardails" && (
             <Wardails campaignId={activeCampaignId!} notify={notify} />
+          )}
+          {route.name === "section" && route.section === "papelera" && (
+            <Trash
+              campaignId={activeCampaignId!}
+              onRestored={reloadCampaignData}
+              notify={notify}
+            />
           )}
 
           {route.name === "entity-detail" &&

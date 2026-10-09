@@ -33,7 +33,8 @@ export type DashboardSection =
   | "quests"
   | "jugadores"
   | "encuentros"
-  | "wardails";
+  | "wardails"
+  | "papelera";
 
 interface DashboardSummaryData {
   activeQuests: Quest[];

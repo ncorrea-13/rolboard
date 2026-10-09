@@ -321,6 +321,8 @@ export function useCampaignData(
       .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
+  const reloadCampaignData = () => setReloadKey((k) => k + 1);
+
   const [reindexing, setReindexing] = useState(false);
 
   function handleReindex() {
@@ -1191,6 +1193,7 @@ export function useCampaignData(
     planSession,
     startPlaySession,
     openPlanSession,
+    reloadCampaignData,
     goToEntitySection,
     imageVersion,
     uploadNpcImage,
