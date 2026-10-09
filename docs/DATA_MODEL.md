@@ -34,7 +34,7 @@ quest_npcs      quest ↔ npc        (schema only, no endpoints)
 
 - `id INTEGER PRIMARY KEY AUTOINCREMENT`.
 - `created_at` / `updated_at`: `TEXT`, `datetime('now')` (UTC). `updated_at` is set by hand on every `UPDATE`.
-- `deleted_at`: soft delete. Reads filter `deleted_at IS NULL`. Distinct from `status` (narrative).
+- `deleted_at`: soft delete. Reads filter `deleted_at IS NULL`; the trash screen reads the opposite. Distinct from `status` (narrative).
 - FKs with `ON DELETE RESTRICT` (except marked exceptions). `foreign_keys` enabled in the DSN.
 - Enums enforced with `CHECK` at the DB level.
 - `obsidian_path`: relative path inside the campaign's vault. `UNIQUE(campaign_id, obsidian_path)`; lets the reindex do an upsert.
@@ -79,7 +79,7 @@ quest_npcs      quest ↔ npc        (schema only, no endpoints)
 | prep_notes     | dashboard only |
 | obsidian_path  | |
 
-`UNIQUE(campaign_id, session_number, sub_number)`. `sub_number` is `0`, not `NULL`, because SQLite doesn't compare `NULL` in a `UNIQUE`.
+Unique partial index `sessions_active_number_uq` on `(campaign_id, session_number, sub_number) WHERE deleted_at IS NULL` (migration 0023): a deleted session frees its number, and restoring it fails with `409` if the number was taken meanwhile. `sub_number` is `0`, not `NULL`, because SQLite doesn't compare `NULL` in a unique index.
 
 ### locations
 

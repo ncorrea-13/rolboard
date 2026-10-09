@@ -1,5 +1,7 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { ApiError, apiFetch, apiImageRequest } from "../lib/api";
+import { askConfirm } from "../lib/confirm";
+import { reportError } from "../lib/notify";
 import {
   locationBreadcrumb,
   setNpcTypeRegistry,
@@ -166,8 +168,7 @@ export function useCampaignData(
   }
   const lang = useLang();
 
-  const loadFailed = useEffectEvent((what: string, err: unknown) => {
-    console.error(`Error cargando ${what}:`, err);
+  const loadFailed = useEffectEvent((err: unknown) => {
     notify(t("toast.errorLoading"), "error", err);
   });
 
@@ -183,28 +184,42 @@ export function useCampaignData(
           (data ?? []).filter((n) => n.npc_kind !== "referencia").map(mapNpc),
         ),
       )
-      .catch((err) => loadFailed("NPCs", err));
+      .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
-  const [npcTypes, setNpcTypes] = useState<NpcType[]>([]);
+  const [npcTypeState, setNpcTypeState] = useState<{
+    campaignId: string | null;
+    types: NpcType[];
+  }>({ campaignId: null, types: [] });
+  const npcTypes =
+    npcTypeState.campaignId === activeCampaignId ? npcTypeState.types : [];
   setNpcTypeRegistry(npcTypes);
 
+  function setNpcTypes(update: (prev: NpcType[]) => NpcType[]) {
+    setNpcTypeState((s) => ({
+      campaignId: activeCampaignId,
+      types: update(s.campaignId === activeCampaignId ? s.types : []),
+    }));
+  }
+
   useEffect(() => {
-    setNpcTypes([]);
     if (!activeCampaignId) return;
     let stale = false;
     apiFetch<ApiNpcType[]>(`/campaigns/${activeCampaignId}/npc-types`)
       .then((data) => {
-        if (!stale) setNpcTypes((data ?? []).map(mapNpcType));
+        if (!stale)
+          setNpcTypeState({
+            campaignId: activeCampaignId,
+            types: (data ?? []).map(mapNpcType),
+          });
       })
-      .catch((err) => loadFailed("tipos de NPC", err));
+      .catch((err) => loadFailed(err));
     return () => {
       stale = true;
     };
   }, [activeCampaignId]);
 
   function npcTypeError(err: unknown) {
-    console.error("Error con tipos de NPC:", err);
     const inUse = err instanceof ApiError && err.status === 409;
     notify(t(inUse ? "npcTypes.inUse" : "npcTypes.errorSaving"), "error", err);
     return false;
@@ -251,7 +266,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiArc[]>(`/campaigns/${activeCampaignId}/arcs`)
       .then((data) => setArcs((data ?? []).map(mapArc)))
-      .catch((err) => loadFailed("arcos", err));
+      .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
   const [groups, setGroups] = useState<Group[]>([]);
@@ -260,7 +275,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiGroup[]>(`/campaigns/${activeCampaignId}/groups`)
       .then((data) => setGroups((data ?? []).map(mapGroup)))
-      .catch((err) => loadFailed("facciones", err));
+      .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
   const [locations, setLocations] = useState<Location[]>([]);
@@ -269,7 +284,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiLocation[]>(`/campaigns/${activeCampaignId}/locations`)
       .then((data) => setLocations((data ?? []).map(mapLocation)))
-      .catch((err) => loadFailed("locaciones", err));
+      .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
   const [quests, setQuests] = useState<Quest[]>([]);
@@ -278,7 +293,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiQuest[]>(`/campaigns/${activeCampaignId}/quests`)
       .then((data) => setQuests((data ?? []).map(mapQuest)))
-      .catch((err) => loadFailed("quests", err));
+      .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
   const [playerCharacters, setPlayerCharacters] = useState<PlayerCharacter[]>(
@@ -291,7 +306,7 @@ export function useCampaignData(
       `/campaigns/${activeCampaignId}/player-characters`,
     )
       .then((data) => setPlayerCharacters((data ?? []).map(mapPlayerCharacter)))
-      .catch((err) => loadFailed("personajes", err));
+      .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -300,7 +315,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiSession[]>(`/campaigns/${activeCampaignId}/sessions`)
       .then((data) => setSessions((data ?? []).map(mapSession)))
-      .catch((err) => loadFailed("sesiones", err));
+      .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
   const [encounters, setEncounters] = useState<Encounter[]>([]);
@@ -309,7 +324,7 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiEncounter[]>(`/campaigns/${activeCampaignId}/encounters`)
       .then((data) => setEncounters((data ?? []).map(mapEncounter)))
-      .catch((err) => loadFailed("encuentros", err));
+      .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
   const [dashboardSummary, setDashboardSummary] =
@@ -319,8 +334,10 @@ export function useCampaignData(
     if (!activeCampaignId) return;
     apiFetch<ApiDashboardSummary>(`/campaigns/${activeCampaignId}/dashboard`)
       .then(setDashboardSummary)
-      .catch((err) => loadFailed("dashboard", err));
+      .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
+
+  const reloadCampaignData = () => setReloadKey((k) => k + 1);
 
   const [reindexing, setReindexing] = useState(false);
 
@@ -333,7 +350,6 @@ export function useCampaignData(
         notify(t("toast.reindexed"));
       })
       .catch((err) => {
-        console.error("Error reindexando:", err);
         notify(t("toast.errorReindexing"), "error", err);
       })
       .finally(() => setReindexing(false));
@@ -412,7 +428,6 @@ export function useCampaignData(
         setNpcs((prev) => prev.map((n) => (n.id === id ? merged : n))),
       )
       .catch((err) => {
-        console.error("Error guardando NPC:", err);
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounNpc")}`,
           "error",
@@ -449,7 +464,6 @@ export function useCampaignData(
         return npc.id;
       })
       .catch((err) => {
-        console.error("Error creando NPC:", err);
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounNpc")}`,
           "error",
@@ -459,18 +473,17 @@ export function useCampaignData(
       });
   }
 
-  function deleteNpc(id: string) {
+  async function deleteNpc(id: string) {
     const ledFactions = groups.filter((g) => g.liderNpcId === id);
     const warning =
       ledFactions.length > 0 ? npcLeaderWarning(lang, ledFactions.length) : "";
-    if (!window.confirm(`${t("confirm.deactivateNpc")}${warning}`)) return;
+    if (!(await askConfirm(`${t("confirm.deactivateNpc")}${warning}`))) return;
     apiFetch(`/npcs/${id}`, { method: "DELETE" })
       .then(() => {
         setNpcs((prev) => prev.filter((n) => n.id !== id));
         navigate({ name: "section", section: "npcs" }, { replace: true });
       })
       .catch((err) => {
-        console.error("Error borrando NPC:", err);
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounNpc")}`,
           "error",
@@ -500,7 +513,6 @@ export function useCampaignData(
         ),
       )
       .catch((err) => {
-        console.error("Error guardando personaje:", err);
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounCharacter")}`,
           "error",
@@ -539,7 +551,6 @@ export function useCampaignData(
         );
       })
       .catch((err) => {
-        console.error("Error creando personaje:", err);
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounCharacter")}`,
           "error",
@@ -548,14 +559,13 @@ export function useCampaignData(
       });
   }
 
-  function deletePlayer(id: string) {
-    if (!window.confirm(t("confirm.deactivateCharacter"))) return;
+  async function deletePlayer(id: string) {
+    if (!(await askConfirm(t("confirm.deactivateCharacter")))) return;
     apiFetch(`/player-characters/${id}`, { method: "DELETE" })
       .then(() =>
         setPlayerCharacters((prev) => prev.filter((p) => p.id !== id)),
       )
       .catch((err) => {
-        console.error("Error borrando personaje:", err);
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounCharacter")}`,
           "error",
@@ -585,7 +595,6 @@ export function useCampaignData(
         navigate({ name: "session-detail", sessionId: id }, { replace: true });
       })
       .catch((err) => {
-        console.error("Error guardando sesión:", err);
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounSession")}`,
           "error",
@@ -594,15 +603,14 @@ export function useCampaignData(
       });
   }
 
-  function deleteSession(id: string) {
-    if (!window.confirm(t("confirm.deleteSession"))) return;
+  async function deleteSession(id: string) {
+    if (!(await askConfirm(t("confirm.deleteSession")))) return;
     apiFetch(`/sessions/${id}`, { method: "DELETE" })
       .then(() => {
         setSessions((prev) => prev.filter((s) => s.id !== id));
         navigate({ name: "section", section: "sesiones" }, { replace: true });
       })
       .catch((err) => {
-        console.error("Error borrando sesión:", err);
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounSession")}`,
           "error",
@@ -634,10 +642,10 @@ export function useCampaignData(
       method: "POST",
       body: JSON.stringify(sessionToApiPayload(draft)),
     })
-      .then((saved) => {
+      .then(async (saved) => {
         const session = mapSession(saved);
         setSessions((prev) => [...prev, session]);
-        Promise.all([
+        await Promise.all([
           ...expectedNpcIds.map((npcId) =>
             apiFetch(`/sessions/${session.id}/npcs`, {
               method: "POST",
@@ -650,17 +658,24 @@ export function useCampaignData(
               body: JSON.stringify({ quest_id: Number(questId) }),
             }),
           ),
-        ]).catch((err) => console.error("Error asociando sesión:", err));
+        ]).catch((err) => reportError("toast.errorLinkingSession", err));
         navigate({ name: "section", section: "sesiones" }, { replace: true });
       })
       .catch((err) => {
-        console.error("Error creando sesión:", err);
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounSession")}`,
           "error",
           err,
         );
       });
+  }
+
+  function openPlanSession() {
+    navigate(
+      pendingPlannedSession
+        ? { name: "session-edit", sessionId: pendingPlannedSession.id }
+        : { name: "session-plan" },
+    );
   }
 
   function startPlaySession() {
@@ -682,11 +697,10 @@ export function useCampaignData(
       body: JSON.stringify(groupToApiPayload(merged)),
     })
       .then((saved) => {
-        const group = { ...mapGroup(saved), memberCount: current.memberCount };
+        const group = mapGroup(saved);
         setGroups((prev) => prev.map((g) => (g.id === id ? group : g)));
       })
       .catch((err) => {
-        console.error("Error guardando facción:", err);
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounFaction")}`,
           "error",
@@ -716,7 +730,6 @@ export function useCampaignData(
         );
       })
       .catch((err) => {
-        console.error("Error creando facción:", err);
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounFaction")}`,
           "error",
@@ -745,7 +758,6 @@ export function useCampaignData(
         setLocations((prev) => prev.map((l) => (l.id === id ? location : l)));
       })
       .catch((err) => {
-        console.error("Error guardando locación:", err);
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounLocation")}`,
           "error",
@@ -781,7 +793,6 @@ export function useCampaignData(
         );
       })
       .catch((err) => {
-        console.error("Error creando locación:", err);
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounLocation")}`,
           "error",
@@ -810,7 +821,6 @@ export function useCampaignData(
         setArcs((prev) => prev.map((a) => (a.id === id ? arc : a)));
       })
       .catch((err) => {
-        console.error("Error guardando arco:", err);
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounArc")}`,
           "error",
@@ -845,7 +855,6 @@ export function useCampaignData(
         );
       })
       .catch((err) => {
-        console.error("Error creando arco:", err);
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounArc")}`,
           "error",
@@ -868,7 +877,6 @@ export function useCampaignData(
         setQuests((prev) => prev.map((q) => (q.id === id ? quest : q)));
       })
       .catch((err) => {
-        console.error("Error guardando quest:", err);
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounQuest")}`,
           "error",
@@ -897,7 +905,6 @@ export function useCampaignData(
         );
       })
       .catch((err) => {
-        console.error("Error creando quest:", err);
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounQuest")}`,
           "error",
@@ -919,7 +926,6 @@ export function useCampaignData(
         setEncounters((prev) => prev.map((e) => (e.id === id ? encounter : e)));
       })
       .catch((err) => {
-        console.error("Error guardando encuentro:", err);
         notify(
           `${t("common.toastErrorSaving")} ${t("common.nounEncounter")}`,
           "error",
@@ -944,7 +950,6 @@ export function useCampaignData(
         navigate({ name: "encounter-detail", encounterId: encounter.id });
       })
       .catch((err) => {
-        console.error("Error creando encuentro:", err);
         notify(
           `${t("common.toastErrorCreating")} ${t("common.nounEncounter")}`,
           "error",
@@ -953,15 +958,14 @@ export function useCampaignData(
       });
   }
 
-  function deleteEncounter(id: string) {
-    if (!window.confirm(t("confirm.deleteEncounter"))) return;
+  async function deleteEncounter(id: string) {
+    if (!(await askConfirm(t("confirm.deleteEncounter")))) return;
     apiFetch(`/encounters/${id}`, { method: "DELETE" })
       .then(() => {
         setEncounters((prev) => prev.filter((e) => e.id !== id));
         navigate({ name: "section", section: "encuentros" }, { replace: true });
       })
       .catch((err) => {
-        console.error("Error borrando encuentro:", err);
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounEncounter")}`,
           "error",
@@ -974,7 +978,7 @@ export function useCampaignData(
     navigate({ name: "section", section: entityKindSection[kind] });
   }
 
-  function deleteEntity(kind: EntityKind, id: string) {
+  async function deleteEntity(kind: EntityKind, id: string) {
     let warning = "";
     if (kind === "arc") {
       const count = campaignSessions.filter((s) => s.arcId === id).length;
@@ -990,16 +994,15 @@ export function useCampaignData(
       warning = locationDependentsWarning(lang, children, npcsHere);
     }
     if (
-      !window.confirm(
+      !(await askConfirm(
         `${t("confirm.deactivateEntityBase")} ${entityKindLabel[lang][kind]}${t("confirm.deactivateEntitySuffix")}${warning}`,
-      )
+      ))
     )
       return;
     if (kind === "location") {
       apiFetch(`/locations/${id}`, { method: "DELETE" })
         .then(() => setLocations((prev) => prev.filter((l) => l.id !== id)))
         .catch((err) => {
-          console.error("Error borrando locación:", err);
           notify(
             `${t("common.toastErrorDeleting")} ${t("common.nounLocation")}`,
             "error",
@@ -1013,7 +1016,6 @@ export function useCampaignData(
       apiFetch(`/groups/${id}`, { method: "DELETE" })
         .then(() => setGroups((prev) => prev.filter((g) => g.id !== id)))
         .catch((err) => {
-          console.error("Error borrando facción:", err);
           notify(
             `${t("common.toastErrorDeleting")} ${t("common.nounFaction")}`,
             "error",
@@ -1027,7 +1029,6 @@ export function useCampaignData(
       apiFetch(`/arcs/${id}`, { method: "DELETE" })
         .then(() => setArcs((prev) => prev.filter((a) => a.id !== id)))
         .catch((err) => {
-          console.error("Error borrando arco:", err);
           notify(
             `${t("common.toastErrorDeleting")} ${t("common.nounArc")}`,
             "error",
@@ -1040,7 +1041,6 @@ export function useCampaignData(
     apiFetch(`/quests/${id}`, { method: "DELETE" })
       .then(() => setQuests((prev) => prev.filter((q) => q.id !== id)))
       .catch((err) => {
-        console.error("Error borrando quest:", err);
         notify(
           `${t("common.toastErrorDeleting")} ${t("common.nounQuest")}`,
           "error",
@@ -1060,7 +1060,6 @@ export function useCampaignData(
         setImageVersion((v) => v + 1);
       })
       .catch((err) => {
-        console.error("Error subiendo imagen de NPC:", err);
         notify(t("common.toastErrorSaving"), "error", err);
         throw err;
       });
@@ -1074,7 +1073,6 @@ export function useCampaignData(
         setImageVersion((v) => v + 1);
       })
       .catch((err) => {
-        console.error("Error borrando imagen de NPC:", err);
         notify(t("common.toastErrorDeleting"), "error", err);
         throw err;
       });
@@ -1094,7 +1092,6 @@ export function useCampaignData(
         setImageVersion((v) => v + 1);
       })
       .catch((err) => {
-        console.error("Error subiendo imagen de personaje:", err);
         notify(t("common.toastErrorSaving"), "error", err);
         throw err;
       });
@@ -1113,7 +1110,6 @@ export function useCampaignData(
         setImageVersion((v) => v + 1);
       })
       .catch((err) => {
-        console.error("Error borrando imagen de personaje:", err);
         notify(t("common.toastErrorDeleting"), "error", err);
         throw err;
       });
@@ -1127,7 +1123,6 @@ export function useCampaignData(
         setImageVersion((v) => v + 1);
       })
       .catch((err) => {
-        console.error("Error subiendo imagen de locación:", err);
         notify(t("common.toastErrorSaving"), "error", err);
         throw err;
       });
@@ -1141,7 +1136,6 @@ export function useCampaignData(
         setImageVersion((v) => v + 1);
       })
       .catch((err) => {
-        console.error("Error borrando imagen de locación:", err);
         notify(t("common.toastErrorDeleting"), "error", err);
         throw err;
       });
@@ -1155,7 +1149,6 @@ export function useCampaignData(
         setImageVersion((v) => v + 1);
       })
       .catch((err) => {
-        console.error("Error subiendo imagen de facción:", err);
         notify(t("common.toastErrorSaving"), "error", err);
         throw err;
       });
@@ -1169,7 +1162,6 @@ export function useCampaignData(
         setImageVersion((v) => v + 1);
       })
       .catch((err) => {
-        console.error("Error borrando imagen de facción:", err);
         notify(t("common.toastErrorDeleting"), "error", err);
         throw err;
       });
@@ -1216,6 +1208,8 @@ export function useCampaignData(
     deleteEncounter,
     planSession,
     startPlaySession,
+    openPlanSession,
+    reloadCampaignData,
     goToEntitySection,
     imageVersion,
     uploadNpcImage,

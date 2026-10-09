@@ -51,7 +51,11 @@ export function SessionsTimeline({
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button className="btn btn-secondary" onClick={onPlanSession}>
-            {t("sessionsTimeline.plan")}
+            {t(
+              hasPlannedSession
+                ? "sessionsTimeline.editPlan"
+                : "sessionsTimeline.plan",
+            )}
           </button>
           {hasPlannedSession && (
             <button className="btn btn-primary" onClick={onPlaySession}>

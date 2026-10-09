@@ -21,7 +21,7 @@ export function AppSettings({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     loadSettings()
       .then(setSettings)
-      .catch((err) => console.error("Error leyendo los ajustes:", err));
+      .catch((err) => reportError("toast.errorLoading", err));
   }, []);
 
   async function pick(kind: FolderKind) {

@@ -34,7 +34,7 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 
 - `id INTEGER PRIMARY KEY AUTOINCREMENT`.
 - `created_at` / `updated_at`: `TEXT`, `datetime('now')` (UTC). `updated_at` se setea a mano en cada `UPDATE`.
-- `deleted_at`: baja lógica. Las lecturas filtran `deleted_at IS NULL`. Es distinto de `status` (narrativo).
+- `deleted_at`: baja lógica. Las lecturas filtran `deleted_at IS NULL`; la pantalla de papelera lee lo contrario. Es distinto de `status` (narrativo).
 - FKs con `ON DELETE RESTRICT` (salvo excepciones marcadas). `foreign_keys` activado en el DSN.
 - Enums reforzados con `CHECK` en la base.
 - `obsidian_path`: ruta relativa dentro del vault de la campaña. `UNIQUE(campaign_id, obsidian_path)`; permite que el reindex haga upsert.
@@ -79,7 +79,7 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 | prep_notes     | solo dashboard |
 | obsidian_path  | |
 
-`UNIQUE(campaign_id, session_number, sub_number)`. `sub_number` es `0` y no `NULL` porque SQLite no compara `NULL` en un `UNIQUE`.
+Índice único parcial `sessions_active_number_uq` sobre `(campaign_id, session_number, sub_number) WHERE deleted_at IS NULL` (migración 0023): una sesión borrada libera su número, y restaurarla falla con `409` si el número se ocupó mientras tanto. `sub_number` es `0` y no `NULL` porque SQLite no compara `NULL` en un índice único.
 
 ### locations
 

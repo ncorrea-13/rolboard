@@ -102,6 +102,10 @@ func (h *Handlers) CreateSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.sessions.Create(r.Context(), &session); err != nil {
+		if errors.Is(err, repository.ErrConflict) {
+			apiError(w, http.StatusConflict, "session_conflict")
+			return
+		}
 		internalError(w, err, "Error creating session")
 		return
 	}
@@ -189,6 +193,10 @@ func (h *Handlers) UpdateSession(w http.ResponseWriter, r *http.Request) {
 	err = h.sessions.Update(r.Context(), id, &session)
 	if errors.Is(err, repository.ErrNotFound) {
 		http.Error(w, "Session not found", http.StatusNotFound)
+		return
+	}
+	if errors.Is(err, repository.ErrConflict) {
+		apiError(w, http.StatusConflict, "session_conflict")
 		return
 	}
 	if err != nil {

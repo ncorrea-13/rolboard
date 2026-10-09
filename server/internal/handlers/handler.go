@@ -2,11 +2,18 @@ package handlers
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 
 	"github.com/ncorrea-13/rolboard/server/internal/service"
 )
+
+func apiError(w http.ResponseWriter, status int, code string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(map[string]string{"code": code})
+}
 
 func internalError(w http.ResponseWriter, err error, msg string) {
 	slog.Error(msg, "err", err)
@@ -34,6 +41,7 @@ type Handlers struct {
 	notes                 *service.NotesService
 	encounters            *service.EncounterService
 	encounterParticipants *service.EncounterParticipantService
+	trash                 *service.TrashService
 }
 
 func NewHandlers(
@@ -57,6 +65,7 @@ func NewHandlers(
 	notes *service.NotesService,
 	encounters *service.EncounterService,
 	encounterParticipants *service.EncounterParticipantService,
+	trash *service.TrashService,
 ) *Handlers {
 	return &Handlers{
 		db:                    db,
@@ -79,5 +88,6 @@ func NewHandlers(
 		notes:                 notes,
 		encounters:            encounters,
 		encounterParticipants: encounterParticipants,
+		trash:                 trash,
 	}
 }

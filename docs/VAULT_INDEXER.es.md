@@ -94,7 +94,7 @@ Los NPCs del vault se crean con `detail_level = full`.
 
 Además, cada wikilink del **cuerpo** que apunte a un NPC o PJ se agrega a `session_npcs` / `session_pcs` (se reemplazan en cada reindex). Otros wikilinks del cuerpo se ignoran.
 
-Si el nombre del archivo contiene `ARCHIVADO`, la sesión se crea con `sub_number = 99` y queda dada de baja.
+Si el nombre del archivo contiene `ARCHIVADO`, la sesión se crea con `sub_number = 99` y queda dada de baja. Esas sesiones no se muestran en la papelera ni se pueden restaurar desde ahí: cada reindex las vuelve a archivar.
 
 ### Jugadores
 

@@ -115,6 +115,9 @@ func NewRouter(h *Handlers) http.Handler {
 	mux.Handle("PUT /api/encounter-participants/{id}", http.HandlerFunc(h.requireCampaign(h.resolveEncounterParticipant, h.UpdateEncounterParticipant)))
 	mux.Handle("DELETE /api/encounter-participants/{id}", http.HandlerFunc(h.requireCampaign(h.resolveEncounterParticipant, h.DeleteEncounterParticipant)))
 
+	mux.Handle("GET /api/campaigns/{id}/trash", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListTrash)))
+	mux.Handle("POST /api/campaigns/{id}/trash/{kind}/{itemId}/restore", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.RestoreTrashItem)))
+
 	mux.Handle("POST /api/campaigns/{id}/reindex", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.Reindex)))
 	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.requireCampaign(resolveCampaignIDFromQuery, h.ListVaultDirs)))
 

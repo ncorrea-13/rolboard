@@ -4,6 +4,7 @@ import "./NpcTypesManager.css";
 import "../screens/NpcEdit.css";
 import { Modal } from "./Modal";
 import type { NpcType } from "../data/domain";
+import { askConfirm } from "../lib/confirm";
 import { useT } from "../lib/i18n";
 
 export interface NpcTypesApi {
@@ -48,7 +49,9 @@ function TypeRow({ type, api }: { type: NpcType; api: NpcTypesApi }) {
   }
 
   function remove() {
-    if (window.confirm(t("npcTypes.confirmDelete"))) void api.onDelete(type.id);
+    void askConfirm(t("npcTypes.confirmDelete")).then((ok) => {
+      if (ok) void api.onDelete(type.id);
+    });
   }
 
   return (

@@ -167,6 +167,10 @@ func (h *Handlers) DeleteArc(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Arc not found", http.StatusNotFound)
 		return
 	}
+	if errors.Is(err, repository.ErrInUse) {
+		apiError(w, http.StatusConflict, "arc_in_use")
+		return
+	}
 	if err != nil {
 		http.Error(w, "Error deleting arc", http.StatusInternalServerError)
 		return

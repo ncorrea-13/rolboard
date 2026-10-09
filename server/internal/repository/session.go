@@ -61,7 +61,7 @@ func (r *SessionRepository) Create(ctx context.Context, s *models.Session) error
 		s.CampaignID, toNullInt64(s.ArcID), s.SessionNumber, s.SubNumber, s.SessionType, s.Date, s.Summary, s.PrepNotes, toNullString(s.ObsidianPath),
 	).Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Date, &s.Summary, &s.PrepNotes, &obsidianPath, &s.CreatedAt, &s.UpdatedAt)
 	if err != nil {
-		return err
+		return mapConflict(err)
 	}
 	s.ArcID = fromNullInt64(arcID)
 	s.ObsidianPath = fromNullString(obsidianPath)
@@ -102,7 +102,7 @@ func (r *SessionRepository) Update(ctx context.Context, id int64, s *models.Sess
 		return ErrNotFound
 	}
 	if err != nil {
-		return err
+		return mapConflict(err)
 	}
 	s.ArcID = fromNullInt64(arcID)
 	s.ObsidianPath = fromNullString(obsidianPath)
