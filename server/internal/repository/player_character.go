@@ -129,16 +129,16 @@ func (r *PlayerCharacterRepository) SetImagePath(ctx context.Context, id int64, 
 }
 
 func (r *PlayerCharacterRepository) Update(ctx context.Context, id int64, p *models.PlayerCharacter) error {
-	var obsidianPath, historiaPath, avancesPath sql.NullString
+	var obsidianPath, historiaPath, avancesPath, imagePath sql.NullString
 	var sprenNPCID, currentHp, maxHp sql.NullInt64
 	var attributes, skills string
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE player_characters
 		SET player_name = ?, character_name = ?, race = ?, class = ?, status = ?, backstory = ?, progression_notes = ?, attributes = ?, skills = ?, current_hp = ?, max_hp = ?, obsidian_path = ?, updated_at = datetime('now')
 		WHERE id = ? AND deleted_at IS NULL
-		RETURNING id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, created_at, updated_at`,
+		RETURNING id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, image_path, created_at, updated_at`,
 		p.PlayerName, p.CharacterName, p.Race, p.Class, p.Status, p.Backstory, p.ProgressionNotes, toJSONText(p.Attributes), toJSONText(p.Skills), toNullInt64(p.CurrentHp), toNullInt64(p.MaxHp), toNullString(p.ObsidianPath), id,
-	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt)
+	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &imagePath, &p.CreatedAt, &p.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}
@@ -146,6 +146,7 @@ func (r *PlayerCharacterRepository) Update(ctx context.Context, id int64, p *mod
 		return err
 	}
 	p.ObsidianPath = fromNullString(obsidianPath)
+	p.ImagePath = fromNullString(imagePath)
 	p.HistoriaPath = fromNullString(historiaPath)
 	p.AvancesPath = fromNullString(avancesPath)
 	p.SprenNPCID = fromNullInt64(sprenNPCID)
