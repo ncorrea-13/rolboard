@@ -697,7 +697,7 @@ export function useCampaignData(
       body: JSON.stringify(groupToApiPayload(merged)),
     })
       .then((saved) => {
-        const group = { ...mapGroup(saved), memberCount: current.memberCount };
+        const group = mapGroup(saved);
         setGroups((prev) => prev.map((g) => (g.id === id ? group : g)));
       })
       .catch((err) => {
