@@ -24,7 +24,6 @@ interface SessionEditProps {
   quests: Quest[];
   onSave: (patch: Partial<Session>) => void;
   onBack: () => void;
-  onDelete: () => void;
   autoConfirm?: boolean;
 }
 
@@ -37,7 +36,6 @@ export function SessionEdit({
   quests,
   onSave,
   onBack,
-  onDelete,
   autoConfirm,
 }: SessionEditProps) {
   const t = useT();
@@ -405,9 +403,6 @@ export function SessionEdit({
             {t("common.back")}
           </button>
           {noteButton}
-          <button className="btn btn-secondary" onClick={onDelete}>
-            {t("sessionEdit.deleteSession")}
-          </button>
           <button className="btn btn-primary" onClick={handleSave}>
             {t("common.save")}
           </button>

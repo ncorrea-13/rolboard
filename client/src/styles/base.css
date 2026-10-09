@@ -94,6 +94,17 @@ body {
   filter: brightness(1.1);
 }
 
+.btn-danger-outline {
+  font-weight: 500;
+  background: transparent;
+  color: var(--status-dead);
+  border: 1px solid var(--status-dead);
+}
+
+.btn-danger-outline:hover {
+  background: color-mix(in srgb, var(--status-dead) 14%, transparent);
+}
+
 .card {
   background: var(--bg-surface);
   border: 1px solid var(--border);

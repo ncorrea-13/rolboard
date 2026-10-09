@@ -86,6 +86,9 @@ export function PlayerDetail({
             </span>
           )}
           <div className="npc-detail__header-actions">
+            <button className="btn btn-danger-outline" onClick={onDelete}>
+              {t("entityDetail.deactivate")}
+            </button>
             {player.obsidianPath && (
               <>
                 <button
@@ -109,9 +112,6 @@ export function PlayerDetail({
               onClick={() => setSheetOpen(true)}
             >
               {t("npcDetail.viewSheet")}
-            </button>
-            <button className="btn btn-secondary" onClick={onDelete}>
-              {t("entityDetail.deactivate")}
             </button>
             <button className="btn btn-primary" onClick={onEdit}>
               {t("common.edit")}

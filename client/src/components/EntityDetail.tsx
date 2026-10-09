@@ -94,15 +94,15 @@ export function EntityDetail({
           {status}
           {(extraActions || onEdit || onDelete) && (
             <div className="entity-detail__actions">
+              {onDelete && (
+                <button className="btn btn-danger-outline" onClick={onDelete}>
+                  {t("entityDetail.deactivate")}
+                </button>
+              )}
               {extraActions}
               {onEdit && (
                 <button className="btn btn-secondary" onClick={onEdit}>
                   {t("common.edit")}
-                </button>
-              )}
-              {onDelete && (
-                <button className="btn btn-secondary" onClick={onDelete}>
-                  {t("entityDetail.deactivate")}
                 </button>
               )}
             </div>

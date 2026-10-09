@@ -119,6 +119,9 @@ export function NpcDetail({
             </span>
           )}
           <div className="npc-detail__header-actions">
+            <button className="btn btn-danger-outline" onClick={onDelete}>
+              {t("entityDetail.deactivate")}
+            </button>
             {npc.obsidianPath && (
               <>
                 {!isLocalMode() && (
@@ -139,9 +142,6 @@ export function NpcDetail({
               onClick={() => setSheetOpen(true)}
             >
               {t("npcDetail.viewSheet")}
-            </button>
-            <button className="btn btn-secondary" onClick={onDelete}>
-              {t("entityDetail.deactivate")}
             </button>
             <button className="btn btn-primary" onClick={onEdit}>
               {t("common.edit")}

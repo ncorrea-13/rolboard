@@ -1031,6 +1031,7 @@ export default function App() {
                   onEdit={() =>
                     navigate({ name: "session-edit", sessionId: session.id })
                   }
+                  onDelete={() => deleteSession(session.id)}
                   onMarkPlayed={() =>
                     navigate({
                       name: "session-edit",
@@ -1060,7 +1061,6 @@ export default function App() {
                   quests={campaignQuests}
                   autoConfirm={route.autoConfirm}
                   onSave={(patch) => saveSession(session.id, patch)}
-                  onDelete={() => deleteSession(session.id)}
                   onBack={() =>
                     navigate(
                       route.autoConfirm

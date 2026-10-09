@@ -318,7 +318,6 @@ const dict = {
     "sessionEdit.recapPlaceholder": "Qué pasó realmente…",
     "sessionEdit.prepNotesKeptSeparate":
       "Las notas de preparación se guardan aparte, no se sobrescriben.",
-    "sessionEdit.deleteSession": "Borrar sesión",
     "sessionEdit.arc": "Arco",
     "sessionEdit.history": "Historial",
     "sessionEdit.prepNotesOnly": "Notas de preparación",
@@ -436,8 +435,10 @@ const dict = {
       "¿Dar de baja este personaje? Deja de verse en la campaña, no se borra.",
     "confirm.title": "Confirmar",
     "confirm.accept": "Aceptar",
-    "confirm.deleteSession": "¿Borrar esta sesión? No se puede deshacer.",
-    "confirm.deleteEncounter": "¿Borrar este encuentro? No se puede deshacer.",
+    "confirm.deleteSession":
+      "¿Dar de baja esta sesión? Se puede restaurar desde la Papelera.",
+    "confirm.deleteEncounter":
+      "¿Dar de baja este encuentro? Se puede restaurar desde la Papelera.",
     "confirm.deactivateEntityBase": "¿Dar de baja este",
     "confirm.deactivateEntitySuffix":
       "? Deja de verse en la campaña, no se borra.",
@@ -763,7 +764,6 @@ const dict = {
     "sessionEdit.recapPlaceholder": "What actually happened…",
     "sessionEdit.prepNotesKeptSeparate":
       "Prep notes stay saved separately, they don't get overwritten.",
-    "sessionEdit.deleteSession": "Delete session",
     "sessionEdit.arc": "Arc",
     "sessionEdit.history": "History",
     "sessionEdit.prepNotesOnly": "Prep notes",
@@ -883,8 +883,10 @@ const dict = {
       "Deactivate this character? It stops showing in the campaign, it isn't deleted.",
     "confirm.title": "Confirm",
     "confirm.accept": "Accept",
-    "confirm.deleteSession": "Delete this session? This can't be undone.",
-    "confirm.deleteEncounter": "Delete this encounter? This can't be undone.",
+    "confirm.deleteSession":
+      "Deactivate this session? You can restore it from the Trash.",
+    "confirm.deleteEncounter":
+      "Deactivate this encounter? You can restore it from the Trash.",
     "confirm.deactivateEntityBase": "Deactivate this",
     "confirm.deactivateEntitySuffix":
       "? It stops showing in the campaign, it isn't deleted.",

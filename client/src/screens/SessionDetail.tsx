@@ -11,6 +11,7 @@ interface SessionDetailProps {
   session: Session;
   onBack: () => void;
   onEdit: () => void;
+  onDelete: () => void;
   onMarkPlayed: () => void;
 }
 
@@ -20,6 +21,7 @@ export function SessionDetail({
   session,
   onBack,
   onEdit,
+  onDelete,
   onMarkPlayed,
 }: SessionDetailProps) {
   const t = useT();
@@ -90,6 +92,9 @@ export function SessionDetail({
           </span>
         </div>
         <div className="npc-edit__bar-actions">
+          <button className="btn btn-danger-outline" onClick={onDelete}>
+            {t("entityDetail.deactivate")}
+          </button>
           <button className="btn btn-secondary" onClick={onBack}>
             {t("common.back")}
           </button>
