@@ -10,6 +10,17 @@ REST + JSON under `/api`. Router: `net/http` stdlib (`ServeMux` with methods and
 - `DELETE` on entities is a soft delete (`deleted_at`). Responds `204`.
 - `POST` create responds `201` with the entity; `PUT` responds with the updated entity.
 - Invalid enums → `400`. Nonexistent resource → `404`.
+- Errors the UI can act on carry a JSON body `{"code": "..."}`; the client translates it. Any other error is plain English text for logs, and the UI shows a generic message for its status instead.
+
+| Status | `code`                     | When                                                                  |
+| ------ | -------------------------- | --------------------------------------------------------------------- |
+| `409`  | `session_conflict`         | creating, editing or restoring a session whose number is already taken |
+| `409`  | `arc_in_use`               | deleting an arc that still has active sessions                        |
+| `409`  | `location_in_use`          | deleting a location that still has active NPCs or sub-locations       |
+| `409`  | `npc_in_use`               | deleting an NPC that is the spren of an active player character       |
+| `409`  | `restore_parent_deleted`   | restoring a record whose arc or location is still deleted             |
+| `400`  | `image_unsupported_format` | uploading an image that isn't PNG or JPEG                             |
+| `400`  | `image_too_large`          | uploading an image over 5 MiB or an invalid form                      |
 
 ## Authentication
 
@@ -225,9 +236,21 @@ Entities: `npcs`, `player-characters`, `locations`, `groups`.
 
 - `POST`: PNG/JPEG only (detected by content), max 5 MiB. Replaces the previous image. Returns the entity.
 - `DELETE`: deletes the file and clears `image_path`. Returns the entity.
-- `GET`: serves the file with `X-Content-Type-Options: nosniff`. `404` if there's no image.
+- `GET`: serves the file with `X-Content-Type-Options: nosniff` and `Cache-Control: no-cache` (the browser revalidates, so a replaced image shows up). `404` if there's no image.
 
-`image_path` is never accepted in an entity's `POST`/`PUT`.
+`image_path` is never accepted in an entity's `POST`/`PUT`, but every `PUT` response includes it.
+
+## Trash
+
+```
+GET  /api/campaigns/{id}/trash
+POST /api/campaigns/{id}/trash/{kind}/{itemId}/restore
+```
+
+- `kind`: `session`, `arc`, `npc`, `player_character`, `location`, `group`, `quest`, `encounter`.
+- `GET` returns `[{kind, id, label, deleted_at}]`, most recently deleted first. Sessions archived by the vault (`sub_number = 99`) are left out.
+- `POST` clears `deleted_at` and responds `204`. `404` if the record isn't in that campaign's trash. `409` with `session_conflict` or `restore_parent_deleted` (see Conventions).
+- There is no endpoint to delete for good.
 
 ## Vault
 

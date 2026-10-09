@@ -10,6 +10,17 @@ REST + JSON bajo `/api`. Router: `net/http` stdlib (`ServeMux` con métodos y pa
 - `DELETE` de entidades es baja lógica (`deleted_at`). Responde `204`.
 - `POST` de creación responde `201` con la entidad; `PUT` responde la entidad actualizada.
 - Enums inválidos → `400`. Recurso inexistente → `404`.
+- Los errores sobre los que la UI puede actuar traen un cuerpo JSON `{"code": "..."}` que el cliente traduce. Cualquier otro error es texto en inglés para los logs, y la UI muestra un mensaje genérico según su estado.
+
+| Estado | `code`                     | Cuándo                                                                    |
+| ------ | -------------------------- | ------------------------------------------------------------------------- |
+| `409`  | `session_conflict`         | crear, editar o restaurar una sesión cuyo número ya está ocupado          |
+| `409`  | `arc_in_use`               | borrar un arco que todavía tiene sesiones activas                         |
+| `409`  | `location_in_use`          | borrar una ubicación que todavía tiene NPCs o sub-ubicaciones activas     |
+| `409`  | `npc_in_use`               | borrar un NPC que es el spren de un personaje jugador activo              |
+| `409`  | `restore_parent_deleted`   | restaurar un registro cuyo arco o ubicación sigue borrado                 |
+| `400`  | `image_unsupported_format` | subir una imagen que no es PNG ni JPEG                                    |
+| `400`  | `image_too_large`          | subir una imagen de más de 5 MiB o un formulario inválido                 |
 
 ## Autenticación
 
@@ -225,9 +236,21 @@ Entidades: `npcs`, `player-characters`, `locations`, `groups`.
 
 - `POST`: solo PNG/JPEG (detectado por contenido), máx. 5 MiB. Reemplaza la anterior. Devuelve la entidad.
 - `DELETE`: borra archivo y limpia `image_path`. Devuelve la entidad.
-- `GET`: sirve el archivo con `X-Content-Type-Options: nosniff`. `404` si no hay imagen.
+- `GET`: sirve el archivo con `X-Content-Type-Options: nosniff` y `Cache-Control: no-cache` (el navegador revalida, así que una imagen reemplazada se ve). `404` si no hay imagen.
 
-`image_path` no viaja en `POST`/`PUT` de la entidad.
+`image_path` no se acepta en `POST`/`PUT` de la entidad, pero toda respuesta de `PUT` lo incluye.
+
+## Papelera
+
+```
+GET  /api/campaigns/{id}/trash
+POST /api/campaigns/{id}/trash/{kind}/{itemId}/restore
+```
+
+- `kind`: `session`, `arc`, `npc`, `player_character`, `location`, `group`, `quest`, `encounter`.
+- `GET` devuelve `[{kind, id, label, deleted_at}]`, lo borrado más recientemente primero. Las sesiones archivadas por el vault (`sub_number = 99`) no aparecen.
+- `POST` limpia `deleted_at` y responde `204`. `404` si el registro no está en la papelera de esa campaña. `409` con `session_conflict` o `restore_parent_deleted` (ver Convenciones).
+- No hay endpoint para borrar definitivamente.
 
 ## Vault
 

@@ -182,6 +182,20 @@ const es: HelpSection[] = [
     ),
   },
   {
+    id: "papelera",
+    title: "Papelera",
+    body: (
+      <p>
+        Lo que das de baja no se borra para siempre: va a la{" "}
+        <strong>Papelera</strong> del sidebar, agrupado por tipo, con un botón{" "}
+        <strong>Restaurar</strong>. Un arco con sesiones, una ubicación con NPCs
+        o sub-ubicaciones y un NPC que es el spren de un personaje no se pueden
+        borrar hasta mover lo que depende de ellos. Para restaurar una sesión,
+        su número tiene que estar libre y su arco no puede estar borrado.
+      </p>
+    ),
+  },
+  {
     id: "obsidian",
     title: "Si usas Obsidian",
     body: (
@@ -441,6 +455,20 @@ const en: HelpSection[] = [
         Each campaign has its own types (Human, Spren, Monster…). Press{" "}
         <strong>Types</strong> on the NPC list or in the editor to add, rename,
         recolor or delete. A type that any NPC uses can't be deleted.
+      </p>
+    ),
+  },
+  {
+    id: "trash",
+    title: "Trash",
+    body: (
+      <p>
+        Anything you delete isn't gone for good: it goes to the{" "}
+        <strong>Trash</strong> in the sidebar, grouped by type, with a{" "}
+        <strong>Restore</strong> button. An arc with sessions, a location with
+        NPCs or sub-locations and an NPC that is a character's spren can't be
+        deleted until you move what depends on them. To restore a session, its
+        number must be free and its arc can't be deleted.
       </p>
     ),
   },
