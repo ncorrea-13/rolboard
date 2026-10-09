@@ -71,6 +71,22 @@ html[data-motion="route"]::view-transition-group(.encounter-phase) {
   animation: motion-pop 0.24s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
+.modal-backdrop--closing {
+  animation: motion-out 0.16s ease both;
+  pointer-events: none;
+}
+
+.modal-backdrop--closing .modal-panel {
+  animation: motion-pop-out 0.16s ease both;
+}
+
+@keyframes motion-pop-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
 @keyframes motion-out {
   to {
     opacity: 0;

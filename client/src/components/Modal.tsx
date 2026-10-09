@@ -1,6 +1,7 @@
 import {
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -21,6 +22,7 @@ export function Modal({
 }) {
   const t = useT();
   const panelRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
   const close = useEffectEvent(onClose);
   const [opener] = useState(() => document.activeElement as HTMLElement | null);
 
@@ -37,8 +39,23 @@ export function Modal({
     };
   }, [opener]);
 
+  useLayoutEffect(() => {
+    const node = backdropRef.current;
+    return () => {
+      queueMicrotask(() => {
+        if (!node || node.isConnected) return;
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        const ghost = node.cloneNode(true) as HTMLElement;
+        ghost.classList.add("modal-backdrop--closing");
+        ghost.inert = true;
+        document.body.appendChild(ghost);
+        window.setTimeout(() => ghost.remove(), 200);
+      });
+    };
+  }, []);
+
   return (
-    <div className="modal-backdrop" onClick={onClose}>
+    <div ref={backdropRef} className="modal-backdrop" onClick={onClose}>
       <div
         ref={panelRef}
         role="dialog"
