@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { Trash2 } from "lucide-react";
 import "../styles/list.css";
+import { formatDate } from "../data/domain";
 import { apiFetch } from "../lib/api";
 import { useT, type TranslationKey } from "../lib/i18n";
 
@@ -96,7 +97,8 @@ export function Trash({ campaignId, onRestored, notify }: TrashProps) {
                       {item.label || `#${item.id}`}
                     </span>
                     <div className="list-page__row-sub">
-                      {t("trash.deletedAt")} {item.deleted_at}
+                      {t("trash.deletedAt")}{" "}
+                      {formatDate(item.deleted_at.slice(0, 10))}
                     </div>
                   </div>
                   <button

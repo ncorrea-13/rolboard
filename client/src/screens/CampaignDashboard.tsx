@@ -178,7 +178,11 @@ export function CampaignDashboard({
                     onPlanSession();
                   }}
                 >
-                  {t("sessionsTimeline.plan")}
+                  {t(
+                    hasPlannedSession
+                      ? "sessionsTimeline.editPlan"
+                      : "sessionsTimeline.plan",
+                  )}
                 </button>
               )}
               <span className="label">{t("dashboard.lastSession")}</span>
