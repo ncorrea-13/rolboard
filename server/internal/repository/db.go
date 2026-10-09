@@ -15,6 +15,23 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+var ErrConflict = errors.New("unique constraint violated")
+
+var ErrInUse = errors.New("row is still referenced by active records")
+
+func hasActive(ctx context.Context, db *sql.DB, query string, args ...any) (bool, error) {
+	var found bool
+	err := db.QueryRowContext(ctx, query, args...).Scan(&found)
+	return found, err
+}
+
+func mapConflict(err error) error {
+	if err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed") {
+		return ErrConflict
+	}
+	return err
+}
+
 //go:embed migrations/*.sql
 var migrationsFS embed.FS
 

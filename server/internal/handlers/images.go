@@ -32,5 +32,6 @@ func readUploadedImage(w http.ResponseWriter, r *http.Request) (data []byte, ok 
 func serveImage(w http.ResponseWriter, r *http.Request, absPath, contentType string) {
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.Header().Set("Cache-Control", "no-cache")
 	http.ServeFile(w, r, absPath)
 }

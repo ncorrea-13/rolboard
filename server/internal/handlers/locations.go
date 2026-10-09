@@ -210,6 +210,10 @@ func (h *Handlers) DeleteLocation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Location not found", http.StatusNotFound)
 		return
 	}
+	if errors.Is(err, repository.ErrInUse) {
+		apiError(w, http.StatusConflict, "location_in_use")
+		return
+	}
 	if err != nil {
 		http.Error(w, "Error deleting location", http.StatusInternalServerError)
 		return

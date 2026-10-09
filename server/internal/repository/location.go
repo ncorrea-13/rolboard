@@ -129,6 +129,13 @@ func (r *LocationRepository) Update(ctx context.Context, id int64, l *models.Loc
 }
 
 func (r *LocationRepository) Delete(ctx context.Context, id int64) error {
+	if used, err := hasActive(ctx, r.db, `SELECT EXISTS(
+		SELECT 1 FROM npcs WHERE location_id = ?1 AND deleted_at IS NULL
+		UNION ALL SELECT 1 FROM locations WHERE parent_location_id = ?1 AND deleted_at IS NULL)`, id); err != nil {
+		return err
+	} else if used {
+		return ErrInUse
+	}
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE locations
 		SET deleted_at = datetime('now')

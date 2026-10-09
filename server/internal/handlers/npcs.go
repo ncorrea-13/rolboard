@@ -258,6 +258,10 @@ func (h *Handlers) DeleteNPC(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "NPC not found", http.StatusNotFound)
 		return
 	}
+	if errors.Is(err, repository.ErrInUse) {
+		apiError(w, http.StatusConflict, "npc_in_use")
+		return
+	}
 	if err != nil {
 		http.Error(w, "Error deleting npc", http.StatusInternalServerError)
 		return
