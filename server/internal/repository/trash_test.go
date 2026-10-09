@@ -60,6 +60,9 @@ func TestTrashListAndRestore(t *testing.T) {
 	if err := arcRepo.Delete(ctx, arc.ID); err != nil {
 		t.Fatalf("Delete arc failed: %v", err)
 	}
+	if err := trash.Restore(ctx, campaignID+1, "session", session.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("Expected ErrNotFound, not a parent hint, from another campaign, got %v", err)
+	}
 	if err := trash.Restore(ctx, campaignID, "session", session.ID); !errors.Is(err, ErrParentDeleted) {
 		t.Fatalf("Expected ErrParentDeleted, got %v", err)
 	}

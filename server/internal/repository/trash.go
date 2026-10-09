@@ -72,6 +72,16 @@ func (r *TrashRepository) Restore(ctx context.Context, campaignID int64, kind st
 		if s.kind != kind {
 			continue
 		}
+		inTrash, err := hasActive(ctx, r.db,
+			"SELECT EXISTS(SELECT 1 FROM "+s.table+" WHERE id = ? AND campaign_id = ? AND deleted_at IS NOT NULL)",
+			id, campaignID,
+		)
+		if err != nil {
+			return err
+		}
+		if !inTrash {
+			return ErrNotFound
+		}
 		if s.parentDeleted != "" {
 			blocked, err := hasActive(ctx, r.db, s.parentDeleted, id)
 			if err != nil {
@@ -81,7 +91,7 @@ func (r *TrashRepository) Restore(ctx context.Context, campaignID int64, kind st
 				return ErrParentDeleted
 			}
 		}
-		err := r.db.QueryRowContext(ctx,
+		err = r.db.QueryRowContext(ctx,
 			"UPDATE "+s.table+" SET deleted_at = NULL WHERE id = ? AND campaign_id = ? AND deleted_at IS NOT NULL RETURNING id",
 			id, campaignID,
 		).Scan(&id)
