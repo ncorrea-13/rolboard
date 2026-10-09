@@ -41,6 +41,7 @@ type Handlers struct {
 	notes                 *service.NotesService
 	encounters            *service.EncounterService
 	encounterParticipants *service.EncounterParticipantService
+	trash                 *service.TrashService
 }
 
 func NewHandlers(
@@ -64,6 +65,7 @@ func NewHandlers(
 	notes *service.NotesService,
 	encounters *service.EncounterService,
 	encounterParticipants *service.EncounterParticipantService,
+	trash *service.TrashService,
 ) *Handlers {
 	return &Handlers{
 		db:                    db,
@@ -86,5 +88,6 @@ func NewHandlers(
 		notes:                 notes,
 		encounters:            encounters,
 		encounterParticipants: encounterParticipants,
+		trash:                 trash,
 	}
 }
