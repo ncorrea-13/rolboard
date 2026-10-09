@@ -9,6 +9,8 @@ import {
 import "./Modal.css";
 import { useT } from "../lib/i18n";
 
+const openModals: symbol[] = [];
+
 export function Modal({
   title,
   onClose,
@@ -24,20 +26,24 @@ export function Modal({
   const panelRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const close = useEffectEvent(onClose);
+  const [id] = useState(() => Symbol());
   const [opener] = useState(() => document.activeElement as HTMLElement | null);
 
   useEffect(() => {
     if (!panelRef.current?.contains(document.activeElement))
       panelRef.current?.focus();
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") close();
+      if (e.key === "Escape" && openModals[openModals.length - 1] === id)
+        close();
     }
+    openModals.push(id);
     document.addEventListener("keydown", onKeyDown);
     return () => {
+      openModals.splice(openModals.indexOf(id), 1);
       document.removeEventListener("keydown", onKeyDown);
       opener?.focus();
     };
-  }, [opener]);
+  }, [opener, id]);
 
   useLayoutEffect(() => {
     const node = backdropRef.current;
