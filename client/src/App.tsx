@@ -71,6 +71,8 @@ import type { Route } from "./types";
 import { currentLocation, routeToPath } from "./lib/routes";
 import { RouterContext } from "./lib/router";
 import { setErrorReporter } from "./lib/notify";
+import { setConfirmAsker } from "./lib/confirm";
+import { ConfirmDialog } from "./components/ConfirmDialog";
 import { withViewTransition } from "./lib/motion";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
@@ -186,6 +188,20 @@ export default function App() {
       .catch(campaignsLoadFailed);
     checkAdminSession().then(() => forceAdminRerender((v) => v + 1));
   }, []);
+
+  const [confirmRequest, setConfirmRequest] = useState<{
+    message: string;
+    resolve: (accepted: boolean) => void;
+  } | null>(null);
+
+  useEffect(
+    () =>
+      setConfirmAsker(
+        (message) =>
+          new Promise((resolve) => setConfirmRequest({ message, resolve })),
+      ),
+    [],
+  );
 
   const [toast, setToast] = useState<{
     id: number;
@@ -1130,6 +1146,16 @@ export default function App() {
             onCancel={() => setSettingsOpen(false)}
           />
         </Modal>
+      )}
+
+      {confirmRequest && (
+        <ConfirmDialog
+          message={confirmRequest.message}
+          onAnswer={(accepted) => {
+            confirmRequest.resolve(accepted);
+            setConfirmRequest(null);
+          }}
+        />
       )}
 
       {toast && (

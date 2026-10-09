@@ -426,6 +426,8 @@ const dict = {
       "¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.",
     "confirm.deactivateCharacter":
       "¿Dar de baja este personaje? Deja de verse en la campaña, no se borra.",
+    "confirm.title": "Confirmar",
+    "confirm.accept": "Aceptar",
     "confirm.deleteSession": "¿Borrar esta sesión? No se puede deshacer.",
     "confirm.deleteEncounter": "¿Borrar este encuentro? No se puede deshacer.",
     "confirm.deactivateEntityBase": "¿Dar de baja este",
@@ -863,6 +865,8 @@ const dict = {
       "Deactivate this NPC? It stops showing in the campaign, it isn't deleted.",
     "confirm.deactivateCharacter":
       "Deactivate this character? It stops showing in the campaign, it isn't deleted.",
+    "confirm.title": "Confirm",
+    "confirm.accept": "Accept",
     "confirm.deleteSession": "Delete this session? This can't be undone.",
     "confirm.deleteEncounter": "Delete this encounter? This can't be undone.",
     "confirm.deactivateEntityBase": "Deactivate this",

@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import { ApiError, apiFetch, apiImageRequest } from "../lib/api";
+import { askConfirm } from "../lib/confirm";
 import { reportError } from "../lib/notify";
 import {
   locationBreadcrumb,
@@ -472,11 +473,11 @@ export function useCampaignData(
       });
   }
 
-  function deleteNpc(id: string) {
+  async function deleteNpc(id: string) {
     const ledFactions = groups.filter((g) => g.liderNpcId === id);
     const warning =
       ledFactions.length > 0 ? npcLeaderWarning(lang, ledFactions.length) : "";
-    if (!window.confirm(`${t("confirm.deactivateNpc")}${warning}`)) return;
+    if (!(await askConfirm(`${t("confirm.deactivateNpc")}${warning}`))) return;
     apiFetch(`/npcs/${id}`, { method: "DELETE" })
       .then(() => {
         setNpcs((prev) => prev.filter((n) => n.id !== id));
@@ -558,8 +559,8 @@ export function useCampaignData(
       });
   }
 
-  function deletePlayer(id: string) {
-    if (!window.confirm(t("confirm.deactivateCharacter"))) return;
+  async function deletePlayer(id: string) {
+    if (!(await askConfirm(t("confirm.deactivateCharacter")))) return;
     apiFetch(`/player-characters/${id}`, { method: "DELETE" })
       .then(() =>
         setPlayerCharacters((prev) => prev.filter((p) => p.id !== id)),
@@ -602,8 +603,8 @@ export function useCampaignData(
       });
   }
 
-  function deleteSession(id: string) {
-    if (!window.confirm(t("confirm.deleteSession"))) return;
+  async function deleteSession(id: string) {
+    if (!(await askConfirm(t("confirm.deleteSession")))) return;
     apiFetch(`/sessions/${id}`, { method: "DELETE" })
       .then(() => {
         setSessions((prev) => prev.filter((s) => s.id !== id));
@@ -957,8 +958,8 @@ export function useCampaignData(
       });
   }
 
-  function deleteEncounter(id: string) {
-    if (!window.confirm(t("confirm.deleteEncounter"))) return;
+  async function deleteEncounter(id: string) {
+    if (!(await askConfirm(t("confirm.deleteEncounter")))) return;
     apiFetch(`/encounters/${id}`, { method: "DELETE" })
       .then(() => {
         setEncounters((prev) => prev.filter((e) => e.id !== id));
@@ -977,7 +978,7 @@ export function useCampaignData(
     navigate({ name: "section", section: entityKindSection[kind] });
   }
 
-  function deleteEntity(kind: EntityKind, id: string) {
+  async function deleteEntity(kind: EntityKind, id: string) {
     let warning = "";
     if (kind === "arc") {
       const count = campaignSessions.filter((s) => s.arcId === id).length;
@@ -993,9 +994,9 @@ export function useCampaignData(
       warning = locationDependentsWarning(lang, children, npcsHere);
     }
     if (
-      !window.confirm(
+      !(await askConfirm(
         `${t("confirm.deactivateEntityBase")} ${entityKindLabel[lang][kind]}${t("confirm.deactivateEntitySuffix")}${warning}`,
-      )
+      ))
     )
       return;
     if (kind === "location") {
