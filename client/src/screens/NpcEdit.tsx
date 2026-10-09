@@ -91,7 +91,6 @@ export function NpcEdit({
         setLinkNpcId(link.npcId);
       })
       .catch((err) => {
-        console.error("Error cargando vínculo:", err);
         reportError("toast.errorLoading", err);
       });
   }, [npc.id]);
@@ -120,7 +119,6 @@ export function NpcEdit({
           method: "DELETE",
         },
       ).catch((err) => {
-        console.error("Error borrando vínculo:", err);
         reportError("common.toastErrorDeleting", err);
       });
     }
@@ -132,7 +130,6 @@ export function NpcEdit({
           role: linkRole || "VINCULADO",
         }),
       }).catch((err) => {
-        console.error("Error guardando vínculo:", err);
         reportError("common.toastErrorSaving", err);
       });
     }

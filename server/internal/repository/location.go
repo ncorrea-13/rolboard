@@ -109,14 +109,14 @@ func (r *LocationRepository) SetImagePath(ctx context.Context, id int64, path *s
 
 func (r *LocationRepository) Update(ctx context.Context, id int64, l *models.Location) error {
 	var parentLocationID sql.NullInt64
-	var obsidianPath sql.NullString
+	var obsidianPath, imagePath sql.NullString
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE locations
 		SET name = ?, location_type = ?, parent_location_id = ?, description = ?, notes = ?, obsidian_path = ?, updated_at = datetime('now')
 		WHERE id = ? AND deleted_at IS NULL
-		RETURNING id, campaign_id, name, location_type, parent_location_id, description, notes, obsidian_path, created_at, updated_at`,
+		RETURNING id, campaign_id, name, location_type, parent_location_id, description, notes, obsidian_path, image_path, created_at, updated_at`,
 		l.Name, l.LocationType, toNullInt64(l.ParentLocationID), l.Description, l.Notes, toNullString(l.ObsidianPath), id,
-	).Scan(&l.ID, &l.CampaignID, &l.Name, &l.LocationType, &parentLocationID, &l.Description, &l.Notes, &obsidianPath, &l.CreatedAt, &l.UpdatedAt)
+	).Scan(&l.ID, &l.CampaignID, &l.Name, &l.LocationType, &parentLocationID, &l.Description, &l.Notes, &obsidianPath, &imagePath, &l.CreatedAt, &l.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}
@@ -125,10 +125,18 @@ func (r *LocationRepository) Update(ctx context.Context, id int64, l *models.Loc
 	}
 	l.ParentLocationID = fromNullInt64(parentLocationID)
 	l.ObsidianPath = fromNullString(obsidianPath)
+	l.ImagePath = fromNullString(imagePath)
 	return nil
 }
 
 func (r *LocationRepository) Delete(ctx context.Context, id int64) error {
+	if used, err := hasActive(ctx, r.db, `SELECT EXISTS(
+		SELECT 1 FROM npcs WHERE location_id = ?1 AND deleted_at IS NULL
+		UNION ALL SELECT 1 FROM locations WHERE parent_location_id = ?1 AND deleted_at IS NULL)`, id); err != nil {
+		return err
+	} else if used {
+		return ErrInUse
+	}
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE locations
 		SET deleted_at = datetime('now')

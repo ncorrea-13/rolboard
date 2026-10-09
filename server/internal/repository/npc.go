@@ -134,15 +134,15 @@ func (r *NPCRepository) SetImagePath(ctx context.Context, id int64, path *string
 
 func (r *NPCRepository) Update(ctx context.Context, id int64, n *models.NPC) error {
 	var locationID, currentHp, maxHp sql.NullInt64
-	var etnia, rol, tipoSpren, obsidianPath sql.NullString
+	var etnia, rol, tipoSpren, obsidianPath, imagePath sql.NullString
 	var attributes, skills string
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE npcs
 		SET name = ?, npc_kind = ?, detail_level = ?, status = ?, location_id = ?, etnia = ?, rol = ?, tipo_spren = ?, description = ?, notes = ?, attributes = ?, skills = ?, current_hp = ?, max_hp = ?, obsidian_path = ?, updated_at = datetime('now')
 		WHERE id = ? AND deleted_at IS NULL
-		RETURNING id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, current_hp, max_hp, obsidian_path, created_at, updated_at`,
+		RETURNING id, campaign_id, name, npc_kind, detail_level, status, location_id, etnia, rol, tipo_spren, description, notes, attributes, skills, current_hp, max_hp, obsidian_path, image_path, created_at, updated_at`,
 		n.Name, n.NPCKind, n.DetailLevel, n.Status, toNullInt64(n.LocationID), toNullString(n.Etnia), toNullString(n.Rol), toNullString(n.TipoSpren), n.Description, n.Notes, toJSONText(n.Attributes), toJSONText(n.Skills), toNullInt64(n.CurrentHp), toNullInt64(n.MaxHp), toNullString(n.ObsidianPath), id,
-	).Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &n.CreatedAt, &n.UpdatedAt)
+	).Scan(&n.ID, &n.CampaignID, &n.Name, &n.NPCKind, &n.DetailLevel, &n.Status, &locationID, &etnia, &rol, &tipoSpren, &n.Description, &n.Notes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &imagePath, &n.CreatedAt, &n.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}
@@ -158,10 +158,16 @@ func (r *NPCRepository) Update(ctx context.Context, id int64, n *models.NPC) err
 	n.CurrentHp = fromNullInt64(currentHp)
 	n.MaxHp = fromNullInt64(maxHp)
 	n.ObsidianPath = fromNullString(obsidianPath)
+	n.ImagePath = fromNullString(imagePath)
 	return nil
 }
 
 func (r *NPCRepository) Delete(ctx context.Context, id int64) error {
+	if used, err := hasActive(ctx, r.db, `SELECT EXISTS(SELECT 1 FROM player_characters WHERE spren_npc_id = ? AND deleted_at IS NULL)`, id); err != nil {
+		return err
+	} else if used {
+		return ErrInUse
+	}
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE npcs
 		SET deleted_at = datetime('now')

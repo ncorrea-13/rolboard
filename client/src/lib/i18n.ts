@@ -87,6 +87,24 @@ const dict = {
     "sidebar.quests": "Quests",
     "sidebar.encuentros": "Encuentros",
     "sidebar.wardails": "Wardails",
+    "sidebar.papelera": "Papelera",
+    "trash.title": "Papelera",
+    "trash.subtitle": "Lo que diste de baja se puede recuperar acá",
+    "trash.empty": "La papelera está vacía.",
+    "trash.deletedAt": "Borrado el",
+    "trash.restore": "Restaurar",
+    "trash.restored": "Restaurado",
+    "trash.errorRestoring": "Error restaurando",
+    "trash.session": "Sesiones",
+    "trash.arc": "Arcos",
+    "trash.npc": "NPCs",
+    "trash.player_character": "Jugadores",
+    "trash.location": "Locaciones",
+    "trash.group": "Facciones",
+    "trash.quest": "Quests",
+    "trash.encounter": "Encuentros",
+    "apiError.restoreParentDeleted":
+      "depende de un arco o ubicación borrado, restauralo primero",
 
     "skillsEditor.newField": "Nuevo campo…",
     "skillsEditor.add": "Agregar",
@@ -210,6 +228,7 @@ const dict = {
     "sessionsTimeline.sessionsWord": "sesiones",
     "sessionsTimeline.in": "en",
     "sessionsTimeline.plan": "Planificar sesión",
+    "sessionsTimeline.editPlan": "Editar planificación",
     "sessionsTimeline.play": "Jugar sesión",
     "sessionsTimeline.noArc": "Sin arco",
     "sessionsTimeline.noDate": "sin fecha",
@@ -273,12 +292,12 @@ const dict = {
     "playerEdit.new": "Nuevo personaje",
     "playerEdit.characterName": "Nombre del personaje",
     "playerEdit.player": "Jugador",
-    "playerEdit.race": "Raza",
+    "playerEdit.race": "Especie",
     "playerEdit.class": "Clase",
     "playerEdit.currentHp": "HP actual",
     "playerEdit.maxHp": "HP máximo",
     "playerEdit.markedDead": "Personaje marcado como muerto",
-    "playerEdit.missingRace": "Falta definir la raza",
+    "playerEdit.missingRace": "Falta definir la especie",
 
     "questEdit.new": "Nueva quest",
     "questEdit.title": "Título",
@@ -299,7 +318,6 @@ const dict = {
     "sessionEdit.recapPlaceholder": "Qué pasó realmente…",
     "sessionEdit.prepNotesKeptSeparate":
       "Las notas de preparación se guardan aparte, no se sobrescriben.",
-    "sessionEdit.deleteSession": "Borrar sesión",
     "sessionEdit.arc": "Arco",
     "sessionEdit.history": "Historial",
     "sessionEdit.prepNotesOnly": "Notas de preparación",
@@ -359,6 +377,23 @@ const dict = {
     "toast.vaultsRootPermission":
       "Da a Rolboard acceso a todos los archivos y vuelve a elegir la carpeta",
     "toast.errorLoading": "No se pudieron cargar los datos",
+    "toast.errorOpeningLink": "No se pudo abrir el link",
+    "toast.badRequest": "datos inválidos",
+    "toast.forbidden": "no tenés permiso para hacer esto",
+    "toast.notFound": "no se encontró, puede que ya se haya borrado",
+    "toast.conflict": "el cambio choca con otro dato existente",
+    "toast.imageTooLarge": "la imagen es demasiado grande",
+    "apiError.imageUnsupportedFormat":
+      "formato de imagen no soportado, usá PNG o JPEG",
+    "apiError.imageTooLarge": "la imagen es demasiado grande (máximo 5 MiB)",
+    "toast.serverError": "error del servidor",
+    "apiError.sessionConflict": "ya existe una sesión con ese número",
+    "apiError.arcInUse": "el arco tiene sesiones, movelas o borralas primero",
+    "apiError.locationInUse":
+      "la ubicación tiene NPCs o sub-ubicaciones, reasignalos primero",
+    "apiError.npcInUse": "el NPC es el spren de un personaje, cambialo primero",
+    "toast.errorLinkingSession":
+      "La sesión se creó, pero no se pudieron asociar los NPCs o quests esperados",
     "toast.unauthorized": "la sesión expiró o no tenés acceso, volvé a entrar",
     "toast.networkError": "no se pudo conectar con el servidor",
     "toast.missingFields": "Faltan campos obligatorios",
@@ -398,8 +433,12 @@ const dict = {
       "¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.",
     "confirm.deactivateCharacter":
       "¿Dar de baja este personaje? Deja de verse en la campaña, no se borra.",
-    "confirm.deleteSession": "¿Borrar esta sesión? No se puede deshacer.",
-    "confirm.deleteEncounter": "¿Borrar este encuentro? No se puede deshacer.",
+    "confirm.title": "Confirmar",
+    "confirm.accept": "Aceptar",
+    "confirm.deleteSession":
+      "¿Dar de baja esta sesión? Se puede restaurar desde la Papelera.",
+    "confirm.deleteEncounter":
+      "¿Dar de baja este encuentro? Se puede restaurar desde la Papelera.",
     "confirm.deactivateEntityBase": "¿Dar de baja este",
     "confirm.deactivateEntitySuffix":
       "? Deja de verse en la campaña, no se borra.",
@@ -494,6 +533,24 @@ const dict = {
     "sidebar.quests": "Quests",
     "sidebar.encuentros": "Encounters",
     "sidebar.wardails": "Wardails",
+    "sidebar.papelera": "Trash",
+    "trash.title": "Trash",
+    "trash.subtitle": "Anything you deleted can be recovered here",
+    "trash.empty": "The trash is empty.",
+    "trash.deletedAt": "Deleted on",
+    "trash.restore": "Restore",
+    "trash.restored": "Restored",
+    "trash.errorRestoring": "Error restoring",
+    "trash.session": "Sessions",
+    "trash.arc": "Arcs",
+    "trash.npc": "NPCs",
+    "trash.player_character": "Players",
+    "trash.location": "Locations",
+    "trash.group": "Factions",
+    "trash.quest": "Quests",
+    "trash.encounter": "Encounters",
+    "apiError.restoreParentDeleted":
+      "it depends on a deleted arc or location, restore that first",
 
     "skillsEditor.newField": "New field…",
     "skillsEditor.add": "Add",
@@ -617,6 +674,7 @@ const dict = {
     "sessionsTimeline.sessionsWord": "sessions",
     "sessionsTimeline.in": "in",
     "sessionsTimeline.plan": "Plan session",
+    "sessionsTimeline.editPlan": "Edit plan",
     "sessionsTimeline.play": "Play session",
     "sessionsTimeline.noArc": "No arc",
     "sessionsTimeline.noDate": "no date",
@@ -680,12 +738,12 @@ const dict = {
     "playerEdit.new": "New character",
     "playerEdit.characterName": "Character name",
     "playerEdit.player": "Player",
-    "playerEdit.race": "Race",
+    "playerEdit.race": "Species",
     "playerEdit.class": "Class",
     "playerEdit.currentHp": "Current HP",
     "playerEdit.maxHp": "Max HP",
     "playerEdit.markedDead": "Character marked as dead",
-    "playerEdit.missingRace": "Race not set",
+    "playerEdit.missingRace": "Species not set",
 
     "questEdit.new": "New quest",
     "questEdit.title": "Title",
@@ -706,7 +764,6 @@ const dict = {
     "sessionEdit.recapPlaceholder": "What actually happened…",
     "sessionEdit.prepNotesKeptSeparate":
       "Prep notes stay saved separately, they don't get overwritten.",
-    "sessionEdit.deleteSession": "Delete session",
     "sessionEdit.arc": "Arc",
     "sessionEdit.history": "History",
     "sessionEdit.prepNotesOnly": "Prep notes",
@@ -766,6 +823,24 @@ const dict = {
     "toast.vaultsRootPermission":
       "Give Rolboard access to all files and choose the folder again",
     "toast.errorLoading": "Couldn't load data",
+    "toast.errorOpeningLink": "Couldn't open the link",
+    "toast.serverError": "server error",
+    "toast.badRequest": "invalid data",
+    "toast.forbidden": "you don't have permission to do this",
+    "toast.notFound": "not found, it may have been deleted already",
+    "toast.conflict": "the change clashes with existing data",
+    "toast.imageTooLarge": "the image is too large",
+    "apiError.imageUnsupportedFormat":
+      "unsupported image format, use PNG or JPEG",
+    "apiError.imageTooLarge": "the image is too large (max 5 MiB)",
+    "apiError.sessionConflict": "a session with that number already exists",
+    "apiError.arcInUse":
+      "the arc still has sessions, move or delete them first",
+    "apiError.locationInUse":
+      "the location still has NPCs or sub-locations, reassign them first",
+    "apiError.npcInUse": "the NPC is a character's spren, change that first",
+    "toast.errorLinkingSession":
+      "The session was created, but the expected NPCs or quests couldn't be linked",
     "toast.unauthorized":
       "your session expired or you don't have access, log in again",
     "toast.networkError": "couldn't reach the server",
@@ -806,8 +881,12 @@ const dict = {
       "Deactivate this NPC? It stops showing in the campaign, it isn't deleted.",
     "confirm.deactivateCharacter":
       "Deactivate this character? It stops showing in the campaign, it isn't deleted.",
-    "confirm.deleteSession": "Delete this session? This can't be undone.",
-    "confirm.deleteEncounter": "Delete this encounter? This can't be undone.",
+    "confirm.title": "Confirm",
+    "confirm.accept": "Accept",
+    "confirm.deleteSession":
+      "Deactivate this session? You can restore it from the Trash.",
+    "confirm.deleteEncounter":
+      "Deactivate this encounter? You can restore it from the Trash.",
     "confirm.deactivateEntityBase": "Deactivate this",
     "confirm.deactivateEntitySuffix":
       "? It stops showing in the campaign, it isn't deleted.",

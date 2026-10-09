@@ -9,6 +9,7 @@ import {
   Swords,
   Skull,
   Cross,
+  Trash2,
   Settings,
   LogOut,
   PanelLeftClose,
@@ -87,6 +88,12 @@ const navItems: {
     section: "wardails",
     Icon: Cross,
     color: "var(--accent-wardail)",
+  },
+  {
+    labelKey: "sidebar.papelera",
+    section: "papelera",
+    Icon: Trash2,
+    color: "var(--text-secondary)",
   },
 ];
 

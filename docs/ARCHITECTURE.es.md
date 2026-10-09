@@ -69,7 +69,7 @@ Capas del backend: `handlers → service → repository`. El handler solo traduc
 
 ## Despliegue
 
-- CI (`.github/workflows/ci.yml`): build, lint, vet y tests; en push a `main` y en tags `v*` publica `rolboard-server` y `rolboard-client` en GHCR como `latest`, el commit corto y, en los tags, la versión. La imagen del cliente lleva el último tag que contiene (`VITE_APP_VERSION`) para el aviso de actualización.
+- CI (`.github/workflows/ci.yml`): build, lint, vet y tests; solo en tags `v*` publica `rolboard-server` y `rolboard-client` en GHCR como `latest`, el commit corto y la versión. La imagen del cliente lleva el último tag que contiene (`VITE_APP_VERSION`) para el aviso de actualización.
 - Producción: compose del README con imágenes de GHCR y el token como secret.
 - Desarrollo: `docker-compose.yml` buildea desde código, cliente en el namespace de red del servidor (`BACKEND_HOST=localhost`), volumen `campaign_data`.
 - El proxy de Caddy apunta a `{BACKEND_HOST}:8080`; el backend tiene que escuchar en `8080`.

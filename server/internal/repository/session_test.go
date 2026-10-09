@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
@@ -132,5 +133,54 @@ func TestSessionDelete(t *testing.T) {
 	_, err := repo.GetByID(ctx, created.ID)
 	if err != ErrNotFound {
 		t.Errorf("Expected ErrNotFound after delete, got %v", err)
+	}
+}
+
+func TestSessionNumberReusableAfterDelete(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+	repo := NewSessionRepository(db)
+
+	first := &models.Session{CampaignID: campaignID, SessionNumber: 1, SessionType: "session", Date: "2026-01-01"}
+	if err := repo.Create(ctx, first); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	dup := &models.Session{CampaignID: campaignID, SessionNumber: 1, SessionType: "session", Date: "2026-01-02"}
+	if err := repo.Create(ctx, dup); !errors.Is(err, ErrConflict) {
+		t.Fatalf("Expected ErrConflict for active duplicate, got %v", err)
+	}
+	if err := repo.Delete(ctx, first.ID); err != nil {
+		t.Fatalf("Delete failed: %v", err)
+	}
+	if err := repo.Create(ctx, dup); err != nil {
+		t.Fatalf("Expected number to be reusable after delete, got %v", err)
+	}
+}
+
+func TestArcDeleteBlockedByActiveSession(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+	arcRepo := NewArcRepository(db)
+	sessionRepo := NewSessionRepository(db)
+
+	arc := &models.Arc{CampaignID: campaignID, Title: "Arc", Order: 1, Status: "planificado"}
+	if err := arcRepo.Create(ctx, arc); err != nil {
+		t.Fatalf("Create arc failed: %v", err)
+	}
+	session := &models.Session{CampaignID: campaignID, ArcID: &arc.ID, SessionNumber: 1, SessionType: "session", Date: "2026-01-01"}
+	if err := sessionRepo.Create(ctx, session); err != nil {
+		t.Fatalf("Create session failed: %v", err)
+	}
+
+	if err := arcRepo.Delete(ctx, arc.ID); !errors.Is(err, ErrInUse) {
+		t.Fatalf("Expected ErrInUse, got %v", err)
+	}
+	if err := sessionRepo.Delete(ctx, session.ID); err != nil {
+		t.Fatalf("Delete session failed: %v", err)
+	}
+	if err := arcRepo.Delete(ctx, arc.ID); err != nil {
+		t.Fatalf("Expected arc delete to work once sessions are gone, got %v", err)
 	}
 }

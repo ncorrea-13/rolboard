@@ -258,6 +258,10 @@ func (h *Handlers) DeleteNPC(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "NPC not found", http.StatusNotFound)
 		return
 	}
+	if errors.Is(err, repository.ErrInUse) {
+		apiError(w, http.StatusConflict, "npc_in_use")
+		return
+	}
 	if err != nil {
 		http.Error(w, "Error deleting npc", http.StatusInternalServerError)
 		return
@@ -281,7 +285,7 @@ func (h *Handlers) SetNPCImage(w http.ResponseWriter, r *http.Request) {
 	npc, err := h.npcs.SetImage(r.Context(), id, data)
 	switch {
 	case errors.Is(err, imagestore.ErrUnsupportedFormat):
-		http.Error(w, "Unsupported image format: use PNG or JPEG", http.StatusBadRequest)
+		apiError(w, http.StatusBadRequest, "image_unsupported_format")
 		return
 	case errors.Is(err, repository.ErrNotFound):
 		http.Error(w, "NPC not found", http.StatusNotFound)

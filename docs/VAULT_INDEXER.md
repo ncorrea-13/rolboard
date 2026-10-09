@@ -94,7 +94,7 @@ NPCs from the vault are created with `detail_level = full`.
 
 Also, every wikilink in the note's **body** that points to an NPC or PC is added to `session_npcs` / `session_pcs` (replaced on every reindex). Other body wikilinks are ignored.
 
-If the file name contains `ARCHIVADO`, the session is created with `sub_number = 99` and soft-deleted.
+If the file name contains `ARCHIVADO`, the session is created with `sub_number = 99` and soft-deleted. Those sessions are not shown in the trash and can't be restored from it: every reindex archives them again.
 
 ### Players
 

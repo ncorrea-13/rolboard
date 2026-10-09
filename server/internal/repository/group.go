@@ -11,13 +11,20 @@ type GroupRepository struct {
 	db *sql.DB
 }
 
+const memberCountSQL = `(SELECT COUNT(*) FROM npc_groups JOIN npcs ON npcs.id = npc_groups.npc_id
+	WHERE npc_groups.group_id = groups.id AND npc_groups.source != 'removed' AND npcs.deleted_at IS NULL)`
+
+func (r *GroupRepository) loadMemberCount(ctx context.Context, g *models.Group) error {
+	return r.db.QueryRowContext(ctx, `SELECT `+memberCountSQL+` FROM groups WHERE id = ?`, g.ID).Scan(&g.MemberCount)
+}
+
 func NewGroupRepository(db *sql.DB) *GroupRepository {
 	return &GroupRepository{db: db}
 }
 
 func (r *GroupRepository) List(ctx context.Context, campaignID int64) ([]models.Group, error) {
 	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path, image_path,
-			(SELECT COUNT(*) FROM npc_groups WHERE npc_groups.group_id = groups.id) AS member_count,
+			`+memberCountSQL+` AS member_count,
 			created_at, updated_at
 		FROM groups WHERE campaign_id = ? AND deleted_at IS NULL ORDER BY name`,
 		campaignID,
@@ -67,7 +74,7 @@ func (r *GroupRepository) Create(ctx context.Context, g *models.Group) error {
 	}
 	g.ObsidianPath = fromNullString(obsidianPath)
 	g.LiderNPCID = fromNullInt64(liderNPCID)
-	return nil
+	return r.loadMemberCount(ctx, g)
 }
 
 func (r *GroupRepository) GetByID(ctx context.Context, id int64) (*models.Group, error) {
@@ -75,10 +82,11 @@ func (r *GroupRepository) GetByID(ctx context.Context, id int64) (*models.Group,
 	var obsidianPath, imagePath sql.NullString
 	var liderNPCID sql.NullInt64
 	err := r.db.QueryRowContext(ctx, `
-		SELECT id, campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path, image_path, created_at, updated_at
+		SELECT id, campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path, image_path,
+			`+memberCountSQL+`, created_at, updated_at
 		FROM groups WHERE id = ? AND deleted_at IS NULL`,
 		id,
-	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &g.Alineacion, &liderNPCID, &obsidianPath, &imagePath, &g.CreatedAt, &g.UpdatedAt)
+	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &g.Alineacion, &liderNPCID, &obsidianPath, &imagePath, &g.MemberCount, &g.CreatedAt, &g.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -212,15 +220,15 @@ func (r *GroupRepository) RemoveMember(ctx context.Context, groupID, npcID int64
 }
 
 func (r *GroupRepository) Update(ctx context.Context, id int64, g *models.Group) error {
-	var obsidianPath sql.NullString
+	var obsidianPath, imagePath sql.NullString
 	var liderNPCID sql.NullInt64
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE groups
 		SET name = ?, description = ?, notes = ?, alineacion = ?, lider_npc_id = ?, obsidian_path = ?, updated_at = datetime('now')
 		WHERE id = ? AND deleted_at IS NULL
-		RETURNING id, campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path, created_at, updated_at`,
+		RETURNING id, campaign_id, name, description, notes, alineacion, lider_npc_id, obsidian_path, image_path, created_at, updated_at`,
 		g.Name, g.Description, g.Notes, g.Alineacion, toNullInt64(g.LiderNPCID), toNullString(g.ObsidianPath), id,
-	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &g.Alineacion, &liderNPCID, &obsidianPath, &g.CreatedAt, &g.UpdatedAt)
+	).Scan(&g.ID, &g.CampaignID, &g.Name, &g.Description, &g.Notes, &g.Alineacion, &liderNPCID, &obsidianPath, &imagePath, &g.CreatedAt, &g.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}
@@ -228,8 +236,9 @@ func (r *GroupRepository) Update(ctx context.Context, id int64, g *models.Group)
 		return err
 	}
 	g.ObsidianPath = fromNullString(obsidianPath)
+	g.ImagePath = fromNullString(imagePath)
 	g.LiderNPCID = fromNullInt64(liderNPCID)
-	return nil
+	return r.loadMemberCount(ctx, g)
 }
 
 func (r *GroupRepository) Delete(ctx context.Context, id int64) error {

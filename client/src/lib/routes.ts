@@ -16,6 +16,7 @@ const slugBySection: Record<DashboardSection, string> = {
   jugadores: "players",
   encuentros: "encounters",
   wardails: "wardails",
+  papelera: "trash",
 };
 
 const sectionBySlug = new Map(
