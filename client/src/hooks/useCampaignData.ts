@@ -186,16 +186,31 @@ export function useCampaignData(
       .catch((err) => loadFailed(err));
   }, [activeCampaignId, reloadKey]);
 
-  const [npcTypes, setNpcTypes] = useState<NpcType[]>([]);
+  const [npcTypeState, setNpcTypeState] = useState<{
+    campaignId: string | null;
+    types: NpcType[];
+  }>({ campaignId: null, types: [] });
+  const npcTypes =
+    npcTypeState.campaignId === activeCampaignId ? npcTypeState.types : [];
   setNpcTypeRegistry(npcTypes);
 
+  function setNpcTypes(update: (prev: NpcType[]) => NpcType[]) {
+    setNpcTypeState((s) => ({
+      campaignId: activeCampaignId,
+      types: update(s.campaignId === activeCampaignId ? s.types : []),
+    }));
+  }
+
   useEffect(() => {
-    setNpcTypes([]);
     if (!activeCampaignId) return;
     let stale = false;
     apiFetch<ApiNpcType[]>(`/campaigns/${activeCampaignId}/npc-types`)
       .then((data) => {
-        if (!stale) setNpcTypes((data ?? []).map(mapNpcType));
+        if (!stale)
+          setNpcTypeState({
+            campaignId: activeCampaignId,
+            types: (data ?? []).map(mapNpcType),
+          });
       })
       .catch((err) => loadFailed(err));
     return () => {

@@ -1,50 +1,17 @@
 import type { ReactNode } from "react";
-import { Author, Callout, Code, ForMode } from "../components/HelpBlocks";
+import {
+  Author,
+  Callout,
+  CalloutTypes,
+  Code,
+  ForMode,
+} from "../components/HelpBlocks";
 import type { Lang } from "../lib/i18n";
 
 export interface HelpSection {
   id: string;
   title: string;
   body: ReactNode;
-}
-
-const CALLOUT_TYPES: [string, string[]][] = [
-  ["NOTE", []],
-  ["ABSTRACT", ["SUMMARY", "TLDR"]],
-  ["INFO", []],
-  ["TODO", []],
-  ["TIP", ["HINT", "IMPORTANT"]],
-  ["SUCCESS", ["CHECK", "DONE"]],
-  ["QUESTION", ["HELP", "FAQ"]],
-  ["WARNING", ["CAUTION", "ATTENTION"]],
-  ["FAILURE", ["FAIL", "MISSING"]],
-  ["DANGER", ["ERROR"]],
-  ["BUG", []],
-  ["EXAMPLE", []],
-  ["QUOTE", ["CITE"]],
-];
-
-function CalloutTypes({ aliasLabel }: { aliasLabel: string }) {
-  return (
-    <ul>
-      {CALLOUT_TYPES.map(([kind, aliases]) => (
-        <li key={kind}>
-          <code>[!{kind}]</code>
-          {aliases.length > 0 && (
-            <>
-              {` — ${aliasLabel}: `}
-              {aliases.map((a, i) => (
-                <span key={a}>
-                  {i > 0 && ", "}
-                  <code>{a}</code>
-                </span>
-              ))}
-            </>
-          )}
-        </li>
-      ))}
-    </ul>
-  );
 }
 
 const CALLOUT_EXAMPLE = `> [!NOTE]
