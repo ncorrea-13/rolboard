@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import "./App.css";
 import {
   apiFetch,
@@ -54,6 +54,8 @@ import { SecretEdit } from "./screens/SecretEdit";
 import { useSecrets } from "./hooks/useSecrets";
 import { ItemsSection } from "./screens/ItemsSection";
 import { useEconomy } from "./hooks/useEconomy";
+import { CommandPalette } from "./components/CommandPalette";
+import { buildSearchItems } from "./lib/searchIndex";
 import {
   appearsForGroup,
   appearsForLocation,
@@ -371,6 +373,55 @@ export default function App() {
     deleteItem,
   } = useEconomy(activeCampaignId, reloadKey, notify);
 
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchItems = useMemo(
+    () =>
+      buildSearchItems({
+        npcs: campaignNpcs,
+        players: campaignPlayerCharacters,
+        locations: campaignLocations,
+        groups: campaignGroups,
+        arcs: campaignArcs,
+        quests: campaignQuests,
+        sessions: campaignSessions,
+        encounters: campaignEncounters,
+        loreEntries,
+        secrets,
+        notes: looseNotes,
+        items,
+        currencies,
+        timelineEvents,
+      }),
+    [
+      campaignNpcs,
+      campaignPlayerCharacters,
+      campaignLocations,
+      campaignGroups,
+      campaignArcs,
+      campaignQuests,
+      campaignSessions,
+      campaignEncounters,
+      loreEntries,
+      secrets,
+      looseNotes,
+      items,
+      currencies,
+      timelineEvents,
+    ],
+  );
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [activeCampaignId]);
+
   const appearsCtx: AppearsContext = {
     npcs: campaignNpcs,
     loreEntries,
@@ -593,6 +644,7 @@ export default function App() {
           onNavigate={(section) => navigate({ name: "section", section })}
           onBackToCampaigns={() => navigate({ name: "campaigns" })}
           onOpenSettings={() => setSettingsOpen(true)}
+          onSearch={() => setSearchOpen(true)}
           onHelp={openHelp}
           onAdminLogout={
             hasAdminSecret() && !isLocalMode()
@@ -606,6 +658,16 @@ export default function App() {
               : undefined
           }
         >
+          {searchOpen && (
+            <CommandPalette
+              items={searchItems}
+              onSelect={(item) => {
+                setSearchOpen(false);
+                navigate(item.route);
+              }}
+              onClose={() => setSearchOpen(false)}
+            />
+          )}
           {route.name === "section" && route.section === "resumen" && (
             <CampaignDashboard
               campaign={activeCampaign}
