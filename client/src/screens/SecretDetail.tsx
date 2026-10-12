@@ -56,13 +56,7 @@ export function SecretDetail({
             className="status-dot"
             style={{ background: secretTone[secret.status] }}
           />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {secret.title}
           </span>
           <span
