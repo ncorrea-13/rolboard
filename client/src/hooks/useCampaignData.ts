@@ -838,7 +838,7 @@ export function useCampaignData(
       });
   }
 
-  function createArc(patch: Partial<Arc>) {
+  function createArc(patch: Partial<Arc>, image?: File) {
     const draft: Arc = {
       ...blankArcDraft,
       ...patch,
@@ -858,6 +858,7 @@ export function useCampaignData(
       .then((created) => {
         const arc = mapArc(created);
         setArcs((prev) => [...prev, arc]);
+        if (image) uploadArcImage(arc.id, image).catch(() => {});
         navigate(
           { name: "entity-detail", kind: "arc", id: arc.id },
           { replace: true },
@@ -894,7 +895,7 @@ export function useCampaignData(
       });
   }
 
-  function createQuest(patch: Partial<Quest>) {
+  function createQuest(patch: Partial<Quest>, image?: File) {
     const draft: Quest = {
       ...blankQuestDraft,
       ...patch,
@@ -908,6 +909,7 @@ export function useCampaignData(
       .then((created) => {
         const quest = mapQuest(created);
         setQuests((prev) => [...prev, quest]);
+        if (image) uploadQuestImage(quest.id, image).catch(() => {});
         navigate(
           { name: "entity-detail", kind: "quest", id: quest.id },
           { replace: true },
@@ -1176,6 +1178,58 @@ export function useCampaignData(
       });
   }
 
+  function uploadArcImage(id: string, file: File) {
+    return apiImageRequest<ApiArc>(`/arcs/${id}/image`, "POST", file)
+      .then((updated) => {
+        const mapped = mapArc(updated);
+        setArcs((prev) => prev.map((a) => (a.id === id ? mapped : a)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        notify(t("common.toastErrorSaving"), "error", err);
+        throw err;
+      });
+  }
+
+  function removeArcImage(id: string) {
+    return apiImageRequest<ApiArc>(`/arcs/${id}/image`, "DELETE")
+      .then((updated) => {
+        const mapped = mapArc(updated);
+        setArcs((prev) => prev.map((a) => (a.id === id ? mapped : a)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        notify(t("common.toastErrorDeleting"), "error", err);
+        throw err;
+      });
+  }
+
+  function uploadQuestImage(id: string, file: File) {
+    return apiImageRequest<ApiQuest>(`/quests/${id}/image`, "POST", file)
+      .then((updated) => {
+        const mapped = mapQuest(updated);
+        setQuests((prev) => prev.map((q) => (q.id === id ? mapped : q)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        notify(t("common.toastErrorSaving"), "error", err);
+        throw err;
+      });
+  }
+
+  function removeQuestImage(id: string) {
+    return apiImageRequest<ApiQuest>(`/quests/${id}/image`, "DELETE")
+      .then((updated) => {
+        const mapped = mapQuest(updated);
+        setQuests((prev) => prev.map((q) => (q.id === id ? mapped : q)));
+        setImageVersion((v) => v + 1);
+      })
+      .catch((err) => {
+        notify(t("common.toastErrorDeleting"), "error", err);
+        throw err;
+      });
+  }
+
   return {
     npcTypes,
     createNpcType,
@@ -1231,5 +1285,9 @@ export function useCampaignData(
     removeLocationImage,
     uploadGroupImage,
     removeGroupImage,
+    uploadArcImage,
+    removeArcImage,
+    uploadQuestImage,
+    removeQuestImage,
   };
 }

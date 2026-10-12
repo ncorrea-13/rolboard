@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState } from "react";
-import { apiFetch } from "../lib/api";
+import { apiFetch, apiImageRequest } from "../lib/api";
 import { askConfirm } from "../lib/confirm";
 import { useT } from "../lib/i18n";
 import {
@@ -24,6 +24,7 @@ export function useEconomy(
   campaignId: string | null,
   reloadKey: number,
   notify: Notify,
+  onImageChange: () => void,
 ) {
   const t = useT();
   const [currencies, setCurrencies] = useState<Currency[]>([]);
@@ -99,7 +100,7 @@ export function useEconomy(
     }
   }
 
-  async function saveItem(id: string | null, values: ItemValues) {
+  async function saveItem(id: string | null, values: ItemValues, image?: File) {
     try {
       const body = JSON.stringify(itemToApiPayload(values));
       if (id) {
@@ -114,10 +115,40 @@ export function useEconomy(
           { method: "POST", body },
         );
         setItems((prev) => [...prev, mapItem(created)]);
+        if (image) await uploadItemImage(String(created.id), image);
       }
       return true;
     } catch (err) {
       return fail("toastErrorSaving", "common.nounItem", err);
+    }
+  }
+
+  async function uploadItemImage(id: string, file: File) {
+    try {
+      const updated = await apiImageRequest<ApiItem>(
+        `/items/${id}/image`,
+        "POST",
+        file,
+      );
+      setItems((prev) => prev.map((i) => (i.id === id ? mapItem(updated) : i)));
+      onImageChange();
+    } catch (err) {
+      notify(t("common.toastErrorSaving"), "error", err);
+      throw err;
+    }
+  }
+
+  async function removeItemImage(id: string) {
+    try {
+      const updated = await apiImageRequest<ApiItem>(
+        `/items/${id}/image`,
+        "DELETE",
+      );
+      setItems((prev) => prev.map((i) => (i.id === id ? mapItem(updated) : i)));
+      onImageChange();
+    } catch (err) {
+      notify(t("common.toastErrorDeleting"), "error", err);
+      throw err;
     }
   }
 
@@ -139,5 +170,7 @@ export function useEconomy(
     deleteCurrency,
     saveItem,
     deleteItem,
+    uploadItemImage,
+    removeItemImage,
   };
 }
