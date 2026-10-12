@@ -422,3 +422,17 @@ export interface LooseNote {
   updatedAt: string;
 }
 
+export type LoreCategory = NpcType;
+
+export interface LoreEntry {
+  id: string;
+  campaignId: string;
+  categoryId?: string;
+  title: string;
+  body: string;
+  arcId?: string;
+  locationId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+

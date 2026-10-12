@@ -15,6 +15,7 @@ import {
   type QuestStatus,
   type Session,
   type LooseNote,
+  type LoreEntry,
   type SessionType,
   type StatMap,
   type StatusKind,
@@ -574,5 +575,43 @@ export function looseNoteToApiPayload(
   n: Pick<LooseNote, "title" | "body" | "pending">,
 ) {
   return { title: n.title, body: n.body, pending: n.pending };
+}
+
+export interface ApiLoreEntry {
+  id: number;
+  campaign_id: number;
+  category_id?: number;
+  title: string;
+  body: string;
+  arc_id?: number;
+  location_id?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function mapLoreEntry(e: ApiLoreEntry): LoreEntry {
+  return {
+    id: String(e.id),
+    campaignId: String(e.campaign_id),
+    categoryId: e.category_id ? String(e.category_id) : undefined,
+    title: e.title,
+    body: e.body,
+    arcId: e.arc_id ? String(e.arc_id) : undefined,
+    locationId: e.location_id ? String(e.location_id) : undefined,
+    createdAt: e.created_at,
+    updatedAt: e.updated_at,
+  };
+}
+
+export function loreEntryToApiPayload(
+  e: Pick<LoreEntry, "title" | "body" | "categoryId" | "arcId" | "locationId">,
+) {
+  return {
+    title: e.title,
+    body: e.body,
+    category_id: e.categoryId ? Number(e.categoryId) : null,
+    arc_id: e.arcId ? Number(e.arcId) : null,
+    location_id: e.locationId ? Number(e.locationId) : null,
+  };
 }
 

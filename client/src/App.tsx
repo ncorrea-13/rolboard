@@ -43,6 +43,10 @@ import { NotesList } from "./screens/NotesList";
 import { NoteDetail } from "./screens/NoteDetail";
 import { NoteEdit } from "./screens/NoteEdit";
 import { useLooseNotes } from "./hooks/useLooseNotes";
+import { LoreDetail } from "./screens/LoreDetail";
+import { LoreEdit } from "./screens/LoreEdit";
+import { LoreList } from "./screens/LoreList";
+import { useLore } from "./hooks/useLore";
 import { ArcsList } from "./screens/ArcsList";
 import { FactionsList } from "./screens/FactionsList";
 import { LocationsList } from "./screens/LocationsList";
@@ -60,7 +64,7 @@ import {
   LocationDetail,
   QuestDetail,
 } from "./screens/EntityDetails";
-import type { Campaign, LooseNote } from "./data/domain";
+import type { Campaign, LooseNote, LoreEntry } from "./data/domain";
 import { entityKindSection } from "./data/entityForms";
 import {
   mapCampaign,
@@ -81,6 +85,15 @@ import { withViewTransition } from "./lib/motion";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 type HistoryMode = "push" | "replace" | "none";
+
+const blankLoreEntry: LoreEntry = {
+  id: "",
+  campaignId: "",
+  title: "",
+  body: "",
+  createdAt: "",
+  updatedAt: "",
+};
 
 const blankLooseNote: LooseNote = {
   id: "",
@@ -305,6 +318,15 @@ export default function App() {
     deleteLooseNote,
   } = useLooseNotes(activeCampaignId, reloadKey, navigate, notify);
 
+  const {
+    loreEntries,
+    loreCategories,
+    loreCategoriesApi,
+    createLoreEntry,
+    saveLoreEntry,
+    deleteLoreEntry,
+  } = useLore(activeCampaignId, reloadKey, navigate, notify);
+
   const npcTypesApi: NpcTypesApi = {
     types: npcTypes,
     onCreate: createNpcType,
@@ -470,6 +492,10 @@ export default function App() {
                             route.name === "note-edit" ||
                             route.name === "note-create"
                           ? "notas"
+                          : route.name === "lore-detail" ||
+                              route.name === "lore-edit" ||
+                              route.name === "lore-create"
+                            ? "mundo"
                               : "resumen";
 
   if (helpOpen) {
@@ -626,6 +652,68 @@ export default function App() {
               onCreate={() => createEncounter()}
             />
           )}
+          {route.name === "section" && route.section === "mundo" && (
+            <LoreList
+              entries={loreEntries}
+              categories={loreCategories}
+              categoriesApi={loreCategoriesApi}
+              arcs={campaignArcs}
+              locations={campaignLocations}
+              onCreate={() => navigate({ name: "lore-create" })}
+            />
+          )}
+          {route.name === "lore-create" && (
+            <LoreEdit
+              entry={blankLoreEntry}
+              categories={loreCategories}
+              arcs={campaignArcs}
+              locations={campaignLocations}
+              onSave={createLoreEntry}
+              onDiscard={() => navigate({ name: "section", section: "mundo" })}
+            />
+          )}
+          {route.name === "lore-detail" &&
+            (() => {
+              const entry = loreEntries.find((e) => e.id === route.entryId);
+              if (!entry) return null;
+              return (
+                <LoreDetail
+                  key={entry.id}
+                  entry={entry}
+                  category={loreCategories.find(
+                    (c) => c.id === entry.categoryId,
+                  )}
+                  arc={campaignArcs.find((a) => a.id === entry.arcId)}
+                  location={campaignLocations.find(
+                    (l) => l.id === entry.locationId,
+                  )}
+                  locations={campaignLocations}
+                  onBack={() => navigate({ name: "section", section: "mundo" })}
+                  onEdit={() =>
+                    navigate({ name: "lore-edit", entryId: entry.id })
+                  }
+                  onDelete={() => deleteLoreEntry(entry.id)}
+                />
+              );
+            })()}
+          {route.name === "lore-edit" &&
+            (() => {
+              const entry = loreEntries.find((e) => e.id === route.entryId);
+              if (!entry) return null;
+              return (
+                <LoreEdit
+                  key={entry.id}
+                  entry={entry}
+                  categories={loreCategories}
+                  arcs={campaignArcs}
+                  locations={campaignLocations}
+                  onSave={(values) => saveLoreEntry(entry.id, values)}
+                  onDiscard={() =>
+                    navigate({ name: "lore-detail", entryId: entry.id })
+                  }
+                />
+              );
+            })()}
           {route.name === "section" && route.section === "notas" && (
             <NotesList
               notes={looseNotes}

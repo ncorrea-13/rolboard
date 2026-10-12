@@ -25,6 +25,9 @@ export type Route =
   | { name: "note-detail"; noteId: string }
   | { name: "note-edit"; noteId: string }
   | { name: "note-create" }
+  | { name: "lore-detail"; entryId: string }
+  | { name: "lore-edit"; entryId: string }
+  | { name: "lore-create" }
   | { name: "faction-edit"; factionId: string }
   | { name: "faction-create" }
   | { name: "location-edit"; locationId: string }

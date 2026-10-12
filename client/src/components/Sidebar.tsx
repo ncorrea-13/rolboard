@@ -10,6 +10,7 @@ import {
   Skull,
   Cross,
   StickyNote,
+  Earth,
   Trash2,
   Settings,
   LogOut,
@@ -89,6 +90,12 @@ const navItems: {
     section: "wardails",
     Icon: Cross,
     color: "var(--accent-wardail)",
+  },
+  {
+    labelKey: "sidebar.mundo",
+    section: "mundo",
+    Icon: Earth,
+    color: "var(--accent-lime)",
   },
   {
     labelKey: "sidebar.notas",
