@@ -164,13 +164,7 @@ export function SessionEdit({
         <div className="npc-edit__bar npc-edit__bar--played">
           <div className="npc-edit__bar-left">
             <span className="status-dot" />
-            <span
-              style={{
-                fontWeight: 500,
-                fontSize: 13.5,
-                color: "var(--text-primary)",
-              }}
-            >
+            <span className="npc-edit__title" role="heading" aria-level={1}>
               {t("sessionEdit.confirmingPlay")} · {sessionPrefix}{" "}
               {sessionCode(session)} {arc ? `· ${arc.label}` : ""}
             </span>
@@ -256,6 +250,7 @@ export function SessionEdit({
               <div>
                 <span className="label">{t("sessionEdit.realDate")}</span>
                 <input
+                  aria-label={t("sessionEdit.realDate")}
                   type="date"
                   className="npc-edit__input"
                   value={playDate}
@@ -302,6 +297,7 @@ export function SessionEdit({
     <div>
       <span className="label">{t("sessionEdit.titleLabel")}</span>
       <input
+        aria-label={t("sessionEdit.titleLabel")}
         className="npc-edit__input"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -320,6 +316,7 @@ export function SessionEdit({
         {played ? t("sessionEdit.realDate") : t("newSessionForm.date")}
       </span>
       <input
+        aria-label={t(played ? "sessionEdit.realDate" : "newSessionForm.date")}
         type="date"
         className="npc-edit__input"
         value={date}
@@ -331,6 +328,7 @@ export function SessionEdit({
     <div>
       <span className="label">{t("sessionEdit.arc")}</span>
       <select
+        aria-label={t("sessionEdit.arc")}
         className="npc-edit__select npc-edit__select--native"
         value={arcId}
         onChange={(e) => setArcId(e.target.value)}
@@ -402,19 +400,19 @@ export function SessionEdit({
       >
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {sessionPrefix} {sessionCode(session)}{" "}
             {title.trim() ? `· ${title.trim()} ` : ""}
             {arc ? `· ${arc.label}` : ""}{" "}
-            {played
-              ? t("sessionEdit.playedSuffix")
-              : t("sessionEdit.plannedSuffix")}
+            {t(
+              session.sessionType === "oneshot"
+                ? played
+                  ? "sessionEdit.playedSuffixMasc"
+                  : "sessionEdit.plannedSuffixMasc"
+                : played
+                  ? "sessionEdit.playedSuffix"
+                  : "sessionEdit.plannedSuffix",
+            )}
           </span>
         </div>
         <div className="npc-edit__bar-actions">
