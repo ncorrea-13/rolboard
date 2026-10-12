@@ -126,7 +126,7 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 | race, class        | free text; `class` dashboard only |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` (default) |
 | spren_npc_id       | optional, reindex only |
-| backstory, progression_notes | dashboard only |
+| description, backstory, progression_notes | dashboard only; the reindex never overwrites them (nor `class`) |
 | attributes, skills | JSON |
 | current_hp, max_hp | optional; persist across encounters |
 | obsidian_path      | |

@@ -65,11 +65,10 @@ func (r *PlayerCharacterRepository) Create(ctx context.Context, p *models.Player
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
 			player_name = excluded.player_name, character_name = excluded.character_name,
-			race = excluded.race, class = excluded.class, status = excluded.status,
-			backstory = excluded.backstory, progression_notes = excluded.progression_notes, deleted_at = NULL, updated_at = datetime('now')
-		RETURNING id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, created_at, updated_at`,
-		p.CampaignID, p.PlayerName, p.CharacterName, p.Race, p.Class, p.Status, p.Backstory, p.ProgressionNotes, toJSONText(p.Attributes), toJSONText(p.Skills), toNullInt64(p.CurrentHp), toNullInt64(p.MaxHp), toNullString(p.ObsidianPath),
-	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt)
+			race = excluded.race, status = excluded.status, deleted_at = NULL, updated_at = datetime('now')
+		RETURNING id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, description, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, created_at, updated_at`,
+		p.CampaignID, p.PlayerName, p.CharacterName, p.Race, p.Class, p.Status, p.Description, p.Backstory, p.ProgressionNotes, toJSONText(p.Attributes), toJSONText(p.Skills), toNullInt64(p.CurrentHp), toNullInt64(p.MaxHp), toNullString(p.ObsidianPath),
+	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Description, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		return err
 	}

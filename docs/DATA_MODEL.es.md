@@ -126,7 +126,7 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 | race, class        | texto libre; `class` solo dashboard |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` (default) |
 | spren_npc_id       | opcional, solo reindex |
-| backstory, progression_notes | solo dashboard |
+| description, backstory, progression_notes | solo dashboard; el reindex nunca los pisa (ni `class`) |
 | attributes, skills | JSON |
 | current_hp, max_hp | opcionales; persisten entre combates |
 | obsidian_path      | |
