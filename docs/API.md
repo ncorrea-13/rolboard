@@ -167,7 +167,7 @@ DELETE /api/player-characters/{id}/image
 GET    /api/player-characters/{id}/image
 ```
 
-Body: `player_name`, `character_name`, `race`, `class`, `status` (`vivo` | `muerto` | `desaparecido` | `activo`), `backstory`, `progression_notes`, `attributes`, `skills`, `current_hp`, `max_hp`, `obsidian_path`.
+Body: `player_name`, `character_name`, `race`, `class`, `status` (`vivo` | `muerto` | `desaparecido` | `activo`), `description`, `backstory`, `progression_notes`, `attributes`, `skills`, `current_hp`, `max_hp`, `obsidian_path`.
 
 `spren_npc_id`, `historia_path` and `avances_path` are only written by the reindex.
 

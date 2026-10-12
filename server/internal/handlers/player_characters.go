@@ -18,6 +18,7 @@ type CreatePlayerCharacterPayload struct {
 	Race             string          `json:"race"`
 	Class            string          `json:"class"`
 	Status           string          `json:"status"`
+	Description      string          `json:"description"`
 	Backstory        string          `json:"backstory"`
 	ProgressionNotes string          `json:"progression_notes"`
 	Attributes       json.RawMessage `json:"attributes"`
@@ -33,6 +34,7 @@ type UpdatePlayerCharacterPayload struct {
 	Race             string          `json:"race"`
 	Class            string          `json:"class"`
 	Status           string          `json:"status"`
+	Description      string          `json:"description"`
 	Backstory        string          `json:"backstory"`
 	ProgressionNotes string          `json:"progression_notes"`
 	Attributes       json.RawMessage `json:"attributes"`
@@ -92,6 +94,7 @@ func (h *Handlers) CreatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 		Race:             payload.Race,
 		Class:            payload.Class,
 		Status:           payload.Status,
+		Description:      payload.Description,
 		Backstory:        payload.Backstory,
 		ProgressionNotes: payload.ProgressionNotes,
 		Attributes:       payload.Attributes,
@@ -158,6 +161,7 @@ func (h *Handlers) UpdatePlayerCharacter(w http.ResponseWriter, r *http.Request)
 		Race:             payload.Race,
 		Class:            payload.Class,
 		Status:           payload.Status,
+		Description:      payload.Description,
 		Backstory:        payload.Backstory,
 		ProgressionNotes: payload.ProgressionNotes,
 		Attributes:       payload.Attributes,
