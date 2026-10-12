@@ -102,7 +102,7 @@
   margin-bottom: 6px;
   font-style: normal;
   font-weight: 600;
-  color: var(--c);
+  color: color-mix(in srgb, var(--c) 65%, var(--text-primary));
 }
 
 .callout .callout-title::before {
