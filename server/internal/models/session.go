@@ -7,6 +7,8 @@ type Session struct {
 	SessionNumber int64   `json:"session_number"`
 	SubNumber     int64   `json:"sub_number"`
 	SessionType   string  `json:"session_type"`
+	Title         string  `json:"title"`
+	Planned       bool    `json:"planned"`
 	Date          string  `json:"date"`
 	Summary       string  `json:"summary"`
 	PrepNotes     string  `json:"prep_notes"`

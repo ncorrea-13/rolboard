@@ -6,6 +6,7 @@ import "./NpcEdit.css";
 import { MarkdownText } from "../components/MarkdownText";
 import { apiFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
 
 const MAX_LENGTH = 20000;
 
@@ -96,16 +97,13 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
       <div className="list-page__rows">
         {editing ? (
           <>
-            <span className="label">
-              {t("wardails.title")} {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              style={{ minHeight: 260 }}
+            <MarkdownField
+              label={`${t("wardails.title")} ${t("common.supportsMarkdown")}`}
+              minHeight={260}
               maxLength={MAX_LENGTH}
               placeholder={t("wardails.placeholder")}
               value={draft}
-              onChange={(e) => setDraft(e.target.value)}
+              onChange={setDraft}
             />
           </>
         ) : saved.trim() ? (

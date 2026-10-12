@@ -86,6 +86,40 @@ func TestPlayerCharacterUpdate(t *testing.T) {
 	}
 }
 
+func TestPlayerCharacterReindexKeepsDashboardFields(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+
+	repo := NewPlayerCharacterRepository(db)
+	path := "Jugadores/Shallan.md"
+	created := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "Shallan", Status: "activo", ObsidianPath: &path}
+	if err := repo.Create(ctx, created); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+
+	edited := &models.PlayerCharacter{PlayerName: "Nico", CharacterName: "Shallan", Status: "activo", Class: "Lightweaver", Description: "Desc", Backstory: "Story", ProgressionNotes: "Progress", ObsidianPath: &path}
+	if err := repo.Update(ctx, created.ID, edited); err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+
+	reindexed := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "Shallan", Race: "Human", Status: "activo", ObsidianPath: &path}
+	if err := repo.Create(ctx, reindexed); err != nil {
+		t.Fatalf("reindex Create failed: %v", err)
+	}
+
+	got, err := repo.GetByID(ctx, created.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if got.Race != "Human" {
+		t.Errorf("Expected race from vault 'Human', got %q", got.Race)
+	}
+	if got.Class != "Lightweaver" || got.Description != "Desc" || got.Backstory != "Story" || got.ProgressionNotes != "Progress" {
+		t.Errorf("Reindex overwrote dashboard fields: class=%q description=%q backstory=%q progression=%q", got.Class, got.Description, got.Backstory, got.ProgressionNotes)
+	}
+}
+
 func TestPlayerCharacterDelete(t *testing.T) {
 	db := setupTestDB(t)
 	ctx := context.Background()

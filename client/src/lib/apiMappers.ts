@@ -14,6 +14,16 @@ import {
   type Quest,
   type QuestStatus,
   type Session,
+  type LooseNote,
+  type LoreEntry,
+  type Timeline,
+  type Secret,
+  type Currency,
+  type Item,
+  type ItemPrice,
+  type InventoryEntry,
+  type ShopEntry,
+  type TimelineEvent,
   type SessionType,
   type StatMap,
   type StatusKind,
@@ -356,6 +366,7 @@ export interface ApiPlayerCharacter {
   race: string;
   class: string;
   status: string;
+  description: string;
   backstory: string;
   progression_notes: string;
   attributes?: StatMap;
@@ -377,6 +388,7 @@ export function mapPlayerCharacter(p: ApiPlayerCharacter): PlayerCharacter {
     race: p.race,
     class: p.class,
     status: apiStatusToStatusKind[p.status] ?? "alive",
+    description: p.description,
     backstory: p.backstory,
     progressionNotes: p.progression_notes,
     obsidianPath: p.obsidian_path ?? "",
@@ -402,6 +414,7 @@ export function playerCharacterToApiPayload(p: PlayerCharacter) {
     race: p.race,
     class: p.class,
     status: pcStatusToApi(p.status),
+    description: p.description,
     backstory: p.backstory,
     progression_notes: p.progressionNotes,
     attributes: p.attributes,
@@ -419,6 +432,8 @@ export interface ApiSession {
   session_number: number;
   sub_number: number;
   session_type: string;
+  title: string;
+  planned: boolean;
   date: string;
   summary: string;
   prep_notes: string;
@@ -433,6 +448,8 @@ export function mapSession(s: ApiSession): Session {
     sessionNumber: s.session_number,
     subNumber: s.sub_number,
     sessionType: s.session_type as SessionType,
+    title: s.title ?? "",
+    planned: s.planned ?? false,
     date: s.date,
     summary: s.summary,
     prepNotes: s.prep_notes,
@@ -531,9 +548,345 @@ export function sessionToApiPayload(s: Session) {
     session_number: s.sessionNumber,
     sub_number: s.subNumber,
     session_type: s.sessionType,
+    title: s.title,
+    planned: s.planned,
     date: s.date,
     summary: s.summary,
     prep_notes: s.prepNotes,
     obsidian_path: s.obsidianPath || undefined,
   };
+}
+
+export interface ApiLooseNote {
+  id: number;
+  campaign_id: number;
+  title: string;
+  body: string;
+  pending: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function mapLooseNote(n: ApiLooseNote): LooseNote {
+  return {
+    id: String(n.id),
+    campaignId: String(n.campaign_id),
+    title: n.title,
+    body: n.body,
+    pending: n.pending,
+    createdAt: n.created_at,
+    updatedAt: n.updated_at,
+  };
+}
+
+export function looseNoteToApiPayload(
+  n: Pick<LooseNote, "title" | "body" | "pending">,
+) {
+  return { title: n.title, body: n.body, pending: n.pending };
+}
+
+export interface ApiLoreEntry {
+  id: number;
+  campaign_id: number;
+  category_id?: number;
+  title: string;
+  body: string;
+  arc_id?: number;
+  location_id?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function mapLoreEntry(e: ApiLoreEntry): LoreEntry {
+  return {
+    id: String(e.id),
+    campaignId: String(e.campaign_id),
+    categoryId: e.category_id ? String(e.category_id) : undefined,
+    title: e.title,
+    body: e.body,
+    arcId: e.arc_id ? String(e.arc_id) : undefined,
+    locationId: e.location_id ? String(e.location_id) : undefined,
+    createdAt: e.created_at,
+    updatedAt: e.updated_at,
+  };
+}
+
+export function loreEntryToApiPayload(
+  e: Pick<LoreEntry, "title" | "body" | "categoryId" | "arcId" | "locationId">,
+) {
+  return {
+    title: e.title,
+    body: e.body,
+    category_id: e.categoryId ? Number(e.categoryId) : null,
+    arc_id: e.arcId ? Number(e.arcId) : null,
+    location_id: e.locationId ? Number(e.locationId) : null,
+  };
+}
+
+export interface ApiTimeline {
+  id: number;
+  campaign_id: number;
+  name: string;
+  description: string;
+  color: string;
+  start_label: string;
+  end_label: string;
+  position: number;
+}
+
+export function mapTimeline(t: ApiTimeline): Timeline {
+  return {
+    id: String(t.id),
+    campaignId: String(t.campaign_id),
+    name: t.name,
+    description: t.description,
+    color: t.color,
+    startLabel: t.start_label,
+    endLabel: t.end_label,
+    position: t.position,
+  };
+}
+
+export function timelineToApiPayload(
+  t: Pick<
+    Timeline,
+    "name" | "description" | "color" | "startLabel" | "endLabel"
+  >,
+) {
+  return {
+    name: t.name,
+    description: t.description,
+    color: t.color,
+    start_label: t.startLabel,
+    end_label: t.endLabel,
+  };
+}
+
+export interface ApiTimelineEvent {
+  id: number;
+  campaign_id: number;
+  timeline_id: number;
+  title: string;
+  description: string;
+  date_label: string;
+  end_date_label: string;
+  sort_key: number;
+  arc_id?: number;
+  session_id?: number;
+  location_id?: number;
+  group_id?: number;
+  lore_entry_id?: number;
+}
+
+const optId = (n?: number) => (n ? String(n) : undefined);
+
+export function mapTimelineEvent(e: ApiTimelineEvent): TimelineEvent {
+  return {
+    id: String(e.id),
+    campaignId: String(e.campaign_id),
+    timelineId: String(e.timeline_id),
+    title: e.title,
+    description: e.description,
+    dateLabel: e.date_label,
+    endDateLabel: e.end_date_label,
+    sortKey: e.sort_key,
+    arcId: optId(e.arc_id),
+    sessionId: optId(e.session_id),
+    locationId: optId(e.location_id),
+    groupId: optId(e.group_id),
+    loreEntryId: optId(e.lore_entry_id),
+  };
+}
+
+export type TimelineEventValues = Omit<TimelineEvent, "id" | "campaignId">;
+
+export function timelineEventToApiPayload(e: TimelineEventValues) {
+  const num = (v?: string) => (v ? Number(v) : null);
+  return {
+    timeline_id: Number(e.timelineId),
+    title: e.title,
+    description: e.description,
+    date_label: e.dateLabel,
+    end_date_label: e.endDateLabel,
+    sort_key: e.sortKey,
+    arc_id: num(e.arcId),
+    session_id: num(e.sessionId),
+    location_id: num(e.locationId),
+    group_id: num(e.groupId),
+    lore_entry_id: num(e.loreEntryId),
+  };
+}
+
+export interface ApiSecret {
+  id: number;
+  campaign_id: number;
+  title: string;
+  body: string;
+  status: string;
+  revealed_session_id?: number;
+  npc_id?: number;
+  location_id?: number;
+  lore_entry_id?: number;
+  known_by_npc_ids: number[] | null;
+}
+
+export function mapSecret(s: ApiSecret): Secret {
+  return {
+    id: String(s.id),
+    campaignId: String(s.campaign_id),
+    title: s.title,
+    body: s.body,
+    status: s.status === "revealed" ? "revealed" : "hidden",
+    revealedSessionId: optId(s.revealed_session_id),
+    npcId: optId(s.npc_id),
+    locationId: optId(s.location_id),
+    loreEntryId: optId(s.lore_entry_id),
+    knownByNpcIds: (s.known_by_npc_ids ?? []).map(String),
+  };
+}
+
+export type SecretValues = Omit<Secret, "id" | "campaignId">;
+
+export function secretToApiPayload(s: SecretValues) {
+  const num = (v?: string) => (v ? Number(v) : null);
+  return {
+    title: s.title,
+    body: s.body,
+    status: s.status,
+    revealed_session_id:
+      s.status === "revealed" ? num(s.revealedSessionId) : null,
+    npc_id: num(s.npcId),
+    location_id: num(s.locationId),
+    lore_entry_id: num(s.loreEntryId),
+    known_by_npc_ids: s.knownByNpcIds.map(Number),
+  };
+}
+
+export interface ApiPrice {
+  currency_id: number;
+  amount: number;
+}
+
+function mapPrices(prices: ApiPrice[] | null): ItemPrice[] {
+  return (prices ?? []).map((p) => ({
+    currencyId: String(p.currency_id),
+    amount: p.amount,
+  }));
+}
+
+function pricesToApi(prices: ItemPrice[]): ApiPrice[] {
+  return prices.map((p) => ({
+    currency_id: Number(p.currencyId),
+    amount: p.amount,
+  }));
+}
+
+export interface ApiCurrency {
+  id: number;
+  campaign_id: number;
+  name: string;
+  symbol: string;
+  rate_to_base: number | null;
+  is_base: boolean;
+  location_ids: number[] | null;
+}
+
+export function mapCurrency(c: ApiCurrency): Currency {
+  return {
+    id: String(c.id),
+    campaignId: String(c.campaign_id),
+    name: c.name,
+    symbol: c.symbol,
+    rateToBase: c.rate_to_base ?? undefined,
+    isBase: c.is_base,
+    locationIds: (c.location_ids ?? []).map(String),
+  };
+}
+
+export type CurrencyValues = Omit<Currency, "id" | "campaignId">;
+
+export function currencyToApiPayload(c: CurrencyValues) {
+  return {
+    name: c.name,
+    symbol: c.symbol,
+    rate_to_base: c.rateToBase ?? null,
+    is_base: c.isBase,
+    location_ids: c.locationIds.map(Number),
+  };
+}
+
+export interface ApiItem {
+  id: number;
+  campaign_id: number;
+  name: string;
+  description: string;
+  effect: string;
+  category: string;
+  rarity: string;
+  weight: number | null;
+  prices: ApiPrice[] | null;
+}
+
+export function mapItem(i: ApiItem): Item {
+  return {
+    id: String(i.id),
+    campaignId: String(i.campaign_id),
+    name: i.name,
+    description: i.description,
+    effect: i.effect,
+    category: i.category,
+    rarity: i.rarity,
+    weight: i.weight ?? undefined,
+    prices: mapPrices(i.prices),
+  };
+}
+
+export type ItemValues = Omit<Item, "id" | "campaignId">;
+
+export function itemToApiPayload(i: ItemValues) {
+  return {
+    name: i.name,
+    description: i.description,
+    effect: i.effect,
+    category: i.category,
+    rarity: i.rarity,
+    weight: i.weight ?? null,
+    prices: pricesToApi(i.prices),
+  };
+}
+
+export interface ApiInventoryEntry {
+  item_id: number;
+  name: string;
+  quantity: number;
+  notes: string;
+}
+
+export function mapInventoryEntry(e: ApiInventoryEntry): InventoryEntry {
+  return {
+    itemId: String(e.item_id),
+    name: e.name,
+    quantity: e.quantity,
+    notes: e.notes,
+  };
+}
+
+export interface ApiShopEntry {
+  item_id: number;
+  name: string;
+  notes: string;
+  prices: ApiPrice[] | null;
+}
+
+export function mapShopEntry(e: ApiShopEntry): ShopEntry {
+  return {
+    itemId: String(e.item_id),
+    name: e.name,
+    notes: e.notes,
+    prices: mapPrices(e.prices),
+  };
+}
+
+export function shopPricesToApi(prices: ItemPrice[]) {
+  return pricesToApi(prices);
 }

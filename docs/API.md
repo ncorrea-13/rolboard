@@ -102,7 +102,7 @@ POST   /api/sessions/{id}/quests            {"quest_id": N}
 DELETE /api/sessions/{id}/quests/{questId}
 ```
 
-Body: `arc_id`, `session_number`, `sub_number`, `session_type` (`session` | `interlude` | `planning`), `date`, `summary`, `prep_notes`, `obsidian_path`.
+Body: `arc_id`, `session_number`, `sub_number`, `session_type` (`session` | `interlude` | `planning` | `oneshot`), `title`, `planned` (oneshots), `date`, `summary`, `prep_notes`, `obsidian_path`.
 
 `session_npcs` is also written by the reindex (it replaces them with the wikilinks from the note's body). `session_quests` is only managed from here.
 
@@ -167,7 +167,7 @@ DELETE /api/player-characters/{id}/image
 GET    /api/player-characters/{id}/image
 ```
 
-Body: `player_name`, `character_name`, `race`, `class`, `status` (`vivo` | `muerto` | `desaparecido` | `activo`), `backstory`, `progression_notes`, `attributes`, `skills`, `current_hp`, `max_hp`, `obsidian_path`.
+Body: `player_name`, `character_name`, `race`, `class`, `status` (`vivo` | `muerto` | `desaparecido` | `activo`), `description`, `backstory`, `progression_notes`, `attributes`, `skills`, `current_hp`, `max_hp`, `obsidian_path`.
 
 `spren_npc_id`, `historia_path` and `avances_path` are only written by the reindex.
 
@@ -205,6 +205,107 @@ DELETE /api/quests/{id}
 ```
 
 Body: `title`, `description`, `status` (`active` | `completed` | `failed` | `on_hold`), `priority`, `notes`.
+
+```
+GET    /api/quests/{id}/npcs
+PUT    /api/quests/{id}/npcs/{npcId}      {"role": "..."}   idempotent link / change of role
+DELETE /api/quests/{id}/npcs/{npcId}
+```
+
+`role` is free text (up to 60 characters, may be empty). The NPC must belong to the same campaign (`400` otherwise); deleted NPCs are not listed.
+
+### Loose notes
+
+```
+GET    /api/campaigns/{id}/loose-notes
+POST   /api/campaigns/{id}/loose-notes
+GET    /api/loose-notes/{id}
+PUT    /api/loose-notes/{id}
+DELETE /api/loose-notes/{id}
+```
+
+Body: `title` (required), `body`, `pending`. They live in the `notes` table; the path is `loose-notes` to avoid clashing with `notes/render` (vault notes). The list returns pending notes first, then by `updated_at` descending.
+
+### Lore
+
+```
+GET    /api/campaigns/{id}/lore-categories
+POST   /api/campaigns/{id}/lore-categories      {"label": "...", "color": "#rrggbb"}
+PUT    /api/lore-categories/{id}                {"label": "...", "color": "#rrggbb"}
+DELETE /api/lore-categories/{id}                409 if an entry uses it
+
+GET    /api/campaigns/{id}/lore
+POST   /api/campaigns/{id}/lore
+GET    /api/lore/{id}
+PUT    /api/lore/{id}
+DELETE /api/lore/{id}
+```
+
+Entry body: `title` (required), `body`, `category_id`, `arc_id`, `location_id` (all optional; they must belong to the same campaign). A new campaign is seeded with default categories (Historia, Geografía, Religión, Magia, Cultura).
+
+### Appearances
+
+```
+GET /api/npcs/{id}/appearances               {sessions, quests, encounters, secrets}
+GET /api/player-characters/{id}/appearances  {sessions, quests, encounters, secrets}
+```
+
+Where an NPC or a player character shows up: sessions (via `session_npcs` / `session_pcs`), quests with the NPC's role, encounters and secrets (about it or known by it). Deleted records are not listed; `quests` and `secrets` are always empty for a player character.
+
+### Items and economy
+
+```
+GET    /api/campaigns/{id}/currencies
+POST   /api/campaigns/{id}/currencies      {"name", "symbol", "rate_to_base", "is_base", "location_ids"}
+PUT    /api/currencies/{id}
+DELETE /api/currencies/{id}                409 currency_in_use if an item or shop price uses it
+
+GET    /api/campaigns/{id}/items
+POST   /api/campaigns/{id}/items           {"name", "description", "effect", "category", "rarity", "weight", "prices": [{"currency_id", "amount"}]}
+GET    /api/items/{id}
+PUT    /api/items/{id}
+DELETE /api/items/{id}
+
+GET    /api/player-characters/{id}/items   inventory of a PC
+PUT    /api/player-characters/{id}/items/{itemId}   {"quantity", "notes"}   idempotent
+DELETE /api/player-characters/{id}/items/{itemId}
+GET    /api/npcs/{id}/items                inventory of an NPC (same PUT / DELETE)
+
+GET    /api/locations/{id}/items           what a location sells
+PUT    /api/locations/{id}/items/{itemId}  {"notes", "prices": [{"currency_id", "amount"}]}
+DELETE /api/locations/{id}/items/{itemId}
+```
+
+Currency and item names are required; prices can't be negative; each currency, item, location and owner must belong to the same campaign (`400` otherwise). Marking a currency as base unmarks the previous one. A shop with no prices of its own shows the item's catalog price.
+
+### Secrets
+
+```
+GET    /api/campaigns/{id}/secrets
+POST   /api/campaigns/{id}/secrets
+GET    /api/secrets/{id}
+PUT    /api/secrets/{id}
+DELETE /api/secrets/{id}
+```
+
+Body: `title` and `status` (`hidden` | `revealed`) are required; `body` (Markdown), `revealed_session_id` (kept only when `revealed`), `npc_id`, `location_id`, `lore_entry_id` and `known_by_npc_ids` are optional. Everything must belong to the same campaign (`400` otherwise). The list returns hidden secrets first.
+
+### Timeline
+
+```
+GET    /api/campaigns/{id}/timelines
+POST   /api/campaigns/{id}/timelines            {"name", "description", "color": "#rrggbb", "start_label", "end_label"}
+PUT    /api/timelines/{id}
+DELETE /api/timelines/{id}                      409 timeline_in_use if it has events
+
+GET    /api/campaigns/{id}/timeline-events
+POST   /api/campaigns/{id}/timeline-events
+GET    /api/timeline-events/{id}
+PUT    /api/timeline-events/{id}
+DELETE /api/timeline-events/{id}
+```
+
+Event body: `timeline_id` and `title` (required), `description`, `date_label` and `end_date_label` (free text, display only), `sort_key` (number, the only thing that orders events), and optional `arc_id`, `session_id`, `location_id`, `group_id`, `lore_entry_id`, all from the same campaign. The list comes ordered by `sort_key`.
 
 ## Encounters (combat tracker)
 

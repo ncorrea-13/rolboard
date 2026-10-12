@@ -20,7 +20,7 @@ type trashSpec struct {
 }
 
 var trashSpecs = []trashSpec{
-	{kind: "session", table: "sessions", label: "printf('S%02d', session_number)",
+	{kind: "session", table: "sessions", label: "printf(CASE WHEN session_type = 'oneshot' THEN 'O%02d' ELSE 'S%02d' END, session_number)",
 		parentDeleted: `SELECT EXISTS(SELECT 1 FROM sessions s JOIN arcs a ON a.id = s.arc_id WHERE s.id = ? AND a.deleted_at IS NOT NULL)`,
 		filter:        " AND sub_number <> 99"},
 	{kind: "arc", table: "arcs", label: "title"},
@@ -31,6 +31,14 @@ var trashSpecs = []trashSpec{
 		parentDeleted: `SELECT EXISTS(SELECT 1 FROM locations c JOIN locations p ON p.id = c.parent_location_id WHERE c.id = ? AND p.deleted_at IS NOT NULL)`},
 	{kind: "group", table: "groups", label: "name"},
 	{kind: "quest", table: "quests", label: "title"},
+	{kind: "loose_note", table: "notes", label: "title"},
+	{kind: "lore_entry", table: "lore_entries", label: "title"},
+	{kind: "secret", table: "secrets", label: "title"},
+	{kind: "item", table: "items", label: "name"},
+	{kind: "currency", table: "currencies", label: "name"},
+	{kind: "timeline", table: "timelines", label: "name"},
+	{kind: "timeline_event", table: "timeline_events", label: "title",
+		parentDeleted: `SELECT EXISTS(SELECT 1 FROM timeline_events e JOIN timelines t ON t.id = e.timeline_id WHERE e.id = ? AND t.deleted_at IS NOT NULL)`},
 	{kind: "encounter", table: "encounters", label: "name"},
 }
 

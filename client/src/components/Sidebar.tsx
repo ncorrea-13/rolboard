@@ -9,6 +9,11 @@ import {
   Swords,
   Skull,
   Cross,
+  StickyNote,
+  Earth,
+  EyeOff,
+  Gem,
+  Search,
   Trash2,
   Settings,
   LogOut,
@@ -90,6 +95,30 @@ const navItems: {
     color: "var(--accent-wardail)",
   },
   {
+    labelKey: "sidebar.mundo",
+    section: "mundo",
+    Icon: Earth,
+    color: "var(--accent-lime)",
+  },
+  {
+    labelKey: "sidebar.objetos",
+    section: "objetos",
+    Icon: Gem,
+    color: "var(--accent-cyan)",
+  },
+  {
+    labelKey: "sidebar.secretos",
+    section: "secretos",
+    Icon: EyeOff,
+    color: "var(--accent-sun)",
+  },
+  {
+    labelKey: "sidebar.notas",
+    section: "notas",
+    Icon: StickyNote,
+    color: "var(--accent-orchid)",
+  },
+  {
     labelKey: "sidebar.papelera",
     section: "papelera",
     Icon: Trash2,
@@ -103,6 +132,7 @@ interface SidebarProps {
   onNavigate: (section: DashboardSection) => void;
   onBack: () => void;
   onOpenSettings?: () => void;
+  onSearch?: () => void;
   onHelp: () => void;
   onAdminLogout?: () => void;
   onBackdropClick?: () => void;
@@ -115,6 +145,7 @@ export function Sidebar({
   onNavigate,
   onBack,
   onOpenSettings,
+  onSearch,
   onHelp,
   onAdminLogout,
   onBackdropClick,
@@ -158,6 +189,20 @@ export function Sidebar({
           {campaignName}
         </span>
       </div>
+      {onSearch && (
+        <button
+          type="button"
+          className="sidebar__item sidebar__item--clickable sidebar__search"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSearch();
+          }}
+        >
+          <Search className="sidebar__icon" size={18} strokeWidth={1.75} />
+          <span className="sidebar__item-label">{t("search.open")}</span>
+          <kbd className="sidebar__kbd">Ctrl K</kbd>
+        </button>
+      )}
       {navItems.map(({ Icon, ...item }) => {
         const isActive = item.section === active;
         return (

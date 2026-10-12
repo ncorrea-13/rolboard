@@ -2,9 +2,11 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import type { Arc, Npc, Quest } from "../data/domain";
 import { useT } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
 
 interface PlanSessionProps {
   nextNumber: number;
+  oneshot?: boolean;
   currentArc?: Arc;
   arcs: Arc[];
   npcs: Npc[];
@@ -12,6 +14,8 @@ interface PlanSessionProps {
   onConfirm: (values: {
     date: string;
     summary: string;
+    title?: string;
+    oneshot?: boolean;
     arcId?: string;
     expectedNpcIds: string[];
     expectedQuestIds: string[];
@@ -21,6 +25,7 @@ interface PlanSessionProps {
 
 export function PlanSession({
   nextNumber,
+  oneshot,
   currentArc,
   arcs,
   npcs,
@@ -31,13 +36,14 @@ export function PlanSession({
   const t = useT();
   const [date, setDate] = useState("");
   const [text, setText] = useState("");
-  const [arcId, setArcId] = useState(currentArc?.id ?? "");
+  const [title, setTitle] = useState("");
+  const [arcId, setArcId] = useState(oneshot ? "" : (currentArc?.id ?? ""));
   const [expectedNpcIds, setExpectedNpcIds] = useState<Set<string>>(new Set());
   const [expectedQuestIds, setExpectedQuestIds] = useState<Set<string>>(
     new Set(),
   );
 
-  const sessionCode = `S${String(nextNumber).padStart(2, "0")}`;
+  const sessionCode = `${oneshot ? "O" : "S"}${String(nextNumber).padStart(2, "0")}`;
 
   function toggleNpc(id: string) {
     setExpectedNpcIds((prev) => {
@@ -61,6 +67,8 @@ export function PlanSession({
     onConfirm({
       date,
       summary: text.trim() || t("planSession.defaultSummary"),
+      title: oneshot ? title.trim() : undefined,
+      oneshot,
       arcId: arcId || undefined,
       expectedNpcIds: [...expectedNpcIds],
       expectedQuestIds: [...expectedQuestIds],
@@ -79,8 +87,11 @@ export function PlanSession({
               color: "var(--text-primary)",
             }}
           >
-            {t("planSession.planning")} · {sessionCode}
-            {currentArc ? ` · ${currentArc.label}` : ""}
+            {t(
+              oneshot ? "planSession.planningOneshot" : "planSession.planning",
+            )}{" "}
+            · {sessionCode}
+            {!oneshot && currentArc ? ` · ${currentArc.label}` : ""}
           </span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
@@ -88,16 +99,36 @@ export function PlanSession({
             {t("common.cancel")}
           </button>
           <button className="btn btn-primary" onClick={handleConfirm}>
-            {t("sessionsTimeline.plan")}
+            {t(
+              oneshot
+                ? "sessionsTimeline.planOneshot"
+                : "sessionsTimeline.plan",
+            )}
           </button>
         </div>
       </div>
 
       <div className="npc-edit__body">
         <div className="npc-edit__col">
+          {oneshot && (
+            <div>
+              <span className="label">{t("sessionEdit.titleLabel")}</span>
+              <input
+                className="npc-edit__input"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
+          )}
           <div className="npc-edit__grid-2">
             <div>
-              <span className="label">{t("newSessionForm.session")}</span>
+              <span className="label">
+                {t(
+                  oneshot
+                    ? "sessionEdit.oneshotPrefix"
+                    : "newSessionForm.session",
+                )}
+              </span>
               <div className="npc-edit__input">{sessionCode}</div>
             </div>
             <div>
@@ -127,16 +158,13 @@ export function PlanSession({
             </select>
           </div>
 
-          <div>
-            <span className="label">{t("planSession.prepNotesLabel")}</span>
-            <textarea
-              className="npc-edit__textarea"
-              style={{ minHeight: 160 }}
-              placeholder={t("planSession.prepPlaceholder")}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={t("planSession.prepNotesLabel")}
+            minHeight={160}
+            placeholder={t("planSession.prepPlaceholder")}
+            value={text}
+            onChange={setText}
+          />
         </div>
 
         <div className="npc-edit__col">

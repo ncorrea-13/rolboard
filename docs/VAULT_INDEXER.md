@@ -88,7 +88,7 @@ NPCs from the vault are created with `detail_level = full`.
 | `numero`            | decimal. Integer part → `session_number`, first decimal → `sub_number` (`4.1` = interlude of session 4) |
 | `fecha`             | → `date` |
 | `status` / `estado` | `completada` or `jugada` → `session`; otherwise → `planning` |
-| `tags`              | if it includes `campaña/interludio` → `interlude` (takes priority) |
+| `tags`              | if it includes `campaña/interludio` → `interlude` (takes priority); `campaña/oneshot` → `oneshot` (numbered on its own: `O1`, `O2`) |
 | `titulo`            | → `summary` |
 | `arco`              | wikilink to an arc → `arc_id` |
 

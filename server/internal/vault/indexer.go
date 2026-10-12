@@ -114,6 +114,11 @@ func sessionType(tags []string, status string) string {
 			return "interlude"
 		}
 	}
+	for _, tag := range tags {
+		if tag == "campaña/oneshot" {
+			return "oneshot"
+		}
+	}
 	if playedStatuses[strings.ToLower(status)] {
 		return "session"
 	}
@@ -367,6 +372,11 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				Date:          fm.Date,
 				Summary:       fm.Titulo,
 				ObsidianPath:  &obsidianPath,
+			}
+			if session.SessionType == "oneshot" {
+				session.Title = fm.Titulo
+				session.Summary = ""
+				session.Planned = !playedStatuses[strings.ToLower(status)]
 			}
 			if err := ix.sessions.Create(ctx, session); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))

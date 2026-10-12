@@ -182,3 +182,16 @@
     justify-content: center;
   }
 }
+
+.sidebar__search {
+  cursor: pointer;
+}
+
+.sidebar__kbd {
+  margin-left: auto;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font: 500 10.5px var(--font-mono);
+  color: var(--text-secondary);
+}

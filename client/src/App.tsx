@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 import "./App.css";
 import {
   apiFetch,
@@ -39,6 +39,29 @@ import { QuestEdit } from "./screens/QuestEdit";
 import { FactionEdit } from "./screens/FactionEdit";
 import { LocationEdit } from "./screens/LocationEdit";
 import { SessionsTimeline } from "./screens/SessionsTimeline";
+import { NotesList } from "./screens/NotesList";
+import { NoteDetail } from "./screens/NoteDetail";
+import { NoteEdit } from "./screens/NoteEdit";
+import { useLooseNotes } from "./hooks/useLooseNotes";
+import { LoreDetail } from "./screens/LoreDetail";
+import { LoreEdit } from "./screens/LoreEdit";
+import { useLore } from "./hooks/useLore";
+import { WorldSection } from "./screens/WorldSection";
+import { useTimeline } from "./hooks/useTimeline";
+import { SecretsList } from "./screens/SecretsList";
+import { SecretDetail } from "./screens/SecretDetail";
+import { SecretEdit } from "./screens/SecretEdit";
+import { useSecrets } from "./hooks/useSecrets";
+import { ItemsSection } from "./screens/ItemsSection";
+import { useEconomy } from "./hooks/useEconomy";
+import { CommandPalette } from "./components/CommandPalette";
+import { buildSearchItems } from "./lib/searchIndex";
+import {
+  appearsForGroup,
+  appearsForLocation,
+  appearsForLore,
+  type AppearsContext,
+} from "./lib/appearances";
 import { ArcsList } from "./screens/ArcsList";
 import { FactionsList } from "./screens/FactionsList";
 import { LocationsList } from "./screens/LocationsList";
@@ -56,7 +79,7 @@ import {
   LocationDetail,
   QuestDetail,
 } from "./screens/EntityDetails";
-import type { Campaign } from "./data/domain";
+import type { Campaign, LooseNote, LoreEntry, Secret } from "./data/domain";
 import { entityKindSection } from "./data/entityForms";
 import {
   mapCampaign,
@@ -77,6 +100,34 @@ import { withViewTransition } from "./lib/motion";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 type HistoryMode = "push" | "replace" | "none";
+
+const blankSecret: Secret = {
+  id: "",
+  campaignId: "",
+  title: "",
+  body: "",
+  status: "hidden",
+  knownByNpcIds: [],
+};
+
+const blankLoreEntry: LoreEntry = {
+  id: "",
+  campaignId: "",
+  title: "",
+  body: "",
+  createdAt: "",
+  updatedAt: "",
+};
+
+const blankLooseNote: LooseNote = {
+  id: "",
+  campaignId: "",
+  title: "",
+  body: "",
+  pending: true,
+  createdAt: "",
+  updatedAt: "",
+};
 
 export default function App() {
   const t = useT();
@@ -268,7 +319,9 @@ export default function App() {
     planSession,
     startPlaySession,
     openPlanSession,
+    nextOneshotNumber,
     reloadCampaignData,
+    reloadKey,
     goToEntitySection,
     imageVersion,
     uploadNpcImage,
@@ -280,6 +333,102 @@ export default function App() {
     uploadGroupImage,
     removeGroupImage,
   } = useCampaignData(activeCampaignId, activeCampaign, navigate, notify);
+
+  const {
+    looseNotes,
+    createLooseNote,
+    saveLooseNote,
+    togglePending,
+    deleteLooseNote,
+  } = useLooseNotes(activeCampaignId, reloadKey, navigate, notify);
+
+  const {
+    loreEntries,
+    loreCategories,
+    loreCategoriesApi,
+    createLoreEntry,
+    saveLoreEntry,
+    deleteLoreEntry,
+  } = useLore(activeCampaignId, reloadKey, navigate, notify);
+
+  const {
+    timelines,
+    timelineEvents,
+    createTimeline,
+    updateTimeline,
+    deleteTimeline,
+    saveEvent: saveTimelineEvent,
+    deleteEvent: deleteTimelineEvent,
+  } = useTimeline(activeCampaignId, reloadKey, notify);
+
+  const { secrets, createSecret, saveSecret, toggleStatus, deleteSecret } =
+    useSecrets(activeCampaignId, reloadKey, navigate, notify);
+
+  const {
+    currencies,
+    items,
+    saveCurrency,
+    deleteCurrency,
+    saveItem,
+    deleteItem,
+  } = useEconomy(activeCampaignId, reloadKey, notify);
+
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchItems = useMemo(
+    () =>
+      buildSearchItems({
+        npcs: campaignNpcs,
+        players: campaignPlayerCharacters,
+        locations: campaignLocations,
+        groups: campaignGroups,
+        arcs: campaignArcs,
+        quests: campaignQuests,
+        sessions: campaignSessions,
+        encounters: campaignEncounters,
+        loreEntries,
+        secrets,
+        notes: looseNotes,
+        items,
+        currencies,
+        timelineEvents,
+      }),
+    [
+      campaignNpcs,
+      campaignPlayerCharacters,
+      campaignLocations,
+      campaignGroups,
+      campaignArcs,
+      campaignQuests,
+      campaignSessions,
+      campaignEncounters,
+      loreEntries,
+      secrets,
+      looseNotes,
+      items,
+      currencies,
+      timelineEvents,
+    ],
+  );
+
+  useEffect(() => {
+    if (!activeCampaignId) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [activeCampaignId]);
+
+  const appearsCtx: AppearsContext = {
+    npcs: campaignNpcs,
+    loreEntries,
+    timelineEvents,
+    secrets,
+    currencies,
+  };
 
   const npcTypesApi: NpcTypesApi = {
     types: npcTypes,
@@ -442,7 +591,19 @@ export default function App() {
                       ? "locaciones"
                       : route.name === "encounter-detail"
                         ? "encuentros"
-                        : "resumen";
+                        : route.name === "note-detail" ||
+                            route.name === "note-edit" ||
+                            route.name === "note-create"
+                          ? "notas"
+                          : route.name === "lore-detail" ||
+                              route.name === "lore-edit" ||
+                              route.name === "lore-create"
+                            ? "mundo"
+                            : route.name === "secret-detail" ||
+                                route.name === "secret-edit" ||
+                                route.name === "secret-create"
+                              ? "secretos"
+                              : "resumen";
 
   if (helpOpen) {
     return (
@@ -483,6 +644,7 @@ export default function App() {
           onNavigate={(section) => navigate({ name: "section", section })}
           onBackToCampaigns={() => navigate({ name: "campaigns" })}
           onOpenSettings={() => setSettingsOpen(true)}
+          onSearch={() => setSearchOpen(true)}
           onHelp={openHelp}
           onAdminLogout={
             hasAdminSecret() && !isLocalMode()
@@ -496,12 +658,29 @@ export default function App() {
               : undefined
           }
         >
+          {searchOpen && (
+            <CommandPalette
+              items={searchItems}
+              onSelect={(item) => {
+                setSearchOpen(false);
+                navigate(item.route);
+              }}
+              onClose={() => setSearchOpen(false)}
+            />
+          )}
           {route.name === "section" && route.section === "resumen" && (
             <CampaignDashboard
               campaign={activeCampaign}
               arcs={campaignArcs}
               npcs={campaignNpcs}
               quests={campaignQuests}
+              sessions={campaignSessions}
+              players={campaignPlayerCharacters}
+              looseNotes={looseNotes}
+              loreEntries={loreEntries}
+              loreCategories={loreCategories}
+              locationsCount={campaignLocations.length}
+              groupsCount={campaignGroups.length}
               nextSessionNumber={nextSessionNumber}
               hasPlannedSession={hasPlannedSession}
               summary={
@@ -553,6 +732,9 @@ export default function App() {
               hasPlannedSession={hasPlannedSession}
               onPlaySession={startPlaySession}
               onPlanSession={openPlanSession}
+              onPlanOneshot={() =>
+                navigate({ name: "session-plan", oneshot: true })
+              }
             />
           )}
           {route.name === "section" && route.section === "arcos" && (
@@ -595,6 +777,205 @@ export default function App() {
               onCreate={() => createEncounter()}
             />
           )}
+          {route.name === "section" && route.section === "mundo" && (
+            <WorldSection
+              lore={{
+                entries: loreEntries,
+                categories: loreCategories,
+                categoriesApi: loreCategoriesApi,
+                arcs: campaignArcs,
+                locations: campaignLocations,
+                onCreate: () => navigate({ name: "lore-create" }),
+              }}
+              timeline={{
+                timelines,
+                events: timelineEvents,
+                arcs: campaignArcs,
+                sessions: campaignSessions,
+                locations: campaignLocations,
+                groups: campaignGroups,
+                loreEntries,
+                onCreateTimeline: createTimeline,
+                onUpdateTimeline: updateTimeline,
+                onDeleteTimeline: deleteTimeline,
+                onSaveEvent: saveTimelineEvent,
+                onDeleteEvent: deleteTimelineEvent,
+              }}
+            />
+          )}
+          {route.name === "lore-create" && (
+            <LoreEdit
+              entry={blankLoreEntry}
+              categories={loreCategories}
+              arcs={campaignArcs}
+              locations={campaignLocations}
+              onSave={createLoreEntry}
+              onDiscard={() => navigate({ name: "section", section: "mundo" })}
+            />
+          )}
+          {route.name === "lore-detail" &&
+            (() => {
+              const entry = loreEntries.find((e) => e.id === route.entryId);
+              if (!entry) return null;
+              return (
+                <LoreDetail
+                  key={entry.id}
+                  entry={entry}
+                  appearsIn={appearsForLore(entry.id, appearsCtx, t)}
+                  category={loreCategories.find(
+                    (c) => c.id === entry.categoryId,
+                  )}
+                  arc={campaignArcs.find((a) => a.id === entry.arcId)}
+                  location={campaignLocations.find(
+                    (l) => l.id === entry.locationId,
+                  )}
+                  locations={campaignLocations}
+                  onBack={() => navigate({ name: "section", section: "mundo" })}
+                  onEdit={() =>
+                    navigate({ name: "lore-edit", entryId: entry.id })
+                  }
+                  onDelete={() => deleteLoreEntry(entry.id)}
+                />
+              );
+            })()}
+          {route.name === "lore-edit" &&
+            (() => {
+              const entry = loreEntries.find((e) => e.id === route.entryId);
+              if (!entry) return null;
+              return (
+                <LoreEdit
+                  key={entry.id}
+                  entry={entry}
+                  categories={loreCategories}
+                  arcs={campaignArcs}
+                  locations={campaignLocations}
+                  onSave={(values) => saveLoreEntry(entry.id, values)}
+                  onDiscard={() =>
+                    navigate({ name: "lore-detail", entryId: entry.id })
+                  }
+                />
+              );
+            })()}
+          {route.name === "section" && route.section === "objetos" && (
+            <ItemsSection
+              items={items}
+              currencies={currencies}
+              locations={campaignLocations}
+              onSaveItem={saveItem}
+              onDeleteItem={deleteItem}
+              onSaveCurrency={saveCurrency}
+              onDeleteCurrency={deleteCurrency}
+            />
+          )}
+          {route.name === "section" && route.section === "secretos" && (
+            <SecretsList
+              secrets={secrets}
+              npcs={campaignNpcs}
+              locations={campaignLocations}
+              loreEntries={loreEntries}
+              onCreate={() => navigate({ name: "secret-create" })}
+            />
+          )}
+          {route.name === "secret-create" && (
+            <SecretEdit
+              secret={blankSecret}
+              npcs={campaignNpcs}
+              locations={campaignLocations}
+              loreEntries={loreEntries}
+              sessions={campaignSessions}
+              onSave={createSecret}
+              onDiscard={() =>
+                navigate({ name: "section", section: "secretos" })
+              }
+            />
+          )}
+          {route.name === "secret-detail" &&
+            (() => {
+              const secret = secrets.find((s) => s.id === route.secretId);
+              if (!secret) return null;
+              return (
+                <SecretDetail
+                  key={secret.id}
+                  secret={secret}
+                  npcs={campaignNpcs}
+                  locations={campaignLocations}
+                  loreEntries={loreEntries}
+                  sessions={campaignSessions}
+                  onBack={() =>
+                    navigate({ name: "section", section: "secretos" })
+                  }
+                  onEdit={() =>
+                    navigate({ name: "secret-edit", secretId: secret.id })
+                  }
+                  onDelete={() => deleteSecret(secret.id)}
+                  onToggleStatus={() => toggleStatus(secret)}
+                />
+              );
+            })()}
+          {route.name === "secret-edit" &&
+            (() => {
+              const secret = secrets.find((s) => s.id === route.secretId);
+              if (!secret) return null;
+              return (
+                <SecretEdit
+                  key={secret.id}
+                  secret={secret}
+                  npcs={campaignNpcs}
+                  locations={campaignLocations}
+                  loreEntries={loreEntries}
+                  sessions={campaignSessions}
+                  onSave={(values) => saveSecret(secret.id, values)}
+                  onDiscard={() =>
+                    navigate({ name: "secret-detail", secretId: secret.id })
+                  }
+                />
+              );
+            })()}
+          {route.name === "section" && route.section === "notas" && (
+            <NotesList
+              notes={looseNotes}
+              onCreate={() => navigate({ name: "note-create" })}
+            />
+          )}
+          {route.name === "note-create" && (
+            <NoteEdit
+              note={blankLooseNote}
+              onSave={createLooseNote}
+              onDiscard={() => navigate({ name: "section", section: "notas" })}
+            />
+          )}
+          {route.name === "note-detail" &&
+            (() => {
+              const note = looseNotes.find((n) => n.id === route.noteId);
+              if (!note) return null;
+              return (
+                <NoteDetail
+                  key={note.id}
+                  note={note}
+                  onBack={() => navigate({ name: "section", section: "notas" })}
+                  onEdit={() =>
+                    navigate({ name: "note-edit", noteId: note.id })
+                  }
+                  onDelete={() => deleteLooseNote(note.id)}
+                  onTogglePending={() => togglePending(note)}
+                />
+              );
+            })()}
+          {route.name === "note-edit" &&
+            (() => {
+              const note = looseNotes.find((n) => n.id === route.noteId);
+              if (!note) return null;
+              return (
+                <NoteEdit
+                  key={note.id}
+                  note={note}
+                  onSave={(values) => saveLooseNote(note.id, values)}
+                  onDiscard={() =>
+                    navigate({ name: "note-detail", noteId: note.id })
+                  }
+                />
+              );
+            })()}
           {route.name === "section" && route.section === "wardails" && (
             <Wardails campaignId={activeCampaignId!} notify={notify} />
           )}
@@ -635,6 +1016,7 @@ export default function App() {
               return (
                 <FactionDetail
                   group={group}
+                  appearsIn={appearsForGroup(group.id, appearsCtx, t)}
                   npcs={campaignNpcs}
                   playerCharacters={campaignPlayerCharacters}
                   vaultName={activeCampaign!.vaultPath}
@@ -656,6 +1038,9 @@ export default function App() {
               return (
                 <LocationDetail
                   location={location}
+                  appearsIn={appearsForLocation(location.id, appearsCtx, t)}
+                  items={items}
+                  currencies={currencies}
                   allLocations={campaignLocations}
                   vaultName={activeCampaign!.vaultPath}
                   campaignId={activeCampaignId!}
@@ -676,6 +1061,7 @@ export default function App() {
               return (
                 <QuestDetail
                   quest={quest}
+                  npcs={campaignNpcs}
                   onBack={() => goToEntitySection("quest")}
                   onEdit={() =>
                     navigate({ name: "quest-edit", questId: route.id })
@@ -689,7 +1075,7 @@ export default function App() {
             <NpcDetail
               npc={selectedNpc}
               npcs={campaignNpcs}
-              quests={campaignQuests}
+              items={items}
               campaignId={activeCampaignId!}
               vaultName={activeCampaign!.vaultPath}
               onEdit={() =>
@@ -908,6 +1294,7 @@ export default function App() {
           {route.name === "player-detail" && selectedPlayer && (
             <PlayerDetail
               player={selectedPlayer}
+              items={items}
               campaignId={activeCampaignId!}
               vaultName={activeCampaign!.vaultPath}
               onEdit={() =>
@@ -1001,7 +1388,8 @@ export default function App() {
 
           {route.name === "session-plan" && (
             <PlanSession
-              nextNumber={nextSessionNumber}
+              nextNumber={route.oneshot ? nextOneshotNumber : nextSessionNumber}
+              oneshot={route.oneshot}
               currentArc={defaultSessionArc}
               arcs={campaignArcs}
               npcs={campaignNpcs}

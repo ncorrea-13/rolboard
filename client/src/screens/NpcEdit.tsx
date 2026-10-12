@@ -22,6 +22,7 @@ import {
 import { useT, useLang } from "../lib/i18n";
 import { reportError } from "../lib/notify";
 import type { CSSProperties } from "react";
+import { MarkdownField } from "../components/MarkdownField";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
@@ -159,7 +160,9 @@ export function NpcEdit({
   }
 
   const linkTarget = npcs.find((n) => n.id === linkNpcId);
-  const missingOrigin = locationId.trim() === "";
+  const [originTouched, setOriginTouched] = useState(false);
+  const showMissingOrigin =
+    locationId.trim() === "" && (originTouched || npc.id !== "");
 
   return (
     <div className="card npc-edit">
@@ -283,16 +286,11 @@ export function NpcEdit({
             )}
           </div>
 
-          <div>
-            <span className="label">
-              {t("common.description")} {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={`${t("common.description")} ${t("common.supportsMarkdown")}`}
+            value={description}
+            onChange={setDescription}
+          />
 
           <div>
             <span className="label">{t("npcEdit.linkWithNpc")}</span>
@@ -397,6 +395,7 @@ export function NpcEdit({
               style={{ borderBottom: "2px solid var(--crystal-location)" }}
               value={locationId}
               onChange={(e) => setLocationId(e.target.value)}
+              onBlur={() => setOriginTouched(true)}
             >
               <option value="">{t("npcEdit.noLocation")}</option>
               {locations.map((l) => (
@@ -405,6 +404,18 @@ export function NpcEdit({
                 </option>
               ))}
             </select>
+            {showMissingOrigin && (
+              <span
+                style={{
+                  display: "block",
+                  marginTop: 4,
+                  fontSize: 12,
+                  color: "var(--text-secondary)",
+                }}
+              >
+                {t("npcEdit.missingOrigin")}
+              </span>
+            )}
           </div>
           {npc.obsidianPath && (
             <div>
@@ -415,16 +426,6 @@ export function NpcEdit({
               >
                 {npc.obsidianPath}
               </div>
-            </div>
-          )}
-          {(status === "dead" || missingOrigin) && (
-            <div className="callout callout-warning">
-              <p className="callout-title">
-                {status === "dead"
-                  ? t("npcEdit.markedDead")
-                  : t("npcEdit.missingOrigin")}
-              </p>
-              <p>{t("npcEdit.warningBody")}</p>
             </div>
           )}
         </div>

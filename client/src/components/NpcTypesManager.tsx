@@ -5,7 +5,23 @@ import "../screens/NpcEdit.css";
 import { Modal } from "./Modal";
 import type { NpcType } from "../data/domain";
 import { askConfirm } from "../lib/confirm";
-import { useT } from "../lib/i18n";
+import { useT, type TranslationKey } from "../lib/i18n";
+
+export interface NpcTypesTexts {
+  manage: TranslationKey;
+  title: TranslationKey;
+  hint: TranslationKey;
+  newPlaceholder: TranslationKey;
+  confirmDelete: TranslationKey;
+}
+
+const NPC_TEXTS: NpcTypesTexts = {
+  manage: "npcTypes.manage",
+  title: "npcTypes.title",
+  hint: "npcTypes.hint",
+  newPlaceholder: "npcTypes.newPlaceholder",
+  confirmDelete: "npcTypes.confirmDelete",
+};
 
 export interface NpcTypesApi {
   types: NpcType[];
@@ -27,7 +43,15 @@ const PALETTE = [
   "#c2665c",
 ];
 
-function TypeRow({ type, api }: { type: NpcType; api: NpcTypesApi }) {
+function TypeRow({
+  type,
+  api,
+  texts,
+}: {
+  type: NpcType;
+  api: NpcTypesApi;
+  texts: NpcTypesTexts;
+}) {
   const t = useT();
   const [label, setLabel] = useState(type.label);
   const [color, setColor] = useState(type.color);
@@ -49,7 +73,7 @@ function TypeRow({ type, api }: { type: NpcType; api: NpcTypesApi }) {
   }
 
   function remove() {
-    void askConfirm(t("npcTypes.confirmDelete")).then((ok) => {
+    void askConfirm(t(texts.confirmDelete)).then((ok) => {
       if (ok) void api.onDelete(type.id);
     });
   }
@@ -85,7 +109,7 @@ function TypeRow({ type, api }: { type: NpcType; api: NpcTypesApi }) {
   );
 }
 
-function AddRow({ api }: { api: NpcTypesApi }) {
+function AddRow({ api, texts }: { api: NpcTypesApi; texts: NpcTypesTexts }) {
   const t = useT();
   const [label, setLabel] = useState("");
   const [color, setColor] = useState(
@@ -114,7 +138,7 @@ function AddRow({ api }: { api: NpcTypesApi }) {
         className="npc-edit__input"
         value={label}
         maxLength={40}
-        placeholder={t("npcTypes.newPlaceholder")}
+        placeholder={t(texts.newPlaceholder)}
         onChange={(e) => setLabel(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && void add()}
       />
@@ -130,7 +154,13 @@ function AddRow({ api }: { api: NpcTypesApi }) {
   );
 }
 
-export function NpcTypesButton({ api }: { api: NpcTypesApi }) {
+export function NpcTypesButton({
+  api,
+  texts = NPC_TEXTS,
+}: {
+  api: NpcTypesApi;
+  texts?: NpcTypesTexts;
+}) {
   const t = useT();
   const [open, setOpen] = useState(false);
 
@@ -146,16 +176,16 @@ export function NpcTypesButton({ api }: { api: NpcTypesApi }) {
           strokeWidth={1.75}
           style={{ verticalAlign: "-2px", marginRight: 6 }}
         />
-        {t("npcTypes.manage")}
+        {t(texts.manage)}
       </button>
       {open && (
-        <Modal title={t("npcTypes.title")} onClose={() => setOpen(false)}>
-          <p className="npc-types__hint">{t("npcTypes.hint")}</p>
+        <Modal title={t(texts.title)} onClose={() => setOpen(false)}>
+          <p className="npc-types__hint">{t(texts.hint)}</p>
           <div className="npc-types__rows">
             {api.types.map((type) => (
-              <TypeRow key={type.id} type={type} api={api} />
+              <TypeRow key={type.id} type={type} api={api} texts={texts} />
             ))}
-            <AddRow api={api} />
+            <AddRow api={api} texts={texts} />
           </div>
         </Modal>
       )}

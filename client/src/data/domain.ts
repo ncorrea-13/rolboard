@@ -293,6 +293,7 @@ export interface PlayerCharacter {
   race: string;
   class: string;
   status: StatusKind;
+  description: string;
   backstory: string;
   progressionNotes: string;
   obsidianPath: string;
@@ -305,7 +306,7 @@ export interface PlayerCharacter {
   hasImage?: boolean;
 }
 
-export type SessionType = "session" | "interlude" | "planning";
+export type SessionType = "session" | "interlude" | "planning" | "oneshot";
 
 export interface Session {
   id: string;
@@ -315,16 +316,24 @@ export interface Session {
   sessionNumber: number;
   subNumber: number;
   sessionType: SessionType;
+  title: string;
+  planned: boolean;
   date: string;
   summary: string;
   prepNotes: string;
   obsidianPath?: string;
 }
 
+export function isPlayed(s: Pick<Session, "sessionType" | "planned">): boolean {
+  return s.sessionType !== "planning" && !s.planned;
+}
+
 export function sessionCode(
-  s: Pick<Session, "sessionNumber" | "subNumber">,
+  s: Pick<Session, "sessionNumber" | "subNumber"> &
+    Partial<Pick<Session, "sessionType">>,
 ): string {
-  const base = `S${String(s.sessionNumber).padStart(2, "0")}`;
+  const prefix = s.sessionType === "oneshot" ? "O" : "S";
+  const base = `${prefix}${String(s.sessionNumber).padStart(2, "0")}`;
   return s.subNumber ? `${base}.${s.subNumber}` : base;
 }
 
@@ -401,4 +410,128 @@ export interface EncounterParticipant {
   notes: string;
   attributes: StatMap;
   skills: StatMap;
+}
+
+export interface LooseNote {
+  id: string;
+  campaignId: string;
+  title: string;
+  body: string;
+  pending: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type LoreCategory = NpcType;
+
+export interface LoreEntry {
+  id: string;
+  campaignId: string;
+  categoryId?: string;
+  title: string;
+  body: string;
+  arcId?: string;
+  locationId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Timeline {
+  id: string;
+  campaignId: string;
+  name: string;
+  description: string;
+  color: string;
+  startLabel: string;
+  endLabel: string;
+  position: number;
+}
+
+export interface TimelineEvent {
+  id: string;
+  campaignId: string;
+  timelineId: string;
+  title: string;
+  description: string;
+  dateLabel: string;
+  endDateLabel: string;
+  sortKey: number;
+  arcId?: string;
+  sessionId?: string;
+  locationId?: string;
+  groupId?: string;
+  loreEntryId?: string;
+}
+
+export type SecretStatus = "hidden" | "revealed";
+
+export const secretTone: Record<SecretStatus, string> = {
+  hidden: "var(--accent-sun)",
+  revealed: "var(--status-alive)",
+};
+
+export interface Secret {
+  id: string;
+  campaignId: string;
+  title: string;
+  body: string;
+  status: SecretStatus;
+  revealedSessionId?: string;
+  npcId?: string;
+  locationId?: string;
+  loreEntryId?: string;
+  knownByNpcIds: string[];
+}
+
+export interface Currency {
+  id: string;
+  campaignId: string;
+  name: string;
+  symbol: string;
+  rateToBase?: number;
+  isBase: boolean;
+  locationIds: string[];
+}
+
+export interface ItemPrice {
+  currencyId: string;
+  amount: number;
+}
+
+export interface Item {
+  id: string;
+  campaignId: string;
+  name: string;
+  description: string;
+  effect: string;
+  category: string;
+  rarity: string;
+  weight?: number;
+  prices: ItemPrice[];
+}
+
+export interface InventoryEntry {
+  itemId: string;
+  name: string;
+  quantity: number;
+  notes: string;
+}
+
+export interface ShopEntry {
+  itemId: string;
+  name: string;
+  notes: string;
+  prices: ItemPrice[];
+}
+
+export function formatPrices(
+  prices: ItemPrice[],
+  currencies: Currency[],
+): string {
+  return prices
+    .map((p) => {
+      const c = currencies.find((x) => x.id === p.currencyId);
+      return `${p.amount} ${c ? c.symbol || c.name : "?"}`;
+    })
+    .join(" · ");
 }

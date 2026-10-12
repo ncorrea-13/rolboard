@@ -1,5 +1,5 @@
 import "./NpcEdit.css";
-import { sessionCode, type Arc, type Session } from "../data/domain";
+import { isPlayed, sessionCode, type Arc, type Session } from "../data/domain";
 import { MarkdownText } from "../components/MarkdownText";
 import { RenderedNoteButton } from "../components/RenderedNoteButton";
 import { useSessionExpectations } from "../hooks/useSessionExpectations";
@@ -25,7 +25,12 @@ export function SessionDetail({
   onMarkPlayed,
 }: SessionDetailProps) {
   const t = useT();
-  const played = session.sessionType !== "planning";
+  const sessionPrefix = t(
+    session.sessionType === "oneshot"
+      ? "sessionEdit.oneshotPrefix"
+      : "sessionEdit.sessionPrefix",
+  );
+  const played = isPlayed(session);
   const { npcs, quests } = useSessionExpectations(session.id);
 
   const planned = (
@@ -84,7 +89,8 @@ export function SessionDetail({
               color: "var(--text-primary)",
             }}
           >
-            {t("sessionEdit.sessionPrefix")} {sessionCode(session)}{" "}
+            {sessionPrefix} {sessionCode(session)}{" "}
+            {session.title ? `· ${session.title} ` : ""}
             {arc ? `· ${arc.label}` : ""}{" "}
             {played
               ? t("sessionEdit.playedSuffix")
@@ -101,7 +107,7 @@ export function SessionDetail({
           <RenderedNoteButton
             campaignId={campaignId}
             path={session.obsidianPath}
-            title={`${t("sessionEdit.sessionPrefix")} ${sessionCode(session)}`}
+            title={`${sessionPrefix} ${sessionCode(session)}`}
             fallback={session.summary}
           />
           <button className="btn btn-primary" onClick={onEdit}>

@@ -20,7 +20,7 @@ export function Modal({
   title: string;
   onClose: () => void;
   children: ReactNode;
-  size?: "large" | "sheet";
+  size?: "large" | "sheet" | "full";
 }) {
   const t = useT();
   const panelRef = useRef<HTMLDivElement>(null);

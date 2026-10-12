@@ -70,9 +70,26 @@ func New(cfg Config) (http.Handler, io.Closer, error) {
 	dashboardSvc := service.NewDashboardService(questSvc, npcSvc, sessionSvc)
 	notesSvc := service.NewNotesService(campaignRepo, locationRepo, npcRepo, groupRepo, sessionRepo, arcRepo, pcRepo, cfg.VaultsRoot)
 
+	looseNoteSvc := service.NewLooseNoteService(repository.NewLooseNoteRepository(db))
+
+	loreSvc := service.NewLoreService(repository.NewLoreCategoryRepository(db), repository.NewLoreEntryRepository(db))
+
+	timelineSvc := service.NewTimelineService(repository.NewTimelineRepository(db), repository.NewTimelineEventRepository(db))
+
+	secretSvc := service.NewSecretService(repository.NewSecretRepository(db))
+
+	economySvc := service.NewEconomyService(
+		repository.NewCurrencyRepository(db),
+		repository.NewItemRepository(db),
+		repository.NewInventoryRepository(db),
+		repository.NewShopRepository(db),
+	)
+
+	appearanceSvc := service.NewAppearanceService(repository.NewAppearanceRepository(db))
+
 	trashSvc := service.NewTrashService(repository.NewTrashRepository(db))
 
-	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc, trashSvc)
+	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, looseNoteSvc, loreSvc, timelineSvc, secretSvc, economySvc, appearanceSvc, encounterSvc, encounterParticipantSvc, trashSvc)
 
 	return handlers.RequestLogger(handlers.NewRouter(h)), db, nil
 }

@@ -26,6 +26,19 @@
   overflow-y: auto;
 }
 
+.modal-panel--full {
+  width: calc(100vw - 48px);
+  height: calc(100vh - 48px);
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-panel--full .modal-panel__body {
+  flex: 1;
+  min-height: 0;
+}
+
 .modal-panel--sheet {
   width: min(680px, calc(100vw - 64px));
   max-height: calc(100vh - 64px);

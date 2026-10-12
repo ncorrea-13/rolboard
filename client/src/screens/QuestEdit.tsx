@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import { questStatusLabel, type Quest, type QuestStatus } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
 
 interface QuestEditProps {
   quest: Quest;
@@ -95,25 +96,19 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
             />
           </div>
 
-          <div>
-            <span className="label">{t("questEdit.hookLabel")}</span>
-            <textarea
-              className="npc-edit__textarea"
-              style={{ minHeight: 140 }}
-              value={hook}
-              onChange={(e) => setHook(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={t("questEdit.hookLabel")}
+            minHeight={140}
+            value={hook}
+            onChange={setHook}
+          />
 
-          <div>
-            <span className="label">{t("questEdit.notesLabel")}</span>
-            <textarea
-              className="npc-edit__textarea"
-              style={{ minHeight: 160 }}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={t("questEdit.notesLabel")}
+            minHeight={160}
+            value={notes}
+            onChange={setNotes}
+          />
         </div>
 
         <div className="npc-edit__col">
