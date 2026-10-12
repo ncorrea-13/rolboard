@@ -7,7 +7,6 @@ import {
   type Npc,
   type StatusKind,
 } from "../data/domain";
-import { EntityIdentity } from "../components/EntityIdentity";
 import {
   NpcTypesButton,
   type NpcTypesApi,
@@ -99,7 +98,7 @@ export function NpcList({
   return (
     <div className="card npc-list">
       <div className="npc-list__header">
-        <div className="display" style={{ fontSize: 21 }}>
+        <div className="display page-title" role="heading" aria-level={1}>
           NPCs{" "}
           <span className="npc-list__count">
             · {filtered.length} / {npcs.length}
@@ -160,42 +159,51 @@ export function NpcList({
         ))}
       </div>
 
-      <div className="npc-list__row npc-list__row--head">
-        <span>{t("npcList.colName")}</span>
-        <span>{t("npcList.colType")}</span>
-        <span>{t("npcList.colLocation")}</span>
-        <span>{t("npcList.colStatus")}</span>
-      </div>
-
       {filtered.length === 0 && (
         <div className="npc-list__empty">{t("npcList.empty")}</div>
       )}
 
-      {paged.map((n) => (
-        <Link
-          key={n.id}
-          className="npc-list__row npc-list__row--data"
-          route={{ name: "npc-detail", npcId: n.id }}
-        >
-          <EntityIdentity
-            initials={n.initials}
-            name={n.name}
-            role={n.role}
-            color={crystalColorFor(n.crystal)}
-            imageUrl={entityImageUrl("npc", n.id, n.hasImage, imageVersion)}
-          />
-          <span className="npc-list__type">
-            <span
-              className="type-chip"
+      <div className="npc-grid">
+        {paged.map((n) => {
+          const imageUrl = entityImageUrl(
+            "npc",
+            n.id,
+            n.hasImage,
+            imageVersion,
+          );
+          return (
+            <Link
+              key={n.id}
+              className="npc-card"
               style={{ "--c": crystalColorFor(n.crystal) } as CSSProperties}
+              route={{ name: "npc-detail", npcId: n.id }}
             >
-              {crystalLabelFor(n.crystal, lang)}
-            </span>
-          </span>
-          <span className="npc-list__cell">{n.location}</span>
-          <StatusPill status={n.status} />
-        </Link>
-      ))}
+              <span className="npc-card__portrait">
+                {imageUrl ? (
+                  <img src={imageUrl} alt="" />
+                ) : (
+                  <span className="npc-card__initials">{n.initials}</span>
+                )}
+              </span>
+              <span className="npc-card__body">
+                <span className="npc-card__name">{n.name}</span>
+                {n.role && <span className="npc-card__role">{n.role}</span>}
+                <span className="npc-card__meta">
+                  <span className="type-chip">
+                    {crystalLabelFor(n.crystal, lang)}
+                  </span>
+                  {n.location && (
+                    <span className="npc-card__place">{n.location}</span>
+                  )}
+                </span>
+              </span>
+              <span className="npc-card__status">
+                <StatusPill status={n.status} />
+              </span>
+            </Link>
+          );
+        })}
+      </div>
 
       {pageCount > 1 && (
         <div className="npc-list__pagination">

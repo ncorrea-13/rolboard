@@ -169,13 +169,7 @@ export function NpcEdit({
       <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {npc.id ? `${t("common.editing")} · ${npc.name}` : t("npcEdit.new")}
           </span>
           {dirty && (
@@ -206,6 +200,7 @@ export function NpcEdit({
             <div>
               <span className="label">{t("common.name")}</span>
               <input
+                aria-label={t("common.name")}
                 className="npc-edit__input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -214,6 +209,7 @@ export function NpcEdit({
             <div>
               <span className="label">{t("common.status")}</span>
               <select
+                aria-label={t("common.status")}
                 className="npc-edit__select npc-edit__select--native"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as StatusKind)}
@@ -229,6 +225,7 @@ export function NpcEdit({
             <div>
               <span className="label">{t("npcEdit.detailLevel")}</span>
               <select
+                aria-label={t("npcEdit.detailLevel")}
                 className="npc-edit__select npc-edit__select--native"
                 value={detailLevel}
                 onChange={(e) =>
@@ -267,6 +264,7 @@ export function NpcEdit({
               <div>
                 <span className="label">{t("npcEdit.sprenType")}</span>
                 <input
+                  aria-label={t("npcEdit.sprenType")}
                   className="npc-edit__input"
                   value={tipoSpren}
                   onChange={(e) => setTipoSpren(e.target.value)}
@@ -277,6 +275,7 @@ export function NpcEdit({
               <div>
                 <span className="label">{t("npcEdit.ethnicity")}</span>
                 <input
+                  aria-label={t("npcEdit.ethnicity")}
                   className="npc-edit__input"
                   value={etnia}
                   onChange={(e) => setEtnia(e.target.value)}
@@ -302,6 +301,7 @@ export function NpcEdit({
                 onChange={(e) => setLinkRole(e.target.value)}
               />
               <select
+                aria-label={t("npcEdit.linkWithNpc")}
                 className="npc-edit__select npc-edit__select--native"
                 value={linkNpcId}
                 onChange={(e) => setLinkNpcId(e.target.value)}
@@ -364,6 +364,7 @@ export function NpcEdit({
             <div>
               <span className="label">{t("playerEdit.currentHp")}</span>
               <input
+                aria-label={t("playerEdit.currentHp")}
                 className="npc-edit__input"
                 type="number"
                 value={currentHp ?? ""}
@@ -377,6 +378,7 @@ export function NpcEdit({
             <div>
               <span className="label">{t("playerEdit.maxHp")}</span>
               <input
+                aria-label={t("playerEdit.maxHp")}
                 className="npc-edit__input"
                 type="number"
                 value={maxHp ?? ""}
@@ -391,6 +393,7 @@ export function NpcEdit({
           <div>
             <span className="label">{t("npcList.colLocation")}</span>
             <select
+              aria-label={t("npcList.colLocation")}
               className="npc-edit__select npc-edit__select--native"
               style={{ borderBottom: "2px solid var(--crystal-location)" }}
               value={locationId}
