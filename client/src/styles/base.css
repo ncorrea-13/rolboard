@@ -20,22 +20,67 @@ body {
   color-scheme: dark;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+  }
+}
+
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 ::selection {
   background: var(--accent-obsidian-soft);
   color: var(--text-primary);
 }
 
 .label {
-  font: 500 10px/1 var(--font-mono);
-  letter-spacing: 0.11em;
+  font: italic 500 14px/1.2 var(--font-display);
   color: var(--text-secondary);
-  text-transform: uppercase;
+}
+
+.eyebrow {
+  font: italic 500 14px/1.2 var(--font-display);
+  color: var(--accent-flame);
+}
+
+.crack {
+  display: flex;
+  align-items: center;
+  margin: 4px 0 18px;
+  color: var(--border);
+}
+
+.crack__line {
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+}
+
+.crack__line--short {
+  flex: 0 0 20%;
 }
 
 .display {
   font-family: var(--font-display);
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.page-title {
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 640px) {
+  .page-title {
+    font-size: 28px;
+  }
 }
 
 .status-dot {
@@ -111,6 +156,18 @@ body {
   border-radius: var(--radius-lg);
 }
 
+/* Page-level containers sit on the canvas, like the dashboard. */
+.card.list-page,
+.card.npc-list,
+.card.entity-detail,
+.card.npc-detail,
+.card.sessions-timeline {
+  padding-inline: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+
 /* Entity type (crystal) as a tinted pill; set --c inline. */
 .type-chip {
   display: inline-flex;
@@ -164,7 +221,7 @@ select::picker-icon {
   border: 1px solid var(--border);
   border-radius: 5px;
   color: var(--text-body);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.4);
+  box-shadow: var(--shadow-pop);
 }
 
 option {
@@ -182,4 +239,43 @@ option:focus-visible {
 
 option:checked {
   color: var(--accent-obsidian);
+}
+
+.md table,
+.help__md table {
+  width: 100%;
+  margin: 14px 0;
+  border-collapse: collapse;
+  border: 1px solid var(--border-strong);
+  font-size: 13.5px;
+}
+
+.md th,
+.md td,
+.help__md th,
+.help__md td {
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  text-align: left;
+  vertical-align: top;
+}
+
+.md th,
+.help__md th {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.md tbody tr:nth-child(even) td,
+.help__md tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--bg-elevated) 50%, transparent);
+}
+
+@media (max-width: 640px) {
+  .md table,
+  .help__md table {
+    display: block;
+    overflow-x: auto;
+  }
 }
