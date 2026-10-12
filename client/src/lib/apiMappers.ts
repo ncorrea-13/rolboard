@@ -16,6 +16,8 @@ import {
   type Session,
   type LooseNote,
   type LoreEntry,
+  type Timeline,
+  type TimelineEvent,
   type SessionType,
   type StatMap,
   type StatusKind,
@@ -612,6 +614,100 @@ export function loreEntryToApiPayload(
     category_id: e.categoryId ? Number(e.categoryId) : null,
     arc_id: e.arcId ? Number(e.arcId) : null,
     location_id: e.locationId ? Number(e.locationId) : null,
+  };
+}
+
+export interface ApiTimeline {
+  id: number;
+  campaign_id: number;
+  name: string;
+  description: string;
+  color: string;
+  start_label: string;
+  end_label: string;
+  position: number;
+}
+
+export function mapTimeline(t: ApiTimeline): Timeline {
+  return {
+    id: String(t.id),
+    campaignId: String(t.campaign_id),
+    name: t.name,
+    description: t.description,
+    color: t.color,
+    startLabel: t.start_label,
+    endLabel: t.end_label,
+    position: t.position,
+  };
+}
+
+export function timelineToApiPayload(
+  t: Pick<
+    Timeline,
+    "name" | "description" | "color" | "startLabel" | "endLabel"
+  >,
+) {
+  return {
+    name: t.name,
+    description: t.description,
+    color: t.color,
+    start_label: t.startLabel,
+    end_label: t.endLabel,
+  };
+}
+
+export interface ApiTimelineEvent {
+  id: number;
+  campaign_id: number;
+  timeline_id: number;
+  title: string;
+  description: string;
+  date_label: string;
+  end_date_label: string;
+  sort_key: number;
+  arc_id?: number;
+  session_id?: number;
+  location_id?: number;
+  group_id?: number;
+  lore_entry_id?: number;
+}
+
+const optId = (n?: number) => (n ? String(n) : undefined);
+
+export function mapTimelineEvent(e: ApiTimelineEvent): TimelineEvent {
+  return {
+    id: String(e.id),
+    campaignId: String(e.campaign_id),
+    timelineId: String(e.timeline_id),
+    title: e.title,
+    description: e.description,
+    dateLabel: e.date_label,
+    endDateLabel: e.end_date_label,
+    sortKey: e.sort_key,
+    arcId: optId(e.arc_id),
+    sessionId: optId(e.session_id),
+    locationId: optId(e.location_id),
+    groupId: optId(e.group_id),
+    loreEntryId: optId(e.lore_entry_id),
+  };
+}
+
+export type TimelineEventValues = Omit<TimelineEvent, "id" | "campaignId">;
+
+export function timelineEventToApiPayload(e: TimelineEventValues) {
+  const num = (v?: string) => (v ? Number(v) : null);
+  return {
+    timeline_id: Number(e.timelineId),
+    title: e.title,
+    description: e.description,
+    date_label: e.dateLabel,
+    end_date_label: e.endDateLabel,
+    sort_key: e.sortKey,
+    arc_id: num(e.arcId),
+    session_id: num(e.sessionId),
+    location_id: num(e.locationId),
+    group_id: num(e.groupId),
+    lore_entry_id: num(e.loreEntryId),
   };
 }
 

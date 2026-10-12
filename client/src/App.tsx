@@ -45,8 +45,9 @@ import { NoteEdit } from "./screens/NoteEdit";
 import { useLooseNotes } from "./hooks/useLooseNotes";
 import { LoreDetail } from "./screens/LoreDetail";
 import { LoreEdit } from "./screens/LoreEdit";
-import { LoreList } from "./screens/LoreList";
 import { useLore } from "./hooks/useLore";
+import { WorldSection } from "./screens/WorldSection";
+import { useTimeline } from "./hooks/useTimeline";
 import { ArcsList } from "./screens/ArcsList";
 import { FactionsList } from "./screens/FactionsList";
 import { LocationsList } from "./screens/LocationsList";
@@ -326,6 +327,16 @@ export default function App() {
     saveLoreEntry,
     deleteLoreEntry,
   } = useLore(activeCampaignId, reloadKey, navigate, notify);
+
+  const {
+    timelines,
+    timelineEvents,
+    createTimeline,
+    updateTimeline,
+    deleteTimeline,
+    saveEvent: saveTimelineEvent,
+    deleteEvent: deleteTimelineEvent,
+  } = useTimeline(activeCampaignId, reloadKey, notify);
 
   const npcTypesApi: NpcTypesApi = {
     types: npcTypes,
@@ -653,13 +664,29 @@ export default function App() {
             />
           )}
           {route.name === "section" && route.section === "mundo" && (
-            <LoreList
-              entries={loreEntries}
-              categories={loreCategories}
-              categoriesApi={loreCategoriesApi}
-              arcs={campaignArcs}
-              locations={campaignLocations}
-              onCreate={() => navigate({ name: "lore-create" })}
+            <WorldSection
+              lore={{
+                entries: loreEntries,
+                categories: loreCategories,
+                categoriesApi: loreCategoriesApi,
+                arcs: campaignArcs,
+                locations: campaignLocations,
+                onCreate: () => navigate({ name: "lore-create" }),
+              }}
+              timeline={{
+                timelines,
+                events: timelineEvents,
+                arcs: campaignArcs,
+                sessions: campaignSessions,
+                locations: campaignLocations,
+                groups: campaignGroups,
+                loreEntries,
+                onCreateTimeline: createTimeline,
+                onUpdateTimeline: updateTimeline,
+                onDeleteTimeline: deleteTimeline,
+                onSaveEvent: saveTimelineEvent,
+                onDeleteEvent: deleteTimelineEvent,
+              }}
             />
           )}
           {route.name === "lore-create" && (

@@ -436,3 +436,30 @@ export interface LoreEntry {
   updatedAt: string;
 }
 
+export interface Timeline {
+  id: string;
+  campaignId: string;
+  name: string;
+  description: string;
+  color: string;
+  startLabel: string;
+  endLabel: string;
+  position: number;
+}
+
+export interface TimelineEvent {
+  id: string;
+  campaignId: string;
+  timelineId: string;
+  title: string;
+  description: string;
+  dateLabel: string;
+  endDateLabel: string;
+  sortKey: number;
+  arcId?: string;
+  sessionId?: string;
+  locationId?: string;
+  groupId?: string;
+  loreEntryId?: string;
+}
+
