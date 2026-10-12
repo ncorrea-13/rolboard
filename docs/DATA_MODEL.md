@@ -159,6 +159,16 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 
 No `obsidian_path`: quests live only in the DB.
 
+### notes
+
+Loose notes (`LooseNote` in the code, to avoid clashing with vault notes). Dashboard only.
+
+| Field       | Notes |
+| ----------- | ----- |
+| title       | required |
+| body        | Markdown |
+| pending     | `0`/`1`, "to be filed"; default `1` |
+
 ### encounters
 
 | Field      | Notes |

@@ -159,6 +159,16 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 
 Sin `obsidian_path`: las quests viven solo en la DB.
 
+### notes
+
+Notas sueltas (`LooseNote` en el código, para no chocar con las notas del vault). Solo dashboard.
+
+| Campo       | Notas |
+| ----------- | ----- |
+| title       | obligatorio |
+| body        | Markdown |
+| pending     | `0`/`1`, "pendiente de ubicar"; default `1` |
+
 ### encounters
 
 | Campo      | Notas |

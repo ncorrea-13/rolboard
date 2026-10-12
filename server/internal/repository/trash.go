@@ -31,6 +31,7 @@ var trashSpecs = []trashSpec{
 		parentDeleted: `SELECT EXISTS(SELECT 1 FROM locations c JOIN locations p ON p.id = c.parent_location_id WHERE c.id = ? AND p.deleted_at IS NOT NULL)`},
 	{kind: "group", table: "groups", label: "name"},
 	{kind: "quest", table: "quests", label: "title"},
+	{kind: "loose_note", table: "notes", label: "title"},
 	{kind: "encounter", table: "encounters", label: "name"},
 }
 

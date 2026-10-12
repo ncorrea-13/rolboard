@@ -206,6 +206,18 @@ DELETE /api/quests/{id}
 
 Body: `title`, `description`, `status` (`active` | `completed` | `failed` | `on_hold`), `priority`, `notes`.
 
+### Notas sueltas
+
+```
+GET    /api/campaigns/{id}/loose-notes
+POST   /api/campaigns/{id}/loose-notes
+GET    /api/loose-notes/{id}
+PUT    /api/loose-notes/{id}
+DELETE /api/loose-notes/{id}
+```
+
+Body: `title` (obligatorio), `body`, `pending`. Viven en la tabla `notes`; la ruta es `loose-notes` para no chocar con `notes/render` (notas del vault). El listado devuelve primero las pendientes y luego por `updated_at` descendente.
+
 ## Encounters (tracker de combate)
 
 ```

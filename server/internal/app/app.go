@@ -70,9 +70,11 @@ func New(cfg Config) (http.Handler, io.Closer, error) {
 	dashboardSvc := service.NewDashboardService(questSvc, npcSvc, sessionSvc)
 	notesSvc := service.NewNotesService(campaignRepo, locationRepo, npcRepo, groupRepo, sessionRepo, arcRepo, pcRepo, cfg.VaultsRoot)
 
+	looseNoteSvc := service.NewLooseNoteService(repository.NewLooseNoteRepository(db))
+
 	trashSvc := service.NewTrashService(repository.NewTrashRepository(db))
 
-	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, encounterSvc, encounterParticipantSvc, trashSvc)
+	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, looseNoteSvc, encounterSvc, encounterParticipantSvc, trashSvc)
 
 	return handlers.RequestLogger(handlers.NewRouter(h)), db, nil
 }
