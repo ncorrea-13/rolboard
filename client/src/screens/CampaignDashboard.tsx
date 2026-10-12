@@ -1,15 +1,4 @@
 import type { CSSProperties, ReactNode } from "react";
-import {
-  CalendarDays,
-  Dices,
-  Earth,
-  MapPin,
-  Shield,
-  StickyNote,
-  Swords,
-  Users,
-  type LucideIcon,
-} from "lucide-react";
 import "./CampaignDashboard.css";
 import {
   crystalColor,
@@ -33,6 +22,7 @@ import {
   ArcStatusPill,
   QuestStatusPill,
 } from "../components/StatusPill";
+import { Crack } from "../components/Crack";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
 import { openInObsidian } from "../lib/obsidian";
@@ -90,15 +80,11 @@ interface CampaignDashboardProps {
 }
 
 function StatItem({
-  icon: Icon,
-  tone,
   value,
   label,
   hint,
   onClick,
 }: {
-  icon: LucideIcon;
-  tone: string;
   value: number;
   label: string;
   hint?: string;
@@ -106,15 +92,7 @@ function StatItem({
 }) {
   const shown = useCountUp(value);
   return (
-    <button
-      type="button"
-      className="dash-stat"
-      style={{ "--tone": tone } as CSSProperties}
-      onClick={onClick}
-    >
-      <span className="dash-stat__icon">
-        <Icon size={16} strokeWidth={1.75} />
-      </span>
+    <button type="button" className="dash-stat" onClick={onClick}>
       <span className="dash-stat__value">{shown}</span>
       <span className="dash-stat__label">{label}</span>
       {hint && <span className="dash-stat__hint">{hint}</span>}
@@ -124,7 +102,6 @@ function StatItem({
 
 function Section({
   title,
-  icon: Icon,
   tone,
   index,
   actionLabel,
@@ -133,7 +110,6 @@ function Section({
   children,
 }: {
   title: string;
-  icon: LucideIcon;
   tone: string;
   index: number;
   actionLabel?: string;
@@ -148,9 +124,6 @@ function Section({
       style={{ "--tone": tone, "--i": index } as CSSProperties}
     >
       <div className="dash-section__head">
-        <span className="dash-section__icon">
-          <Icon size={14} strokeWidth={1.9} />
-        </span>
         <span className="label">{title}</span>
         <span className="dash-section__rule" />
         {actionLabel && onAction && (
@@ -273,11 +246,8 @@ export function CampaignDashboard({
     .slice(0, 4);
 
   const tones = {
-    sessions: "var(--status-alive)",
     npcs: crystalColor.npc,
     players: "var(--status-dead)",
-    locations: crystalColor.location,
-    factions: crystalColor["faction-quest"],
     quests: "var(--accent-teal)",
     lore: "var(--accent-lime)",
     notes: "var(--accent-orchid)",
@@ -288,7 +258,6 @@ export function CampaignDashboard({
     <div className="campaign-dashboard">
       <header className="dash-head">
         <div className="dash-head__titles">
-          <div className="display dash-head__name">{campaign.name}</div>
           <div className="dash-head__meta">
             <span>{campaign.system}</span>
             {currentArc && (
@@ -303,6 +272,13 @@ export function CampaignDashboard({
                 )}
               </>
             )}
+          </div>
+          <div
+            className="display dash-head__name"
+            role="heading"
+            aria-level={1}
+          >
+            {campaign.name}
           </div>
         </div>
         <div className="campaign-dashboard__actions">
@@ -337,10 +313,10 @@ export function CampaignDashboard({
         </div>
       </header>
 
+      <Crack />
+
       <div className="dash-ledger">
         <StatItem
-          icon={CalendarDays}
-          tone={tones.sessions}
           value={playedSessions.length}
           label={t("dashboard.stat.sessions")}
           hint={
@@ -351,50 +327,36 @@ export function CampaignDashboard({
           onClick={() => onNavigate("sesiones")}
         />
         <StatItem
-          icon={Users}
-          tone={tones.npcs}
           value={npcs.length}
           label={t("dashboard.stat.npcs")}
           onClick={() => onNavigate("npcs")}
         />
         <StatItem
-          icon={Dices}
-          tone={tones.players}
           value={players.length}
           label={t("dashboard.stat.players")}
           onClick={() => onNavigate("jugadores")}
         />
         <StatItem
-          icon={MapPin}
-          tone={tones.locations}
           value={locationsCount}
           label={t("dashboard.stat.locations")}
           onClick={() => onNavigate("locaciones")}
         />
         <StatItem
-          icon={Shield}
-          tone={tones.factions}
           value={groupsCount}
           label={t("dashboard.stat.factions")}
           onClick={() => onNavigate("facciones")}
         />
         <StatItem
-          icon={Swords}
-          tone={tones.quests}
           value={activeQuests.length}
           label={t("dashboard.stat.quests")}
           onClick={() => onNavigate("quests")}
         />
         <StatItem
-          icon={Earth}
-          tone={tones.lore}
           value={loreEntries.length}
           label={t("dashboard.stat.lore")}
           onClick={() => onNavigate("mundo")}
         />
         <StatItem
-          icon={StickyNote}
-          tone={tones.notes}
           value={pendingNotes.length}
           label={t("dashboard.stat.notes")}
           onClick={() => onNavigate("notas")}
@@ -416,7 +378,7 @@ export function CampaignDashboard({
                   }}
                 >
                   <div className="campaign-dashboard__panel-top">
-                    <span className="label">{t("dashboard.currentArc")}</span>
+                    <span className="eyebrow">{t("dashboard.currentArc")}</span>
                     <ArcStatusPill status={currentArc.status} />
                   </div>
                   <div className="dash-feature__split">
@@ -455,7 +417,9 @@ export function CampaignDashboard({
                   onClick={() => onOpenSession(lastSession.id)}
                 >
                   <div className="campaign-dashboard__panel-top">
-                    <span className="label">{t("dashboard.lastSession")}</span>
+                    <span className="eyebrow">
+                      {t("dashboard.lastSession")}
+                    </span>
                     {lastSession.sessionType !== "planning" && (
                       <button
                         className="btn btn-secondary dash-feature__action"
@@ -492,12 +456,11 @@ export function CampaignDashboard({
 
           <Section
             title={t("dashboard.activeQuests")}
-            icon={Swords}
             tone={tones.quests}
             index={3}
             actionLabel={t("dashboard.viewAllFem")}
             onAction={() => onNavigate("quests")}
-            empty={t("dashboard.empty")}
+            empty={t("dashboard.empty.quests")}
           >
             {activeQuests.slice(0, 5).map((q) => (
               <Link
@@ -524,12 +487,11 @@ export function CampaignDashboard({
 
           <Section
             title={t("dashboard.recentNpcs")}
-            icon={Users}
             tone={tones.npcs}
             index={4}
             actionLabel={t("dashboard.viewAllMasc")}
             onAction={() => onNavigate("npcs")}
-            empty={t("dashboard.empty")}
+            empty={t("dashboard.empty.npcs")}
           >
             {recentNpcs.map((n) => (
               <Link
@@ -560,12 +522,11 @@ export function CampaignDashboard({
         <aside className="dash-side">
           <Section
             title={t("dashboard.party")}
-            icon={Dices}
             tone={tones.players}
             index={3}
             actionLabel={t("dashboard.viewAllMasc")}
             onAction={() => onNavigate("jugadores")}
-            empty={t("dashboard.empty")}
+            empty={t("dashboard.empty.party")}
           >
             {players.slice(0, 5).map((p) => {
               const hasHp = p.currentHp != null && p.maxHp;
@@ -618,12 +579,11 @@ export function CampaignDashboard({
 
           <Section
             title={t("dashboard.pendingNotes")}
-            icon={StickyNote}
             tone={tones.notes}
             index={4}
             actionLabel={t("dashboard.viewAllFem")}
             onAction={() => onNavigate("notas")}
-            empty={t("dashboard.empty")}
+            empty={t("dashboard.empty.notes")}
           >
             {pendingNotes.slice(0, 4).map((n) => (
               <Link
@@ -645,12 +605,11 @@ export function CampaignDashboard({
 
           <Section
             title={t("dashboard.recentLore")}
-            icon={Earth}
             tone={tones.lore}
             index={5}
             actionLabel={t("dashboard.viewAllFem")}
             onAction={() => onNavigate("mundo")}
-            empty={t("dashboard.empty")}
+            empty={t("dashboard.empty.lore")}
           >
             {recentLore.map((e) => {
               const category = loreCategories.find(
@@ -688,12 +647,11 @@ export function CampaignDashboard({
 
           <Section
             title={t("dashboard.oneshots")}
-            icon={CalendarDays}
             tone={tones.oneshot}
             index={6}
             actionLabel={t("dashboard.viewAllMasc")}
             onAction={() => onNavigate("sesiones")}
-            empty={t("dashboard.empty")}
+            empty={t("dashboard.empty.oneshots")}
           >
             {oneshots
               .slice(-4)
@@ -712,7 +670,7 @@ export function CampaignDashboard({
                   </div>
                   {!isPlayed(s) && (
                     <span className="npc-detail__appearance-chip">
-                      {t("sessionsTimeline.planned")}
+                      {t("sessionsTimeline.plannedMasc")}
                     </span>
                   )}
                 </Link>

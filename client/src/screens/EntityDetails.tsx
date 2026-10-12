@@ -51,6 +51,7 @@ export function ArcDetail({
   onDelete,
   onStart,
   onClose,
+  imageVersion = 0,
 }: {
   arc: Arc;
   sessions: Session[];
@@ -59,6 +60,7 @@ export function ArcDetail({
   onBack: () => void;
   onStart: () => void;
   onClose: () => void;
+  imageVersion?: number;
 } & EditableProps) {
   const t = useT();
   return (
@@ -67,6 +69,7 @@ export function ArcDetail({
       backLabel={t("entityDetails.arcosBreadcrumb")}
       onBack={onBack}
       title={arc.label}
+      imageUrl={entityImageUrl("arc", arc.id, arc.hasImage, imageVersion)}
       status={<ArcStatusPill status={arc.status} />}
       extraActions={
         arc.status === "en_curso" ? (
@@ -516,7 +519,13 @@ export function QuestDetail({
   onBack,
   onEdit,
   onDelete,
-}: { quest: Quest; npcs: Npc[]; onBack: () => void } & EditableProps) {
+  imageVersion = 0,
+}: {
+  quest: Quest;
+  npcs: Npc[];
+  onBack: () => void;
+  imageVersion?: number;
+} & EditableProps) {
   const t = useT();
   const priorityLabel = {
     1: t("questDetail.priorityHigh"),
@@ -529,6 +538,7 @@ export function QuestDetail({
       backLabel={t("sidebar.quests")}
       onBack={onBack}
       title={quest.name}
+      imageUrl={entityImageUrl("quest", quest.id, quest.hasImage, imageVersion)}
       accentColor={crystalColor[quest.crystal]}
       status={<QuestStatusPill status={quest.status} />}
       onEdit={onEdit}

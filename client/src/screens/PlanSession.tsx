@@ -80,13 +80,7 @@ export function PlanSession({
       <div className="npc-edit__bar npc-edit__bar--planned">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {t(
               oneshot ? "planSession.planningOneshot" : "planSession.planning",
             )}{" "}
@@ -114,6 +108,7 @@ export function PlanSession({
             <div>
               <span className="label">{t("sessionEdit.titleLabel")}</span>
               <input
+                aria-label={t("sessionEdit.titleLabel")}
                 className="npc-edit__input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -134,6 +129,7 @@ export function PlanSession({
             <div>
               <span className="label">{t("planSession.tentativeDate")}</span>
               <input
+                aria-label={t("planSession.tentativeDate")}
                 type="date"
                 className="npc-edit__input"
                 value={date}
@@ -145,6 +141,7 @@ export function PlanSession({
           <div>
             <span className="label">{t("sessionEdit.arc")}</span>
             <select
+              aria-label={t("sessionEdit.arc")}
               className="npc-edit__select npc-edit__select--native"
               value={arcId}
               onChange={(e) => setArcId(e.target.value)}

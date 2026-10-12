@@ -9,6 +9,7 @@ type Arc struct {
 	SubarcOrder  *int64  `json:"subarc_order,omitempty"`
 	Summary      string  `json:"summary"`
 	ObsidianPath *string `json:"obsidian_path,omitempty"`
+	ImagePath    *string `json:"image_path,omitempty"`
 	CreatedAt    string  `json:"created_at"`
 	UpdatedAt    string  `json:"updated_at"`
 }

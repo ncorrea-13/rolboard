@@ -5,6 +5,9 @@ import { Modal } from "../components/Modal";
 import { MarkdownField } from "../components/MarkdownField";
 import { MarkdownText } from "../components/MarkdownText";
 import { PricesEditor } from "../components/PricesEditor";
+import { EntityImageField } from "../components/EntityImageField";
+import { usePendingImage } from "../hooks/usePendingImage";
+import { entityImageUrl } from "../lib/images";
 import {
   formatPrices,
   type Currency,
@@ -33,8 +36,15 @@ interface ItemsSectionProps {
   items: Item[];
   currencies: Currency[];
   locations: Location[];
-  onSaveItem: (id: string | null, values: ItemValues) => Promise<boolean>;
+  onSaveItem: (
+    id: string | null,
+    values: ItemValues,
+    image?: File,
+  ) => Promise<boolean>;
   onDeleteItem: (id: string) => Promise<boolean>;
+  onUploadItemImage: (id: string, file: File) => Promise<void>;
+  onRemoveItemImage: (id: string) => Promise<void>;
+  imageVersion?: number;
   onSaveCurrency: (
     id: string | null,
     values: CurrencyValues,
@@ -49,15 +59,22 @@ function ItemModal({
   onSave,
   onDelete,
   onClose,
+  imageVersion,
+  onUploadImage,
+  onRemoveImage,
 }: {
   item: Item | null;
   items: Item[];
   currencies: Currency[];
-  onSave: (values: ItemValues) => Promise<boolean>;
+  onSave: (values: ItemValues, image?: File) => Promise<boolean>;
   onDelete?: () => void;
   onClose: () => void;
+  imageVersion?: number;
+  onUploadImage?: (file: File) => Promise<void>;
+  onRemoveImage?: () => Promise<void>;
 }) {
   const t = useT();
+  const pendingImage = usePendingImage();
   const [name, setName] = useState(item?.name ?? "");
   const [category, setCategory] = useState(item?.category ?? "");
   const [rarity, setRarity] = useState(item?.rarity ?? "");
@@ -79,15 +96,18 @@ function ItemModal({
 
   async function save() {
     setSaving(true);
-    const ok = await onSave({
-      name: name.trim(),
-      description,
-      effect,
-      category: category.trim(),
-      rarity: rarity.trim(),
-      weight: parsedWeight,
-      prices,
-    });
+    const ok = await onSave(
+      {
+        name: name.trim(),
+        description,
+        effect,
+        category: category.trim(),
+        rarity: rarity.trim(),
+        weight: parsedWeight,
+        prices,
+      },
+      pendingImage.file,
+    );
     setSaving(false);
     if (ok) onClose();
   }
@@ -110,6 +130,15 @@ function ItemModal({
           onChange={(e) => setName(e.target.value)}
         />
       </div>
+      <EntityImageField
+        kind="item"
+        label={t("items.image")}
+        entity={item ?? { id: "" }}
+        pending={pendingImage}
+        imageVersion={imageVersion}
+        onUpload={onUploadImage}
+        onRemove={onRemoveImage}
+      />
       <div className="npc-edit__grid-2">
         <div>
           <label className="label" htmlFor="item-category">
@@ -210,11 +239,17 @@ function ItemsList({
   currencies,
   onSave,
   onDelete,
+  onUploadImage,
+  onRemoveImage,
+  imageVersion = 0,
 }: {
   items: Item[];
   currencies: Currency[];
   onSave: ItemsSectionProps["onSaveItem"];
   onDelete: ItemsSectionProps["onDeleteItem"];
+  onUploadImage: ItemsSectionProps["onUploadItemImage"];
+  onRemoveImage: ItemsSectionProps["onRemoveItemImage"];
+  imageVersion?: number;
 }) {
   const t = useT();
   const [search, setSearch] = useState("");
@@ -251,7 +286,7 @@ function ItemsList({
   return (
     <div className="card npc-list">
       <div className="npc-list__header">
-        <div className="display" style={{ fontSize: 21 }}>
+        <div className="display page-title" role="heading" aria-level={1}>
           {t("items.title")}{" "}
           <span className="npc-list__count">
             · {filtered.length} / {items.length}
@@ -289,57 +324,70 @@ function ItemsList({
         </div>
       )}
 
-      <div className="npc-list__row npc-list__row--item npc-list__row--head">
-        <span>{t("items.name")}</span>
-        <span>{t("items.category")}</span>
-        <span>{t("items.rarity")}</span>
-        <span>{t("items.prices")}</span>
-      </div>
-
       {filtered.length === 0 && (
         <div className="npc-list__empty">{t("items.empty")}</div>
       )}
 
-      {filtered.map((i) => (
-        <button
-          key={i.id}
-          type="button"
-          className="npc-list__row npc-list__row--item npc-list__row--data npc-list__row--button"
-          onClick={() => setEditing(i)}
-        >
-          <div className="npc-list__lore-main">
-            <span className="npc-list__lore-title">{i.name}</span>
-            {(i.effect || i.description) && (
-              <div className="npc-list__lore-sub">
-                <MarkdownText inline text={i.effect || i.description} />
-              </div>
-            )}
-          </div>
-          <span className="npc-list__type">
-            {i.category && (
-              <span
-                className="type-chip"
-                style={{ "--c": "var(--accent-cyan)" } as CSSProperties}
-              >
-                {i.category}
-              </span>
-            )}
-          </span>
-          <span className="npc-list__cell">{i.rarity}</span>
-          <span className="npc-list__cell">
-            {formatPrices(i.prices, currencies)}
-          </span>
-        </button>
-      ))}
+      <div className="item-grid">
+        {filtered.map((i) => {
+          const prices = formatPrices(i.prices, currencies);
+          const imageUrl = entityImageUrl(
+            "item",
+            i.id,
+            i.hasImage,
+            imageVersion,
+          );
+          return (
+            <button
+              key={i.id}
+              type="button"
+              className="item-card"
+              onClick={() => setEditing(i)}
+            >
+              {imageUrl && (
+                <img className="item-card__image" src={imageUrl} alt="" />
+              )}
+              {i.category && (
+                <span className="item-card__category">{i.category}</span>
+              )}
+              <span className="display item-card__name">{i.name}</span>
+              {(i.effect || i.description) && (
+                <span className="item-card__effect">
+                  <MarkdownText inline text={i.effect || i.description} />
+                </span>
+              )}
+              {(i.rarity || prices) && (
+                <span className="item-card__foot">
+                  <span className="item-card__rarity">{i.rarity}</span>
+                  <span className="item-card__prices">{prices}</span>
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
       {editing && (
         <ItemModal
           key={editing === "new" ? "new" : editing.id}
-          item={editing === "new" ? null : editing}
+          item={
+            editing === "new"
+              ? null
+              : (items.find((i) => i.id === editing.id) ?? editing)
+          }
           items={items}
           currencies={currencies}
-          onSave={(values) =>
-            onSave(editing === "new" ? null : editing.id, values)
+          imageVersion={imageVersion}
+          onUploadImage={
+            editing === "new"
+              ? undefined
+              : (file) => onUploadImage(editing.id, file)
+          }
+          onRemoveImage={
+            editing === "new" ? undefined : () => onRemoveImage(editing.id)
+          }
+          onSave={(values, image) =>
+            onSave(editing === "new" ? null : editing.id, values, image)
           }
           onDelete={
             editing === "new"
@@ -361,6 +409,9 @@ export function ItemsSection({
   locations,
   onSaveItem,
   onDeleteItem,
+  onUploadItemImage,
+  onRemoveItemImage,
+  imageVersion,
   onSaveCurrency,
   onDeleteCurrency,
 }: ItemsSectionProps) {
@@ -392,6 +443,9 @@ export function ItemsSection({
           currencies={currencies}
           onSave={onSaveItem}
           onDelete={onDeleteItem}
+          onUploadImage={onUploadItemImage}
+          onRemoveImage={onRemoveItemImage}
+          imageVersion={imageVersion}
         />
       ) : (
         <CurrenciesView

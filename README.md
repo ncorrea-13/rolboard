@@ -22,9 +22,23 @@
 
 ---
 
-Web, desktop and Android app for running tabletop RPG campaigns, focused on narrative: sessions, arcs, players, NPCs, locations, factions and quests, plus a light combat tracker. No ruleset baked in — no rolls, no stat blocks; it's a place to keep the story, not a VTT. Built for the GM: players don't get accounts.
+Web, desktop and Android app for running tabletop RPG campaigns, focused on narrative: sessions, arcs, players, NPCs, locations, factions and quests, plus a light combat tracker. No ruleset baked in — no rolls, no stat blocks; it's a place to keep the story, not a VTT. Built for the GM.
 
 Started as a move away from Obsidian, for faster management, while still including a frontmatter indexer to pull that data in and coexist with the vault. Keeps the vault structure and lets you navigate back to it. Each campaign stores its own `vault_path`, a subfolder under `VAULTS_ROOT`. [`vault-template/`](vault-template/) has a vault layout the indexer recognizes out of the box.
+
+## Features
+
+- **Story:** arcs and sub-arcs with progress, sessions on a per-arc timeline, standalone oneshots, and a planned → played flow with prep notes and recap.
+- **Cast and world:** NPCs and player characters with sheets, HP, inventory and relations; a tree of locations with shops; factions; per-campaign NPC types and lore categories.
+- **Quests, secrets and notes:** quests with status and priority, secrets with who knows them, loose notes to file later, and wardails for sensitive topics.
+- **Lore and timeline:** categorized lore entries and several timelines with free-form dates.
+- **Economy:** item catalog, currencies with a base currency, and NPC / player / shop inventories.
+- **Combat tracker:** fast / slow phases, initiative, HP with damage and healing, rounds, and "who's next".
+- **Search:** one palette across the whole campaign (`Ctrl` + `K`).
+- **Images:** one image per NPC, player, location, faction, item, arc, lore entry and quest.
+- **Obsidian:** frontmatter indexer, open-in-Obsidian links and rendered notes.
+- **Safety net:** a trash with restore, and Markdown with Obsidian-style callouts and tables.
+- **Everywhere:** Spanish and English, and a multi-page in-app help that adapts to the server, desktop or Android version.
 
 ## Stack
 

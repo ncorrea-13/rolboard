@@ -9,6 +9,8 @@ import {
 } from "../data/domain";
 import { useT } from "../lib/i18n";
 import { MarkdownField } from "../components/MarkdownField";
+import { EntityImageField } from "../components/EntityImageField";
+import { usePendingImage } from "../hooks/usePendingImage";
 
 type LoreValues = Pick<
   LoreEntry,
@@ -20,8 +22,11 @@ interface LoreEditProps {
   categories: LoreCategory[];
   arcs: Arc[];
   locations: Location[];
-  onSave: (values: LoreValues) => void;
+  onSave: (values: LoreValues, image?: File) => void;
   onDiscard: () => void;
+  imageVersion?: number;
+  onUploadImage?: (file: File) => Promise<void>;
+  onRemoveImage?: () => Promise<void>;
 }
 
 export function LoreEdit({
@@ -31,8 +36,12 @@ export function LoreEdit({
   locations,
   onSave,
   onDiscard,
+  imageVersion,
+  onUploadImage,
+  onRemoveImage,
 }: LoreEditProps) {
   const t = useT();
+  const pendingImage = usePendingImage();
   const [title, setTitle] = useState(entry.title);
   const [body, setBody] = useState(entry.body);
   const [categoryId, setCategoryId] = useState(entry.categoryId ?? "");
@@ -51,13 +60,7 @@ export function LoreEdit({
       <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {entry.id
               ? `${t("common.editing")} · ${entry.title}`
               : t("loreEdit.new")}
@@ -81,13 +84,16 @@ export function LoreEdit({
           <button
             className="btn btn-primary"
             onClick={() =>
-              onSave({
-                title,
-                body,
-                categoryId: categoryId || undefined,
-                arcId: arcId || undefined,
-                locationId: locationId || undefined,
-              })
+              onSave(
+                {
+                  title,
+                  body,
+                  categoryId: categoryId || undefined,
+                  arcId: arcId || undefined,
+                  locationId: locationId || undefined,
+                },
+                pendingImage.file,
+              )
             }
           >
             {t("common.save")}
@@ -99,6 +105,7 @@ export function LoreEdit({
           <div>
             <span className="label">{t("loreEdit.title")}</span>
             <input
+              aria-label={t("loreEdit.title")}
               className="npc-edit__input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -112,9 +119,19 @@ export function LoreEdit({
           />
         </div>
         <div className="npc-edit__col">
+          <EntityImageField
+            kind="lore"
+            label={t("loreEdit.image")}
+            entity={entry}
+            pending={pendingImage}
+            imageVersion={imageVersion}
+            onUpload={onUploadImage}
+            onRemove={onRemoveImage}
+          />
           <div>
             <span className="label">{t("loreEdit.category")}</span>
             <select
+              aria-label={t("loreEdit.category")}
               className="npc-edit__select npc-edit__select--native"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
@@ -130,6 +147,7 @@ export function LoreEdit({
           <div>
             <span className="label">{t("loreEdit.arc")}</span>
             <select
+              aria-label={t("loreEdit.arc")}
               className="npc-edit__select npc-edit__select--native"
               value={arcId}
               onChange={(e) => setArcId(e.target.value)}
@@ -145,6 +163,7 @@ export function LoreEdit({
           <div>
             <span className="label">{t("loreEdit.location")}</span>
             <select
+              aria-label={t("loreEdit.location")}
               className="npc-edit__select npc-edit__select--native"
               value={locationId}
               onChange={(e) => setLocationId(e.target.value)}

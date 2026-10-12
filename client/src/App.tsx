@@ -323,7 +323,7 @@ export default function App() {
     reloadCampaignData,
     reloadKey,
     goToEntitySection,
-    imageVersion,
+    imageVersion: campaignImageVersion,
     uploadNpcImage,
     removeNpcImage,
     uploadPlayerImage,
@@ -332,7 +332,15 @@ export default function App() {
     removeLocationImage,
     uploadGroupImage,
     removeGroupImage,
+    uploadArcImage,
+    removeArcImage,
+    uploadQuestImage,
+    removeQuestImage,
   } = useCampaignData(activeCampaignId, activeCampaign, navigate, notify);
+
+  const [extraImageVersion, setExtraImageVersion] = useState(0);
+  const imageVersion = campaignImageVersion + extraImageVersion;
+  const bumpImageVersion = () => setExtraImageVersion((v) => v + 1);
 
   const {
     looseNotes,
@@ -349,7 +357,9 @@ export default function App() {
     createLoreEntry,
     saveLoreEntry,
     deleteLoreEntry,
-  } = useLore(activeCampaignId, reloadKey, navigate, notify);
+    uploadLoreImage,
+    removeLoreImage,
+  } = useLore(activeCampaignId, reloadKey, navigate, notify, bumpImageVersion);
 
   const {
     timelines,
@@ -371,7 +381,9 @@ export default function App() {
     deleteCurrency,
     saveItem,
     deleteItem,
-  } = useEconomy(activeCampaignId, reloadKey, notify);
+    uploadItemImage,
+    removeItemImage,
+  } = useEconomy(activeCampaignId, reloadKey, notify, bumpImageVersion);
 
   const [searchOpen, setSearchOpen] = useState(false);
   const searchItems = useMemo(
@@ -741,6 +753,7 @@ export default function App() {
             <ArcsList
               arcs={campaignArcs}
               onCreate={() => navigate({ name: "arc-create" })}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "section" && route.section === "locaciones" && (
@@ -761,6 +774,8 @@ export default function App() {
             <QuestsList
               quests={campaignQuests}
               onCreate={() => navigate({ name: "quest-create" })}
+              onSetStatus={(id, status) => saveQuest(id, { status })}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "section" && route.section === "jugadores" && (
@@ -786,6 +801,7 @@ export default function App() {
                 arcs: campaignArcs,
                 locations: campaignLocations,
                 onCreate: () => navigate({ name: "lore-create" }),
+                imageVersion,
               }}
               timeline={{
                 timelines,
@@ -811,6 +827,7 @@ export default function App() {
               locations={campaignLocations}
               onSave={createLoreEntry}
               onDiscard={() => navigate({ name: "section", section: "mundo" })}
+              imageVersion={imageVersion}
             />
           )}
           {route.name === "lore-detail" &&
@@ -835,6 +852,7 @@ export default function App() {
                     navigate({ name: "lore-edit", entryId: entry.id })
                   }
                   onDelete={() => deleteLoreEntry(entry.id)}
+                  imageVersion={imageVersion}
                 />
               );
             })()}
@@ -853,6 +871,9 @@ export default function App() {
                   onDiscard={() =>
                     navigate({ name: "lore-detail", entryId: entry.id })
                   }
+                  imageVersion={imageVersion}
+                  onUploadImage={(file) => uploadLoreImage(entry.id, file)}
+                  onRemoveImage={() => removeLoreImage(entry.id)}
                 />
               );
             })()}
@@ -863,6 +884,9 @@ export default function App() {
               locations={campaignLocations}
               onSaveItem={saveItem}
               onDeleteItem={deleteItem}
+              onUploadItemImage={uploadItemImage}
+              onRemoveItemImage={removeItemImage}
+              imageVersion={imageVersion}
               onSaveCurrency={saveCurrency}
               onDeleteCurrency={deleteCurrency}
             />
@@ -874,6 +898,7 @@ export default function App() {
               locations={campaignLocations}
               loreEntries={loreEntries}
               onCreate={() => navigate({ name: "secret-create" })}
+              onToggle={toggleStatus}
             />
           )}
           {route.name === "secret-create" && (
@@ -935,6 +960,7 @@ export default function App() {
             <NotesList
               notes={looseNotes}
               onCreate={() => navigate({ name: "note-create" })}
+              onTogglePending={togglePending}
             />
           )}
           {route.name === "note-create" && (
@@ -1003,6 +1029,7 @@ export default function App() {
                   onBack={() => goToEntitySection("arc")}
                   onEdit={() => navigate({ name: "arc-edit", arcId: route.id })}
                   onDelete={() => deleteEntity("arc", route.id)}
+                  imageVersion={imageVersion}
                   onStart={() => saveArc(route.id, { status: "en_curso" })}
                   onClose={() => saveArc(route.id, { status: "cerrado" })}
                 />
@@ -1067,6 +1094,7 @@ export default function App() {
                     navigate({ name: "quest-edit", questId: route.id })
                   }
                   onDelete={() => deleteEntity("quest", route.id)}
+                  imageVersion={imageVersion}
                 />
               );
             })()}
@@ -1206,6 +1234,9 @@ export default function App() {
                       id: arc.id,
                     })
                   }
+                  imageVersion={imageVersion}
+                  onUploadImage={(file) => uploadArcImage(arc.id, file)}
+                  onRemoveImage={() => removeArcImage(arc.id)}
                 />
               );
             })()}
@@ -1216,6 +1247,7 @@ export default function App() {
               hasVault={!!activeCampaign?.vaultPath}
               onSave={createArc}
               onDiscard={() => goToEntitySection("arc")}
+              imageVersion={imageVersion}
             />
           )}
 
@@ -1245,6 +1277,9 @@ export default function App() {
                       id: quest.id,
                     })
                   }
+                  imageVersion={imageVersion}
+                  onUploadImage={(file) => uploadQuestImage(quest.id, file)}
+                  onRemoveImage={() => removeQuestImage(quest.id)}
                 />
               );
             })()}
@@ -1254,6 +1289,7 @@ export default function App() {
               quest={blankDrafts.quest}
               onSave={createQuest}
               onDiscard={() => goToEntitySection("quest")}
+              imageVersion={imageVersion}
             />
           )}
 

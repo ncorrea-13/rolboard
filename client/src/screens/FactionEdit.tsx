@@ -56,13 +56,7 @@ export function FactionEdit({
       <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {group.id
               ? `${t("common.editing")} · ${group.name}`
               : t("factionEdit.new")}
@@ -94,6 +88,7 @@ export function FactionEdit({
           <div>
             <span className="label">{t("common.name")}</span>
             <input
+              aria-label={t("common.name")}
               className="npc-edit__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -132,6 +127,7 @@ export function FactionEdit({
           <div>
             <span className="label">{t("factionDetail.alignment")}</span>
             <input
+              aria-label={t("factionDetail.alignment")}
               className="npc-edit__input"
               value={alineacion}
               onChange={(e) => setAlineacion(e.target.value)}
@@ -140,6 +136,7 @@ export function FactionEdit({
           <div>
             <span className="label">{t("factionDetail.leader")}</span>
             <select
+              aria-label={t("factionDetail.leader")}
               className="npc-edit__select npc-edit__select--native"
               value={liderNpcId}
               onChange={(e) => setLiderNpcId(e.target.value)}

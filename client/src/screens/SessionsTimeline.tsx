@@ -40,7 +40,7 @@ function SessionRow({ session, arc }: { session: Session; arc?: Arc }) {
   const t = useT();
   return (
     <Link
-      className="card sessions-timeline__item"
+      className={`card sessions-timeline__item${isPlayed(session) ? "" : " sessions-timeline__item--planned"}`}
       style={{ cursor: "pointer" }}
       route={{ name: "session-detail", sessionId: session.id }}
     >
@@ -54,27 +54,25 @@ function SessionRow({ session, arc }: { session: Session; arc?: Arc }) {
             : t("sessionsTimeline.noDate")}
         </div>
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="sessions-timeline__item-body">
+        {(!isPlayed(session) || arc) && (
+          <div className="sessions-timeline__item-chips">
+            {!isPlayed(session) && (
+              <span className="npc-detail__appearance-chip">
+                {t("sessionsTimeline.planned")}
+              </span>
+            )}
+            {arc && (
+              <span className="npc-detail__appearance-chip">{arc.label}</span>
+            )}
+          </div>
+        )}
+        {session.title && (
+          <div className="display sessions-timeline__item-title">
+            {session.title}
+          </div>
+        )}
         <div className="sessions-timeline__item-text sessions-timeline__item-text--clamp">
-          {!isPlayed(session) && (
-            <span
-              className="npc-detail__appearance-chip"
-              style={{ marginRight: 8 }}
-            >
-              {t("sessionsTimeline.planned")}
-            </span>
-          )}
-          {arc && (
-            <span
-              className="npc-detail__appearance-chip"
-              style={{ marginRight: 8 }}
-            >
-              {arc.label}
-            </span>
-          )}
-          {session.title && (
-            <strong style={{ marginRight: 8 }}>{session.title}</strong>
-          )}
           <MarkdownText inline text={session.summary} />
         </div>
       </div>
@@ -120,7 +118,7 @@ export function SessionsTimeline({
     <div className="card sessions-timeline">
       <header className="sessions-timeline__header">
         <div>
-          <div className="display" style={{ fontSize: 21 }}>
+          <div className="display page-title" role="heading" aria-level={1}>
             {t("sessionsTimeline.title")}
           </div>
           <div className="sessions-timeline__subtitle">
@@ -195,19 +193,43 @@ export function SessionsTimeline({
           ))}
         </div>
       ) : (
-        <div className="sessions-timeline__list">
+        <div className="oneshot-grid">
           {oneshots.length === 0 && (
             <span style={{ color: "var(--text-secondary)" }}>
               {t("sessionsTimeline.noOneshots")}
             </span>
           )}
-          {oneshots.map((s) => (
-            <SessionRow
-              key={s.id}
-              session={s}
-              arc={arcs.find((a) => a.id === s.arcId)}
-            />
-          ))}
+          {oneshots.map((o) => {
+            const arc = arcs.find((x) => x.id === o.arcId);
+            return (
+              <Link
+                key={o.id}
+                className="oneshot-card"
+                route={{ name: "session-detail", sessionId: o.id }}
+              >
+                <span className="oneshot-card__code">{sessionCode(o)}</span>
+                <span className="display oneshot-card__title">
+                  {o.title || sessionCode(o)}
+                </span>
+                {o.summary && (
+                  <span className="oneshot-card__summary">
+                    <MarkdownText inline text={o.summary} />
+                  </span>
+                )}
+                <span className="oneshot-card__foot">
+                  <span>
+                    {o.date ? formatDate(o.date) : t("sessionsTimeline.noDate")}
+                  </span>
+                  {arc && <span>{arc.label}</span>}
+                  {!isPlayed(o) && (
+                    <span className="npc-detail__appearance-chip">
+                      {t("sessionsTimeline.plannedMasc")}
+                    </span>
+                  )}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

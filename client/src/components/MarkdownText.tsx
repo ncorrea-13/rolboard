@@ -84,6 +84,9 @@ export function MarkdownText({
   const html = DOMPurify.sanitize(raw);
   const Tag = inline ? "span" : "div";
   return (
-    <Tag className={className} dangerouslySetInnerHTML={{ __html: html }} />
+    <Tag
+      className={inline ? className : `md ${className ?? ""}`.trim()}
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 }

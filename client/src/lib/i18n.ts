@@ -100,7 +100,8 @@ const dict = {
     "loreList.colTitle": "Título",
     "loreList.colCategory": "Categoría",
     "loreList.colLinks": "Arco / Locación",
-    "loreList.empty": "No hay entradas todavía.",
+    "loreList.empty":
+      "El archivo está vacío. Escribí la primera entrada con «Nueva entrada».",
     "loreEdit.new": "Nueva entrada de lore",
     "loreEdit.title": "Título",
     "loreEdit.body": "Contenido",
@@ -147,7 +148,8 @@ const dict = {
     "items.weight": "Peso",
     "items.effect": "Qué hace",
     "items.prices": "Precios",
-    "items.empty": "No hay objetos todavía.",
+    "items.empty":
+      "El inventario está vacío. Agregá el primer objeto con «Nuevo objeto».",
     "currencies.title": "Monedas",
     "currencies.new": "Nueva moneda",
     "currencies.edit": "Editar moneda",
@@ -160,7 +162,8 @@ const dict = {
       "Cuántas unidades de la moneda base vale una unidad de esta. Opcional.",
     "currencies.circulatesIn": "Circula en",
     "currencies.addLocation": "Agregar locación...",
-    "currencies.empty": "No hay monedas todavía.",
+    "currencies.empty":
+      "Todavía no circula ninguna moneda. Creá la primera con «Nueva moneda».",
     "inventory.title": "Inventario",
     "inventory.empty": "No lleva ningún objeto.",
     "inventory.addItem": "Agregar objeto...",
@@ -187,7 +190,7 @@ const dict = {
     "search.title": "Buscar",
     "search.placeholder": "Buscar NPCs, sesiones, lore, objetos...",
     "search.open": "Buscar",
-    "search.empty": "No se encontró nada.",
+    "search.empty": "Nada coincide con esa búsqueda.",
     "search.hint": "Escribí para buscar en toda la campaña.",
     "search.kind.npc": "NPC",
     "search.kind.player": "Jugador",
@@ -218,7 +221,8 @@ const dict = {
     "secretsList.colStatus": "Estado",
     "secretsList.colPoints": "Apunta a",
     "secretsList.colKnownBy": "Lo conocen",
-    "secretsList.empty": "No hay secretos todavía.",
+    "secretsList.empty":
+      "Ningún secreto guardado. Anotá el primero con «Nuevo secreto».",
     "secretEdit.new": "Nuevo secreto",
     "secretEdit.title": "Título",
     "secretEdit.body": "El secreto",
@@ -248,7 +252,7 @@ const dict = {
     "notesList.filterAll": "Todas",
     "notesList.filterPending": "Pendientes de ubicar",
     "notesList.pendingChip": "Pendiente",
-    "notesList.empty": "No hay notas todavía.",
+    "notesList.empty": "Sin notas sueltas. Anotá la primera con «Nueva nota».",
     "noteEdit.new": "Nueva nota",
     "noteEdit.title": "Título",
     "noteEdit.body": "Contenido",
@@ -301,7 +305,8 @@ const dict = {
     "encountersList.new": "Nuevo encuentro",
     "encountersList.round": "Ronda",
     "encountersList.noSession": "Sin sesión asociada",
-    "encountersList.empty": "Sin encuentros todavía.",
+    "encountersList.empty":
+      "No hay combates a la vista. Armá uno con «Nuevo encuentro».",
     "encountersList.unnamed": "Encuentro",
     "encountersList.searchPlaceholder": "Buscar encuentro…",
     "encountersList.allSessions": "Todas las sesiones",
@@ -328,7 +333,7 @@ const dict = {
     "npcList.colType": "Tipo",
     "npcList.colLocation": "Ubicación actual",
     "npcList.colStatus": "Status",
-    "npcList.empty": "Ningún NPC coincide con el filtro.",
+    "npcList.empty": "Nadie responde a ese filtro.",
     "npcList.prev": "Anterior",
     "npcList.next": "Siguiente",
     "npcList.page": "Página",
@@ -414,10 +419,12 @@ const dict = {
     "sessionsTimeline.noArc": "Sin arco",
     "sessionsTimeline.noDate": "sin fecha",
     "sessionsTimeline.planned": "Planificada",
+    "sessionsTimeline.plannedMasc": "Planificado",
     "sessionsTimeline.tabSessions": "Sesiones",
     "sessionsTimeline.tabOneshots": "Oneshots",
     "sessionsTimeline.oneshotsWord": "oneshots",
-    "sessionsTimeline.noOneshots": "Todavía no hay oneshots.",
+    "sessionsTimeline.noOneshots":
+      "Sin aventuras sueltas. Planificá una con «Planificar oneshot».",
     "sessionEdit.oneshotPrefix": "Oneshot",
     "sessionEdit.titleLabel": "Título",
     "planSession.planningOneshot": "Planificando oneshot",
@@ -457,6 +464,10 @@ const dict = {
 
     "locationEdit.new": "Nueva locación",
     "locationEdit.image": "Imagen",
+    "arcEdit.image": "Portada",
+    "questEdit.image": "Imagen",
+    "loreEdit.image": "Ilustración",
+    "items.image": "Ilustración",
     "locationEdit.parentLocation": "Ubicación padre",
     "locationEdit.noParent": "— sin padre —",
 
@@ -509,6 +520,8 @@ const dict = {
     "sessionEdit.originalPrepNotes": "Notas de preparación originales",
     "sessionEdit.playedSuffix": "· jugada",
     "sessionEdit.plannedSuffix": "· planificada",
+    "sessionEdit.playedSuffixMasc": "· jugado",
+    "sessionEdit.plannedSuffixMasc": "· planificado",
     "sessionEdit.markAsPlayed": "Jugar",
 
     "encounterDetail.breadcrumb": "ENCUENTROS",
@@ -518,11 +531,15 @@ const dict = {
     "encounterDetail.reopenCombat": "Reabrir combate",
     "encounterDetail.down": "Caído",
     "encounterDetail.damage": "Daño",
+    "encounterDetail.currentHp": "HP actual",
+    "encounterDetail.initiative": "Iniciativa",
+    "encounterDetail.maxHp": "HP máximo",
     "encounterDetail.heal": "Curación",
     "encounterDetail.session": "Sesión",
     "encounterDetail.participants": "Participantes",
     "encounterDetail.noTurnAssigned": "Sin turno asignado",
-    "encounterDetail.noParticipantsYet": "Sin participantes todavía.",
+    "encounterDetail.noParticipantsYet":
+      "Sin combatientes todavía. Sumá el primero.",
     "encounterDetail.addFighter": "Agregar peleador",
     "encounterDetail.optPc": "Personaje",
     "encounterDetail.optCustom": "Enemigo genérico",
@@ -639,7 +656,8 @@ const dict = {
     "npcTypes.errorSaving": "Error guardando el tipo",
     "wardails.title": "Wardails",
     "wardails.subtitle": "Temas sensibles de esta campaña",
-    "wardails.empty": "Todavía no definiste wardails para esta campaña.",
+    "wardails.empty":
+      "Sin wardails definidos. Anotá los temas que quieren cuidar en la mesa.",
     "wardails.placeholder":
       "Un tema por línea, o usa > [!WARNING] para destacar los más delicados",
     "wardails.saved": "Wardails guardados",
@@ -653,6 +671,8 @@ const dict = {
     "splash.credits": "Créditos",
     "help.title": "Ayuda",
     "help.back": "Volver",
+    "help.prev": "Anterior",
+    "help.next": "Siguiente",
     "help.contents": "Contenido",
     "help.docs": "Documentación técnica en GitHub",
 
@@ -685,6 +705,21 @@ const dict = {
     "dashboard.oneshots": "Oneshots",
     "dashboard.untitled": "Sin título",
     "dashboard.empty": "Nada por acá todavía.",
+    "dashboard.empty.quests": "Sin misiones activas. Abrí una desde Quests.",
+    "dashboard.empty.npcs": "Todavía no conociste a nadie. Sumá al primer NPC.",
+    "dashboard.empty.party":
+      "Sin personajes en la mesa. Sumá al grupo desde Jugadores.",
+    "dashboard.empty.notes":
+      "Sin notas pendientes. Lo que se te ocurra a mitad de partida va acá.",
+    "dashboard.empty.lore":
+      "El mundo todavía no tiene crónicas. Escribí la primera entrada.",
+    "dashboard.empty.oneshots": "Sin aventuras sueltas por ahora.",
+    "secretsList.reveal": "Revelar",
+    "secretsList.hide": "Volver a ocultar",
+    "notesList.file": "Archivar",
+    "notesList.markPending": "Marcar pendiente",
+    "questsList.complete": "Completar",
+    "questsList.reopen": "Reactivar",
     "dashboard.subarcs": "subarcos",
     "dashboard.arcSessions": "sesiones",
     "dashboard.today": "hoy",
@@ -793,7 +828,8 @@ const dict = {
     "loreList.colTitle": "Title",
     "loreList.colCategory": "Category",
     "loreList.colLinks": "Arc / Location",
-    "loreList.empty": "No entries yet.",
+    "loreList.empty":
+      "The archive is empty. Write the first entry with “New entry”.",
     "loreEdit.new": "New lore entry",
     "loreEdit.title": "Title",
     "loreEdit.body": "Content",
@@ -839,7 +875,8 @@ const dict = {
     "items.weight": "Weight",
     "items.effect": "What it does",
     "items.prices": "Prices",
-    "items.empty": "No items yet.",
+    "items.empty":
+      "The inventory is empty. Add the first item with “New item”.",
     "currencies.title": "Currencies",
     "currencies.new": "New currency",
     "currencies.edit": "Edit currency",
@@ -852,7 +889,8 @@ const dict = {
       "How many units of the base currency one unit of this one is worth. Optional.",
     "currencies.circulatesIn": "Circulates in",
     "currencies.addLocation": "Add location...",
-    "currencies.empty": "No currencies yet.",
+    "currencies.empty":
+      "No coin circulates yet. Create the first one with “New currency”.",
     "inventory.title": "Inventory",
     "inventory.empty": "Carries no items.",
     "inventory.addItem": "Add item...",
@@ -879,7 +917,7 @@ const dict = {
     "search.title": "Search",
     "search.placeholder": "Search NPCs, sessions, lore, items...",
     "search.open": "Search",
-    "search.empty": "Nothing found.",
+    "search.empty": "Nothing matches that search.",
     "search.hint": "Type to search the whole campaign.",
     "search.kind.npc": "NPC",
     "search.kind.player": "Player",
@@ -910,7 +948,8 @@ const dict = {
     "secretsList.colStatus": "Status",
     "secretsList.colPoints": "Points to",
     "secretsList.colKnownBy": "Known by",
-    "secretsList.empty": "No secrets yet.",
+    "secretsList.empty":
+      "No secrets kept. Jot down the first with “New secret”.",
     "secretEdit.new": "New secret",
     "secretEdit.title": "Title",
     "secretEdit.body": "The secret",
@@ -940,7 +979,7 @@ const dict = {
     "notesList.filterAll": "All",
     "notesList.filterPending": "To be filed",
     "notesList.pendingChip": "Pending",
-    "notesList.empty": "No notes yet.",
+    "notesList.empty": "No loose notes. Jot down the first with “New note”.",
     "noteEdit.new": "New note",
     "noteEdit.title": "Title",
     "noteEdit.body": "Content",
@@ -993,7 +1032,8 @@ const dict = {
     "encountersList.new": "New encounter",
     "encountersList.round": "Round",
     "encountersList.noSession": "No associated session",
-    "encountersList.empty": "No encounters yet.",
+    "encountersList.empty":
+      "No fights in sight. Set one up with “New encounter”.",
     "encountersList.unnamed": "Encounter",
     "encountersList.searchPlaceholder": "Search encounter…",
     "encountersList.allSessions": "All sessions",
@@ -1020,7 +1060,7 @@ const dict = {
     "npcList.colType": "Type",
     "npcList.colLocation": "Current location",
     "npcList.colStatus": "Status",
-    "npcList.empty": "No NPC matches the filter.",
+    "npcList.empty": "Nobody answers to that filter.",
     "npcList.prev": "Previous",
     "npcList.next": "Next",
     "npcList.page": "Page",
@@ -1106,10 +1146,12 @@ const dict = {
     "sessionsTimeline.noArc": "No arc",
     "sessionsTimeline.noDate": "no date",
     "sessionsTimeline.planned": "Planned",
+    "sessionsTimeline.plannedMasc": "Planned",
     "sessionsTimeline.tabSessions": "Sessions",
     "sessionsTimeline.tabOneshots": "Oneshots",
     "sessionsTimeline.oneshotsWord": "oneshots",
-    "sessionsTimeline.noOneshots": "No oneshots yet.",
+    "sessionsTimeline.noOneshots":
+      "No standalone adventures. Plan one with “Plan oneshot”.",
     "sessionEdit.oneshotPrefix": "Oneshot",
     "sessionEdit.titleLabel": "Title",
     "planSession.planningOneshot": "Planning oneshot",
@@ -1149,6 +1191,10 @@ const dict = {
 
     "locationEdit.new": "New location",
     "locationEdit.image": "Image",
+    "arcEdit.image": "Cover",
+    "questEdit.image": "Image",
+    "loreEdit.image": "Illustration",
+    "items.image": "Illustration",
     "locationEdit.parentLocation": "Parent location",
     "locationEdit.noParent": "— no parent —",
 
@@ -1201,6 +1247,8 @@ const dict = {
     "sessionEdit.originalPrepNotes": "Original prep notes",
     "sessionEdit.playedSuffix": "· played",
     "sessionEdit.plannedSuffix": "· planned",
+    "sessionEdit.playedSuffixMasc": "· played",
+    "sessionEdit.plannedSuffixMasc": "· planned",
     "sessionEdit.markAsPlayed": "Play",
 
     "encounterDetail.breadcrumb": "ENCOUNTERS",
@@ -1210,11 +1258,15 @@ const dict = {
     "encounterDetail.reopenCombat": "Reopen combat",
     "encounterDetail.down": "Down",
     "encounterDetail.damage": "Damage",
+    "encounterDetail.currentHp": "Current HP",
+    "encounterDetail.initiative": "Initiative",
+    "encounterDetail.maxHp": "Max HP",
     "encounterDetail.heal": "Heal",
     "encounterDetail.session": "Session",
     "encounterDetail.participants": "Participants",
     "encounterDetail.noTurnAssigned": "No turn assigned",
-    "encounterDetail.noParticipantsYet": "No participants yet.",
+    "encounterDetail.noParticipantsYet":
+      "No combatants yet. Add the first one.",
     "encounterDetail.addFighter": "Add fighter",
     "encounterDetail.optPc": "Character",
     "encounterDetail.optCustom": "Generic enemy",
@@ -1332,7 +1384,8 @@ const dict = {
     "npcTypes.errorSaving": "Error saving the type",
     "wardails.title": "Wardails",
     "wardails.subtitle": "Sensitive topics for this campaign",
-    "wardails.empty": "You haven't defined any wardails for this campaign yet.",
+    "wardails.empty":
+      "No wardails set. Write down the topics you want to handle with care at the table.",
     "wardails.placeholder":
       "One topic per line, or use > [!WARNING] to highlight the most sensitive ones",
     "wardails.saved": "Wardails saved",
@@ -1346,6 +1399,8 @@ const dict = {
     "splash.credits": "Credits",
     "help.title": "Help",
     "help.back": "Back",
+    "help.prev": "Previous",
+    "help.next": "Next",
     "help.contents": "Contents",
     "help.docs": "Technical docs on GitHub",
 
@@ -1378,6 +1433,21 @@ const dict = {
     "dashboard.oneshots": "Oneshots",
     "dashboard.untitled": "Untitled",
     "dashboard.empty": "Nothing here yet.",
+    "dashboard.empty.quests": "No active quests. Open one from Quests.",
+    "dashboard.empty.npcs": "You haven't met anyone yet. Add the first NPC.",
+    "dashboard.empty.party":
+      "No characters at the table. Add the party from Players.",
+    "dashboard.empty.notes":
+      "No pending notes. Whatever comes to mind mid-game goes here.",
+    "dashboard.empty.lore":
+      "The world has no chronicles yet. Write the first entry.",
+    "dashboard.empty.oneshots": "No standalone adventures for now.",
+    "secretsList.reveal": "Reveal",
+    "secretsList.hide": "Hide again",
+    "notesList.file": "File it",
+    "notesList.markPending": "Mark pending",
+    "questsList.complete": "Mark complete",
+    "questsList.reopen": "Reopen",
     "dashboard.subarcs": "subarcs",
     "dashboard.arcSessions": "sessions",
     "dashboard.today": "today",
@@ -1400,12 +1470,15 @@ let currentLang: Lang =
   (localStorage.getItem(STORAGE_KEY) as Lang) ||
   (navigator.language.startsWith("es") ? "es" : "en");
 
+document.documentElement.lang = currentLang;
+
 export function getLang(): Lang {
   return currentLang;
 }
 
 export function setLang(next: Lang) {
   currentLang = next;
+  document.documentElement.lang = next;
   localStorage.setItem(STORAGE_KEY, next);
   window.dispatchEvent(new Event(LANG_EVENT));
 }

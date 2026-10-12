@@ -64,7 +64,7 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
             style={{ color: "var(--accent-wardail)" }}
           />
           <div>
-            <div className="display" style={{ fontSize: 21 }}>
+            <div className="display page-title" role="heading" aria-level={1}>
               {t("wardails.title")}
             </div>
             <span className="list-page__count">{t("wardails.subtitle")}</span>

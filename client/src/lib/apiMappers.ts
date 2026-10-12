@@ -291,6 +291,7 @@ export interface ApiArc {
   subarc_order?: number;
   summary: string;
   obsidian_path?: string;
+  image_path?: string;
 }
 
 export function mapArc(a: ApiArc): Arc {
@@ -304,6 +305,7 @@ export function mapArc(a: ApiArc): Arc {
     status: a.status as ArcStatus,
     subarcOrder: a.subarc_order,
     obsidianPath: a.obsidian_path ?? "",
+    hasImage: Boolean(a.image_path),
   };
 }
 
@@ -326,6 +328,7 @@ export interface ApiQuest {
   status: string;
   priority?: number;
   notes: string;
+  image_path?: string;
 }
 
 function questToStatus(status: string): QuestStatus {
@@ -345,6 +348,7 @@ export function mapQuest(q: ApiQuest): Quest {
     status: questToStatus(q.status),
     priority: (q.priority ?? 3) as Quest["priority"],
     notes: q.notes,
+    hasImage: Boolean(q.image_path),
   };
 }
 
@@ -593,6 +597,7 @@ export interface ApiLoreEntry {
   body: string;
   arc_id?: number;
   location_id?: number;
+  image_path?: string;
   created_at: string;
   updated_at: string;
 }
@@ -606,6 +611,7 @@ export function mapLoreEntry(e: ApiLoreEntry): LoreEntry {
     body: e.body,
     arcId: e.arc_id ? String(e.arc_id) : undefined,
     locationId: e.location_id ? String(e.location_id) : undefined,
+    hasImage: Boolean(e.image_path),
     createdAt: e.created_at,
     updatedAt: e.updated_at,
   };
@@ -825,6 +831,7 @@ export interface ApiItem {
   rarity: string;
   weight: number | null;
   prices: ApiPrice[] | null;
+  image_path?: string;
 }
 
 export function mapItem(i: ApiItem): Item {
@@ -838,6 +845,7 @@ export function mapItem(i: ApiItem): Item {
     rarity: i.rarity,
     weight: i.weight ?? undefined,
     prices: mapPrices(i.prices),
+    hasImage: Boolean(i.image_path),
   };
 }
 

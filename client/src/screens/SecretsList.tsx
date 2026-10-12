@@ -1,4 +1,5 @@
 import { useMemo, useState, type CSSProperties } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import "./NpcList.css";
 import {
   secretTone,
@@ -11,6 +12,7 @@ import {
 import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
 import { Link } from "../components/Link";
+import { excerpt } from "../lib/excerpt";
 
 interface SecretsListProps {
   secrets: Secret[];
@@ -18,6 +20,7 @@ interface SecretsListProps {
   locations: Location[];
   loreEntries: LoreEntry[];
   onCreate: () => void;
+  onToggle: (secret: Secret) => void;
 }
 
 export function SecretsList({
@@ -26,6 +29,7 @@ export function SecretsList({
   locations,
   loreEntries,
   onCreate,
+  onToggle,
 }: SecretsListProps) {
   const t = useT();
   const [search, setSearch] = useState("");
@@ -47,7 +51,7 @@ export function SecretsList({
   return (
     <div className="card npc-list">
       <div className="npc-list__header">
-        <div className="display" style={{ fontSize: 21 }}>
+        <div className="display page-title" role="heading" aria-level={1}>
           {t("secretsList.title")}{" "}
           <span className="npc-list__count">
             · {filtered.length} / {secrets.length}
@@ -84,58 +88,77 @@ export function SecretsList({
         ))}
       </div>
 
-      <div className="npc-list__row npc-list__row--secret npc-list__row--head">
-        <span>{t("secretsList.colTitle")}</span>
-        <span>{t("secretsList.colStatus")}</span>
-        <span>{t("secretsList.colPoints")}</span>
-        <span>{t("secretsList.colKnownBy")}</span>
-      </div>
-
       {filtered.length === 0 && (
         <div className="npc-list__empty">{t("secretsList.empty")}</div>
       )}
 
-      {filtered.map((s) => {
-        const points = [
-          npcs.find((n) => n.id === s.npcId)?.name,
-          locations.find((l) => l.id === s.locationId)?.name,
-          loreEntries.find((e) => e.id === s.loreEntryId)?.title,
-        ]
-          .filter(Boolean)
-          .join(" · ");
-        const known = s.knownByNpcIds
-          .map((id) => npcs.find((n) => n.id === id)?.name)
-          .filter(Boolean) as string[];
-        return (
-          <Link
-            key={s.id}
-            className="npc-list__row npc-list__row--secret npc-list__row--data"
-            route={{ name: "secret-detail", secretId: s.id }}
-          >
-            <div className="npc-list__lore-main">
-              <span className="npc-list__lore-title">{s.title}</span>
-              {s.body && (
-                <div className="npc-list__lore-sub">
-                  <MarkdownText inline text={s.body} />
-                </div>
-              )}
-            </div>
-            <span className="npc-list__type">
-              <span
-                className="type-chip"
-                style={{ "--c": secretTone[s.status] } as CSSProperties}
+      <div className="secret-grid">
+        {filtered.map((s) => {
+          const points = [
+            npcs.find((n) => n.id === s.npcId)?.name,
+            locations.find((l) => l.id === s.locationId)?.name,
+            loreEntries.find((e) => e.id === s.loreEntryId)?.title,
+          ]
+            .filter(Boolean)
+            .join(" · ");
+          const known = s.knownByNpcIds
+            .map((id) => npcs.find((n) => n.id === id)?.name)
+            .filter(Boolean) as string[];
+          const hidden = s.status === "hidden";
+          const StateIcon = hidden ? EyeOff : Eye;
+          return (
+            <div
+              key={s.id}
+              className={`secret-card secret-card--${s.status}`}
+              style={{ "--c": secretTone[s.status] } as CSSProperties}
+            >
+              <Link
+                className="secret-card__link"
+                route={{ name: "secret-detail", secretId: s.id }}
               >
-                {t(s.status === "hidden" ? "secret.hidden" : "secret.revealed")}
-              </span>
-            </span>
-            <span className="npc-list__cell">{points}</span>
-            <span className="npc-list__cell">
-              {known.slice(0, 2).join(", ")}
-              {known.length > 2 ? ` +${known.length - 2}` : ""}
-            </span>
-          </Link>
-        );
-      })}
+                <span className="secret-card__state">
+                  <StateIcon size={15} strokeWidth={1.75} />
+                  {t(hidden ? "secret.hidden" : "secret.revealed")}
+                </span>
+                <span className="display secret-card__title">{s.title}</span>
+                {s.body && (
+                  <span className="secret-card__excerpt">
+                    <MarkdownText inline text={excerpt(s.body)} />
+                  </span>
+                )}
+                {(points || known.length > 0) && (
+                  <span className="secret-card__foot">
+                    {points && (
+                      <span className="secret-card__points">{points}</span>
+                    )}
+                    {known.length > 0 && (
+                      <span className="secret-card__known">
+                        {known.slice(0, 3).map((name) => (
+                          <span key={name} className="session-detail__chip">
+                            {name}
+                          </span>
+                        ))}
+                        {known.length > 3 && (
+                          <span className="secret-card__more">
+                            +{known.length - 3}
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </span>
+                )}
+              </Link>
+              <button
+                type="button"
+                className="secret-card__toggle"
+                onClick={() => onToggle(s)}
+              >
+                {t(hidden ? "secretsList.reveal" : "secretsList.hide")}
+              </button>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

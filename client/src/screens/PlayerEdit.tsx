@@ -96,13 +96,7 @@ export function PlayerEdit({
       <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {player.id
               ? `${t("common.editing")} · ${player.characterName}`
               : t("playerEdit.new")}
@@ -135,6 +129,7 @@ export function PlayerEdit({
             <div>
               <span className="label">{t("playerEdit.characterName")}</span>
               <input
+                aria-label={t("playerEdit.characterName")}
                 className="npc-edit__input"
                 value={characterName}
                 onChange={(e) => setCharacterName(e.target.value)}
@@ -143,6 +138,7 @@ export function PlayerEdit({
             <div>
               <span className="label">{t("common.status")}</span>
               <select
+                aria-label={t("common.status")}
                 className="npc-edit__select npc-edit__select--native"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as StatusKind)}
@@ -160,6 +156,7 @@ export function PlayerEdit({
           <div>
             <span className="label">{t("playerEdit.player")}</span>
             <input
+              aria-label={t("playerEdit.player")}
               className="npc-edit__input"
               value={playerName}
               onChange={(e) => setPlayerName(e.target.value)}
@@ -170,6 +167,7 @@ export function PlayerEdit({
             <div>
               <span className="label">{t("playerEdit.race")}</span>
               <input
+                aria-label={t("playerEdit.race")}
                 className="npc-edit__input"
                 value={race}
                 onChange={(e) => setRace(e.target.value)}
@@ -191,6 +189,7 @@ export function PlayerEdit({
             <div>
               <span className="label">{t("playerEdit.class")}</span>
               <input
+                aria-label={t("playerEdit.class")}
                 className="npc-edit__input"
                 value={charClass}
                 onChange={(e) => setCharClass(e.target.value)}
@@ -255,6 +254,7 @@ export function PlayerEdit({
             <div>
               <span className="label">{t("playerEdit.currentHp")}</span>
               <input
+                aria-label={t("playerEdit.currentHp")}
                 className="npc-edit__input"
                 type="number"
                 value={currentHp ?? ""}
@@ -268,6 +268,7 @@ export function PlayerEdit({
             <div>
               <span className="label">{t("playerEdit.maxHp")}</span>
               <input
+                aria-label={t("playerEdit.maxHp")}
                 className="npc-edit__input"
                 type="number"
                 value={maxHp ?? ""}

@@ -156,6 +156,7 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 | description, notes | |
 | status      | `active` \| `completed` \| `failed` \| `on_hold` |
 | priority    | optional |
+| image_path  | written by the image endpoint only (migration 0027) |
 
 No `obsidian_path`: quests live only in the DB.
 
@@ -170,6 +171,7 @@ Per-campaign lore. Categories follow the `npc_types` pattern (`key` derived from
 | category_id            | optional; a category referenced by any entry (even a deleted one) can't be deleted |
 | arc_id, location_id    | optional, `ON DELETE RESTRICT` |
 | obsidian_path          | reserved for a future `Lore/` folder in the vault |
+| image_path             | illustration; written by the image endpoint only (migration 0027) |
 
 ### currencies / items and their bridges
 
@@ -177,7 +179,7 @@ Per-campaign lore. Categories follow the `npc_types` pattern (`key` derived from
 | ----- | ----- |
 | `currencies` | `name`, `symbol`, optional `rate_to_base` (> 0), `is_base`. At most one active base per campaign (partial unique index) |
 | `currency_locations` | where a currency circulates |
-| `items` | `name`, `description`, `effect` (free text), `category`, `rarity` (free text), optional `weight` |
+| `items` | `name`, `description`, `effect` (free text), `category`, `rarity` (free text), optional `weight`, `image_path` (image endpoint only) |
 | `item_prices` | `(item_id, currency_id, amount)`: an item can be priced in several currencies |
 | `pc_items`, `npc_items` | inventory: `quantity` (> 0) and `notes` |
 | `location_items` | what a location sells, with `notes` |

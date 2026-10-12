@@ -5,6 +5,7 @@ import { locationBreadcrumb } from "../data/domain";
 import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
 import { Link } from "../components/Link";
+import { entityImageUrl } from "../lib/images";
 import { AppearsIn, type AppearsGroup } from "../components/AppearsIn";
 
 interface LoreDetailProps {
@@ -17,6 +18,7 @@ interface LoreDetailProps {
   onBack: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  imageVersion?: number;
 }
 
 export function LoreDetail({
@@ -29,8 +31,15 @@ export function LoreDetail({
   onBack,
   onEdit,
   onDelete,
+  imageVersion = 0,
 }: LoreDetailProps) {
   const t = useT();
+  const imageUrl = entityImageUrl(
+    "lore",
+    entry.id,
+    entry.hasImage,
+    imageVersion,
+  );
   return (
     <div className="card npc-edit">
       <div className="npc-edit__bar">
@@ -39,13 +48,7 @@ export function LoreDetail({
             className="status-dot"
             style={category ? { background: category.color } : undefined}
           />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {entry.title}
           </span>
           {category && (
@@ -77,6 +80,9 @@ export function LoreDetail({
           )}
         </div>
         <div className="npc-edit__col">
+          {imageUrl && (
+            <img className="lore-detail__image" src={imageUrl} alt="" />
+          )}
           {arc && (
             <div>
               <span className="label">{t("loreEdit.arc")}</span>

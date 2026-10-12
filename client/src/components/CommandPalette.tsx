@@ -42,9 +42,29 @@ export function CommandPalette({
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const results = useMemo(() => searchItems(items, query), [items, query]);
   const current = Math.min(active, Math.max(0, results.length - 1));
+
+  useEffect(() => {
+    function focusInput() {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+    const timer = window.setTimeout(focusInput, 0);
+    function onShortcut(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        focusInput();
+      }
+    }
+    document.addEventListener("keydown", onShortcut);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("keydown", onShortcut);
+    };
+  }, []);
 
   useEffect(() => {
     const node = listRef.current?.querySelector<HTMLElement>(
@@ -69,10 +89,11 @@ export function CommandPalette({
   return (
     <Modal title={t("search.title")} onClose={onClose} size="sheet">
       <input
+        ref={inputRef}
         className="npc-edit__input palette__input"
         role="combobox"
         aria-expanded={results.length > 0}
-        aria-controls="palette-results"
+        aria-controls={results.length > 0 ? "palette-results" : undefined}
         aria-label={t("search.placeholder")}
         placeholder={t("search.placeholder")}
         autoFocus
@@ -86,7 +107,7 @@ export function CommandPalette({
       <div
         id="palette-results"
         className="palette__results"
-        role="listbox"
+        role={results.length > 0 ? "listbox" : undefined}
         ref={listRef}
       >
         {!query.trim() && (

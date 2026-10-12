@@ -124,7 +124,7 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 
 ## Images
 
-- One image per NPC, PC, location and faction (`image_path`). The same file serves both the large portrait and the small icon (CSS). No gallery or polymorphic table.
+- One image per NPC, PC, location, faction, item, arc, lore entry and quest (`image_path`). The same file serves both the large portrait and the small icon (CSS). No gallery or polymorphic table.
 - On the filesystem under `UPLOADS_ROOT`, not a BLOB: the DB and backups stay light. Outside the vault.
 - Written only by its own endpoint, never by the entity's `PUT` (a form save doesn't overwrite it) or by the reindex.
 - **PNG and JPEG only**, detected by decoding the content. SVG rejected: it would be served from the same origin and could run JS with the DM's session. WebP/AVIF would need a new dependency.

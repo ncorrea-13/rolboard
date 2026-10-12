@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState } from "react";
-import { ApiError, apiFetch } from "../lib/api";
+import { ApiError, apiFetch, apiImageRequest } from "../lib/api";
 import { askConfirm } from "../lib/confirm";
 import { useT } from "../lib/i18n";
 import {
@@ -28,6 +28,7 @@ export function useLore(
   reloadKey: number,
   navigate: (route: Route, opts?: { replace?: boolean }) => void,
   notify: Notify,
+  onImageChange: () => void,
 ) {
   const t = useT();
   const [entries, setEntries] = useState<LoreEntry[]>([]);
@@ -61,7 +62,7 @@ export function useLore(
     return false;
   }
 
-  function createEntry(values: LoreValues) {
+  function createEntry(values: LoreValues, image?: File) {
     if (!requireTitle(values)) return;
     apiFetch<ApiLoreEntry>(`/campaigns/${campaignId}/lore`, {
       method: "POST",
@@ -70,6 +71,7 @@ export function useLore(
       .then((created) => {
         const entry = mapLoreEntry(created);
         setEntries((prev) => [...prev, entry]);
+        if (image) uploadEntryImage(entry.id, image).catch(() => {});
         navigate({ name: "lore-detail", entryId: entry.id }, { replace: true });
       })
       .catch((err) => {
@@ -98,6 +100,32 @@ export function useLore(
           "error",
           err,
         );
+      });
+  }
+
+  function uploadEntryImage(id: string, file: File) {
+    return apiImageRequest<ApiLoreEntry>(`/lore/${id}/image`, "POST", file)
+      .then((updated) => {
+        const mapped = mapLoreEntry(updated);
+        setEntries((prev) => prev.map((e) => (e.id === id ? mapped : e)));
+        onImageChange();
+      })
+      .catch((err) => {
+        notify(t("common.toastErrorSaving"), "error", err);
+        throw err;
+      });
+  }
+
+  function removeEntryImage(id: string) {
+    return apiImageRequest<ApiLoreEntry>(`/lore/${id}/image`, "DELETE")
+      .then((updated) => {
+        const mapped = mapLoreEntry(updated);
+        setEntries((prev) => prev.map((e) => (e.id === id ? mapped : e)));
+        onImageChange();
+      })
+      .catch((err) => {
+        notify(t("common.toastErrorDeleting"), "error", err);
+        throw err;
       });
   }
 
@@ -168,6 +196,8 @@ export function useLore(
     createLoreEntry: createEntry,
     saveLoreEntry: saveEntry,
     deleteLoreEntry: deleteEntry,
+    uploadLoreImage: uploadEntryImage,
+    removeLoreImage: removeEntryImage,
     loreCategoriesApi: {
       types: categories,
       onCreate: createCategory,

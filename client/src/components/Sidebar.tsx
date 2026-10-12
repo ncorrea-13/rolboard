@@ -174,6 +174,19 @@ export function Sidebar({
         >
           <ArrowLeft size={16} strokeWidth={1.75} />
         </button>
+        {onSearch && (
+          <button
+            className="sidebar__head-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSearch();
+            }}
+            title={t("search.open")}
+            aria-label={t("search.open")}
+          >
+            <Search size={16} strokeWidth={1.75} />
+          </button>
+        )}
         <a
           href="/help"
           onClick={(e) => {
@@ -189,20 +202,6 @@ export function Sidebar({
           {campaignName}
         </span>
       </div>
-      {onSearch && (
-        <button
-          type="button"
-          className="sidebar__item sidebar__item--clickable sidebar__search"
-          onClick={(e) => {
-            e.stopPropagation();
-            onSearch();
-          }}
-        >
-          <Search className="sidebar__icon" size={18} strokeWidth={1.75} />
-          <span className="sidebar__item-label">{t("search.open")}</span>
-          <kbd className="sidebar__kbd">Ctrl K</kbd>
-        </button>
-      )}
       {navItems.map(({ Icon, ...item }) => {
         const isActive = item.section === active;
         return (
@@ -219,15 +218,7 @@ export function Sidebar({
               strokeWidth={1.75}
               style={{ color: item.color }}
             />
-            <span className="sidebar__item-label">
-              {t(item.labelKey)}
-              {isActive && (
-                <span
-                  className="sidebar__item-underline"
-                  style={{ background: item.color }}
-                />
-              )}
-            </span>
+            <span className="sidebar__item-label">{t(item.labelKey)}</span>
           </Link>
         );
       })}

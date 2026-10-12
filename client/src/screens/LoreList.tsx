@@ -1,9 +1,12 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import "./NpcList.css";
+import "../styles/list.css";
 import type { Arc, Location, LoreCategory, LoreEntry } from "../data/domain";
 import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
 import { Link } from "../components/Link";
+import { excerpt } from "../lib/excerpt";
+import { entityImageUrl } from "../lib/images";
 import {
   NpcTypesButton,
   type NpcTypesApi,
@@ -27,6 +30,7 @@ interface LoreListProps {
   arcs: Arc[];
   locations: Location[];
   onCreate: () => void;
+  imageVersion?: number;
 }
 
 export function LoreList({
@@ -36,6 +40,7 @@ export function LoreList({
   arcs,
   locations,
   onCreate,
+  imageVersion = 0,
 }: LoreListProps) {
   const t = useT();
   const [search, setSearch] = useState("");
@@ -81,10 +86,23 @@ export function LoreList({
     currentPage * PAGE_SIZE,
   );
 
+  const groups = [
+    ...categories.map((category) => ({
+      category: category as LoreCategory | undefined,
+      items: paged.filter((e) => e.categoryId === category.id),
+    })),
+    {
+      category: undefined as LoreCategory | undefined,
+      items: paged.filter(
+        (e) => !categories.some((c) => c.id === e.categoryId),
+      ),
+    },
+  ].filter((g) => g.items.length > 0);
+
   return (
     <div className="card npc-list">
       <div className="npc-list__header">
-        <div className="display" style={{ fontSize: 21 }}>
+        <div className="display page-title" role="heading" aria-level={1}>
           {t("loreList.title")}{" "}
           <span className="npc-list__count">
             · {filtered.length} / {entries.length}
@@ -125,49 +143,69 @@ export function LoreList({
         </div>
       )}
 
-      <div className="npc-list__row npc-list__row--lore npc-list__row--head">
-        <span>{t("loreList.colTitle")}</span>
-        <span>{t("loreList.colCategory")}</span>
-        <span>{t("loreList.colLinks")}</span>
-      </div>
-
       {filtered.length === 0 && (
         <div className="npc-list__empty">{t("loreList.empty")}</div>
       )}
 
-      {paged.map((e) => {
-        const category = categories.find((c) => c.id === e.categoryId);
-        const arc = arcs.find((a) => a.id === e.arcId);
-        const location = locations.find((l) => l.id === e.locationId);
-        const links = [arc?.label, location?.name].filter(Boolean).join(" · ");
-        return (
-          <Link
-            key={e.id}
-            className="npc-list__row npc-list__row--lore npc-list__row--data"
-            route={{ name: "lore-detail", entryId: e.id }}
-          >
-            <div className="npc-list__lore-main">
-              <span className="npc-list__lore-title">{e.title}</span>
-              {e.body && (
-                <div className="npc-list__lore-sub">
-                  <MarkdownText inline text={e.body} />
-                </div>
-              )}
-            </div>
-            <span className="npc-list__type">
+      <div className="lore-columns">
+        {groups.map(({ category, items }) => (
+          <section key={category?.id ?? "none"} className="lore-group">
+            <div className="group-head">
               {category && (
-                <span
-                  className="type-chip"
-                  style={{ "--c": category.color } as CSSProperties}
-                >
-                  {category.label}
-                </span>
+                <>
+                  <span
+                    className="status-dot"
+                    style={{ background: category.color }}
+                  />
+                  <span className="display group-head__title">
+                    {category.label}
+                  </span>
+                  <span className="group-head__count">{items.length}</span>
+                </>
               )}
-            </span>
-            <span className="npc-list__cell">{links}</span>
-          </Link>
-        );
-      })}
+              <span className="group-head__rule" />
+            </div>
+            <div className="lore-grid">
+              {items.map((e) => {
+                const arc = arcs.find((a) => a.id === e.arcId);
+                const location = locations.find((l) => l.id === e.locationId);
+                const links = [arc?.label, location?.name]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <Link
+                    key={e.id}
+                    className="lore-entry"
+                    route={{ name: "lore-detail", entryId: e.id }}
+                  >
+                    {e.hasImage && (
+                      <img
+                        className="lore-entry__image"
+                        src={entityImageUrl(
+                          "lore",
+                          e.id,
+                          e.hasImage,
+                          imageVersion,
+                        )}
+                        alt=""
+                      />
+                    )}
+                    <span className="display lore-entry__title">{e.title}</span>
+                    {e.body && (
+                      <span className="lore-entry__excerpt">
+                        <MarkdownText inline text={excerpt(e.body)} />
+                      </span>
+                    )}
+                    {links && (
+                      <span className="lore-entry__links">{links}</span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
 
       {pageCount > 1 && (
         <div className="npc-list__pagination">

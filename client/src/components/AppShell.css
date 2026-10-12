@@ -56,7 +56,7 @@
 
 .app-shell__open:hover {
   color: var(--text-body-strong);
-  border-color: #34393d;
+  border-color: var(--border-strong);
 }
 
 .app-shell__main {
@@ -75,10 +75,10 @@
 @media (max-width: 640px) {
   .app-shell__open {
     top: auto;
-    bottom: 64px;
+    bottom: calc(var(--footer-h) + 24px);
     z-index: 60;
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
   }
@@ -111,7 +111,7 @@
 
   .app-shell__main,
   .app-shell--collapsed .app-shell__main {
-    padding: 16px 16px 60px;
+    padding: 16px 16px 112px;
   }
 }
 

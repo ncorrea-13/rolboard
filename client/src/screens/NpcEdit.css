@@ -1,5 +1,8 @@
-.npc-edit {
-  overflow: hidden;
+.card.npc-edit {
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
 }
 
 .npc-edit__bar {
@@ -8,9 +11,18 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 13px 22px;
-  background: color-mix(in srgb, var(--c) 9%, var(--bg-surface));
-  border-bottom: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+  padding: 4px 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.npc-edit__title {
+  font: 600 26px/1.15 var(--font-display);
+  color: var(--text-primary);
+}
+
+.npc-edit .label {
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .npc-edit__bar .status-dot {
@@ -49,7 +61,7 @@
 
 .npc-edit__col {
   min-width: 0;
-  padding: 20px 24px;
+  padding: 20px 24px 20px 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -63,6 +75,11 @@
   border-right: 1px solid var(--border-subtle);
 }
 
+.npc-edit__col:last-child {
+  padding-left: 24px;
+  padding-right: 0;
+}
+
 .npc-edit__grid-2 {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -72,7 +89,11 @@
 @media (max-width: 640px) {
   .npc-edit__bar {
     flex-wrap: wrap;
-    padding: 13px 16px;
+    padding: 4px 0 14px;
+  }
+
+  .npc-edit__title {
+    font-size: 22px;
   }
 
   .npc-edit__bar-actions {
@@ -89,8 +110,9 @@
     grid-template-columns: 1fr;
   }
 
-  .npc-edit__col {
-    padding: 16px;
+  .npc-edit__col,
+  .npc-edit__col:last-child {
+    padding: 16px 0;
   }
 
   .npc-edit__col:first-child {

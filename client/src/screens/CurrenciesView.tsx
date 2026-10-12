@@ -209,7 +209,7 @@ export function CurrenciesView({
   return (
     <div className="card npc-list">
       <div className="npc-list__header">
-        <div className="display" style={{ fontSize: 21 }}>
+        <div className="display page-title" role="heading" aria-level={1}>
           {t("currencies.title")}{" "}
           <span className="npc-list__count">· {currencies.length}</span>
         </div>
@@ -220,50 +220,38 @@ export function CurrenciesView({
         </div>
       </div>
 
-      <div className="npc-list__row npc-list__row--currency npc-list__row--head">
-        <span>{t("items.name")}</span>
-        <span>{t("currencies.symbol")}</span>
-        <span>{t("currencies.rate")}</span>
-        <span>{t("currencies.circulatesIn")}</span>
-      </div>
-
       {currencies.length === 0 && (
         <div className="npc-list__empty">{t("currencies.empty")}</div>
       )}
 
-      {currencies.map((c) => (
-        <button
-          key={c.id}
-          type="button"
-          className="npc-list__row npc-list__row--currency npc-list__row--data npc-list__row--button"
-          onClick={() => setEditing(c)}
-        >
-          <div className="npc-list__lore-main">
-            <span className="npc-list__lore-title">{c.name}</span>
-            {c.isBase && (
-              <span
-                className="type-chip"
-                style={{
-                  marginLeft: 8,
-                  ["--c" as string]: "var(--accent-cyan)",
-                }}
-              >
-                {t("currencies.base")}
+      <div className="coin-grid">
+        {currencies.map((c) => {
+          const places = c.locationIds
+            .map((id) => locations.find((l) => l.id === id)?.name)
+            .filter(Boolean) as string[];
+          return (
+            <button
+              key={c.id}
+              type="button"
+              className={`coin-card${c.isBase ? " coin-card--base" : ""}`}
+              onClick={() => setEditing(c)}
+            >
+              <span className="coin-card__coin">{c.symbol}</span>
+              <span className="coin-card__body">
+                <span className="display coin-card__name">{c.name}</span>
+                <span className="coin-card__rate">
+                  {c.isBase
+                    ? t("currencies.base")
+                    : `${t("currencies.rate")}: ${c.rateToBase ?? "—"}`}
+                </span>
+                {places.length > 0 && (
+                  <span className="coin-card__places">{places.join(", ")}</span>
+                )}
               </span>
-            )}
-          </div>
-          <span className="npc-list__cell">{c.symbol}</span>
-          <span className="npc-list__cell">
-            {c.isBase ? "1" : (c.rateToBase ?? "—")}
-          </span>
-          <span className="npc-list__cell">
-            {c.locationIds
-              .map((id) => locations.find((l) => l.id === id)?.name)
-              .filter(Boolean)
-              .join(", ")}
-          </span>
-        </button>
-      ))}
+            </button>
+          );
+        })}
+      </div>
 
       {editing && (
         <CurrencyModal

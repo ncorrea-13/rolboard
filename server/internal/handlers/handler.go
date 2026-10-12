@@ -48,6 +48,7 @@ type Handlers struct {
 	encounters            *service.EncounterService
 	encounterParticipants *service.EncounterParticipantService
 	trash                 *service.TrashService
+	entityImages          *service.EntityImageService
 }
 
 func NewHandlers(
@@ -78,6 +79,7 @@ func NewHandlers(
 	encounters *service.EncounterService,
 	encounterParticipants *service.EncounterParticipantService,
 	trash *service.TrashService,
+	entityImages *service.EntityImageService,
 ) *Handlers {
 	return &Handlers{
 		db:                    db,
@@ -107,5 +109,6 @@ func NewHandlers(
 		encounters:            encounters,
 		encounterParticipants: encounterParticipants,
 		trash:                 trash,
+		entityImages:          entityImages,
 	}
 }
