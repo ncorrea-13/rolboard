@@ -54,6 +54,12 @@ import { SecretEdit } from "./screens/SecretEdit";
 import { useSecrets } from "./hooks/useSecrets";
 import { ItemsSection } from "./screens/ItemsSection";
 import { useEconomy } from "./hooks/useEconomy";
+import {
+  appearsForGroup,
+  appearsForLocation,
+  appearsForLore,
+  type AppearsContext,
+} from "./lib/appearances";
 import { ArcsList } from "./screens/ArcsList";
 import { FactionsList } from "./screens/FactionsList";
 import { LocationsList } from "./screens/LocationsList";
@@ -364,6 +370,14 @@ export default function App() {
     saveItem,
     deleteItem,
   } = useEconomy(activeCampaignId, reloadKey, notify);
+
+  const appearsCtx: AppearsContext = {
+    npcs: campaignNpcs,
+    loreEntries,
+    timelineEvents,
+    secrets,
+    currencies,
+  };
 
   const npcTypesApi: NpcTypesApi = {
     types: npcTypes,
@@ -745,6 +759,7 @@ export default function App() {
                 <LoreDetail
                   key={entry.id}
                   entry={entry}
+                  appearsIn={appearsForLore(entry.id, appearsCtx, t)}
                   category={loreCategories.find(
                     (c) => c.id === entry.categoryId,
                   )}
@@ -939,6 +954,7 @@ export default function App() {
               return (
                 <FactionDetail
                   group={group}
+                  appearsIn={appearsForGroup(group.id, appearsCtx, t)}
                   npcs={campaignNpcs}
                   playerCharacters={campaignPlayerCharacters}
                   vaultName={activeCampaign!.vaultPath}
@@ -960,6 +976,7 @@ export default function App() {
               return (
                 <LocationDetail
                   location={location}
+                  appearsIn={appearsForLocation(location.id, appearsCtx, t)}
                   items={items}
                   currencies={currencies}
                   allLocations={campaignLocations}
@@ -996,7 +1013,6 @@ export default function App() {
             <NpcDetail
               npc={selectedNpc}
               npcs={campaignNpcs}
-              quests={campaignQuests}
               items={items}
               campaignId={activeCampaignId!}
               vaultName={activeCampaign!.vaultPath}

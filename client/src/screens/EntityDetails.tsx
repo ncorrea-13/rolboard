@@ -4,6 +4,7 @@ import { StatusPill } from "../components/StatusPill";
 import { QuestStatusPill } from "../components/StatusPill";
 import { QuestNpcs } from "../components/QuestNpcs";
 import { ShopStock } from "../components/ShopStock";
+import { AppearsIn, type AppearsGroup } from "../components/AppearsIn";
 import { ArcStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
@@ -136,8 +137,10 @@ export function FactionDetail({
   onEdit,
   onDelete,
   imageVersion = 0,
+  appearsIn = [],
 }: {
   group: Group;
+  appearsIn?: AppearsGroup[];
   npcs: Npc[];
   playerCharacters: PlayerCharacter[];
   vaultName: string;
@@ -251,6 +254,14 @@ export function FactionDetail({
           : []),
         ...(lider
           ? [{ label: t("factionDetail.leader"), value: lider.name }]
+          : []),
+        ...(appearsIn.some((g) => g.items.length > 0)
+          ? [
+              {
+                label: t("appearsIn.title"),
+                value: <AppearsIn groups={appearsIn} />,
+              },
+            ]
           : []),
         {
           label: `${t("factionDetail.members")} (${members.length})`,
@@ -406,10 +417,12 @@ export function LocationDetail({
   imageVersion = 0,
   items,
   currencies,
+  appearsIn = [],
 }: {
   location: Location;
   items: Item[];
   currencies: Currency[];
+  appearsIn?: AppearsGroup[];
   allLocations: Location[];
   vaultName: string;
   campaignId: string;
@@ -464,6 +477,14 @@ export function LocationDetail({
             />
           ),
         },
+        ...(appearsIn.some((g) => g.items.length > 0)
+          ? [
+              {
+                label: t("appearsIn.title"),
+                value: <AppearsIn groups={appearsIn} />,
+              },
+            ]
+          : []),
         {
           label: `${t("locationDetail.subLocations")} (${children.length})`,
           value:

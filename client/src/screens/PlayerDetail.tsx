@@ -12,6 +12,9 @@ import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
 import { Tabs } from "../components/Tabs";
 import { Inventory } from "../components/Inventory";
+import { AppearsIn } from "../components/AppearsIn";
+import { useAppearances } from "../hooks/useAppearances";
+import { sessionGroup } from "../lib/appearances";
 
 type PlayerTab = "summary" | "history" | "progression" | "sheet" | "inventory";
 const TAB_STORAGE_KEY = "rolboard.playerDetailTab";
@@ -53,6 +56,7 @@ export function PlayerDetail({
   imageVersion = 0,
 }: PlayerDetailProps) {
   const t = useT();
+  const appears = useAppearances("player-characters", player.id);
   const [tab, setTab] = useState<PlayerTab>(() => readStoredTab() ?? "summary");
   const [noteOpen, setNoteOpen] = useState<{
     title: string;
@@ -166,17 +170,38 @@ export function PlayerDetail({
           {tabs.length > 1 && (
             <Tabs tabs={tabs} active={activeTab} onChange={selectTab} />
           )}
-          {activeTab === "summary" &&
-            (player.description ? (
-              <MarkdownText
-                className="npc-detail__desc"
-                text={player.description}
-              />
-            ) : (
-              <span style={{ color: "var(--text-secondary)" }}>
-                {t("playerDetail.emptyDescription")}
-              </span>
-            ))}
+          {activeTab === "summary" && (
+            <>
+              {player.description ? (
+                <MarkdownText
+                  className="npc-detail__desc"
+                  text={player.description}
+                />
+              ) : (
+                <span style={{ color: "var(--text-secondary)" }}>
+                  {t("playerDetail.emptyDescription")}
+                </span>
+              )}
+              <div style={{ marginTop: 20 }}>
+                <AppearsIn
+                  groups={[
+                    sessionGroup(appears.sessions, t("appearsIn.sessions")),
+                    {
+                      title: t("appearsIn.encounters"),
+                      items: appears.encounters.map((e) => ({
+                        key: `encounter-${e.id}`,
+                        label: e.name,
+                        route: {
+                          name: "encounter-detail",
+                          encounterId: e.id,
+                        },
+                      })),
+                    },
+                  ]}
+                />
+              </div>
+            </>
+          )}
           {activeTab === "history" && (
             <>
               {player.historiaPath && (

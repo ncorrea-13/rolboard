@@ -5,6 +5,7 @@ import { locationBreadcrumb } from "../data/domain";
 import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
 import { Link } from "../components/Link";
+import { AppearsIn, type AppearsGroup } from "../components/AppearsIn";
 
 interface LoreDetailProps {
   entry: LoreEntry;
@@ -12,6 +13,7 @@ interface LoreDetailProps {
   arc?: Arc;
   location?: Location;
   locations: Location[];
+  appearsIn?: AppearsGroup[];
   onBack: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -23,6 +25,7 @@ export function LoreDetail({
   arc,
   location,
   locations,
+  appearsIn = [],
   onBack,
   onEdit,
   onDelete,
@@ -102,6 +105,7 @@ export function LoreDetail({
               </div>
             </div>
           )}
+          <AppearsIn groups={appearsIn} />
         </div>
       </div>
     </div>
