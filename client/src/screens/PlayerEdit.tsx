@@ -12,6 +12,7 @@ import { ImageUploadField } from "../components/ImageUploadField";
 import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
@@ -190,17 +191,17 @@ export function PlayerEdit({
             />
           </div>
 
-          <div>
-            <span className="label">
-              {t("playerDetail.progressionNotes")}{" "}
-              {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              value={progressionNotes}
-              onChange={(e) => setProgressionNotes(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={`${t("playerDetail.backstory")} ${t("common.supportsMarkdown")}`}
+            value={backstory}
+            onChange={setBackstory}
+          />
+
+          <MarkdownField
+            label={`${t("playerDetail.progressionNotes")} ${t("common.supportsMarkdown")}`}
+            value={progressionNotes}
+            onChange={setProgressionNotes}
+          />
 
           <SkillsEditor
             label={t("characterSheet.attributes")}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import type { Arc, Npc, Quest } from "../data/domain";
 import { useT } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
 
 interface PlanSessionProps {
   nextNumber: number;
@@ -127,16 +128,13 @@ export function PlanSession({
             </select>
           </div>
 
-          <div>
-            <span className="label">{t("planSession.prepNotesLabel")}</span>
-            <textarea
-              className="npc-edit__textarea"
-              style={{ minHeight: 160 }}
-              placeholder={t("planSession.prepPlaceholder")}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={t("planSession.prepNotesLabel")}
+            minHeight={160}
+            placeholder={t("planSession.prepPlaceholder")}
+            value={text}
+            onChange={setText}
+          />
         </div>
 
         <div className="npc-edit__col">

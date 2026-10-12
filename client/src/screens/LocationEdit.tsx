@@ -5,6 +5,7 @@ import { ImageUploadField } from "../components/ImageUploadField";
 import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
 
 interface LocationEditProps {
   location: Location;
@@ -103,16 +104,11 @@ export function LocationEdit({
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div>
-            <span className="label">
-              {t("common.description")} {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={`${t("common.description")} ${t("common.supportsMarkdown")}`}
+            value={description}
+            onChange={setDescription}
+          />
         </div>
 
         <div className="npc-edit__col">

@@ -14,6 +14,7 @@ import { useSessionExpectations } from "../hooks/useSessionExpectations";
 import { apiFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
 import { reportError } from "../lib/notify";
+import { MarkdownField } from "../components/MarkdownField";
 
 interface SessionEditProps {
   arc?: Arc;
@@ -249,13 +250,12 @@ export function SessionEdit({
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
-              <span className="label">{t("sessionEdit.recapLabel")}</span>
-              <textarea
-                className="npc-edit__textarea"
-                style={{ minHeight: 220 }}
+              <MarkdownField
+                label={t("sessionEdit.recapLabel")}
+                minHeight={220}
                 placeholder={t("sessionEdit.recapPlaceholder")}
                 value={recap}
-                onChange={(e) => setRecap(e.target.value)}
+                onChange={setRecap}
               />
             </div>
             {wardails.trim() && (
@@ -321,18 +321,12 @@ export function SessionEdit({
     </div>
   );
   const summaryField = (
-    <div>
-      <span className="label">
-        {played ? t("sessionEdit.history") : t("sessionEdit.prepNotesOnly")}{" "}
-        {t("common.supportsMarkdown")}
-      </span>
-      <textarea
-        className="npc-edit__textarea"
-        style={{ minHeight: played ? 260 : 160 }}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-    </div>
+    <MarkdownField
+      label={`${played ? t("sessionEdit.history") : t("sessionEdit.prepNotesOnly")} ${t("common.supportsMarkdown")}`}
+      minHeight={played ? 260 : 160}
+      value={text}
+      onChange={setText}
+    />
   );
   const expectedBlock = (
     <>

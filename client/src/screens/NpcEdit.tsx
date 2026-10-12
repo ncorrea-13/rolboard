@@ -22,6 +22,7 @@ import {
 import { useT, useLang } from "../lib/i18n";
 import { reportError } from "../lib/notify";
 import type { CSSProperties } from "react";
+import { MarkdownField } from "../components/MarkdownField";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 
@@ -283,16 +284,11 @@ export function NpcEdit({
             )}
           </div>
 
-          <div>
-            <span className="label">
-              {t("common.description")} {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={`${t("common.description")} ${t("common.supportsMarkdown")}`}
+            value={description}
+            onChange={setDescription}
+          />
 
           <div>
             <span className="label">{t("npcEdit.linkWithNpc")}</span>

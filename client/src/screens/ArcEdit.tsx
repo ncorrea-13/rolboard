@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import { arcStatusLabel, type Arc, type ArcStatus } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
 
 interface ArcEditProps {
   arc: Arc;
@@ -117,17 +118,12 @@ export function ArcEdit({ arc, hasVault, onSave, onDiscard }: ArcEditProps) {
             </div>
           </div>
 
-          <div>
-            <span className="label">
-              {t("common.summary")} {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              style={{ minHeight: 200 }}
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={`${t("common.summary")} ${t("common.supportsMarkdown")}`}
+            minHeight={200}
+            value={summary}
+            onChange={setSummary}
+          />
         </div>
 
         <div className="npc-edit__col">

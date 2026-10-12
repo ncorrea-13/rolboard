@@ -23,6 +23,7 @@ const dict = {
     "common.edit": "Editar",
     "common.back": "Volver",
     "common.close": "Cerrar",
+    "common.expand": "Expandir",
     "common.remove": "Quitar",
 
     "imageUpload.upload": "Subir imagen",
@@ -469,6 +470,7 @@ const dict = {
     "common.edit": "Edit",
     "common.back": "Back",
     "common.close": "Close",
+    "common.expand": "Expand",
     "common.remove": "Remove",
 
     "imageUpload.upload": "Upload image",
