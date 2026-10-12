@@ -74,7 +74,7 @@ export function Trash({ campaignId, onRestored, notify }: TrashProps) {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Trash2 size={22} strokeWidth={1.75} />
           <div>
-            <div className="display" style={{ fontSize: 21 }}>
+            <div className="display page-title" role="heading" aria-level={1}>
               {t("trash.title")}
             </div>
             <span className="list-page__count">{t("trash.subtitle")}</span>
