@@ -114,6 +114,7 @@ export function TimelineManager({
             <div>
               <span className="label">{t("timeline.timelineName")}</span>
               <input
+                aria-label={t("timeline.timelineName")}
                 className="npc-edit__input"
                 value={draft.name}
                 maxLength={60}
@@ -149,6 +150,7 @@ export function TimelineManager({
             <div>
               <span className="label">{t("timeline.startLabel")}</span>
               <input
+                aria-label={t("timeline.startLabel")}
                 className="npc-edit__input"
                 value={draft.startLabel}
                 onChange={(e) =>
@@ -159,6 +161,7 @@ export function TimelineManager({
             <div>
               <span className="label">{t("timeline.endLabel")}</span>
               <input
+                aria-label={t("timeline.endLabel")}
                 className="npc-edit__input"
                 value={draft.endLabel}
                 onChange={(e) =>

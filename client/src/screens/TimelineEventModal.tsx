@@ -113,6 +113,7 @@ export function TimelineEventModal({
       <div>
         <span className="label">{t("timeline.eventTitle")}</span>
         <input
+          aria-label={t("timeline.eventTitle")}
           className="npc-edit__input"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -133,6 +134,7 @@ export function TimelineEventModal({
         <div>
           <span className="label">{t("timeline.dateLabel")}</span>
           <input
+            aria-label={t("timeline.dateLabel")}
             className="npc-edit__input"
             value={dateLabel}
             placeholder={t("timeline.datePlaceholder")}
@@ -142,6 +144,7 @@ export function TimelineEventModal({
         <div>
           <span className="label">{t("timeline.endDateLabel")}</span>
           <input
+            aria-label={t("timeline.endDateLabel")}
             className="npc-edit__input"
             value={endDateLabel}
             onChange={(e) => setEndDateLabel(e.target.value)}
@@ -151,6 +154,7 @@ export function TimelineEventModal({
       <div>
         <span className="label">{t("timeline.sortKey")}</span>
         <input
+          aria-label={t("timeline.sortKey")}
           className="npc-edit__input"
           inputMode="decimal"
           value={sortKey}

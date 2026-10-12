@@ -122,7 +122,7 @@ export function TimelineView({
   return (
     <div className="card npc-list">
       <div className="npc-list__header">
-        <div className="display" style={{ fontSize: 21 }}>
+        <div className="display page-title" role="heading" aria-level={1}>
           {t("timeline.title")}{" "}
           <span className="npc-list__count">
             · {filtered.length} / {events.length}
