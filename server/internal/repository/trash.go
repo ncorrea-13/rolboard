@@ -20,7 +20,7 @@ type trashSpec struct {
 }
 
 var trashSpecs = []trashSpec{
-	{kind: "session", table: "sessions", label: "printf('S%02d', session_number)",
+	{kind: "session", table: "sessions", label: "printf(CASE WHEN session_type = 'oneshot' THEN 'O%02d' ELSE 'S%02d' END, session_number)",
 		parentDeleted: `SELECT EXISTS(SELECT 1 FROM sessions s JOIN arcs a ON a.id = s.arc_id WHERE s.id = ? AND a.deleted_at IS NOT NULL)`,
 		filter:        " AND sub_number <> 99"},
 	{kind: "arc", table: "arcs", label: "title"},

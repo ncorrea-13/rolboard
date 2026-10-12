@@ -73,7 +73,9 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 | arc_id         | opcional |
 | session_number | admite `0` |
 | sub_number     | default `0`; interludios (4.1 → `4`, `1`). `99` marca sesiones archivadas |
-| session_type   | `session` \| `interlude` \| `planning` |
+| session_type   | `session` \| `interlude` \| `planning` \| `oneshot` |
+| title          | solo oneshots (UI); `''` en el resto |
+| planned        | `0`/`1`, solo oneshots: planificado vs jugado. Los demás tipos usan `session_type = 'planning'` |
 | date           | `YYYY-MM-DD` |
 | summary        | |
 | prep_notes     | solo dashboard |

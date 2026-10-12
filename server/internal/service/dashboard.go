@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"slices"
 	"sort"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
@@ -49,6 +50,7 @@ func (s *DashboardService) Get(ctx context.Context, campaignID int64) (*models.D
 	}
 	summary.RecentNPCs = npcs
 
+	sessions = slices.DeleteFunc(sessions, func(s models.Session) bool { return s.SessionType == "oneshot" })
 	if len(sessions) > 0 {
 		sort.Slice(sessions, func(i, j int) bool {
 			if sessions[i].SessionNumber != sessions[j].SessionNumber {

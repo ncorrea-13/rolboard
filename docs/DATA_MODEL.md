@@ -73,13 +73,15 @@ quest_npcs      quest ↔ npc        (schema only, no endpoints)
 | arc_id         | optional |
 | session_number | allows `0` |
 | sub_number     | default `0`; interludes (4.1 → `4`, `1`). `99` marks archived sessions |
-| session_type   | `session` \| `interlude` \| `planning` |
+| session_type   | `session` \| `interlude` \| `planning` \| `oneshot` |
+| title          | oneshots only (UI); `''` otherwise |
+| planned        | `0`/`1`, oneshots only: planned vs played. Other types use `session_type = 'planning'` |
 | date           | `YYYY-MM-DD` |
 | summary        | |
 | prep_notes     | dashboard only |
 | obsidian_path  | |
 
-Unique partial index `sessions_active_number_uq` on `(campaign_id, session_number, sub_number) WHERE deleted_at IS NULL` (migration 0023): a deleted session frees its number, and restoring it fails with `409` if the number was taken meanwhile. `sub_number` is `0`, not `NULL`, because SQLite doesn't compare `NULL` in a unique index.
+Unique partial index `sessions_active_number_uq` on `(campaign_id, session_number, sub_number) WHERE deleted_at IS NULL AND session_type <> 'oneshot'` (migrations 0023 and 0024). Oneshots (`O1`, `O2`...) are numbered on their own through `sessions_active_oneshot_number_uq` on `(campaign_id, session_number)`, so `O1` and `S1` coexist: a deleted session frees its number, and restoring it fails with `409` if the number was taken meanwhile. `sub_number` is `0`, not `NULL`, because SQLite doesn't compare `NULL` in a unique index.
 
 ### locations
 

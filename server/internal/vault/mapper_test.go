@@ -49,3 +49,22 @@ func TestEntityTypeForPathUnknownFolder(t *testing.T) {
 		t.Error("Expected ok false for unmapped folder")
 	}
 }
+
+func TestSessionTypeFromTags(t *testing.T) {
+	cases := []struct {
+		tags   []string
+		status string
+		want   string
+	}{
+		{[]string{"campaña/oneshot"}, "completada", "oneshot"},
+		{[]string{"campaña/interludio"}, "", "interlude"},
+		{[]string{"campaña/interludio", "campaña/oneshot"}, "", "interlude"},
+		{nil, "completada", "session"},
+		{nil, "", "planning"},
+	}
+	for _, c := range cases {
+		if got := sessionType(c.tags, c.status); got != c.want {
+			t.Errorf("sessionType(%v, %q) = %q, want %q", c.tags, c.status, got, c.want)
+		}
+	}
+}

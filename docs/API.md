@@ -102,7 +102,7 @@ POST   /api/sessions/{id}/quests            {"quest_id": N}
 DELETE /api/sessions/{id}/quests/{questId}
 ```
 
-Body: `arc_id`, `session_number`, `sub_number`, `session_type` (`session` | `interlude` | `planning`), `date`, `summary`, `prep_notes`, `obsidian_path`.
+Body: `arc_id`, `session_number`, `sub_number`, `session_type` (`session` | `interlude` | `planning` | `oneshot`), `title`, `planned` (oneshots), `date`, `summary`, `prep_notes`, `obsidian_path`.
 
 `session_npcs` is also written by the reindex (it replaces them with the wikilinks from the note's body). `session_quests` is only managed from here.
 

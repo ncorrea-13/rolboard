@@ -16,7 +16,7 @@ func NewSessionRepository(db *sql.DB) *SessionRepository {
 }
 
 func (r *SessionRepository) List(ctx context.Context, campaignID int64) ([]models.Session, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, arc_id, session_number, sub_number, session_type, date, summary, prep_notes, obsidian_path, created_at, updated_at
+	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, arc_id, session_number, sub_number, session_type, title, planned, date, summary, prep_notes, obsidian_path, created_at, updated_at
 		FROM sessions WHERE campaign_id = ? AND deleted_at IS NULL ORDER BY session_number, sub_number`,
 		campaignID,
 	)
@@ -34,7 +34,7 @@ func (r *SessionRepository) List(ctx context.Context, campaignID int64) ([]model
 		s := models.Session{}
 		var arcID sql.NullInt64
 		var obsidianPath sql.NullString
-		if err := rows.Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Date, &s.Summary, &s.PrepNotes, &obsidianPath, &s.CreatedAt, &s.UpdatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Title, &s.Planned, &s.Date, &s.Summary, &s.PrepNotes, &obsidianPath, &s.CreatedAt, &s.UpdatedAt); err != nil {
 			return nil, err
 		}
 		s.ArcID = fromNullInt64(arcID)
@@ -51,15 +51,15 @@ func (r *SessionRepository) Create(ctx context.Context, s *models.Session) error
 	var arcID sql.NullInt64
 	var obsidianPath sql.NullString
 	err := r.db.QueryRowContext(ctx, `
-		INSERT INTO sessions (campaign_id, arc_id, session_number, sub_number, session_type, date, summary, prep_notes, obsidian_path)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO sessions (campaign_id, arc_id, session_number, sub_number, session_type, title, planned, date, summary, prep_notes, obsidian_path)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
 			arc_id = excluded.arc_id, session_number = excluded.session_number, sub_number = excluded.sub_number,
-			session_type = excluded.session_type, date = excluded.date, summary = excluded.summary,
+			session_type = excluded.session_type, title = excluded.title, planned = excluded.planned, date = excluded.date, summary = excluded.summary,
 			deleted_at = NULL, updated_at = datetime('now')
-		RETURNING id, campaign_id, arc_id, session_number, sub_number, session_type, date, summary, prep_notes, obsidian_path, created_at, updated_at`,
-		s.CampaignID, toNullInt64(s.ArcID), s.SessionNumber, s.SubNumber, s.SessionType, s.Date, s.Summary, s.PrepNotes, toNullString(s.ObsidianPath),
-	).Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Date, &s.Summary, &s.PrepNotes, &obsidianPath, &s.CreatedAt, &s.UpdatedAt)
+		RETURNING id, campaign_id, arc_id, session_number, sub_number, session_type, title, planned, date, summary, prep_notes, obsidian_path, created_at, updated_at`,
+		s.CampaignID, toNullInt64(s.ArcID), s.SessionNumber, s.SubNumber, s.SessionType, s.Title, s.Planned, s.Date, s.Summary, s.PrepNotes, toNullString(s.ObsidianPath),
+	).Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Title, &s.Planned, &s.Date, &s.Summary, &s.PrepNotes, &obsidianPath, &s.CreatedAt, &s.UpdatedAt)
 	if err != nil {
 		return mapConflict(err)
 	}
@@ -73,10 +73,10 @@ func (r *SessionRepository) GetByID(ctx context.Context, id int64) (*models.Sess
 	var arcID sql.NullInt64
 	var obsidianPath sql.NullString
 	err := r.db.QueryRowContext(ctx, `
-		SELECT id, campaign_id, arc_id, session_number, sub_number, session_type, date, summary, prep_notes, obsidian_path, created_at, updated_at
+		SELECT id, campaign_id, arc_id, session_number, sub_number, session_type, title, planned, date, summary, prep_notes, obsidian_path, created_at, updated_at
 		FROM sessions WHERE id = ? AND deleted_at IS NULL`,
 		id,
-	).Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Date, &s.Summary, &s.PrepNotes, &obsidianPath, &s.CreatedAt, &s.UpdatedAt)
+	).Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Title, &s.Planned, &s.Date, &s.Summary, &s.PrepNotes, &obsidianPath, &s.CreatedAt, &s.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -93,11 +93,11 @@ func (r *SessionRepository) Update(ctx context.Context, id int64, s *models.Sess
 	var obsidianPath sql.NullString
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE sessions
-		SET arc_id = ?, session_number = ?, sub_number = ?, session_type = ?, date = ?, summary = ?, prep_notes = ?, obsidian_path = ?, updated_at = datetime('now')
+		SET arc_id = ?, session_number = ?, sub_number = ?, session_type = ?, title = ?, planned = ?, date = ?, summary = ?, prep_notes = ?, obsidian_path = ?, updated_at = datetime('now')
 		WHERE id = ? AND deleted_at IS NULL
-		RETURNING id, campaign_id, arc_id, session_number, sub_number, session_type, date, summary, prep_notes, obsidian_path, created_at, updated_at`,
-		toNullInt64(s.ArcID), s.SessionNumber, s.SubNumber, s.SessionType, s.Date, s.Summary, s.PrepNotes, toNullString(s.ObsidianPath), id,
-	).Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Date, &s.Summary, &s.PrepNotes, &obsidianPath, &s.CreatedAt, &s.UpdatedAt)
+		RETURNING id, campaign_id, arc_id, session_number, sub_number, session_type, title, planned, date, summary, prep_notes, obsidian_path, created_at, updated_at`,
+		toNullInt64(s.ArcID), s.SessionNumber, s.SubNumber, s.SessionType, s.Title, s.Planned, s.Date, s.Summary, s.PrepNotes, toNullString(s.ObsidianPath), id,
+	).Scan(&s.ID, &s.CampaignID, &arcID, &s.SessionNumber, &s.SubNumber, &s.SessionType, &s.Title, &s.Planned, &s.Date, &s.Summary, &s.PrepNotes, &obsidianPath, &s.CreatedAt, &s.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}
