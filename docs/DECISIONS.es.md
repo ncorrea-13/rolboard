@@ -80,6 +80,11 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - **Una categoría usada por cualquier entrada no se puede borrar** (`409`), contando también las entradas dadas de baja, para que restaurar nunca apunte a una categoría inexistente.
 - **Borrar un arco o una locación no se bloquea por entradas de lore.** El vínculo es opcional y la entrada simplemente deja de mostrarlo.
 
+## Secretos
+
+- **Un secreto no está atado a un solo NPC.** Apunta opcionalmente a un NPC, una locación o una entrada de lore (de qué trata), y un bridge aparte lista quién lo conoce.
+- **Revelar guarda la sesión.** Al revelar se guarda la sesión (opcional); al volver a ocultarlo se limpia, para que una sesión nunca quede asociada a un secreto oculto.
+
 ## Línea de tiempo
 
 - **Fechas en texto libre, orden numérico.** Cada setting tiene su calendario y no se puede parsear, así que `date_label` solo se muestra y `sort_key` (escrito a mano) ordena. Insertar un evento en el medio no obliga a renumerar.

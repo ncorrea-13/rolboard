@@ -171,6 +171,19 @@ Per-campaign lore. Categories follow the `npc_types` pattern (`key` derived from
 | arc_id, location_id    | optional, `ON DELETE RESTRICT` |
 | obsidian_path          | reserved for a future `Lore/` folder in the vault |
 
+### secrets / secret_npcs
+
+DM-only narrative secrets.
+
+| Field (`secrets`) | Notes |
+| ----------------- | ----- |
+| title, body       | title required; body is Markdown |
+| status            | `hidden` \| `revealed`, default `hidden` |
+| revealed_session_id | optional; only kept while `revealed` |
+| npc_id, location_id, lore_entry_id | optional: what the secret is about |
+
+`secret_npcs (secret_id, npc_id)` lists who knows it. A deleted NPC stops showing as knowing the secret (reads filter deleted rows).
+
 ### timelines / timeline_events
 
 World chronologies. A timeline is a colored lane; events belong to exactly one of them.

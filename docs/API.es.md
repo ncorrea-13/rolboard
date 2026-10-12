@@ -235,6 +235,18 @@ DELETE /api/lore/{id}
 
 Body de una entrada: `title` (obligatorio), `body`, `category_id`, `arc_id`, `location_id` (todos opcionales; deben ser de la misma campaña). Una campaña nueva se siembra con categorías base (Historia, Geografía, Religión, Magia, Cultura).
 
+### Secretos
+
+```
+GET    /api/campaigns/{id}/secrets
+POST   /api/campaigns/{id}/secrets
+GET    /api/secrets/{id}
+PUT    /api/secrets/{id}
+DELETE /api/secrets/{id}
+```
+
+Body: `title` y `status` (`hidden` | `revealed`) son obligatorios; `body` (Markdown), `revealed_session_id` (solo se conserva si está `revealed`), `npc_id`, `location_id`, `lore_entry_id` y `known_by_npc_ids` son opcionales. Todo debe ser de la misma campaña (`400` si no). El listado devuelve primero los ocultos.
+
 ### Línea de tiempo
 
 ```

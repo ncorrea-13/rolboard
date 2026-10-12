@@ -171,6 +171,19 @@ Lore por campaña. Las categorías siguen el patrón de `npc_types` (`key` deriv
 | arc_id, location_id    | opcionales, `ON DELETE RESTRICT` |
 | obsidian_path          | reservado para una carpeta `Lore/` del vault a futuro |
 
+### secrets / secret_npcs
+
+Secretos narrativos solo para el DM.
+
+| Campo (`secrets`) | Notas |
+| ----------------- | ----- |
+| title, body       | title obligatorio; body es Markdown |
+| status            | `hidden` \| `revealed`, por defecto `hidden` |
+| revealed_session_id | opcional; solo se conserva mientras está `revealed` |
+| npc_id, location_id, lore_entry_id | opcionales: de qué trata el secreto |
+
+`secret_npcs (secret_id, npc_id)` lista quién lo conoce. Un NPC dado de baja deja de figurar como que lo conoce (las lecturas filtran las filas borradas).
+
 ### timelines / timeline_events
 
 Cronologías del mundo. Una cronología es un carril con color; cada evento pertenece a una sola.

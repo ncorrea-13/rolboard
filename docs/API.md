@@ -235,6 +235,18 @@ DELETE /api/lore/{id}
 
 Entry body: `title` (required), `body`, `category_id`, `arc_id`, `location_id` (all optional; they must belong to the same campaign). A new campaign is seeded with default categories (Historia, Geografía, Religión, Magia, Cultura).
 
+### Secrets
+
+```
+GET    /api/campaigns/{id}/secrets
+POST   /api/campaigns/{id}/secrets
+GET    /api/secrets/{id}
+PUT    /api/secrets/{id}
+DELETE /api/secrets/{id}
+```
+
+Body: `title` and `status` (`hidden` | `revealed`) are required; `body` (Markdown), `revealed_session_id` (kept only when `revealed`), `npc_id`, `location_id`, `lore_entry_id` and `known_by_npc_ids` are optional. Everything must belong to the same campaign (`400` otherwise). The list returns hidden secrets first.
+
 ### Timeline
 
 ```

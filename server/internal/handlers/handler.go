@@ -42,6 +42,7 @@ type Handlers struct {
 	looseNotes            *service.LooseNoteService
 	lore                  *service.LoreService
 	timeline              *service.TimelineService
+	secrets               *service.SecretService
 	encounters            *service.EncounterService
 	encounterParticipants *service.EncounterParticipantService
 	trash                 *service.TrashService
@@ -69,6 +70,7 @@ func NewHandlers(
 	looseNotes *service.LooseNoteService,
 	lore *service.LoreService,
 	timeline *service.TimelineService,
+	secrets *service.SecretService,
 	encounters *service.EncounterService,
 	encounterParticipants *service.EncounterParticipantService,
 	trash *service.TrashService,
@@ -95,6 +97,7 @@ func NewHandlers(
 		looseNotes:            looseNotes,
 		lore:                  lore,
 		timeline:              timeline,
+		secrets:               secrets,
 		encounters:            encounters,
 		encounterParticipants: encounterParticipants,
 		trash:                 trash,

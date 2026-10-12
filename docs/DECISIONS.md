@@ -80,6 +80,11 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - **A category used by any entry can't be deleted** (`409`), counting soft-deleted entries too, so a restore never points at a missing category.
 - **Deleting an arc or location doesn't block on lore entries.** The link is optional and the entry simply stops showing it.
 
+## Secrets
+
+- **A secret is not tied to a single NPC.** It optionally points at an NPC, a location or a lore entry (what it is about), and a separate bridge lists who knows it.
+- **Revealing keeps the history.** Revealing stores the session (optional); hiding it again clears it, so the session never lingers on a hidden secret.
+
 ## Timeline
 
 - **Free-text dates, numeric order.** Each setting has its own calendar and it can't be parsed, so `date_label` is only displayed and `sort_key` (typed by hand) orders. Inserting an event in the middle needs no renumbering.
