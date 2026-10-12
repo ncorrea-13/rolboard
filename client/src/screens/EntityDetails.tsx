@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { EntityDetail } from "../components/EntityDetail";
 import { StatusPill } from "../components/StatusPill";
 import { QuestStatusPill } from "../components/StatusPill";
+import { QuestNpcs } from "../components/QuestNpcs";
 import { ArcStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
@@ -473,10 +474,11 @@ export function LocationDetail({
 
 export function QuestDetail({
   quest,
+  npcs,
   onBack,
   onEdit,
   onDelete,
-}: { quest: Quest; onBack: () => void } & EditableProps) {
+}: { quest: Quest; npcs: Npc[]; onBack: () => void } & EditableProps) {
   const t = useT();
   const priorityLabel = {
     1: t("questDetail.priorityHigh"),
@@ -510,6 +512,10 @@ export function QuestDetail({
               },
             ]
           : []),
+        {
+          label: t("questDetail.npcs"),
+          value: <QuestNpcs questId={quest.id} npcs={npcs} />,
+        },
       ]}
     />
   );

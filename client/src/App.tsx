@@ -958,6 +958,7 @@ export default function App() {
               return (
                 <QuestDetail
                   quest={quest}
+                  npcs={campaignNpcs}
                   onBack={() => goToEntitySection("quest")}
                   onEdit={() =>
                     navigate({ name: "quest-edit", questId: route.id })
