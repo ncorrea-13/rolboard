@@ -27,6 +27,7 @@ type Item struct {
 	Rarity      string   `json:"rarity"`
 	Weight      *float64 `json:"weight"`
 	Prices      []Price  `json:"prices"`
+	ImagePath   *string  `json:"image_path,omitempty"`
 	CreatedAt   string   `json:"created_at"`
 	UpdatedAt   string   `json:"updated_at"`
 }

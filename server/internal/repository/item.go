@@ -7,7 +7,7 @@ import (
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 )
 
-const itemColumns = `id, campaign_id, name, description, effect, category, rarity, weight, created_at, updated_at`
+const itemColumns = `id, campaign_id, name, description, effect, category, rarity, weight, image_path, created_at, updated_at`
 
 type ItemRepository struct {
 	db *sql.DB
@@ -19,9 +19,11 @@ func NewItemRepository(db *sql.DB) *ItemRepository {
 
 func scanItem(row loreScanner, it *models.Item) error {
 	var weight sql.NullFloat64
-	if err := row.Scan(&it.ID, &it.CampaignID, &it.Name, &it.Description, &it.Effect, &it.Category, &it.Rarity, &weight, &it.CreatedAt, &it.UpdatedAt); err != nil {
+	var imagePath sql.NullString
+	if err := row.Scan(&it.ID, &it.CampaignID, &it.Name, &it.Description, &it.Effect, &it.Category, &it.Rarity, &weight, &imagePath, &it.CreatedAt, &it.UpdatedAt); err != nil {
 		return err
 	}
+	it.ImagePath = fromNullString(imagePath)
 	it.Weight = nil
 	if weight.Valid {
 		v := weight.Float64

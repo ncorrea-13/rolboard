@@ -7,7 +7,7 @@ import (
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 )
 
-const loreEntryColumns = `id, campaign_id, category_id, title, body, arc_id, location_id, created_at, updated_at`
+const loreEntryColumns = `id, campaign_id, category_id, title, body, arc_id, location_id, image_path, created_at, updated_at`
 
 type LoreEntryRepository struct {
 	db *sql.DB
@@ -23,9 +23,11 @@ type loreScanner interface {
 
 func scanLoreEntry(row loreScanner, e *models.LoreEntry) error {
 	var categoryID, arcID, locationID sql.NullInt64
-	if err := row.Scan(&e.ID, &e.CampaignID, &categoryID, &e.Title, &e.Body, &arcID, &locationID, &e.CreatedAt, &e.UpdatedAt); err != nil {
+	var imagePath sql.NullString
+	if err := row.Scan(&e.ID, &e.CampaignID, &categoryID, &e.Title, &e.Body, &arcID, &locationID, &imagePath, &e.CreatedAt, &e.UpdatedAt); err != nil {
 		return err
 	}
+	e.ImagePath = fromNullString(imagePath)
 	e.CategoryID = fromNullInt64(categoryID)
 	e.ArcID = fromNullInt64(arcID)
 	e.LocationID = fromNullInt64(locationID)
