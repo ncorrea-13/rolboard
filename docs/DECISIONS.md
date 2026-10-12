@@ -87,6 +87,11 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - **Prices per currency.** An item can cost 5 spheres or 2 gold; a shop may override the catalog price for its location.
 - **A currency used by an item or shop price can't be deleted** (`409`).
 
+## Search and "appears in"
+
+- **Search is client-side.** Every entity of the campaign is already loaded in memory, so the palette (Ctrl/Cmd+K, or the sidebar button) filters locally: no endpoint, no index to keep in sync. Ranking is title match first, then subtitle, then body; accents and case are ignored.
+- **"Appears in" is computed where the data lives.** Sessions, quests and encounters of an NPC or a player character come from `GET .../appearances` (they need reverse joins); locations, factions and lore entries use the lists the client already holds (lore, timeline events, secrets, NPCs, currencies).
+
 ## Secrets
 
 - **A secret is not tied to a single NPC.** It optionally points at an NPC, a location or a lore entry (what it is about), and a separate bridge lists who knows it.

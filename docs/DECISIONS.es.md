@@ -87,6 +87,11 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - **Precios por moneda.** Un objeto puede costar 5 esferas o 2 de oro; una tienda puede pisar el precio de catálogo en su locación.
 - **Una moneda usada por un objeto o un precio de tienda no se puede borrar** (`409`).
 
+## Búsqueda y "aparece en"
+
+- **La búsqueda es del lado del cliente.** Toda entidad de la campaña ya está cargada en memoria, así que la paleta (Ctrl/Cmd+K o el botón del sidebar) filtra localmente: sin endpoint y sin índice que mantener sincronizado. El orden prioriza el título, luego el subtítulo y luego el cuerpo; ignora tildes y mayúsculas.
+- **"Aparece en" se calcula donde viven los datos.** Las sesiones, quests y encuentros de un NPC o un jugador salen de `GET .../appearances` (requieren joins inversos); locaciones, facciones y lore usan las listas que el cliente ya tiene (lore, eventos de la línea de tiempo, secretos, NPCs, monedas).
+
 ## Secretos
 
 - **Un secreto no está atado a un solo NPC.** Apunta opcionalmente a un NPC, una locación o una entrada de lore (de qué trata), y un bridge aparte lista quién lo conoce.
