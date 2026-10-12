@@ -89,7 +89,9 @@ func New(cfg Config) (http.Handler, io.Closer, error) {
 
 	trashSvc := service.NewTrashService(repository.NewTrashRepository(db))
 
-	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, looseNoteSvc, loreSvc, timelineSvc, secretSvc, economySvc, appearanceSvc, encounterSvc, encounterParticipantSvc, trashSvc)
+	entityImageSvc := service.NewEntityImageService(repository.NewEntityImageRepository(db), cfg.UploadsRoot)
+
+	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, looseNoteSvc, loreSvc, timelineSvc, secretSvc, economySvc, appearanceSvc, encounterSvc, encounterParticipantSvc, trashSvc, entityImageSvc)
 
 	return handlers.RequestLogger(handlers.NewRouter(h)), db, nil
 }

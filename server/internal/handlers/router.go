@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -170,6 +171,19 @@ func NewRouter(h *Handlers) http.Handler {
 
 	mux.Handle("GET /api/campaigns/{id}/trash", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListTrash)))
 	mux.Handle("POST /api/campaigns/{id}/trash/{kind}/{itemId}/restore", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.RestoreTrashItem)))
+
+	h.registerImageRoutes(mux, "items", "items", func(ctx context.Context, id int64) (any, error) {
+		return h.economy.GetItem(ctx, id)
+	})
+	h.registerImageRoutes(mux, "arcs", "arcs", func(ctx context.Context, id int64) (any, error) {
+		return h.arcs.GetByID(ctx, id)
+	})
+	h.registerImageRoutes(mux, "lore", "lore_entries", func(ctx context.Context, id int64) (any, error) {
+		return h.lore.GetEntry(ctx, id)
+	})
+	h.registerImageRoutes(mux, "quests", "quests", func(ctx context.Context, id int64) (any, error) {
+		return h.quests.GetByID(ctx, id)
+	})
 
 	mux.Handle("POST /api/campaigns/{id}/reindex", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.Reindex)))
 	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.requireCampaign(resolveCampaignIDFromQuery, h.ListVaultDirs)))
