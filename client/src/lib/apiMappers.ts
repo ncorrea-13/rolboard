@@ -356,6 +356,7 @@ export interface ApiPlayerCharacter {
   race: string;
   class: string;
   status: string;
+  description: string;
   backstory: string;
   progression_notes: string;
   attributes?: StatMap;
@@ -377,6 +378,7 @@ export function mapPlayerCharacter(p: ApiPlayerCharacter): PlayerCharacter {
     race: p.race,
     class: p.class,
     status: apiStatusToStatusKind[p.status] ?? "alive",
+    description: p.description,
     backstory: p.backstory,
     progressionNotes: p.progression_notes,
     obsidianPath: p.obsidian_path ?? "",
@@ -402,6 +404,7 @@ export function playerCharacterToApiPayload(p: PlayerCharacter) {
     race: p.race,
     class: p.class,
     status: pcStatusToApi(p.status),
+    description: p.description,
     backstory: p.backstory,
     progression_notes: p.progressionNotes,
     attributes: p.attributes,
@@ -537,3 +540,4 @@ export function sessionToApiPayload(s: Session) {
     obsidian_path: s.obsidianPath || undefined,
   };
 }
+

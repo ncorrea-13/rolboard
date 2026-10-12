@@ -84,6 +84,7 @@ const blankPlayerDraft: PlayerCharacter = {
   race: "",
   class: "",
   status: "alive",
+  description: "",
   backstory: "",
   progressionNotes: "",
   obsidianPath: "",

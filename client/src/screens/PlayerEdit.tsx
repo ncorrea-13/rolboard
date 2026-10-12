@@ -41,6 +41,7 @@ export function PlayerEdit({
   const [race, setRace] = useState(player.race);
   const [charClass, setCharClass] = useState(player.class);
   const [status, setStatus] = useState<StatusKind>(player.status);
+  const [description, setDescription] = useState(player.description);
   const [backstory, setBackstory] = useState(player.backstory);
   const [progressionNotes, setProgressionNotes] = useState(
     player.progressionNotes,
@@ -58,6 +59,7 @@ export function PlayerEdit({
     race !== player.race ||
     charClass !== player.class ||
     status !== player.status ||
+    description !== player.description ||
     backstory !== player.backstory ||
     progressionNotes !== player.progressionNotes ||
     JSON.stringify(attributes) !== JSON.stringify(player.attributes) ||
@@ -73,6 +75,7 @@ export function PlayerEdit({
         race,
         class: charClass,
         status,
+        description,
         backstory,
         progressionNotes,
         attributes,
@@ -84,7 +87,9 @@ export function PlayerEdit({
     );
   }
 
-  const missingRace = race.trim() === "";
+  const [raceTouched, setRaceTouched] = useState(false);
+  const showMissingRace =
+    race.trim() === "" && (raceTouched || player.id !== "");
 
   return (
     <div className="card npc-edit">
@@ -168,7 +173,20 @@ export function PlayerEdit({
                 className="npc-edit__input"
                 value={race}
                 onChange={(e) => setRace(e.target.value)}
+                onBlur={() => setRaceTouched(true)}
               />
+              {showMissingRace && (
+                <span
+                  style={{
+                    display: "block",
+                    marginTop: 4,
+                    fontSize: 12,
+                    color: "var(--text-secondary)",
+                  }}
+                >
+                  {t("playerEdit.missingRace")}
+                </span>
+              )}
             </div>
             <div>
               <span className="label">{t("playerEdit.class")}</span>
@@ -180,16 +198,11 @@ export function PlayerEdit({
             </div>
           </div>
 
-          <div>
-            <span className="label">
-              {t("playerDetail.backstory")} {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              value={backstory}
-              onChange={(e) => setBackstory(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={`${t("common.description")} ${t("common.supportsMarkdown")}`}
+            value={description}
+            onChange={setDescription}
+          />
 
           <MarkdownField
             label={`${t("playerDetail.backstory")} ${t("common.supportsMarkdown")}`}
@@ -275,16 +288,6 @@ export function PlayerEdit({
               >
                 {player.obsidianPath}
               </div>
-            </div>
-          )}
-          {(status === "dead" || missingRace) && (
-            <div className="callout callout-warning">
-              <p className="callout-title">
-                {status === "dead"
-                  ? t("playerEdit.markedDead")
-                  : t("playerEdit.missingRace")}
-              </p>
-              <p>{t("npcEdit.warningBody")}</p>
             </div>
           )}
         </div>

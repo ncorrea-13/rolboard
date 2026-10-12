@@ -221,6 +221,11 @@ const dict = {
     "playerDetail.backstory": "Trasfondo",
     "playerDetail.viewFullBackstory": "Ver historia completa",
     "playerDetail.progressionNotes": "Notas de progresión",
+    "playerDetail.tabSummary": "Resumen",
+    "playerDetail.tabHistory": "Historia",
+    "playerDetail.tabProgression": "Progresión",
+    "playerDetail.tabSheet": "Ficha",
+    "playerDetail.emptyDescription": "Sin descripción todavía.",
     "playerDetail.viewProgression": "Ver avances",
     "playerDetail.historyTitlePrefix": "Historia",
     "playerDetail.progressTitlePrefix": "Avances",
@@ -285,10 +290,7 @@ const dict = {
     "npcEdit.linkRolePlaceholder": "Rol (ej. VINCULADO)",
     "npcEdit.noLink": "— sin vínculo —",
     "npcEdit.noLocation": "— sin ubicación —",
-    "npcEdit.markedDead": "NPC marcado como muerto",
     "npcEdit.missingOrigin": "Falta la ubicación de origen",
-    "npcEdit.warningBody":
-      "Puedes guardar de todos modos; el campo queda marcado como incompleto en la ficha.",
 
     "playerEdit.new": "Nuevo personaje",
     "playerEdit.characterName": "Nombre del personaje",
@@ -297,7 +299,6 @@ const dict = {
     "playerEdit.class": "Clase",
     "playerEdit.currentHp": "HP actual",
     "playerEdit.maxHp": "HP máximo",
-    "playerEdit.markedDead": "Personaje marcado como muerto",
     "playerEdit.missingRace": "Falta definir la especie",
 
     "questEdit.new": "Nueva quest",
@@ -668,6 +669,11 @@ const dict = {
     "playerDetail.backstory": "Backstory",
     "playerDetail.viewFullBackstory": "View full backstory",
     "playerDetail.progressionNotes": "Progression notes",
+    "playerDetail.tabSummary": "Summary",
+    "playerDetail.tabHistory": "Backstory",
+    "playerDetail.tabProgression": "Progression",
+    "playerDetail.tabSheet": "Sheet",
+    "playerDetail.emptyDescription": "No description yet.",
     "playerDetail.viewProgression": "View progression",
     "playerDetail.historyTitlePrefix": "Backstory",
     "playerDetail.progressTitlePrefix": "Progress",
@@ -732,10 +738,7 @@ const dict = {
     "npcEdit.linkRolePlaceholder": "Role (e.g. LINKED)",
     "npcEdit.noLink": "— no link —",
     "npcEdit.noLocation": "— no location —",
-    "npcEdit.markedDead": "NPC marked as dead",
     "npcEdit.missingOrigin": "Missing origin location",
-    "npcEdit.warningBody":
-      "You can still save; the field is flagged as incomplete on the sheet.",
 
     "playerEdit.new": "New character",
     "playerEdit.characterName": "Character name",
@@ -744,7 +747,6 @@ const dict = {
     "playerEdit.class": "Class",
     "playerEdit.currentHp": "Current HP",
     "playerEdit.maxHp": "Max HP",
-    "playerEdit.markedDead": "Character marked as dead",
     "playerEdit.missingRace": "Species not set",
 
     "questEdit.new": "New quest",

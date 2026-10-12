@@ -10,6 +10,24 @@ import { apiFetch } from "../lib/api";
 import { entityImageUrl } from "../lib/images";
 import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
+import { Tabs } from "../components/Tabs";
+
+type PlayerTab = "summary" | "history" | "progression" | "sheet";
+const TAB_STORAGE_KEY = "rolboard.playerDetailTab";
+
+function readStoredTab(): PlayerTab | null {
+  try {
+    const v = localStorage.getItem(TAB_STORAGE_KEY);
+    return v === "summary" ||
+      v === "history" ||
+      v === "progression" ||
+      v === "sheet"
+      ? v
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 interface PlayerDetailProps {
   player: PlayerCharacter;
@@ -31,7 +49,7 @@ export function PlayerDetail({
   imageVersion = 0,
 }: PlayerDetailProps) {
   const t = useT();
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [tab, setTab] = useState<PlayerTab>(() => readStoredTab() ?? "summary");
   const [noteOpen, setNoteOpen] = useState<{
     title: string;
     fallback: string;
@@ -47,6 +65,30 @@ export function PlayerDetail({
     )
       .then((res) => setNoteHtml(res.html))
       .catch(() => setNoteHtml(null));
+  }
+
+  const hasSheet =
+    Object.keys(player.attributes).length > 0 ||
+    Object.keys(player.skills).length > 0 ||
+    player.currentHp != null ||
+    player.maxHp != null;
+  const tabs: { key: PlayerTab; label: string }[] = [
+    { key: "summary", label: t("playerDetail.tabSummary") },
+  ];
+  if (player.backstory || player.historiaPath)
+    tabs.push({ key: "history", label: t("playerDetail.tabHistory") });
+  if (player.progressionNotes || player.avancesPath)
+    tabs.push({ key: "progression", label: t("playerDetail.tabProgression") });
+  if (hasSheet) tabs.push({ key: "sheet", label: t("playerDetail.tabSheet") });
+  const activeTab = tabs.some((x) => x.key === tab) ? tab : "summary";
+
+  function selectTab(next: PlayerTab) {
+    setTab(next);
+    try {
+      localStorage.setItem(TAB_STORAGE_KEY, next);
+    } catch {
+      return;
+    }
   }
 
   return (
@@ -107,12 +149,6 @@ export function PlayerDetail({
                 </button>
               </>
             )}
-            <button
-              className="btn btn-secondary"
-              onClick={() => setSheetOpen(true)}
-            >
-              {t("npcDetail.viewSheet")}
-            </button>
             <button className="btn btn-primary" onClick={onEdit}>
               {t("common.edit")}
             </button>
@@ -122,60 +158,74 @@ export function PlayerDetail({
 
       <div className="npc-detail__body">
         <div className="npc-detail__col npc-detail__col--main">
-          {(player.historiaPath || player.avancesPath) && (
-            <div className="npc-detail__header-actions">
-              {player.historiaPath && (
-                <button
-                  className="btn btn-secondary"
-                  onClick={() =>
-                    openNote(
-                      player.historiaPath,
-                      `${t("playerDetail.historyTitlePrefix")} — ${player.characterName}`,
-                      player.backstory,
-                    )
-                  }
-                >
-                  {t("playerDetail.viewFullBackstory")}
-                </button>
-              )}
-              {player.avancesPath && (
-                <button
-                  className="btn btn-secondary"
-                  onClick={() =>
-                    openNote(
-                      player.avancesPath,
-                      `${t("playerDetail.progressTitlePrefix")} — ${player.characterName}`,
-                      player.progressionNotes,
-                    )
-                  }
-                >
-                  {t("playerDetail.viewProgression")}
-                </button>
-              )}
-            </div>
+          {tabs.length > 1 && (
+            <Tabs tabs={tabs} active={activeTab} onChange={selectTab} />
           )}
-          {player.backstory && (
+          {activeTab === "summary" &&
+            (player.description ? (
+              <MarkdownText
+                className="npc-detail__desc"
+                text={player.description}
+              />
+            ) : (
+              <span style={{ color: "var(--text-secondary)" }}>
+                {t("playerDetail.emptyDescription")}
+              </span>
+            ))}
+          {activeTab === "history" && (
             <>
-              <span className="label">{t("playerDetail.backstory")}</span>
+              {player.historiaPath && (
+                <div className="npc-detail__header-actions">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() =>
+                      openNote(
+                        player.historiaPath,
+                        `${t("playerDetail.historyTitlePrefix")} — ${player.characterName}`,
+                        player.backstory,
+                      )
+                    }
+                  >
+                    {t("playerDetail.viewFullBackstory")}
+                  </button>
+                </div>
+              )}
               <MarkdownText
                 className="npc-detail__desc"
                 text={player.backstory}
               />
             </>
           )}
-          {player.progressionNotes && (
+          {activeTab === "progression" && (
             <>
-              <span
-                className="label"
-                style={{ marginTop: 21, display: "block" }}
-              >
-                {t("playerDetail.progressionNotes")}
-              </span>
+              {player.avancesPath && (
+                <div className="npc-detail__header-actions">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() =>
+                      openNote(
+                        player.avancesPath,
+                        `${t("playerDetail.progressTitlePrefix")} — ${player.characterName}`,
+                        player.progressionNotes,
+                      )
+                    }
+                  >
+                    {t("playerDetail.viewProgression")}
+                  </button>
+                </div>
+              )}
               <MarkdownText
                 className="npc-detail__desc"
                 text={player.progressionNotes}
               />
             </>
+          )}
+          {activeTab === "sheet" && (
+            <CharacterSheet
+              attributes={player.attributes}
+              skills={player.skills}
+              hp={{ current: player.currentHp, max: player.maxHp }}
+            />
           )}
         </div>
 
@@ -237,20 +287,6 @@ export function PlayerDetail({
               text={noteOpen.fallback}
             />
           )}
-        </Modal>
-      )}
-
-      {sheetOpen && (
-        <Modal
-          title={`${t("npcDetail.sheetPrefix")} · ${player.characterName}`}
-          onClose={() => setSheetOpen(false)}
-          size="sheet"
-        >
-          <CharacterSheet
-            attributes={player.attributes}
-            skills={player.skills}
-            hp={{ current: player.currentHp, max: player.maxHp }}
-          />
         </Modal>
       )}
     </div>

@@ -293,6 +293,7 @@ export interface PlayerCharacter {
   race: string;
   class: string;
   status: StatusKind;
+  description: string;
   backstory: string;
   progressionNotes: string;
   obsidianPath: string;
@@ -402,3 +403,4 @@ export interface EncounterParticipant {
   attributes: StatMap;
   skills: StatMap;
 }
+
