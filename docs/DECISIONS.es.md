@@ -73,6 +73,13 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - **El cliente traduce los errores de la API, no el servidor.** El texto de `http.Error` está en inglés y es para los logs; solo los errores sobre los que el usuario puede actuar llevan un `code` que la UI mapea al idioma de la app. El resto muestra un mensaje genérico según el estado.
 - **Las confirmaciones usan un diálogo propio**, no el `confirm()` del navegador: respeta el estilo y el idioma de la app y funciona en los webviews de escritorio y Android.
 
+## Lore
+
+- **Por campaña, no compartido.** No hay entidad "mundo": rompería el aislamiento por campaña (auth, vault, reindex, papelera).
+- **Las categorías son datos, no un enum**, mismo patrón que `npc_types`: cada campaña tiene las suyas, sembradas al crearla. Una entrada puede no tener categoría.
+- **Una categoría usada por cualquier entrada no se puede borrar** (`409`), contando también las entradas dadas de baja, para que restaurar nunca apunte a una categoría inexistente.
+- **Borrar un arco o una locación no se bloquea por entradas de lore.** El vínculo es opcional y la entrada simplemente deja de mostrarlo.
+
 ## Tracker de combate
 
 - Vista de control del DM, en lista. Sin mapa.

@@ -64,6 +64,9 @@ func (r *CampaignRepository) Create(ctx context.Context, c *models.Campaign) err
 	if err := seedDefaultNPCTypes(ctx, tx, c.ID); err != nil {
 		return err
 	}
+	if err := seedDefaultLoreCategories(ctx, tx, c.ID); err != nil {
+		return err
+	}
 	return tx.Commit()
 }
 

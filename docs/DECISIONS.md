@@ -73,6 +73,13 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - **API errors are translated by the client, not the server.** The server's `http.Error` text is English and meant for logs; only errors the user can act on carry a `code` the UI maps to the app language. Everything else shows a generic message by status.
 - **Confirmations use an in-app dialog**, not the browser's `confirm()`: it follows the app's look and language and works in the desktop and Android webviews.
 
+## Lore
+
+- **Per campaign, not shared.** No "world" entity: it would break the per-campaign isolation (auth, vault, reindex, trash).
+- **Categories are data, not an enum**, same pattern as `npc_types`: each campaign has its own, seeded on creation. An entry may have no category.
+- **A category used by any entry can't be deleted** (`409`), counting soft-deleted entries too, so a restore never points at a missing category.
+- **Deleting an arc or location doesn't block on lore entries.** The link is optional and the entry simply stops showing it.
+
 ## Combat tracker
 
 - A DM control view, list-based. No map.

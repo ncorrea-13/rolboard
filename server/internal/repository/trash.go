@@ -32,6 +32,7 @@ var trashSpecs = []trashSpec{
 	{kind: "group", table: "groups", label: "name"},
 	{kind: "quest", table: "quests", label: "title"},
 	{kind: "loose_note", table: "notes", label: "title"},
+	{kind: "lore_entry", table: "lore_entries", label: "title"},
 	{kind: "encounter", table: "encounters", label: "name"},
 }
 

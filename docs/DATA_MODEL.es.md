@@ -159,6 +159,18 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 
 Sin `obsidian_path`: las quests viven solo en la DB.
 
+### lore_categories / lore_entries
+
+Lore por campaña. Las categorías siguen el patrón de `npc_types` (`key` derivada del label, `color`, `position`) y se siembran al crear la campaña (la migración 0026 siembra las existentes).
+
+| Campo (`lore_entries`) | Notas |
+| ---------------------- | ----- |
+| title                  | obligatorio |
+| body                   | Markdown |
+| category_id            | opcional; una categoría referenciada por alguna entrada (aun borrada) no se puede borrar |
+| arc_id, location_id    | opcionales, `ON DELETE RESTRICT` |
+| obsidian_path          | reservado para una carpeta `Lore/` del vault a futuro |
+
 ### notes
 
 Notas sueltas (`LooseNote` en el código, para no chocar con las notas del vault). Solo dashboard.

@@ -159,6 +159,18 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 
 No `obsidian_path`: quests live only in the DB.
 
+### lore_categories / lore_entries
+
+Per-campaign lore. Categories follow the `npc_types` pattern (`key` derived from the label, `color`, `position`) and are seeded on campaign creation (migration 0026 seeds existing campaigns).
+
+| Field (`lore_entries`) | Notes |
+| ---------------------- | ----- |
+| title                  | required |
+| body                   | Markdown |
+| category_id            | optional; a category referenced by any entry (even a deleted one) can't be deleted |
+| arc_id, location_id    | optional, `ON DELETE RESTRICT` |
+| obsidian_path          | reserved for a future `Lore/` folder in the vault |
+
 ### notes
 
 Loose notes (`LooseNote` in the code, to avoid clashing with vault notes). Dashboard only.

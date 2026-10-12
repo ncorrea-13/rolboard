@@ -218,6 +218,23 @@ DELETE /api/loose-notes/{id}
 
 Body: `title` (obligatorio), `body`, `pending`. Viven en la tabla `notes`; la ruta es `loose-notes` para no chocar con `notes/render` (notas del vault). El listado devuelve primero las pendientes y luego por `updated_at` descendente.
 
+### Lore
+
+```
+GET    /api/campaigns/{id}/lore-categories
+POST   /api/campaigns/{id}/lore-categories      {"label": "...", "color": "#rrggbb"}
+PUT    /api/lore-categories/{id}                {"label": "...", "color": "#rrggbb"}
+DELETE /api/lore-categories/{id}                409 si alguna entrada la usa
+
+GET    /api/campaigns/{id}/lore
+POST   /api/campaigns/{id}/lore
+GET    /api/lore/{id}
+PUT    /api/lore/{id}
+DELETE /api/lore/{id}
+```
+
+Body de una entrada: `title` (obligatorio), `body`, `category_id`, `arc_id`, `location_id` (todos opcionales; deben ser de la misma campaña). Una campaña nueva se siembra con categorías base (Historia, Geografía, Religión, Magia, Cultura).
+
 ## Encounters (tracker de combate)
 
 ```

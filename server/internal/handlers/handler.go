@@ -40,6 +40,7 @@ type Handlers struct {
 	dashboard             *service.DashboardService
 	notes                 *service.NotesService
 	looseNotes            *service.LooseNoteService
+	lore                  *service.LoreService
 	encounters            *service.EncounterService
 	encounterParticipants *service.EncounterParticipantService
 	trash                 *service.TrashService
@@ -65,6 +66,7 @@ func NewHandlers(
 	dashboard *service.DashboardService,
 	notes *service.NotesService,
 	looseNotes *service.LooseNoteService,
+	lore *service.LoreService,
 	encounters *service.EncounterService,
 	encounterParticipants *service.EncounterParticipantService,
 	trash *service.TrashService,
@@ -89,6 +91,7 @@ func NewHandlers(
 		dashboard:             dashboard,
 		notes:                 notes,
 		looseNotes:            looseNotes,
+		lore:                  lore,
 		encounters:            encounters,
 		encounterParticipants: encounterParticipants,
 		trash:                 trash,
