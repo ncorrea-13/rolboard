@@ -243,6 +243,15 @@ DELETE /api/lore/{id}
 
 Entry body: `title` (required), `body`, `category_id`, `arc_id`, `location_id` (all optional; they must belong to the same campaign). A new campaign is seeded with default categories (Historia, Geografía, Religión, Magia, Cultura).
 
+### Appearances
+
+```
+GET /api/npcs/{id}/appearances               {sessions, quests, encounters, secrets}
+GET /api/player-characters/{id}/appearances  {sessions, quests, encounters, secrets}
+```
+
+Where an NPC or a player character shows up: sessions (via `session_npcs` / `session_pcs`), quests with the NPC's role, encounters and secrets (about it or known by it). Deleted records are not listed; `quests` and `secrets` are always empty for a player character.
+
 ### Items and economy
 
 ```

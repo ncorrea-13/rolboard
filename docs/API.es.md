@@ -243,6 +243,15 @@ DELETE /api/lore/{id}
 
 Body de una entrada: `title` (obligatorio), `body`, `category_id`, `arc_id`, `location_id` (todos opcionales; deben ser de la misma campaña). Una campaña nueva se siembra con categorías base (Historia, Geografía, Religión, Magia, Cultura).
 
+### Apariciones
+
+```
+GET /api/npcs/{id}/appearances               {sessions, quests, encounters, secrets}
+GET /api/player-characters/{id}/appearances  {sessions, quests, encounters, secrets}
+```
+
+Dónde aparece un NPC o un personaje jugador: sesiones (por `session_npcs` / `session_pcs`), quests con el rol del NPC, encuentros y secretos (sobre él o que él conoce). Los registros dados de baja no se listan; `quests` y `secrets` siempre vienen vacíos para un personaje jugador.
+
 ### Objetos y economía
 
 ```

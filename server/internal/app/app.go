@@ -85,9 +85,11 @@ func New(cfg Config) (http.Handler, io.Closer, error) {
 		repository.NewShopRepository(db),
 	)
 
+	appearanceSvc := service.NewAppearanceService(repository.NewAppearanceRepository(db))
+
 	trashSvc := service.NewTrashService(repository.NewTrashRepository(db))
 
-	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, looseNoteSvc, loreSvc, timelineSvc, secretSvc, economySvc, encounterSvc, encounterParticipantSvc, trashSvc)
+	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, looseNoteSvc, loreSvc, timelineSvc, secretSvc, economySvc, appearanceSvc, encounterSvc, encounterParticipantSvc, trashSvc)
 
 	return handlers.RequestLogger(handlers.NewRouter(h)), db, nil
 }

@@ -89,6 +89,8 @@ func NewRouter(h *Handlers) http.Handler {
 	mux.Handle("GET /api/sessions/{id}/npcs", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("sessions"), h.ListSessionNpcs)))
 	mux.Handle("POST /api/sessions/{id}/npcs", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("sessions"), h.AddSessionNpc)))
 	mux.Handle("DELETE /api/sessions/{id}/npcs/{npcId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("sessions"), h.RemoveSessionNpc)))
+	mux.Handle("GET /api/npcs/{id}/appearances", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.NPCAppearances())))
+	mux.Handle("GET /api/player-characters/{id}/appearances", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), h.PCAppearances())))
 	mux.Handle("GET /api/campaigns/{id}/currencies", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListCurrencies)))
 	mux.Handle("POST /api/campaigns/{id}/currencies", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateCurrency)))
 	mux.Handle("PUT /api/currencies/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("currencies"), h.UpdateCurrency)))
