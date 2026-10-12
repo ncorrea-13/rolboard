@@ -22,9 +22,23 @@
 
 ---
 
-App web, de escritorio y de Android para dirigir campañas de rol de mesa, enfocada en la narrativa: sesiones, arcos, jugadores, NPCs, locaciones, facciones y quests, más un tracker de combate liviano. No trae reglas: no hay tiradas ni stats; es un lugar para la historia, no un VTT. Pensado para quien dirige: los jugadores no tienen cuenta.
+App web, de escritorio y de Android para dirigir campañas de rol de mesa, enfocada en la narrativa: sesiones, arcos, jugadores, NPCs, locaciones, facciones y quests, más un tracker de combate liviano. No trae reglas: no hay tiradas ni stats; es un lugar para la historia, no un VTT. Pensado para quien dirige.
 
 Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gestión más rápida con lo que incluye un indexador del frontmatter para poder traer esta información y poder convivir con la vault. Mantiene la estructura del vault y permite navegar hacia él. Cada campaña guarda su `vault_path`, una subcarpeta dentro de `VAULTS_ROOT`. [`vault-template/`](vault-template/) tiene una estructura de vault que el indexador reconoce sin tocar código.
+
+## Funcionalidades
+
+- **Historia:** arcos y subarcos con progreso, sesiones en una línea de tiempo por arco, oneshots sueltos y un flujo planificada → jugada con notas de preparación y resumen.
+- **Elenco y mundo:** NPCs y personajes de jugadores con ficha, HP, inventario y relaciones; un árbol de locaciones con tiendas; facciones; tipos de NPC y categorías de lore por campaña.
+- **Quests, secretos y notas:** quests con estado y prioridad, secretos con quién los conoce, notas sueltas para archivar después y wardails para temas sensibles.
+- **Lore y línea de tiempo:** entradas de lore con categorías y varias líneas de tiempo con fechas libres.
+- **Economía:** catálogo de objetos, monedas con una moneda base e inventarios de NPCs, jugadores y tiendas.
+- **Tracker de combate:** fases rápido / lento, iniciativa, HP con daño y curación, rondas y "a quién le toca".
+- **Búsqueda:** una paleta para toda la campaña (`Ctrl` + `K`).
+- **Imágenes:** una imagen por NPC, jugador, locación, facción, objeto, arco, entrada de lore y quest.
+- **Obsidian:** indexador de frontmatter, enlaces para abrir en Obsidian y notas renderizadas.
+- **Red de seguridad:** una papelera con restauración, y Markdown con avisos al estilo Obsidian y tablas.
+- **En todos lados:** español e inglés, y una ayuda de varias páginas dentro de la app que se adapta a la versión de servidor, de escritorio o de Android.
 
 ## Stack
 
