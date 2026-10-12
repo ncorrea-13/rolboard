@@ -40,6 +40,7 @@ export function MarkdownField({
         </button>
       </div>
       <textarea
+        aria-label={label}
         className="npc-edit__textarea"
         style={style}
         placeholder={placeholder}
@@ -50,6 +51,7 @@ export function MarkdownField({
       {open && (
         <Modal title={label} size="full" onClose={() => setOpen(false)}>
           <textarea
+            aria-label={label}
             className="npc-edit__textarea md-field__full"
             placeholder={placeholder}
             maxLength={maxLength}
