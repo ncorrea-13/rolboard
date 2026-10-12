@@ -206,6 +206,14 @@ DELETE /api/quests/{id}
 
 Body: `title`, `description`, `status` (`active` | `completed` | `failed` | `on_hold`), `priority`, `notes`.
 
+```
+GET    /api/quests/{id}/npcs
+PUT    /api/quests/{id}/npcs/{npcId}      {"role": "..."}   idempotent link / change of role
+DELETE /api/quests/{id}/npcs/{npcId}
+```
+
+`role` is free text (up to 60 characters, may be empty). The NPC must belong to the same campaign (`400` otherwise); deleted NPCs are not listed.
+
 ### Loose notes
 
 ```

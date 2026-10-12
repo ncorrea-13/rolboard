@@ -77,6 +77,9 @@ func NewRouter(h *Handlers) http.Handler {
 	mux.Handle("GET /api/quests/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.GetQuest)))
 	mux.Handle("PUT /api/quests/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.UpdateQuest)))
 	mux.Handle("DELETE /api/quests/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.DeleteQuest)))
+	mux.Handle("GET /api/quests/{id}/npcs", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.ListQuestNpcs)))
+	mux.Handle("PUT /api/quests/{id}/npcs/{npcId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.SetQuestNpc)))
+	mux.Handle("DELETE /api/quests/{id}/npcs/{npcId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.RemoveQuestNpc)))
 
 	mux.Handle("GET /api/campaigns/{id}/sessions", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListSessions)))
 	mux.Handle("POST /api/campaigns/{id}/sessions", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateSession)))

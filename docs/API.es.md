@@ -206,6 +206,14 @@ DELETE /api/quests/{id}
 
 Body: `title`, `description`, `status` (`active` | `completed` | `failed` | `on_hold`), `priority`, `notes`.
 
+```
+GET    /api/quests/{id}/npcs
+PUT    /api/quests/{id}/npcs/{npcId}      {"role": "..."}   vincula o cambia el rol (idempotente)
+DELETE /api/quests/{id}/npcs/{npcId}
+```
+
+`role` es texto libre (hasta 60 caracteres, puede ir vacío). El NPC debe ser de la misma campaña (`400` si no); los NPCs dados de baja no se listan.
+
 ### Notas sueltas
 
 ```

@@ -109,3 +109,42 @@ func (r *QuestRepository) Delete(ctx context.Context, id int64) error {
 	}
 	return err
 }
+
+func (r *QuestRepository) ListNpcs(ctx context.Context, questID int64) ([]models.QuestNpc, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT n.id, n.name, COALESCE(qn.role, '')
+		FROM quest_npcs qn
+		JOIN npcs n ON n.id = qn.npc_id AND n.deleted_at IS NULL
+		WHERE qn.quest_id = ?
+		ORDER BY n.name`,
+		questID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	npcs := []models.QuestNpc{}
+	for rows.Next() {
+		var n models.QuestNpc
+		if err := rows.Scan(&n.NPCID, &n.Name, &n.Role); err != nil {
+			return nil, err
+		}
+		npcs = append(npcs, n)
+	}
+	return npcs, rows.Err()
+}
+
+func (r *QuestRepository) SetNpc(ctx context.Context, questID, npcID int64, role string) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO quest_npcs (quest_id, npc_id, role) VALUES (?, ?, ?)
+		ON CONFLICT (quest_id, npc_id) DO UPDATE SET role = excluded.role`,
+		questID, npcID, nullIfEmpty(role),
+	)
+	return err
+}
+
+func (r *QuestRepository) RemoveNpc(ctx context.Context, questID, npcID int64) error {
+	_, err := r.db.ExecContext(ctx, `DELETE FROM quest_npcs WHERE quest_id = ? AND npc_id = ?`, questID, npcID)
+	return err
+}

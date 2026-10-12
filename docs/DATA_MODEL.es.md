@@ -27,7 +27,7 @@ npc_relations   npc → npc          (role, dirigida)
 session_npcs    session ↔ npc
 session_pcs     session ↔ pc
 session_quests  session ↔ quest
-quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
+quest_npcs      quest ↔ npc        (rol)
 ```
 
 ## Convenciones
@@ -250,7 +250,7 @@ npc_relations  (from_npc_id, to_npc_id, role)              PK (from_npc_id, to_n
 session_npcs   (session_id, npc_id)                        PK (session_id, npc_id)
 session_pcs    (session_id, pc_id)                         PK (session_id, pc_id)
 session_quests (session_id, quest_id)                      PK (session_id, quest_id)
-quest_npcs     (quest_id, npc_id)                          PK (quest_id, npc_id)
+quest_npcs     (quest_id, npc_id, role)                    PK (quest_id, npc_id)
 ```
 
 `source` (`npc_groups`, `pc_groups`): `vault` | `dashboard` (default) | `removed`.

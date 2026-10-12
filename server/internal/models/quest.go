@@ -11,3 +11,9 @@ type Quest struct {
 	CreatedAt   string `json:"created_at"`
 	UpdatedAt   string `json:"updated_at"`
 }
+
+type QuestNpc struct {
+	NPCID int64  `json:"npc_id"`
+	Name  string `json:"name"`
+	Role  string `json:"role"`
+}
