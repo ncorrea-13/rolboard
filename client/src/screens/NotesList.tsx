@@ -9,9 +9,14 @@ import { Link } from "../components/Link";
 interface NotesListProps {
   notes: LooseNote[];
   onCreate: () => void;
+  onTogglePending: (note: LooseNote) => void;
 }
 
-export function NotesList({ notes, onCreate }: NotesListProps) {
+export function NotesList({
+  notes,
+  onCreate,
+  onTogglePending,
+}: NotesListProps) {
   const t = useT();
   const [search, setSearch] = useState("");
   const [onlyPending, setOnlyPending] = useState(false);
@@ -29,7 +34,7 @@ export function NotesList({ notes, onCreate }: NotesListProps) {
     <div className="card list-page">
       <div className="list-page__header">
         <div>
-          <div className="display" style={{ fontSize: 21 }}>
+          <div className="display page-title" role="heading" aria-level={1}>
             {t("notesList.title")}
           </div>
           <span className="list-page__count">
@@ -71,33 +76,46 @@ export function NotesList({ notes, onCreate }: NotesListProps) {
             {t("notesList.empty")}
           </span>
         )}
-        {filtered.map((n) => (
-          <Link
-            key={n.id}
-            className="list-page__row list-page__row--clickable"
-            route={{ name: "note-detail", noteId: n.id }}
-          >
-            <div className="list-page__row-main">
-              <span className="list-page__row-title">{n.title}</span>
-              {n.body && (
-                <div
-                  className="list-page__row-sub list-page__row-sub--clamp-1"
-                  style={{ marginTop: 6 }}
-                >
-                  <MarkdownText inline text={n.body} />
+        {[...filtered]
+          .sort((a, b) => Number(b.pending) - Number(a.pending))
+          .map((n) => (
+            <div
+              key={n.id}
+              className={`list-page__row list-page__row--clickable${n.pending ? " note-row--pending" : ""}`}
+            >
+              <Link
+                className="note-row__link"
+                route={{ name: "note-detail", noteId: n.id }}
+              >
+                <div className="list-page__row-main">
+                  <span className="list-page__row-title">
+                    {n.pending && (
+                      <span className="note-pin" aria-hidden="true" />
+                    )}
+                    {n.title}
+                  </span>
+                  {n.body && (
+                    <div
+                      className="list-page__row-sub list-page__row-sub--clamp-1"
+                      style={{ marginTop: 6 }}
+                    >
+                      <MarkdownText inline text={n.body} />
+                    </div>
+                  )}
                 </div>
-              )}
+                <span className="list-page__count">
+                  {formatDate(n.updatedAt.slice(0, 10))}
+                </span>
+              </Link>
+              <button
+                type="button"
+                className="note-row__toggle"
+                onClick={() => onTogglePending(n)}
+              >
+                {t(n.pending ? "notesList.file" : "notesList.markPending")}
+              </button>
             </div>
-            {n.pending && (
-              <span className="npc-detail__appearance-chip">
-                {t("notesList.pendingChip")}
-              </span>
-            )}
-            <span className="list-page__count">
-              {formatDate(n.updatedAt.slice(0, 10))}
-            </span>
-          </Link>
-        ))}
+          ))}
       </div>
     </div>
   );

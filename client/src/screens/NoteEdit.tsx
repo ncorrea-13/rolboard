@@ -24,13 +24,7 @@ export function NoteEdit({ note, onSave, onDiscard }: NoteEditProps) {
       <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {note.id
               ? `${t("common.editing")} · ${note.title}`
               : t("noteEdit.new")}
@@ -64,6 +58,7 @@ export function NoteEdit({ note, onSave, onDiscard }: NoteEditProps) {
           <div>
             <span className="label">{t("noteEdit.title")}</span>
             <input
+              aria-label={t("noteEdit.title")}
               className="npc-edit__input"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
