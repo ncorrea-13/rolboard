@@ -463,3 +463,23 @@ export interface TimelineEvent {
   loreEntryId?: string;
 }
 
+export type SecretStatus = "hidden" | "revealed";
+
+export const secretTone: Record<SecretStatus, string> = {
+  hidden: "var(--accent-sun)",
+  revealed: "var(--status-alive)",
+};
+
+export interface Secret {
+  id: string;
+  campaignId: string;
+  title: string;
+  body: string;
+  status: SecretStatus;
+  revealedSessionId?: string;
+  npcId?: string;
+  locationId?: string;
+  loreEntryId?: string;
+  knownByNpcIds: string[];
+}
+

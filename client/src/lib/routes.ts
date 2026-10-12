@@ -18,6 +18,7 @@ const slugBySection: Record<DashboardSection, string> = {
   wardails: "wardails",
   notas: "notes",
   mundo: "world",
+  secretos: "secrets",
   papelera: "trash",
 };
 
@@ -83,6 +84,12 @@ function subPath(route: Route): string {
       return `/world/${route.entryId}/edit`;
     case "lore-create":
       return "/world/new";
+    case "secret-detail":
+      return `/secrets/${route.secretId}`;
+    case "secret-edit":
+      return `/secrets/${route.secretId}/edit`;
+    case "secret-create":
+      return "/secrets/new";
     case "faction-edit":
       return `/factions/${route.factionId}/edit`;
     case "faction-create":
@@ -145,6 +152,11 @@ function parseCampaignRoute(parts: string[]): Route | null {
       if (isNew) return { name: "arc-create" };
       if (edit) return { name: "arc-edit", arcId: id };
       break;
+    case "secretos":
+      if (isNew) return { name: "secret-create" };
+      return edit
+        ? { name: "secret-edit", secretId: id }
+        : { name: "secret-detail", secretId: id };
     case "mundo":
       if (isNew) return { name: "lore-create" };
       return edit

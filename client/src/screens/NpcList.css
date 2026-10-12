@@ -96,6 +96,10 @@
   grid-template-columns: 2.4fr 1fr 1.6fr;
 }
 
+.npc-list__row--secret {
+  grid-template-columns: 2.4fr 1fr 1.6fr 1.4fr;
+}
+
 .npc-list__lore-main {
   min-width: 0;
 }

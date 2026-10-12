@@ -17,6 +17,7 @@ import {
   type LooseNote,
   type LoreEntry,
   type Timeline,
+  type Secret,
   type TimelineEvent,
   type SessionType,
   type StatMap,
@@ -708,6 +709,51 @@ export function timelineEventToApiPayload(e: TimelineEventValues) {
     location_id: num(e.locationId),
     group_id: num(e.groupId),
     lore_entry_id: num(e.loreEntryId),
+  };
+}
+
+export interface ApiSecret {
+  id: number;
+  campaign_id: number;
+  title: string;
+  body: string;
+  status: string;
+  revealed_session_id?: number;
+  npc_id?: number;
+  location_id?: number;
+  lore_entry_id?: number;
+  known_by_npc_ids: number[] | null;
+}
+
+export function mapSecret(s: ApiSecret): Secret {
+  return {
+    id: String(s.id),
+    campaignId: String(s.campaign_id),
+    title: s.title,
+    body: s.body,
+    status: s.status === "revealed" ? "revealed" : "hidden",
+    revealedSessionId: optId(s.revealed_session_id),
+    npcId: optId(s.npc_id),
+    locationId: optId(s.location_id),
+    loreEntryId: optId(s.lore_entry_id),
+    knownByNpcIds: (s.known_by_npc_ids ?? []).map(String),
+  };
+}
+
+export type SecretValues = Omit<Secret, "id" | "campaignId">;
+
+export function secretToApiPayload(s: SecretValues) {
+  const num = (v?: string) => (v ? Number(v) : null);
+  return {
+    title: s.title,
+    body: s.body,
+    status: s.status,
+    revealed_session_id:
+      s.status === "revealed" ? num(s.revealedSessionId) : null,
+    npc_id: num(s.npcId),
+    location_id: num(s.locationId),
+    lore_entry_id: num(s.loreEntryId),
+    known_by_npc_ids: s.knownByNpcIds.map(Number),
   };
 }
 

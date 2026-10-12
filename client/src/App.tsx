@@ -48,6 +48,10 @@ import { LoreEdit } from "./screens/LoreEdit";
 import { useLore } from "./hooks/useLore";
 import { WorldSection } from "./screens/WorldSection";
 import { useTimeline } from "./hooks/useTimeline";
+import { SecretsList } from "./screens/SecretsList";
+import { SecretDetail } from "./screens/SecretDetail";
+import { SecretEdit } from "./screens/SecretEdit";
+import { useSecrets } from "./hooks/useSecrets";
 import { ArcsList } from "./screens/ArcsList";
 import { FactionsList } from "./screens/FactionsList";
 import { LocationsList } from "./screens/LocationsList";
@@ -65,7 +69,7 @@ import {
   LocationDetail,
   QuestDetail,
 } from "./screens/EntityDetails";
-import type { Campaign, LooseNote, LoreEntry } from "./data/domain";
+import type { Campaign, LooseNote, LoreEntry, Secret } from "./data/domain";
 import { entityKindSection } from "./data/entityForms";
 import {
   mapCampaign,
@@ -86,6 +90,15 @@ import { withViewTransition } from "./lib/motion";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 type HistoryMode = "push" | "replace" | "none";
+
+const blankSecret: Secret = {
+  id: "",
+  campaignId: "",
+  title: "",
+  body: "",
+  status: "hidden",
+  knownByNpcIds: [],
+};
 
 const blankLoreEntry: LoreEntry = {
   id: "",
@@ -338,6 +351,9 @@ export default function App() {
     deleteEvent: deleteTimelineEvent,
   } = useTimeline(activeCampaignId, reloadKey, notify);
 
+  const { secrets, createSecret, saveSecret, toggleStatus, deleteSecret } =
+    useSecrets(activeCampaignId, reloadKey, navigate, notify);
+
   const npcTypesApi: NpcTypesApi = {
     types: npcTypes,
     onCreate: createNpcType,
@@ -507,6 +523,10 @@ export default function App() {
                               route.name === "lore-edit" ||
                               route.name === "lore-create"
                             ? "mundo"
+                            : route.name === "secret-detail" ||
+                                route.name === "secret-edit" ||
+                                route.name === "secret-create"
+                              ? "secretos"
                               : "resumen";
 
   if (helpOpen) {
@@ -744,6 +764,70 @@ export default function App() {
                   onSave={(values) => saveLoreEntry(entry.id, values)}
                   onDiscard={() =>
                     navigate({ name: "lore-detail", entryId: entry.id })
+                  }
+                />
+              );
+            })()}
+          {route.name === "section" && route.section === "secretos" && (
+            <SecretsList
+              secrets={secrets}
+              npcs={campaignNpcs}
+              locations={campaignLocations}
+              loreEntries={loreEntries}
+              onCreate={() => navigate({ name: "secret-create" })}
+            />
+          )}
+          {route.name === "secret-create" && (
+            <SecretEdit
+              secret={blankSecret}
+              npcs={campaignNpcs}
+              locations={campaignLocations}
+              loreEntries={loreEntries}
+              sessions={campaignSessions}
+              onSave={createSecret}
+              onDiscard={() =>
+                navigate({ name: "section", section: "secretos" })
+              }
+            />
+          )}
+          {route.name === "secret-detail" &&
+            (() => {
+              const secret = secrets.find((s) => s.id === route.secretId);
+              if (!secret) return null;
+              return (
+                <SecretDetail
+                  key={secret.id}
+                  secret={secret}
+                  npcs={campaignNpcs}
+                  locations={campaignLocations}
+                  loreEntries={loreEntries}
+                  sessions={campaignSessions}
+                  onBack={() =>
+                    navigate({ name: "section", section: "secretos" })
+                  }
+                  onEdit={() =>
+                    navigate({ name: "secret-edit", secretId: secret.id })
+                  }
+                  onDelete={() => deleteSecret(secret.id)}
+                  onToggleStatus={() => toggleStatus(secret)}
+                />
+              );
+            })()}
+          {route.name === "secret-edit" &&
+            (() => {
+              const secret = secrets.find((s) => s.id === route.secretId);
+              if (!secret) return null;
+              return (
+                <SecretEdit
+                  key={secret.id}
+                  secret={secret}
+                  npcs={campaignNpcs}
+                  locations={campaignLocations}
+                  loreEntries={loreEntries}
+                  sessions={campaignSessions}
+                  onSave={(values) => saveSecret(secret.id, values)}
+                  onDiscard={() =>
+                    navigate({ name: "secret-detail", secretId: secret.id })
                   }
                 />
               );
