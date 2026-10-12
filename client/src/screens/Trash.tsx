@@ -20,6 +20,7 @@ const KINDS: { kind: string; titleKey: TranslationKey }[] = [
   { kind: "location", titleKey: "trash.location" },
   { kind: "group", titleKey: "trash.group" },
   { kind: "quest", titleKey: "trash.quest" },
+  { kind: "loose_note", titleKey: "trash.loose_note" },
   { kind: "encounter", titleKey: "trash.encounter" },
 ];
 

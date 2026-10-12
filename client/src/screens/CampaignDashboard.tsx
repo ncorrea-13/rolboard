@@ -34,6 +34,7 @@ export type DashboardSection =
   | "jugadores"
   | "encuentros"
   | "wardails"
+  | "notas"
   | "papelera";
 
 interface DashboardSummaryData {

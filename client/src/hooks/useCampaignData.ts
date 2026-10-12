@@ -1220,6 +1220,7 @@ export function useCampaignData(
     startPlaySession,
     openPlanSession,
     reloadCampaignData,
+    reloadKey,
     goToEntitySection,
     imageVersion,
     uploadNpcImage,

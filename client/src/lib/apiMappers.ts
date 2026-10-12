@@ -14,6 +14,7 @@ import {
   type Quest,
   type QuestStatus,
   type Session,
+  type LooseNote,
   type SessionType,
   type StatMap,
   type StatusKind,
@@ -545,5 +546,33 @@ export function sessionToApiPayload(s: Session) {
     prep_notes: s.prepNotes,
     obsidian_path: s.obsidianPath || undefined,
   };
+}
+
+export interface ApiLooseNote {
+  id: number;
+  campaign_id: number;
+  title: string;
+  body: string;
+  pending: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export function mapLooseNote(n: ApiLooseNote): LooseNote {
+  return {
+    id: String(n.id),
+    campaignId: String(n.campaign_id),
+    title: n.title,
+    body: n.body,
+    pending: n.pending,
+    createdAt: n.created_at,
+    updatedAt: n.updated_at,
+  };
+}
+
+export function looseNoteToApiPayload(
+  n: Pick<LooseNote, "title" | "body" | "pending">,
+) {
+  return { title: n.title, body: n.body, pending: n.pending };
 }
 

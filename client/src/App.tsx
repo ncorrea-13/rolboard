@@ -39,6 +39,10 @@ import { QuestEdit } from "./screens/QuestEdit";
 import { FactionEdit } from "./screens/FactionEdit";
 import { LocationEdit } from "./screens/LocationEdit";
 import { SessionsTimeline } from "./screens/SessionsTimeline";
+import { NotesList } from "./screens/NotesList";
+import { NoteDetail } from "./screens/NoteDetail";
+import { NoteEdit } from "./screens/NoteEdit";
+import { useLooseNotes } from "./hooks/useLooseNotes";
 import { ArcsList } from "./screens/ArcsList";
 import { FactionsList } from "./screens/FactionsList";
 import { LocationsList } from "./screens/LocationsList";
@@ -56,7 +60,7 @@ import {
   LocationDetail,
   QuestDetail,
 } from "./screens/EntityDetails";
-import type { Campaign } from "./data/domain";
+import type { Campaign, LooseNote } from "./data/domain";
 import { entityKindSection } from "./data/entityForms";
 import {
   mapCampaign,
@@ -77,6 +81,16 @@ import { withViewTransition } from "./lib/motion";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
 type HistoryMode = "push" | "replace" | "none";
+
+const blankLooseNote: LooseNote = {
+  id: "",
+  campaignId: "",
+  title: "",
+  body: "",
+  pending: true,
+  createdAt: "",
+  updatedAt: "",
+};
 
 export default function App() {
   const t = useT();
@@ -270,6 +284,7 @@ export default function App() {
     openPlanSession,
     nextOneshotNumber,
     reloadCampaignData,
+    reloadKey,
     goToEntitySection,
     imageVersion,
     uploadNpcImage,
@@ -281,6 +296,14 @@ export default function App() {
     uploadGroupImage,
     removeGroupImage,
   } = useCampaignData(activeCampaignId, activeCampaign, navigate, notify);
+
+  const {
+    looseNotes,
+    createLooseNote,
+    saveLooseNote,
+    togglePending,
+    deleteLooseNote,
+  } = useLooseNotes(activeCampaignId, reloadKey, navigate, notify);
 
   const npcTypesApi: NpcTypesApi = {
     types: npcTypes,
@@ -443,6 +466,10 @@ export default function App() {
                       ? "locaciones"
                       : route.name === "encounter-detail"
                         ? "encuentros"
+                        : route.name === "note-detail" ||
+                            route.name === "note-edit" ||
+                            route.name === "note-create"
+                          ? "notas"
                               : "resumen";
 
   if (helpOpen) {
@@ -599,6 +626,51 @@ export default function App() {
               onCreate={() => createEncounter()}
             />
           )}
+          {route.name === "section" && route.section === "notas" && (
+            <NotesList
+              notes={looseNotes}
+              onCreate={() => navigate({ name: "note-create" })}
+            />
+          )}
+          {route.name === "note-create" && (
+            <NoteEdit
+              note={blankLooseNote}
+              onSave={createLooseNote}
+              onDiscard={() => navigate({ name: "section", section: "notas" })}
+            />
+          )}
+          {route.name === "note-detail" &&
+            (() => {
+              const note = looseNotes.find((n) => n.id === route.noteId);
+              if (!note) return null;
+              return (
+                <NoteDetail
+                  key={note.id}
+                  note={note}
+                  onBack={() => navigate({ name: "section", section: "notas" })}
+                  onEdit={() =>
+                    navigate({ name: "note-edit", noteId: note.id })
+                  }
+                  onDelete={() => deleteLooseNote(note.id)}
+                  onTogglePending={() => togglePending(note)}
+                />
+              );
+            })()}
+          {route.name === "note-edit" &&
+            (() => {
+              const note = looseNotes.find((n) => n.id === route.noteId);
+              if (!note) return null;
+              return (
+                <NoteEdit
+                  key={note.id}
+                  note={note}
+                  onSave={(values) => saveLooseNote(note.id, values)}
+                  onDiscard={() =>
+                    navigate({ name: "note-detail", noteId: note.id })
+                  }
+                />
+              );
+            })()}
           {route.name === "section" && route.section === "wardails" && (
             <Wardails campaignId={activeCampaignId!} notify={notify} />
           )}

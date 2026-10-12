@@ -22,6 +22,9 @@ export type Route =
   | { name: "arc-create" }
   | { name: "quest-edit"; questId: string }
   | { name: "quest-create" }
+  | { name: "note-detail"; noteId: string }
+  | { name: "note-edit"; noteId: string }
+  | { name: "note-create" }
   | { name: "faction-edit"; factionId: string }
   | { name: "faction-create" }
   | { name: "location-edit"; locationId: string }

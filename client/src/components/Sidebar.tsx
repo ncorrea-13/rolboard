@@ -9,6 +9,7 @@ import {
   Swords,
   Skull,
   Cross,
+  StickyNote,
   Trash2,
   Settings,
   LogOut,
@@ -88,6 +89,12 @@ const navItems: {
     section: "wardails",
     Icon: Cross,
     color: "var(--accent-wardail)",
+  },
+  {
+    labelKey: "sidebar.notas",
+    section: "notas",
+    Icon: StickyNote,
+    color: "var(--accent-orchid)",
   },
   {
     labelKey: "sidebar.papelera",

@@ -412,3 +412,13 @@ export interface EncounterParticipant {
   skills: StatMap;
 }
 
+export interface LooseNote {
+  id: string;
+  campaignId: string;
+  title: string;
+  body: string;
+  pending: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
