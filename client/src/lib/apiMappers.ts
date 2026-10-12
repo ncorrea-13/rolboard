@@ -422,6 +422,8 @@ export interface ApiSession {
   session_number: number;
   sub_number: number;
   session_type: string;
+  title: string;
+  planned: boolean;
   date: string;
   summary: string;
   prep_notes: string;
@@ -436,6 +438,8 @@ export function mapSession(s: ApiSession): Session {
     sessionNumber: s.session_number,
     subNumber: s.sub_number,
     sessionType: s.session_type as SessionType,
+    title: s.title ?? "",
+    planned: s.planned ?? false,
     date: s.date,
     summary: s.summary,
     prepNotes: s.prep_notes,
@@ -534,6 +538,8 @@ export function sessionToApiPayload(s: Session) {
     session_number: s.sessionNumber,
     sub_number: s.subNumber,
     session_type: s.sessionType,
+    title: s.title,
+    planned: s.planned,
     date: s.date,
     summary: s.summary,
     prep_notes: s.prepNotes,

@@ -268,6 +268,7 @@ export default function App() {
     planSession,
     startPlaySession,
     openPlanSession,
+    nextOneshotNumber,
     reloadCampaignData,
     goToEntitySection,
     imageVersion,
@@ -553,6 +554,9 @@ export default function App() {
               hasPlannedSession={hasPlannedSession}
               onPlaySession={startPlaySession}
               onPlanSession={openPlanSession}
+              onPlanOneshot={() =>
+                navigate({ name: "session-plan", oneshot: true })
+              }
             />
           )}
           {route.name === "section" && route.section === "arcos" && (
@@ -1001,7 +1005,8 @@ export default function App() {
 
           {route.name === "session-plan" && (
             <PlanSession
-              nextNumber={nextSessionNumber}
+              nextNumber={route.oneshot ? nextOneshotNumber : nextSessionNumber}
+              oneshot={route.oneshot}
               currentArc={defaultSessionArc}
               arcs={campaignArcs}
               npcs={campaignNpcs}

@@ -10,7 +10,7 @@ export type Route =
   | { name: "player-detail"; playerId: string }
   | { name: "player-edit"; playerId: string }
   | { name: "player-create" }
-  | { name: "session-plan" }
+  | { name: "session-plan"; oneshot?: boolean }
   | { name: "session-detail"; sessionId: string }
   | {
       name: "session-edit";

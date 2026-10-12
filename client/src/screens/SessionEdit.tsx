@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Cross } from "lucide-react";
 import "./NpcEdit.css";
 import {
+  isPlayed,
   sessionCode,
   type Arc,
   type Npc,
@@ -40,8 +41,15 @@ export function SessionEdit({
   autoConfirm,
 }: SessionEditProps) {
   const t = useT();
-  const played = session.sessionType !== "planning";
+  const sessionPrefix = t(
+    session.sessionType === "oneshot"
+      ? "sessionEdit.oneshotPrefix"
+      : "sessionEdit.sessionPrefix",
+  );
+  const isOneshot = session.sessionType === "oneshot";
+  const played = isPlayed(session);
   const [date, setDate] = useState(session.date);
+  const [title, setTitle] = useState(session.title);
   const [text, setText] = useState(session.summary);
   const [arcId, setArcId] = useState(session.arcId ?? "");
   const [confirmingPlay, setConfirmingPlay] = useState(
@@ -120,7 +128,12 @@ export function SessionEdit({
 
   function handleSave() {
     syncRelations().then(() =>
-      onSave({ date, summary: text, arcId: arcId || undefined }),
+      onSave({
+        date,
+        summary: text,
+        arcId: arcId || undefined,
+        ...(isOneshot ? { title: title.trim() } : {}),
+      }),
     );
   }
 
@@ -129,11 +142,13 @@ export function SessionEdit({
       date: playDate,
       summary: recap.trim() || t("newSessionForm.defaultSummary"),
       prepNotes: session.prepNotes || session.summary,
-      sessionType: "session",
+      ...(isOneshot
+        ? { planned: false, title: title.trim() }
+        : { sessionType: "session" as const }),
     });
   }
 
-  const noteTitle = `${t("sessionEdit.sessionPrefix")} ${sessionCode(session)}`;
+  const noteTitle = `${sessionPrefix} ${sessionCode(session)}`;
   const noteButton = (
     <RenderedNoteButton
       campaignId={campaignId}
@@ -156,9 +171,8 @@ export function SessionEdit({
                 color: "var(--text-primary)",
               }}
             >
-              {t("sessionEdit.confirmingPlay")} ·{" "}
-              {t("sessionEdit.sessionPrefix")} {sessionCode(session)}{" "}
-              {arc ? `· ${arc.label}` : ""}
+              {t("sessionEdit.confirmingPlay")} · {sessionPrefix}{" "}
+              {sessionCode(session)} {arc ? `· ${arc.label}` : ""}
             </span>
           </div>
           <div className="npc-edit__bar-actions">
@@ -182,7 +196,7 @@ export function SessionEdit({
             <span className="label">{t("sessionEdit.planned")}</span>
             <div className="npc-edit__grid-2" style={{ marginTop: 10 }}>
               <div>
-                <span className="label">{t("newSessionForm.session")}</span>
+                <span className="label">{sessionPrefix}</span>
                 <div className="npc-edit__input">{sessionCode(session)}</div>
               </div>
               <div>
@@ -284,9 +298,19 @@ export function SessionEdit({
     );
   }
 
+  const titleField = isOneshot && (
+    <div>
+      <span className="label">{t("sessionEdit.titleLabel")}</span>
+      <input
+        className="npc-edit__input"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+    </div>
+  );
   const codeField = (
     <div>
-      <span className="label">{t("newSessionForm.session")}</span>
+      <span className="label">{sessionPrefix}</span>
       <div className="npc-edit__input">{sessionCode(session)}</div>
     </div>
   );
@@ -385,7 +409,8 @@ export function SessionEdit({
               color: "var(--text-primary)",
             }}
           >
-            {t("sessionEdit.sessionPrefix")} {sessionCode(session)}{" "}
+            {sessionPrefix} {sessionCode(session)}{" "}
+            {title.trim() ? `· ${title.trim()} ` : ""}
             {arc ? `· ${arc.label}` : ""}{" "}
             {played
               ? t("sessionEdit.playedSuffix")
@@ -407,6 +432,7 @@ export function SessionEdit({
         <div className="npc-edit__body npc-edit__body--even">
           <div className="npc-edit__col">
             <span className="label">{t("sessionEdit.planned")}</span>
+            {titleField}
             <div className="npc-edit__grid-2">
               {codeField}
               {arcField}
@@ -433,6 +459,7 @@ export function SessionEdit({
       ) : (
         <div className="npc-edit__body">
           <div className="npc-edit__col">
+            {titleField}
             <div className="npc-edit__grid-2">
               {codeField}
               {dateField}

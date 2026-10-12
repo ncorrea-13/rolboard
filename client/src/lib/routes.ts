@@ -54,7 +54,7 @@ function subPath(route: Route): string {
     case "player-create":
       return "/players/new";
     case "session-plan":
-      return "/sessions/new";
+      return route.oneshot ? "/sessions/new-oneshot" : "/sessions/new";
     case "session-detail":
       return `/sessions/${route.sessionId}`;
     case "session-edit":
@@ -98,6 +98,9 @@ function parseCampaignRoute(parts: string[]): Route | null {
   const section = sectionBySlug.get(slug);
   if (!section || section === "resumen") return null;
   if (!id) return { name: "section", section };
+
+  if (section === "sesiones" && id === "new-oneshot" && !action)
+    return { name: "session-plan", oneshot: true };
 
   const isNew = id === "new";
   if (!isNew && !/^\d+$/.test(id)) return null;

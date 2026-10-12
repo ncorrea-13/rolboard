@@ -15,6 +15,7 @@ import {
   type Quest,
   type PlayerCharacter,
   type Session,
+  isPlayed,
 } from "../data/domain";
 import {
   type EntityKind,
@@ -404,7 +405,14 @@ export function useCampaignData(
 
   const nextSessionNumber =
     pendingPlannedSession?.sessionNumber ??
-    campaignSessions.reduce((max, s) => Math.max(max, s.sessionNumber), 0) + 1;
+    campaignSessions
+      .filter((s) => s.sessionType !== "oneshot")
+      .reduce((max, s) => Math.max(max, s.sessionNumber), 0) + 1;
+
+  const nextOneshotNumber =
+    campaignSessions
+      .filter((s) => s.sessionType === "oneshot")
+      .reduce((max, s) => Math.max(max, s.sessionNumber), 0) + 1;
 
   const defaultSessionArc =
     campaignArcs.find((a) => a.status === "en_curso") ??
@@ -580,11 +588,7 @@ export function useCampaignData(
     const current = sessions.find((s) => s.id === id);
     if (!current) return;
     const draft: Session = { ...current, ...patch };
-    if (
-      !hasRequired([
-        ["toast.missingDate", draft.sessionType === "planning" || draft.date],
-      ])
-    )
+    if (!hasRequired([["toast.missingDate", !isPlayed(draft) || draft.date]]))
       return false;
     apiFetch<ApiSession>(`/sessions/${id}`, {
       method: "PUT",
@@ -623,6 +627,8 @@ export function useCampaignData(
   function planSession(values: {
     date: string;
     summary: string;
+    title?: string;
+    oneshot?: boolean;
     arcId?: string;
     expectedNpcIds: string[];
     expectedQuestIds: string[];
@@ -632,9 +638,11 @@ export function useCampaignData(
       id: "",
       campaignId: activeCampaign!.id,
       arcId: values.arcId,
-      sessionNumber: nextSessionNumber,
+      sessionNumber: values.oneshot ? nextOneshotNumber : nextSessionNumber,
       subNumber: 0,
-      sessionType: "planning",
+      sessionType: values.oneshot ? "oneshot" : "planning",
+      title: values.title ?? "",
+      planned: Boolean(values.oneshot),
       date: values.date,
       summary: values.summary,
       prepNotes: "",
@@ -1185,6 +1193,7 @@ export function useCampaignData(
     reindexing,
     handleReindex,
     nextSessionNumber,
+    nextOneshotNumber,
     hasPlannedSession: !!pendingPlannedSession,
     defaultSessionArc,
     saveNpc,

@@ -306,7 +306,7 @@ export interface PlayerCharacter {
   hasImage?: boolean;
 }
 
-export type SessionType = "session" | "interlude" | "planning";
+export type SessionType = "session" | "interlude" | "planning" | "oneshot";
 
 export interface Session {
   id: string;
@@ -316,16 +316,24 @@ export interface Session {
   sessionNumber: number;
   subNumber: number;
   sessionType: SessionType;
+  title: string;
+  planned: boolean;
   date: string;
   summary: string;
   prepNotes: string;
   obsidianPath?: string;
 }
 
+export function isPlayed(s: Pick<Session, "sessionType" | "planned">): boolean {
+  return s.sessionType !== "planning" && !s.planned;
+}
+
 export function sessionCode(
-  s: Pick<Session, "sessionNumber" | "subNumber">,
+  s: Pick<Session, "sessionNumber" | "subNumber"> &
+    Partial<Pick<Session, "sessionType">>,
 ): string {
-  const base = `S${String(s.sessionNumber).padStart(2, "0")}`;
+  const prefix = s.sessionType === "oneshot" ? "O" : "S";
+  const base = `${prefix}${String(s.sessionNumber).padStart(2, "0")}`;
   return s.subNumber ? `${base}.${s.subNumber}` : base;
 }
 
