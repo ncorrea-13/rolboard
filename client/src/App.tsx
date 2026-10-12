@@ -567,6 +567,13 @@ export default function App() {
               arcs={campaignArcs}
               npcs={campaignNpcs}
               quests={campaignQuests}
+              sessions={campaignSessions}
+              players={campaignPlayerCharacters}
+              looseNotes={looseNotes}
+              loreEntries={loreEntries}
+              loreCategories={loreCategories}
+              locationsCount={campaignLocations.length}
+              groupsCount={campaignGroups.length}
               nextSessionNumber={nextSessionNumber}
               hasPlannedSession={hasPlannedSession}
               summary={
