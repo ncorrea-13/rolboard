@@ -80,6 +80,13 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - **A category used by any entry can't be deleted** (`409`), counting soft-deleted entries too, so a restore never points at a missing category.
 - **Deleting an arc or location doesn't block on lore entries.** The link is optional and the entry simply stops showing it.
 
+## Items and economy
+
+- **Narrative, not a simulation.** An item has a free-text "what it does", a category and a rarity; there are no mechanical bonuses and no supply and demand.
+- **One optional base currency per campaign.** Other currencies carry `rate_to_base`; setting a new base moves the flag. Currencies are not tied to a game system: each campaign defines its own.
+- **Prices per currency.** An item can cost 5 spheres or 2 gold; a shop may override the catalog price for its location.
+- **A currency used by an item or shop price can't be deleted** (`409`).
+
 ## Secrets
 
 - **A secret is not tied to a single NPC.** It optionally points at an NPC, a location or a lore entry (what it is about), and a separate bridge lists who knows it.

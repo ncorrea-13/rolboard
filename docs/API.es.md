@@ -243,6 +243,32 @@ DELETE /api/lore/{id}
 
 Body de una entrada: `title` (obligatorio), `body`, `category_id`, `arc_id`, `location_id` (todos opcionales; deben ser de la misma campaña). Una campaña nueva se siembra con categorías base (Historia, Geografía, Religión, Magia, Cultura).
 
+### Objetos y economía
+
+```
+GET    /api/campaigns/{id}/currencies
+POST   /api/campaigns/{id}/currencies      {"name", "symbol", "rate_to_base", "is_base", "location_ids"}
+PUT    /api/currencies/{id}
+DELETE /api/currencies/{id}                409 currency_in_use si algún objeto o precio de tienda la usa
+
+GET    /api/campaigns/{id}/items
+POST   /api/campaigns/{id}/items           {"name", "description", "effect", "category", "rarity", "weight", "prices": [{"currency_id", "amount"}]}
+GET    /api/items/{id}
+PUT    /api/items/{id}
+DELETE /api/items/{id}
+
+GET    /api/player-characters/{id}/items   inventario de un PJ
+PUT    /api/player-characters/{id}/items/{itemId}   {"quantity", "notes"}   idempotente
+DELETE /api/player-characters/{id}/items/{itemId}
+GET    /api/npcs/{id}/items                inventario de un NPC (mismos PUT / DELETE)
+
+GET    /api/locations/{id}/items           qué vende una locación
+PUT    /api/locations/{id}/items/{itemId}  {"notes", "prices": [{"currency_id", "amount"}]}
+DELETE /api/locations/{id}/items/{itemId}
+```
+
+El nombre de monedas y objetos es obligatorio; los precios no pueden ser negativos; cada moneda, objeto, locación y dueño debe ser de la misma campaña (`400` si no). Marcar una moneda como base desmarca la anterior. Una tienda sin precios propios muestra el precio de catálogo del objeto.
+
 ### Secretos
 
 ```

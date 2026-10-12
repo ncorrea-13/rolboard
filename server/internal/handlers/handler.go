@@ -43,6 +43,7 @@ type Handlers struct {
 	lore                  *service.LoreService
 	timeline              *service.TimelineService
 	secrets               *service.SecretService
+	economy               *service.EconomyService
 	encounters            *service.EncounterService
 	encounterParticipants *service.EncounterParticipantService
 	trash                 *service.TrashService
@@ -71,6 +72,7 @@ func NewHandlers(
 	lore *service.LoreService,
 	timeline *service.TimelineService,
 	secrets *service.SecretService,
+	economy *service.EconomyService,
 	encounters *service.EncounterService,
 	encounterParticipants *service.EncounterParticipantService,
 	trash *service.TrashService,
@@ -98,6 +100,7 @@ func NewHandlers(
 		lore:                  lore,
 		timeline:              timeline,
 		secrets:               secrets,
+		economy:               economy,
 		encounters:            encounters,
 		encounterParticipants: encounterParticipants,
 		trash:                 trash,

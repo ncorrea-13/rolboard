@@ -171,6 +171,18 @@ Per-campaign lore. Categories follow the `npc_types` pattern (`key` derived from
 | arc_id, location_id    | optional, `ON DELETE RESTRICT` |
 | obsidian_path          | reserved for a future `Lore/` folder in the vault |
 
+### currencies / items and their bridges
+
+| Table | Notes |
+| ----- | ----- |
+| `currencies` | `name`, `symbol`, optional `rate_to_base` (> 0), `is_base`. At most one active base per campaign (partial unique index) |
+| `currency_locations` | where a currency circulates |
+| `items` | `name`, `description`, `effect` (free text), `category`, `rarity` (free text), optional `weight` |
+| `item_prices` | `(item_id, currency_id, amount)`: an item can be priced in several currencies |
+| `pc_items`, `npc_items` | inventory: `quantity` (> 0) and `notes` |
+| `location_items` | what a location sells, with `notes` |
+| `location_item_prices` | own price per currency; composite FK to `location_items`. Without rows, the catalog price applies |
+
 ### secrets / secret_npcs
 
 DM-only narrative secrets.

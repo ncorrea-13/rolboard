@@ -34,6 +34,8 @@ var trashSpecs = []trashSpec{
 	{kind: "loose_note", table: "notes", label: "title"},
 	{kind: "lore_entry", table: "lore_entries", label: "title"},
 	{kind: "secret", table: "secrets", label: "title"},
+	{kind: "item", table: "items", label: "name"},
+	{kind: "currency", table: "currencies", label: "name"},
 	{kind: "timeline", table: "timelines", label: "name"},
 	{kind: "timeline_event", table: "timeline_events", label: "title",
 		parentDeleted: `SELECT EXISTS(SELECT 1 FROM timeline_events e JOIN timelines t ON t.id = e.timeline_id WHERE e.id = ? AND t.deleted_at IS NOT NULL)`},

@@ -243,6 +243,32 @@ DELETE /api/lore/{id}
 
 Entry body: `title` (required), `body`, `category_id`, `arc_id`, `location_id` (all optional; they must belong to the same campaign). A new campaign is seeded with default categories (Historia, Geografía, Religión, Magia, Cultura).
 
+### Items and economy
+
+```
+GET    /api/campaigns/{id}/currencies
+POST   /api/campaigns/{id}/currencies      {"name", "symbol", "rate_to_base", "is_base", "location_ids"}
+PUT    /api/currencies/{id}
+DELETE /api/currencies/{id}                409 currency_in_use if an item or shop price uses it
+
+GET    /api/campaigns/{id}/items
+POST   /api/campaigns/{id}/items           {"name", "description", "effect", "category", "rarity", "weight", "prices": [{"currency_id", "amount"}]}
+GET    /api/items/{id}
+PUT    /api/items/{id}
+DELETE /api/items/{id}
+
+GET    /api/player-characters/{id}/items   inventory of a PC
+PUT    /api/player-characters/{id}/items/{itemId}   {"quantity", "notes"}   idempotent
+DELETE /api/player-characters/{id}/items/{itemId}
+GET    /api/npcs/{id}/items                inventory of an NPC (same PUT / DELETE)
+
+GET    /api/locations/{id}/items           what a location sells
+PUT    /api/locations/{id}/items/{itemId}  {"notes", "prices": [{"currency_id", "amount"}]}
+DELETE /api/locations/{id}/items/{itemId}
+```
+
+Currency and item names are required; prices can't be negative; each currency, item, location and owner must belong to the same campaign (`400` otherwise). Marking a currency as base unmarks the previous one. A shop with no prices of its own shows the item's catalog price.
+
 ### Secrets
 
 ```

@@ -80,6 +80,13 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - **Una categoría usada por cualquier entrada no se puede borrar** (`409`), contando también las entradas dadas de baja, para que restaurar nunca apunte a una categoría inexistente.
 - **Borrar un arco o una locación no se bloquea por entradas de lore.** El vínculo es opcional y la entrada simplemente deja de mostrarlo.
 
+## Objetos y economía
+
+- **Narrativo, no una simulación.** Un objeto tiene un "qué hace" en texto libre, categoría y rareza; no hay bonos mecánicos ni oferta y demanda.
+- **Una moneda base opcional por campaña.** Las demás llevan `rate_to_base`; marcar una nueva base mueve la marca. Las monedas no dependen del sistema de juego: cada campaña define las suyas.
+- **Precios por moneda.** Un objeto puede costar 5 esferas o 2 de oro; una tienda puede pisar el precio de catálogo en su locación.
+- **Una moneda usada por un objeto o un precio de tienda no se puede borrar** (`409`).
+
 ## Secretos
 
 - **Un secreto no está atado a un solo NPC.** Apunta opcionalmente a un NPC, una locación o una entrada de lore (de qué trata), y un bridge aparte lista quién lo conoce.

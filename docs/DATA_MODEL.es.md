@@ -171,6 +171,18 @@ Lore por campaña. Las categorías siguen el patrón de `npc_types` (`key` deriv
 | arc_id, location_id    | opcionales, `ON DELETE RESTRICT` |
 | obsidian_path          | reservado para una carpeta `Lore/` del vault a futuro |
 
+### currencies / items y sus bridges
+
+| Tabla | Notas |
+| ----- | ----- |
+| `currencies` | `name`, `symbol`, `rate_to_base` opcional (> 0), `is_base`. Como máximo una base activa por campaña (índice único parcial) |
+| `currency_locations` | dónde circula una moneda |
+| `items` | `name`, `description`, `effect` (texto libre), `category`, `rarity` (texto libre), `weight` opcional |
+| `item_prices` | `(item_id, currency_id, amount)`: un objeto puede tener precio en varias monedas |
+| `pc_items`, `npc_items` | inventario: `quantity` (> 0) y `notes` |
+| `location_items` | qué vende una locación, con `notes` |
+| `location_item_prices` | precio propio por moneda; FK compuesta a `location_items`. Sin filas rige el precio de catálogo |
+
 ### secrets / secret_npcs
 
 Secretos narrativos solo para el DM.
