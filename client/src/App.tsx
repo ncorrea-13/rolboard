@@ -442,7 +442,7 @@ export default function App() {
                       ? "locaciones"
                       : route.name === "encounter-detail"
                         ? "encuentros"
-                        : "resumen";
+                              : "resumen";
 
   if (helpOpen) {
     return (
