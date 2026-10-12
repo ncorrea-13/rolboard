@@ -80,6 +80,13 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - **A category used by any entry can't be deleted** (`409`), counting soft-deleted entries too, so a restore never points at a missing category.
 - **Deleting an arc or location doesn't block on lore entries.** The link is optional and the entry simply stops showing it.
 
+## Timeline
+
+- **Free-text dates, numeric order.** Each setting has its own calendar and it can't be parsed, so `date_label` is only displayed and `sort_key` (typed by hand) orders. Inserting an event in the middle needs no renumbering.
+- **Several timelines, one view.** Timelines are lanes (world history, campaign chronicle, a war) shown together and filtered with chips. "Events of faction X / place Y" are filters over `group_id` / `location_id`, not extra timelines; filtering by a location includes its sub-locations.
+- **One timeline per event.** A many-to-many link is left out until a real case needs it.
+- **The first event creates a default timeline** so there is no mandatory previous step.
+
 ## Combat tracker
 
 - A DM control view, list-based. No map.

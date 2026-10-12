@@ -235,6 +235,23 @@ DELETE /api/lore/{id}
 
 Body de una entrada: `title` (obligatorio), `body`, `category_id`, `arc_id`, `location_id` (todos opcionales; deben ser de la misma campaña). Una campaña nueva se siembra con categorías base (Historia, Geografía, Religión, Magia, Cultura).
 
+### Línea de tiempo
+
+```
+GET    /api/campaigns/{id}/timelines
+POST   /api/campaigns/{id}/timelines            {"name", "description", "color": "#rrggbb", "start_label", "end_label"}
+PUT    /api/timelines/{id}
+DELETE /api/timelines/{id}                      409 timeline_in_use si tiene eventos
+
+GET    /api/campaigns/{id}/timeline-events
+POST   /api/campaigns/{id}/timeline-events
+GET    /api/timeline-events/{id}
+PUT    /api/timeline-events/{id}
+DELETE /api/timeline-events/{id}
+```
+
+Body de un evento: `timeline_id` y `title` (obligatorios), `description`, `date_label` y `end_date_label` (texto libre, solo para mostrar), `sort_key` (número, lo único que ordena) y, opcionales, `arc_id`, `session_id`, `location_id`, `group_id`, `lore_entry_id`, todos de la misma campaña. El listado viene ordenado por `sort_key`.
+
 ## Encounters (tracker de combate)
 
 ```

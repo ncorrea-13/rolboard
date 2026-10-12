@@ -235,6 +235,23 @@ DELETE /api/lore/{id}
 
 Entry body: `title` (required), `body`, `category_id`, `arc_id`, `location_id` (all optional; they must belong to the same campaign). A new campaign is seeded with default categories (Historia, Geografía, Religión, Magia, Cultura).
 
+### Timeline
+
+```
+GET    /api/campaigns/{id}/timelines
+POST   /api/campaigns/{id}/timelines            {"name", "description", "color": "#rrggbb", "start_label", "end_label"}
+PUT    /api/timelines/{id}
+DELETE /api/timelines/{id}                      409 timeline_in_use if it has events
+
+GET    /api/campaigns/{id}/timeline-events
+POST   /api/campaigns/{id}/timeline-events
+GET    /api/timeline-events/{id}
+PUT    /api/timeline-events/{id}
+DELETE /api/timeline-events/{id}
+```
+
+Event body: `timeline_id` and `title` (required), `description`, `date_label` and `end_date_label` (free text, display only), `sort_key` (number, the only thing that orders events), and optional `arc_id`, `session_id`, `location_id`, `group_id`, `lore_entry_id`, all from the same campaign. The list comes ordered by `sort_key`.
+
 ## Encounters (combat tracker)
 
 ```

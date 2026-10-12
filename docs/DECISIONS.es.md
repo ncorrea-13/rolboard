@@ -80,6 +80,13 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - **Una categoría usada por cualquier entrada no se puede borrar** (`409`), contando también las entradas dadas de baja, para que restaurar nunca apunte a una categoría inexistente.
 - **Borrar un arco o una locación no se bloquea por entradas de lore.** El vínculo es opcional y la entrada simplemente deja de mostrarlo.
 
+## Línea de tiempo
+
+- **Fechas en texto libre, orden numérico.** Cada setting tiene su calendario y no se puede parsear, así que `date_label` solo se muestra y `sort_key` (escrito a mano) ordena. Insertar un evento en el medio no obliga a renumerar.
+- **Varias cronologías, una vista.** Las cronologías son carriles (historia del mundo, crónica de la campaña, una guerra) que se muestran juntos y se filtran con chips. "Eventos de la facción X / del lugar Y" son filtros sobre `group_id` / `location_id`, no cronologías extra; filtrar por locación incluye sus sub-locaciones.
+- **Un evento pertenece a una sola cronología.** La relación muchos a muchos queda afuera hasta que haga falta.
+- **El primer evento crea una cronología por defecto**, sin exigir un paso previo.
+
 ## Tracker de combate
 
 - Vista de control del DM, en lista. Sin mapa.

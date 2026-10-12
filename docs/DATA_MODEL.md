@@ -171,6 +171,20 @@ Per-campaign lore. Categories follow the `npc_types` pattern (`key` derived from
 | arc_id, location_id    | optional, `ON DELETE RESTRICT` |
 | obsidian_path          | reserved for a future `Lore/` folder in the vault |
 
+### timelines / timeline_events
+
+World chronologies. A timeline is a colored lane; events belong to exactly one of them.
+
+| Field (`timeline_events`) | Notes |
+| ------------------------- | ----- |
+| timeline_id               | required, `ON DELETE RESTRICT` |
+| title, description        | title required; description is Markdown |
+| date_label, end_date_label | free text for display (each setting has its own calendar) |
+| sort_key                  | `REAL`, typed by hand; the only ordering criterion |
+| arc_id, session_id, location_id, group_id, lore_entry_id | optional, same campaign |
+
+`timelines` carry `name`, `description`, `color`, optional `start_label` / `end_label` and `position`. A timeline with active events can't be deleted (`409 timeline_in_use`).
+
 ### notes
 
 Loose notes (`LooseNote` in the code, to avoid clashing with vault notes). Dashboard only.

@@ -171,6 +171,20 @@ Lore por campaña. Las categorías siguen el patrón de `npc_types` (`key` deriv
 | arc_id, location_id    | opcionales, `ON DELETE RESTRICT` |
 | obsidian_path          | reservado para una carpeta `Lore/` del vault a futuro |
 
+### timelines / timeline_events
+
+Cronologías del mundo. Una cronología es un carril con color; cada evento pertenece a una sola.
+
+| Campo (`timeline_events`) | Notas |
+| ------------------------- | ----- |
+| timeline_id               | obligatorio, `ON DELETE RESTRICT` |
+| title, description        | title obligatorio; description es Markdown |
+| date_label, end_date_label | texto libre para mostrar (cada setting tiene su calendario) |
+| sort_key                  | `REAL`, escrito a mano; único criterio de orden |
+| arc_id, session_id, location_id, group_id, lore_entry_id | opcionales, de la misma campaña |
+
+`timelines` lleva `name`, `description`, `color`, `start_label` / `end_label` opcionales y `position`. Una cronología con eventos activos no se puede borrar (`409 timeline_in_use`).
+
 ### notes
 
 Notas sueltas (`LooseNote` en el código, para no chocar con las notas del vault). Solo dashboard.

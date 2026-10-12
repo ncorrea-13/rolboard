@@ -74,9 +74,11 @@ func New(cfg Config) (http.Handler, io.Closer, error) {
 
 	loreSvc := service.NewLoreService(repository.NewLoreCategoryRepository(db), repository.NewLoreEntryRepository(db))
 
+	timelineSvc := service.NewTimelineService(repository.NewTimelineRepository(db), repository.NewTimelineEventRepository(db))
+
 	trashSvc := service.NewTrashService(repository.NewTrashRepository(db))
 
-	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, looseNoteSvc, loreSvc, encounterSvc, encounterParticipantSvc, trashSvc)
+	h := handlers.NewHandlers(db, cfg.AdminToken, cfg.CookieSecure, cfg.TrustProxyHeaders, cfg.LocalMode, authSvc, campaignSvc, arcSvc, locationSvc, npcSvc, npcTypeSvc, pcSvc, questSvc, sessionSvc, groupSvc, adminSvc, dashboardSvc, notesSvc, looseNoteSvc, loreSvc, timelineSvc, encounterSvc, encounterParticipantSvc, trashSvc)
 
 	return handlers.RequestLogger(handlers.NewRouter(h)), db, nil
 }
