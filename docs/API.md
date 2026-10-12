@@ -333,7 +333,7 @@ DELETE /api/{entity}/{id}/image
 GET    /api/{entity}/{id}/image
 ```
 
-Entities: `npcs`, `player-characters`, `locations`, `groups`.
+Entities: `npcs`, `player-characters`, `locations`, `groups`, `items`, `arcs`, `lore`, `quests`.
 
 - `POST`: PNG/JPEG only (detected by content), max 5 MiB. Replaces the previous image. Returns the entity.
 - `DELETE`: deletes the file and clears `image_path`. Returns the entity.
