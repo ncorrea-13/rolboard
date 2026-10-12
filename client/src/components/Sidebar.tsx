@@ -12,6 +12,7 @@ import {
   StickyNote,
   Earth,
   EyeOff,
+  Gem,
   Trash2,
   Settings,
   LogOut,
@@ -97,6 +98,12 @@ const navItems: {
     section: "mundo",
     Icon: Earth,
     color: "var(--accent-lime)",
+  },
+  {
+    labelKey: "sidebar.objetos",
+    section: "objetos",
+    Icon: Gem,
+    color: "var(--accent-cyan)",
   },
   {
     labelKey: "sidebar.secretos",

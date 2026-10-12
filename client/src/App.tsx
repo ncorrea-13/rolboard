@@ -52,6 +52,8 @@ import { SecretsList } from "./screens/SecretsList";
 import { SecretDetail } from "./screens/SecretDetail";
 import { SecretEdit } from "./screens/SecretEdit";
 import { useSecrets } from "./hooks/useSecrets";
+import { ItemsSection } from "./screens/ItemsSection";
+import { useEconomy } from "./hooks/useEconomy";
 import { ArcsList } from "./screens/ArcsList";
 import { FactionsList } from "./screens/FactionsList";
 import { LocationsList } from "./screens/LocationsList";
@@ -353,6 +355,15 @@ export default function App() {
 
   const { secrets, createSecret, saveSecret, toggleStatus, deleteSecret } =
     useSecrets(activeCampaignId, reloadKey, navigate, notify);
+
+  const {
+    currencies,
+    items,
+    saveCurrency,
+    deleteCurrency,
+    saveItem,
+    deleteItem,
+  } = useEconomy(activeCampaignId, reloadKey, notify);
 
   const npcTypesApi: NpcTypesApi = {
     types: npcTypes,
@@ -768,6 +779,17 @@ export default function App() {
                 />
               );
             })()}
+          {route.name === "section" && route.section === "objetos" && (
+            <ItemsSection
+              items={items}
+              currencies={currencies}
+              locations={campaignLocations}
+              onSaveItem={saveItem}
+              onDeleteItem={deleteItem}
+              onSaveCurrency={saveCurrency}
+              onDeleteCurrency={deleteCurrency}
+            />
+          )}
           {route.name === "section" && route.section === "secretos" && (
             <SecretsList
               secrets={secrets}
@@ -938,6 +960,8 @@ export default function App() {
               return (
                 <LocationDetail
                   location={location}
+                  items={items}
+                  currencies={currencies}
                   allLocations={campaignLocations}
                   vaultName={activeCampaign!.vaultPath}
                   campaignId={activeCampaignId!}
@@ -973,6 +997,7 @@ export default function App() {
               npc={selectedNpc}
               npcs={campaignNpcs}
               quests={campaignQuests}
+              items={items}
               campaignId={activeCampaignId!}
               vaultName={activeCampaign!.vaultPath}
               onEdit={() =>
@@ -1191,6 +1216,7 @@ export default function App() {
           {route.name === "player-detail" && selectedPlayer && (
             <PlayerDetail
               player={selectedPlayer}
+              items={items}
               campaignId={activeCampaignId!}
               vaultName={activeCampaign!.vaultPath}
               onEdit={() =>

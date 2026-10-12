@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./NpcDetail.css";
-import { type PlayerCharacter } from "../data/domain";
+import { type Item, type PlayerCharacter } from "../data/domain";
 import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
@@ -11,8 +11,9 @@ import { entityImageUrl } from "../lib/images";
 import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
 import { Tabs } from "../components/Tabs";
+import { Inventory } from "../components/Inventory";
 
-type PlayerTab = "summary" | "history" | "progression" | "sheet";
+type PlayerTab = "summary" | "history" | "progression" | "sheet" | "inventory";
 const TAB_STORAGE_KEY = "rolboard.playerDetailTab";
 
 function readStoredTab(): PlayerTab | null {
@@ -21,7 +22,8 @@ function readStoredTab(): PlayerTab | null {
     return v === "summary" ||
       v === "history" ||
       v === "progression" ||
-      v === "sheet"
+      v === "sheet" ||
+      v === "inventory"
       ? v
       : null;
   } catch {
@@ -32,6 +34,7 @@ function readStoredTab(): PlayerTab | null {
 interface PlayerDetailProps {
   player: PlayerCharacter;
   campaignId: string;
+  items: Item[];
   vaultName: string;
   onEdit: () => void;
   onBack: () => void;
@@ -42,6 +45,7 @@ interface PlayerDetailProps {
 export function PlayerDetail({
   player,
   campaignId,
+  items,
   vaultName,
   onEdit,
   onBack,
@@ -80,6 +84,7 @@ export function PlayerDetail({
   if (player.progressionNotes || player.avancesPath)
     tabs.push({ key: "progression", label: t("playerDetail.tabProgression") });
   if (hasSheet) tabs.push({ key: "sheet", label: t("playerDetail.tabSheet") });
+  tabs.push({ key: "inventory", label: t("playerDetail.tabInventory") });
   const activeTab = tabs.some((x) => x.key === tab) ? tab : "summary";
 
   function selectTab(next: PlayerTab) {
@@ -219,6 +224,13 @@ export function PlayerDetail({
                 text={player.progressionNotes}
               />
             </>
+          )}
+          {activeTab === "inventory" && (
+            <Inventory
+              kind="player-characters"
+              ownerId={player.id}
+              items={items}
+            />
           )}
           {activeTab === "sheet" && (
             <CharacterSheet

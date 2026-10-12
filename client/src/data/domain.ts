@@ -483,3 +483,55 @@ export interface Secret {
   knownByNpcIds: string[];
 }
 
+export interface Currency {
+  id: string;
+  campaignId: string;
+  name: string;
+  symbol: string;
+  rateToBase?: number;
+  isBase: boolean;
+  locationIds: string[];
+}
+
+export interface ItemPrice {
+  currencyId: string;
+  amount: number;
+}
+
+export interface Item {
+  id: string;
+  campaignId: string;
+  name: string;
+  description: string;
+  effect: string;
+  category: string;
+  rarity: string;
+  weight?: number;
+  prices: ItemPrice[];
+}
+
+export interface InventoryEntry {
+  itemId: string;
+  name: string;
+  quantity: number;
+  notes: string;
+}
+
+export interface ShopEntry {
+  itemId: string;
+  name: string;
+  notes: string;
+  prices: ItemPrice[];
+}
+
+export function formatPrices(
+  prices: ItemPrice[],
+  currencies: Currency[],
+): string {
+  return prices
+    .map((p) => {
+      const c = currencies.find((x) => x.id === p.currencyId);
+      return `${p.amount} ${c ? c.symbol || c.name : "?"}`;
+    })
+    .join(" · ");
+}

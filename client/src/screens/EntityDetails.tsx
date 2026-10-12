@@ -3,6 +3,7 @@ import { EntityDetail } from "../components/EntityDetail";
 import { StatusPill } from "../components/StatusPill";
 import { QuestStatusPill } from "../components/StatusPill";
 import { QuestNpcs } from "../components/QuestNpcs";
+import { ShopStock } from "../components/ShopStock";
 import { ArcStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
@@ -22,6 +23,8 @@ import {
   sessionCode,
   type Arc,
   type Group,
+  type Currency,
+  type Item,
   type Location,
   type Quest,
   type Npc,
@@ -401,8 +404,12 @@ export function LocationDetail({
   onEdit,
   onDelete,
   imageVersion = 0,
+  items,
+  currencies,
 }: {
   location: Location;
+  items: Item[];
+  currencies: Currency[];
   allLocations: Location[];
   vaultName: string;
   campaignId: string;
@@ -446,6 +453,16 @@ export function LocationDetail({
         {
           label: t("common.description"),
           value: <MarkdownText text={location.description} />,
+        },
+        {
+          label: t("shop.title"),
+          value: (
+            <ShopStock
+              locationId={location.id}
+              items={items}
+              currencies={currencies}
+            />
+          ),
         },
         {
           label: `${t("locationDetail.subLocations")} (${children.length})`,

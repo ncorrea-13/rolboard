@@ -20,6 +20,7 @@ const API_ERROR_KEYS: Record<string, TranslationKey> = {
   location_in_use: "apiError.locationInUse",
   npc_in_use: "apiError.npcInUse",
   timeline_in_use: "apiError.timelineInUse",
+  currency_in_use: "apiError.currencyInUse",
   restore_parent_deleted: "apiError.restoreParentDeleted",
   image_unsupported_format: "apiError.imageUnsupportedFormat",
   image_too_large: "apiError.imageTooLarge",

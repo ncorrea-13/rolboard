@@ -56,6 +56,7 @@ export type DashboardSection =
   | "notas"
   | "mundo"
   | "secretos"
+  | "objetos"
   | "papelera";
 
 interface DashboardSummaryData {

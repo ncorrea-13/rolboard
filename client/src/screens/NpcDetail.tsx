@@ -4,10 +4,12 @@ import {
   crystalColorFor,
   crystalLabelFor,
   questStatusColor,
+  type Item,
   type Npc,
   type Quest,
 } from "../data/domain";
 import { CharacterSheet } from "../components/CharacterSheet";
+import { Inventory } from "../components/Inventory";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
@@ -23,6 +25,7 @@ interface NpcDetailProps {
   npc: Npc;
   npcs: Npc[];
   quests: Quest[];
+  items: Item[];
   campaignId: string;
   vaultName: string;
   onEdit: () => void;
@@ -35,6 +38,7 @@ export function NpcDetail({
   npc,
   npcs,
   quests,
+  items,
   campaignId,
   vaultName,
   onEdit,
@@ -252,6 +256,10 @@ export function NpcDetail({
               </div>
             </div>
           )}
+          <div>
+            <span className="label">{t("inventory.title")}</span>
+            <Inventory kind="npcs" ownerId={npc.id} items={items} />
+          </div>
           {relatedQuests.length > 0 && (
             <div>
               <span className="label">{t("npcDetail.relatedQuests")}</span>

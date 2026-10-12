@@ -100,6 +100,27 @@
   grid-template-columns: 2.4fr 1fr 1.6fr 1.4fr;
 }
 
+.npc-list__row--item {
+  grid-template-columns: 2.2fr 1fr 1fr 1.4fr;
+}
+
+.npc-list__row--currency {
+  grid-template-columns: 1.6fr 0.6fr 0.8fr 2fr;
+}
+
+.npc-list__row--button {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--border-hairline);
+  text-align: left;
+  color: inherit;
+  font: inherit;
+}
+
+.npc-list__row--button:hover {
+  background: var(--bg-elevated);
+}
+
 .npc-list__lore-main {
   min-width: 0;
 }

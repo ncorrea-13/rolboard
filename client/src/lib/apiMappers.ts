@@ -18,6 +18,11 @@ import {
   type LoreEntry,
   type Timeline,
   type Secret,
+  type Currency,
+  type Item,
+  type ItemPrice,
+  type InventoryEntry,
+  type ShopEntry,
   type TimelineEvent,
   type SessionType,
   type StatMap,
@@ -757,3 +762,131 @@ export function secretToApiPayload(s: SecretValues) {
   };
 }
 
+export interface ApiPrice {
+  currency_id: number;
+  amount: number;
+}
+
+function mapPrices(prices: ApiPrice[] | null): ItemPrice[] {
+  return (prices ?? []).map((p) => ({
+    currencyId: String(p.currency_id),
+    amount: p.amount,
+  }));
+}
+
+function pricesToApi(prices: ItemPrice[]): ApiPrice[] {
+  return prices.map((p) => ({
+    currency_id: Number(p.currencyId),
+    amount: p.amount,
+  }));
+}
+
+export interface ApiCurrency {
+  id: number;
+  campaign_id: number;
+  name: string;
+  symbol: string;
+  rate_to_base: number | null;
+  is_base: boolean;
+  location_ids: number[] | null;
+}
+
+export function mapCurrency(c: ApiCurrency): Currency {
+  return {
+    id: String(c.id),
+    campaignId: String(c.campaign_id),
+    name: c.name,
+    symbol: c.symbol,
+    rateToBase: c.rate_to_base ?? undefined,
+    isBase: c.is_base,
+    locationIds: (c.location_ids ?? []).map(String),
+  };
+}
+
+export type CurrencyValues = Omit<Currency, "id" | "campaignId">;
+
+export function currencyToApiPayload(c: CurrencyValues) {
+  return {
+    name: c.name,
+    symbol: c.symbol,
+    rate_to_base: c.rateToBase ?? null,
+    is_base: c.isBase,
+    location_ids: c.locationIds.map(Number),
+  };
+}
+
+export interface ApiItem {
+  id: number;
+  campaign_id: number;
+  name: string;
+  description: string;
+  effect: string;
+  category: string;
+  rarity: string;
+  weight: number | null;
+  prices: ApiPrice[] | null;
+}
+
+export function mapItem(i: ApiItem): Item {
+  return {
+    id: String(i.id),
+    campaignId: String(i.campaign_id),
+    name: i.name,
+    description: i.description,
+    effect: i.effect,
+    category: i.category,
+    rarity: i.rarity,
+    weight: i.weight ?? undefined,
+    prices: mapPrices(i.prices),
+  };
+}
+
+export type ItemValues = Omit<Item, "id" | "campaignId">;
+
+export function itemToApiPayload(i: ItemValues) {
+  return {
+    name: i.name,
+    description: i.description,
+    effect: i.effect,
+    category: i.category,
+    rarity: i.rarity,
+    weight: i.weight ?? null,
+    prices: pricesToApi(i.prices),
+  };
+}
+
+export interface ApiInventoryEntry {
+  item_id: number;
+  name: string;
+  quantity: number;
+  notes: string;
+}
+
+export function mapInventoryEntry(e: ApiInventoryEntry): InventoryEntry {
+  return {
+    itemId: String(e.item_id),
+    name: e.name,
+    quantity: e.quantity,
+    notes: e.notes,
+  };
+}
+
+export interface ApiShopEntry {
+  item_id: number;
+  name: string;
+  notes: string;
+  prices: ApiPrice[] | null;
+}
+
+export function mapShopEntry(e: ApiShopEntry): ShopEntry {
+  return {
+    itemId: String(e.item_id),
+    name: e.name,
+    notes: e.notes,
+    prices: mapPrices(e.prices),
+  };
+}
+
+export function shopPricesToApi(prices: ItemPrice[]) {
+  return pricesToApi(prices);
+}

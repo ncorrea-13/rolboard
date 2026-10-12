@@ -19,6 +19,7 @@ const slugBySection: Record<DashboardSection, string> = {
   notas: "notes",
   mundo: "world",
   secretos: "secrets",
+  objetos: "items",
   papelera: "trash",
 };
 
