@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { PORTFOLIO_URL } from "./SiteFooter";
-import { isLocalMode, openExternal } from "../lib/api";
+import { openExternal } from "../lib/api";
+import { currentMode } from "../lib/appMode";
 
 export function Callout({
   kind,
@@ -30,11 +31,16 @@ export function Code({ children }: { children: string }) {
 export function ForMode({
   web,
   desktop,
+  android,
 }: {
   web: ReactNode;
   desktop: ReactNode;
+  android?: ReactNode;
 }) {
-  return <>{isLocalMode() ? desktop : web}</>;
+  const mode = currentMode();
+  if (mode === "web") return <>{web}</>;
+  if (mode === "android" && android !== undefined) return <>{android}</>;
+  return <>{desktop}</>;
 }
 
 export function Author() {

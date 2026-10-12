@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -77,6 +78,9 @@ func NewRouter(h *Handlers) http.Handler {
 	mux.Handle("GET /api/quests/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.GetQuest)))
 	mux.Handle("PUT /api/quests/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.UpdateQuest)))
 	mux.Handle("DELETE /api/quests/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.DeleteQuest)))
+	mux.Handle("GET /api/quests/{id}/npcs", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.ListQuestNpcs)))
+	mux.Handle("PUT /api/quests/{id}/npcs/{npcId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.SetQuestNpc)))
+	mux.Handle("DELETE /api/quests/{id}/npcs/{npcId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("quests"), h.RemoveQuestNpc)))
 
 	mux.Handle("GET /api/campaigns/{id}/sessions", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListSessions)))
 	mux.Handle("POST /api/campaigns/{id}/sessions", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateSession)))
@@ -86,6 +90,56 @@ func NewRouter(h *Handlers) http.Handler {
 	mux.Handle("GET /api/sessions/{id}/npcs", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("sessions"), h.ListSessionNpcs)))
 	mux.Handle("POST /api/sessions/{id}/npcs", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("sessions"), h.AddSessionNpc)))
 	mux.Handle("DELETE /api/sessions/{id}/npcs/{npcId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("sessions"), h.RemoveSessionNpc)))
+	mux.Handle("GET /api/npcs/{id}/appearances", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.NPCAppearances())))
+	mux.Handle("GET /api/player-characters/{id}/appearances", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), h.PCAppearances())))
+	mux.Handle("GET /api/campaigns/{id}/currencies", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListCurrencies)))
+	mux.Handle("POST /api/campaigns/{id}/currencies", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateCurrency)))
+	mux.Handle("PUT /api/currencies/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("currencies"), h.UpdateCurrency)))
+	mux.Handle("DELETE /api/currencies/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("currencies"), h.DeleteCurrency)))
+	mux.Handle("GET /api/campaigns/{id}/items", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListItems)))
+	mux.Handle("POST /api/campaigns/{id}/items", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateItem)))
+	mux.Handle("GET /api/items/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("items"), h.GetItem)))
+	mux.Handle("PUT /api/items/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("items"), h.UpdateItem)))
+	mux.Handle("DELETE /api/items/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("items"), h.DeleteItem)))
+	pcList, pcSet, pcRemove := h.inventoryHandlers("pc")
+	mux.Handle("GET /api/player-characters/{id}/items", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), pcList)))
+	mux.Handle("PUT /api/player-characters/{id}/items/{itemId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), pcSet)))
+	mux.Handle("DELETE /api/player-characters/{id}/items/{itemId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), pcRemove)))
+	npcList, npcSet, npcRemove := h.inventoryHandlers("npc")
+	mux.Handle("GET /api/npcs/{id}/items", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), npcList)))
+	mux.Handle("PUT /api/npcs/{id}/items/{itemId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), npcSet)))
+	mux.Handle("DELETE /api/npcs/{id}/items/{itemId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), npcRemove)))
+	mux.Handle("GET /api/locations/{id}/items", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("locations"), h.ListShop)))
+	mux.Handle("PUT /api/locations/{id}/items/{itemId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("locations"), h.SetShopItem)))
+	mux.Handle("DELETE /api/locations/{id}/items/{itemId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("locations"), h.RemoveShopItem)))
+	mux.Handle("GET /api/campaigns/{id}/secrets", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListSecrets)))
+	mux.Handle("POST /api/campaigns/{id}/secrets", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateSecret)))
+	mux.Handle("GET /api/secrets/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("secrets"), h.GetSecret)))
+	mux.Handle("PUT /api/secrets/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("secrets"), h.UpdateSecret)))
+	mux.Handle("DELETE /api/secrets/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("secrets"), h.DeleteSecret)))
+	mux.Handle("GET /api/campaigns/{id}/timelines", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListTimelines)))
+	mux.Handle("POST /api/campaigns/{id}/timelines", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateTimeline)))
+	mux.Handle("PUT /api/timelines/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("timelines"), h.UpdateTimeline)))
+	mux.Handle("DELETE /api/timelines/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("timelines"), h.DeleteTimeline)))
+	mux.Handle("GET /api/campaigns/{id}/timeline-events", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListTimelineEvents)))
+	mux.Handle("POST /api/campaigns/{id}/timeline-events", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateTimelineEvent)))
+	mux.Handle("GET /api/timeline-events/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("timeline_events"), h.GetTimelineEvent)))
+	mux.Handle("PUT /api/timeline-events/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("timeline_events"), h.UpdateTimelineEvent)))
+	mux.Handle("DELETE /api/timeline-events/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("timeline_events"), h.DeleteTimelineEvent)))
+	mux.Handle("GET /api/campaigns/{id}/lore-categories", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListLoreCategories)))
+	mux.Handle("POST /api/campaigns/{id}/lore-categories", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateLoreCategory)))
+	mux.Handle("PUT /api/lore-categories/{id}", http.HandlerFunc(h.requireCampaign(h.resolveLoreCategory, h.UpdateLoreCategory)))
+	mux.Handle("DELETE /api/lore-categories/{id}", http.HandlerFunc(h.requireCampaign(h.resolveLoreCategory, h.DeleteLoreCategory)))
+	mux.Handle("GET /api/campaigns/{id}/lore", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListLoreEntries)))
+	mux.Handle("POST /api/campaigns/{id}/lore", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateLoreEntry)))
+	mux.Handle("GET /api/lore/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("lore_entries"), h.GetLoreEntry)))
+	mux.Handle("PUT /api/lore/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("lore_entries"), h.UpdateLoreEntry)))
+	mux.Handle("DELETE /api/lore/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("lore_entries"), h.DeleteLoreEntry)))
+	mux.Handle("GET /api/campaigns/{id}/loose-notes", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListLooseNotes)))
+	mux.Handle("POST /api/campaigns/{id}/loose-notes", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.CreateLooseNote)))
+	mux.Handle("GET /api/loose-notes/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("notes"), h.GetLooseNote)))
+	mux.Handle("PUT /api/loose-notes/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("notes"), h.UpdateLooseNote)))
+	mux.Handle("DELETE /api/loose-notes/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("notes"), h.DeleteLooseNote)))
 	mux.Handle("GET /api/sessions/{id}/quests", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("sessions"), h.ListSessionQuests)))
 	mux.Handle("POST /api/sessions/{id}/quests", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("sessions"), h.AddSessionQuest)))
 	mux.Handle("DELETE /api/sessions/{id}/quests/{questId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("sessions"), h.RemoveSessionQuest)))
@@ -117,6 +171,19 @@ func NewRouter(h *Handlers) http.Handler {
 
 	mux.Handle("GET /api/campaigns/{id}/trash", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ListTrash)))
 	mux.Handle("POST /api/campaigns/{id}/trash/{kind}/{itemId}/restore", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.RestoreTrashItem)))
+
+	h.registerImageRoutes(mux, "items", "items", func(ctx context.Context, id int64) (any, error) {
+		return h.economy.GetItem(ctx, id)
+	})
+	h.registerImageRoutes(mux, "arcs", "arcs", func(ctx context.Context, id int64) (any, error) {
+		return h.arcs.GetByID(ctx, id)
+	})
+	h.registerImageRoutes(mux, "lore", "lore_entries", func(ctx context.Context, id int64) (any, error) {
+		return h.lore.GetEntry(ctx, id)
+	})
+	h.registerImageRoutes(mux, "quests", "quests", func(ctx context.Context, id int64) (any, error) {
+		return h.quests.GetByID(ctx, id)
+	})
 
 	mux.Handle("POST /api/campaigns/{id}/reindex", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.Reindex)))
 	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.requireCampaign(resolveCampaignIDFromQuery, h.ListVaultDirs)))

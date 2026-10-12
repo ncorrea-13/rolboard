@@ -27,7 +27,7 @@ npc_relations   npc → npc          (role, dirigida)
 session_npcs    session ↔ npc
 session_pcs     session ↔ pc
 session_quests  session ↔ quest
-quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
+quest_npcs      quest ↔ npc        (rol)
 ```
 
 ## Convenciones
@@ -73,7 +73,9 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 | arc_id         | opcional |
 | session_number | admite `0` |
 | sub_number     | default `0`; interludios (4.1 → `4`, `1`). `99` marca sesiones archivadas |
-| session_type   | `session` \| `interlude` \| `planning` |
+| session_type   | `session` \| `interlude` \| `planning` \| `oneshot` |
+| title          | solo oneshots (UI); `''` en el resto |
+| planned        | `0`/`1`, solo oneshots: planificado vs jugado. Los demás tipos usan `session_type = 'planning'` |
 | date           | `YYYY-MM-DD` |
 | summary        | |
 | prep_notes     | solo dashboard |
@@ -126,7 +128,7 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 | race, class        | texto libre; `class` solo dashboard |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` (default) |
 | spren_npc_id       | opcional, solo reindex |
-| backstory, progression_notes | solo dashboard |
+| description, backstory, progression_notes | solo dashboard; el reindex nunca los pisa (ni `class`) |
 | attributes, skills | JSON |
 | current_hp, max_hp | opcionales; persisten entre combates |
 | obsidian_path      | |
@@ -156,6 +158,67 @@ quest_npcs      quest ↔ npc        (solo esquema, sin endpoints)
 | priority    | opcional |
 
 Sin `obsidian_path`: las quests viven solo en la DB.
+
+### lore_categories / lore_entries
+
+Lore por campaña. Las categorías siguen el patrón de `npc_types` (`key` derivada del label, `color`, `position`) y se siembran al crear la campaña (la migración 0026 siembra las existentes).
+
+| Campo (`lore_entries`) | Notas |
+| ---------------------- | ----- |
+| title                  | obligatorio |
+| body                   | Markdown |
+| category_id            | opcional; una categoría referenciada por alguna entrada (aun borrada) no se puede borrar |
+| arc_id, location_id    | opcionales, `ON DELETE RESTRICT` |
+| obsidian_path          | reservado para una carpeta `Lore/` del vault a futuro |
+
+### currencies / items y sus bridges
+
+| Tabla | Notas |
+| ----- | ----- |
+| `currencies` | `name`, `symbol`, `rate_to_base` opcional (> 0), `is_base`. Como máximo una base activa por campaña (índice único parcial) |
+| `currency_locations` | dónde circula una moneda |
+| `items` | `name`, `description`, `effect` (texto libre), `category`, `rarity` (texto libre), `weight` opcional |
+| `item_prices` | `(item_id, currency_id, amount)`: un objeto puede tener precio en varias monedas |
+| `pc_items`, `npc_items` | inventario: `quantity` (> 0) y `notes` |
+| `location_items` | qué vende una locación, con `notes` |
+| `location_item_prices` | precio propio por moneda; FK compuesta a `location_items`. Sin filas rige el precio de catálogo |
+
+### secrets / secret_npcs
+
+Secretos narrativos solo para el DM.
+
+| Campo (`secrets`) | Notas |
+| ----------------- | ----- |
+| title, body       | title obligatorio; body es Markdown |
+| status            | `hidden` \| `revealed`, por defecto `hidden` |
+| revealed_session_id | opcional; solo se conserva mientras está `revealed` |
+| npc_id, location_id, lore_entry_id | opcionales: de qué trata el secreto |
+
+`secret_npcs (secret_id, npc_id)` lista quién lo conoce. Un NPC dado de baja deja de figurar como que lo conoce (las lecturas filtran las filas borradas).
+
+### timelines / timeline_events
+
+Cronologías del mundo. Una cronología es un carril con color; cada evento pertenece a una sola.
+
+| Campo (`timeline_events`) | Notas |
+| ------------------------- | ----- |
+| timeline_id               | obligatorio, `ON DELETE RESTRICT` |
+| title, description        | title obligatorio; description es Markdown |
+| date_label, end_date_label | texto libre para mostrar (cada setting tiene su calendario) |
+| sort_key                  | `REAL`, escrito a mano; único criterio de orden |
+| arc_id, session_id, location_id, group_id, lore_entry_id | opcionales, de la misma campaña |
+
+`timelines` lleva `name`, `description`, `color`, `start_label` / `end_label` opcionales y `position`. Una cronología con eventos activos no se puede borrar (`409 timeline_in_use`).
+
+### notes
+
+Notas sueltas (`LooseNote` en el código, para no chocar con las notas del vault). Solo dashboard.
+
+| Campo       | Notas |
+| ----------- | ----- |
+| title       | obligatorio |
+| body        | Markdown |
+| pending     | `0`/`1`, "pendiente de ubicar"; default `1` |
 
 ### encounters
 
@@ -199,7 +262,7 @@ npc_relations  (from_npc_id, to_npc_id, role)              PK (from_npc_id, to_n
 session_npcs   (session_id, npc_id)                        PK (session_id, npc_id)
 session_pcs    (session_id, pc_id)                         PK (session_id, pc_id)
 session_quests (session_id, quest_id)                      PK (session_id, quest_id)
-quest_npcs     (quest_id, npc_id)                          PK (quest_id, npc_id)
+quest_npcs     (quest_id, npc_id, role)                    PK (quest_id, npc_id)
 ```
 
 `source` (`npc_groups`, `pc_groups`): `vault` | `dashboard` (default) | `removed`.

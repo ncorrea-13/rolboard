@@ -27,7 +27,7 @@ npc_relations   npc → npc          (role, directed)
 session_npcs    session ↔ npc
 session_pcs     session ↔ pc
 session_quests  session ↔ quest
-quest_npcs      quest ↔ npc        (schema only, no endpoints)
+quest_npcs      quest ↔ npc        (role)
 ```
 
 ## Conventions
@@ -73,13 +73,15 @@ quest_npcs      quest ↔ npc        (schema only, no endpoints)
 | arc_id         | optional |
 | session_number | allows `0` |
 | sub_number     | default `0`; interludes (4.1 → `4`, `1`). `99` marks archived sessions |
-| session_type   | `session` \| `interlude` \| `planning` |
+| session_type   | `session` \| `interlude` \| `planning` \| `oneshot` |
+| title          | oneshots only (UI); `''` otherwise |
+| planned        | `0`/`1`, oneshots only: planned vs played. Other types use `session_type = 'planning'` |
 | date           | `YYYY-MM-DD` |
 | summary        | |
 | prep_notes     | dashboard only |
 | obsidian_path  | |
 
-Unique partial index `sessions_active_number_uq` on `(campaign_id, session_number, sub_number) WHERE deleted_at IS NULL` (migration 0023): a deleted session frees its number, and restoring it fails with `409` if the number was taken meanwhile. `sub_number` is `0`, not `NULL`, because SQLite doesn't compare `NULL` in a unique index.
+Unique partial index `sessions_active_number_uq` on `(campaign_id, session_number, sub_number) WHERE deleted_at IS NULL AND session_type <> 'oneshot'` (migrations 0023 and 0024). Oneshots (`O1`, `O2`...) are numbered on their own through `sessions_active_oneshot_number_uq` on `(campaign_id, session_number)`, so `O1` and `S1` coexist: a deleted session frees its number, and restoring it fails with `409` if the number was taken meanwhile. `sub_number` is `0`, not `NULL`, because SQLite doesn't compare `NULL` in a unique index.
 
 ### locations
 
@@ -126,7 +128,7 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 | race, class        | free text; `class` dashboard only |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` (default) |
 | spren_npc_id       | optional, reindex only |
-| backstory, progression_notes | dashboard only |
+| description, backstory, progression_notes | dashboard only; the reindex never overwrites them (nor `class`) |
 | attributes, skills | JSON |
 | current_hp, max_hp | optional; persist across encounters |
 | obsidian_path      | |
@@ -154,8 +156,71 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 | description, notes | |
 | status      | `active` \| `completed` \| `failed` \| `on_hold` |
 | priority    | optional |
+| image_path  | written by the image endpoint only (migration 0027) |
 
 No `obsidian_path`: quests live only in the DB.
+
+### lore_categories / lore_entries
+
+Per-campaign lore. Categories follow the `npc_types` pattern (`key` derived from the label, `color`, `position`) and are seeded on campaign creation (migration 0026 seeds existing campaigns).
+
+| Field (`lore_entries`) | Notes |
+| ---------------------- | ----- |
+| title                  | required |
+| body                   | Markdown |
+| category_id            | optional; a category referenced by any entry (even a deleted one) can't be deleted |
+| arc_id, location_id    | optional, `ON DELETE RESTRICT` |
+| obsidian_path          | reserved for a future `Lore/` folder in the vault |
+| image_path             | illustration; written by the image endpoint only (migration 0027) |
+
+### currencies / items and their bridges
+
+| Table | Notes |
+| ----- | ----- |
+| `currencies` | `name`, `symbol`, optional `rate_to_base` (> 0), `is_base`. At most one active base per campaign (partial unique index) |
+| `currency_locations` | where a currency circulates |
+| `items` | `name`, `description`, `effect` (free text), `category`, `rarity` (free text), optional `weight`, `image_path` (image endpoint only) |
+| `item_prices` | `(item_id, currency_id, amount)`: an item can be priced in several currencies |
+| `pc_items`, `npc_items` | inventory: `quantity` (> 0) and `notes` |
+| `location_items` | what a location sells, with `notes` |
+| `location_item_prices` | own price per currency; composite FK to `location_items`. Without rows, the catalog price applies |
+
+### secrets / secret_npcs
+
+DM-only narrative secrets.
+
+| Field (`secrets`) | Notes |
+| ----------------- | ----- |
+| title, body       | title required; body is Markdown |
+| status            | `hidden` \| `revealed`, default `hidden` |
+| revealed_session_id | optional; only kept while `revealed` |
+| npc_id, location_id, lore_entry_id | optional: what the secret is about |
+
+`secret_npcs (secret_id, npc_id)` lists who knows it. A deleted NPC stops showing as knowing the secret (reads filter deleted rows).
+
+### timelines / timeline_events
+
+World chronologies. A timeline is a colored lane; events belong to exactly one of them.
+
+| Field (`timeline_events`) | Notes |
+| ------------------------- | ----- |
+| timeline_id               | required, `ON DELETE RESTRICT` |
+| title, description        | title required; description is Markdown |
+| date_label, end_date_label | free text for display (each setting has its own calendar) |
+| sort_key                  | `REAL`, typed by hand; the only ordering criterion |
+| arc_id, session_id, location_id, group_id, lore_entry_id | optional, same campaign |
+
+`timelines` carry `name`, `description`, `color`, optional `start_label` / `end_label` and `position`. A timeline with active events can't be deleted (`409 timeline_in_use`).
+
+### notes
+
+Loose notes (`LooseNote` in the code, to avoid clashing with vault notes). Dashboard only.
+
+| Field       | Notes |
+| ----------- | ----- |
+| title       | required |
+| body        | Markdown |
+| pending     | `0`/`1`, "to be filed"; default `1` |
 
 ### encounters
 
@@ -199,7 +264,7 @@ npc_relations  (from_npc_id, to_npc_id, role)               PK (from_npc_id, to_
 session_npcs   (session_id, npc_id)                         PK (session_id, npc_id)
 session_pcs    (session_id, pc_id)                           PK (session_id, pc_id)
 session_quests (session_id, quest_id)                        PK (session_id, quest_id)
-quest_npcs     (quest_id, npc_id)                            PK (quest_id, npc_id)
+quest_npcs     (quest_id, npc_id, role)                      PK (quest_id, npc_id)
 ```
 
 `source` (`npc_groups`, `pc_groups`): `vault` | `dashboard` (default) | `removed`.

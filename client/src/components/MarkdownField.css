@@ -1,0 +1,24 @@
+.md-field__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.md-field__expand {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 4px;
+  display: inline-flex;
+}
+
+.md-field__expand:hover {
+  color: var(--text-body-strong);
+}
+
+.md-field__full {
+  flex: 1;
+  margin-top: 0;
+  resize: none;
+}

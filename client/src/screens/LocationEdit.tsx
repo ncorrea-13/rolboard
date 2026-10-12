@@ -5,6 +5,7 @@ import { ImageUploadField } from "../components/ImageUploadField";
 import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
 
 interface LocationEditProps {
   location: Location;
@@ -60,13 +61,7 @@ export function LocationEdit({
       <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {location.id
               ? `${t("common.editing")} · ${location.name}`
               : t("locationEdit.new")}
@@ -98,21 +93,17 @@ export function LocationEdit({
           <div>
             <span className="label">{t("common.name")}</span>
             <input
+              aria-label={t("common.name")}
               className="npc-edit__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div>
-            <span className="label">
-              {t("common.description")} {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={`${t("common.description")} ${t("common.supportsMarkdown")}`}
+            value={description}
+            onChange={setDescription}
+          />
         </div>
 
         <div className="npc-edit__col">
@@ -141,6 +132,7 @@ export function LocationEdit({
           <div>
             <span className="label">{t("common.type")}</span>
             <select
+              aria-label={t("common.type")}
               className="npc-edit__select npc-edit__select--native"
               value={locationType}
               onChange={(e) =>
@@ -157,6 +149,7 @@ export function LocationEdit({
           <div>
             <span className="label">{t("locationEdit.parentLocation")}</span>
             <select
+              aria-label={t("locationEdit.parentLocation")}
               className="npc-edit__select npc-edit__select--native"
               value={parentId}
               onChange={(e) => setParentId(e.target.value)}

@@ -39,9 +39,16 @@ type Handlers struct {
 	admin                 *service.AdminService
 	dashboard             *service.DashboardService
 	notes                 *service.NotesService
+	looseNotes            *service.LooseNoteService
+	lore                  *service.LoreService
+	timeline              *service.TimelineService
+	secrets               *service.SecretService
+	economy               *service.EconomyService
+	appearanceSvc         *service.AppearanceService
 	encounters            *service.EncounterService
 	encounterParticipants *service.EncounterParticipantService
 	trash                 *service.TrashService
+	entityImages          *service.EntityImageService
 }
 
 func NewHandlers(
@@ -63,9 +70,16 @@ func NewHandlers(
 	admin *service.AdminService,
 	dashboard *service.DashboardService,
 	notes *service.NotesService,
+	looseNotes *service.LooseNoteService,
+	lore *service.LoreService,
+	timeline *service.TimelineService,
+	secrets *service.SecretService,
+	economy *service.EconomyService,
+	appearanceSvc *service.AppearanceService,
 	encounters *service.EncounterService,
 	encounterParticipants *service.EncounterParticipantService,
 	trash *service.TrashService,
+	entityImages *service.EntityImageService,
 ) *Handlers {
 	return &Handlers{
 		db:                    db,
@@ -86,8 +100,15 @@ func NewHandlers(
 		admin:                 admin,
 		dashboard:             dashboard,
 		notes:                 notes,
+		looseNotes:            looseNotes,
+		lore:                  lore,
+		timeline:              timeline,
+		secrets:               secrets,
+		economy:               economy,
+		appearanceSvc:         appearanceSvc,
 		encounters:            encounters,
 		encounterParticipants: encounterParticipants,
 		trash:                 trash,
+		entityImages:          entityImages,
 	}
 }

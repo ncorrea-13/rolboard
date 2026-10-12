@@ -6,6 +6,7 @@ import { CampaignStatusPill } from "../components/StatusPill";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { useT } from "../lib/i18n";
 import { Link } from "../components/Link";
+import { Crack } from "../components/Crack";
 import { AppSettings } from "../components/AppSettings";
 import { isLocalMode, openExternal } from "../lib/api";
 import { newerRelease, type Release } from "../lib/updates";
@@ -33,12 +34,11 @@ export function CampaignSelector({
     <div className="card campaign-selector">
       <header className="campaign-selector__header">
         <div>
-          <div className="campaign-selector__title">
-            <span className="sidebar__glow-standalone" />
-            <span className="display" style={{ fontSize: 26 }}>
-              {t("campaignSelector.title")}
-            </span>
-          </div>
+          <img
+            className="campaign-selector__brand"
+            src="/logo-wordmark.png"
+            alt={t("campaignSelector.title")}
+          />
           <div className="campaign-selector__subtitle">
             {campaigns.length}{" "}
             {campaigns.length === 1
@@ -46,7 +46,7 @@ export function CampaignSelector({
               : t("campaignSelector.many")}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="campaign-selector__actions">
           {isLocalMode() && (
             <button
               className="btn btn-secondary"
@@ -63,6 +63,7 @@ export function CampaignSelector({
           </button>
         </div>
       </header>
+      <Crack />
       {release && (
         <a
           className="campaign-selector__update"
@@ -75,32 +76,41 @@ export function CampaignSelector({
         </a>
       )}
       <div className="campaign-selector__grid">
-        {campaigns.map((c) => (
-          <Link
-            key={c.id}
-            className="card campaign-card campaign-card--clickable"
-            route={{ name: "section", section: "resumen" }}
-            campaignId={c.id}
-            onNavigate={() => onSelect(c.id)}
-          >
-            <div className="campaign-card__top">
-              <div>
-                <div className="display" style={{ fontSize: 18.5 }}>
-                  {c.name}
+        {[...campaigns]
+          .sort(
+            (x, y) =>
+              Number(y.status === "active") - Number(x.status === "active"),
+          )
+          .map((c) => (
+            <Link
+              key={c.id}
+              className={`campaign-card campaign-card--clickable${c.status === "active" ? " campaign-card--active" : ""}`}
+              route={{ name: "section", section: "resumen" }}
+              campaignId={c.id}
+              onNavigate={() => onSelect(c.id)}
+            >
+              <div className="campaign-card__top">
+                <div>
+                  <div className="campaign-card__system">{c.system}</div>
+                  <div className="display campaign-card__name">{c.name}</div>
                 </div>
-                <div className="campaign-card__system">{c.system}</div>
+                <CampaignStatusPill status={c.status} />
               </div>
-              <CampaignStatusPill status={c.status} />
-            </div>
-            <div className="campaign-card__bottom">
-              <span>{c.meta}</span>
-              <span>{c.last}</span>
-            </div>
-          </Link>
-        ))}
-        <div className="campaign-card campaign-card--new" onClick={onCreate}>
+              {(c.meta || c.last) && (
+                <div className="campaign-card__bottom">
+                  <span>{c.meta}</span>
+                  <span>{c.last}</span>
+                </div>
+              )}
+            </Link>
+          ))}
+        <button
+          type="button"
+          className="campaign-card campaign-card--new"
+          onClick={onCreate}
+        >
           {t("campaignSelector.newCard")}
-        </div>
+        </button>
       </div>
       {settingsOpen && <AppSettings onClose={() => setSettingsOpen(false)} />}
     </div>

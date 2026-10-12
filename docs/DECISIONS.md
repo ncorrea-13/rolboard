@@ -73,6 +73,37 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - **API errors are translated by the client, not the server.** The server's `http.Error` text is English and meant for logs; only errors the user can act on carry a `code` the UI maps to the app language. Everything else shows a generic message by status.
 - **Confirmations use an in-app dialog**, not the browser's `confirm()`: it follows the app's look and language and works in the desktop and Android webviews.
 
+## Lore
+
+- **Per campaign, not shared.** No "world" entity: it would break the per-campaign isolation (auth, vault, reindex, trash).
+- **Categories are data, not an enum**, same pattern as `npc_types`: each campaign has its own, seeded on creation. An entry may have no category.
+- **A category used by any entry can't be deleted** (`409`), counting soft-deleted entries too, so a restore never points at a missing category.
+- **Deleting an arc or location doesn't block on lore entries.** The link is optional and the entry simply stops showing it.
+
+## Items and economy
+
+- **Narrative, not a simulation.** An item has a free-text "what it does", a category and a rarity; there are no mechanical bonuses and no supply and demand.
+- **One optional base currency per campaign.** Other currencies carry `rate_to_base`; setting a new base moves the flag. Currencies are not tied to a game system: each campaign defines its own.
+- **Prices per currency.** An item can cost 5 spheres or 2 gold; a shop may override the catalog price for its location.
+- **A currency used by an item or shop price can't be deleted** (`409`).
+
+## Search and "appears in"
+
+- **Search is client-side.** Every entity of the campaign is already loaded in memory, so the palette (Ctrl/Cmd+K, or the sidebar button) filters locally: no endpoint, no index to keep in sync. Ranking is title match first, then subtitle, then body; accents and case are ignored.
+- **"Appears in" is computed where the data lives.** Sessions, quests and encounters of an NPC or a player character come from `GET .../appearances` (they need reverse joins); locations, factions and lore entries use the lists the client already holds (lore, timeline events, secrets, NPCs, currencies).
+
+## Secrets
+
+- **A secret is not tied to a single NPC.** It optionally points at an NPC, a location or a lore entry (what it is about), and a separate bridge lists who knows it.
+- **Revealing keeps the history.** Revealing stores the session (optional); hiding it again clears it, so the session never lingers on a hidden secret.
+
+## Timeline
+
+- **Free-text dates, numeric order.** Each setting has its own calendar and it can't be parsed, so `date_label` is only displayed and `sort_key` (typed by hand) orders. Inserting an event in the middle needs no renumbering.
+- **Several timelines, one view.** Timelines are lanes (world history, campaign chronicle, a war) shown together and filtered with chips. "Events of faction X / place Y" are filters over `group_id` / `location_id`, not extra timelines; filtering by a location includes its sub-locations.
+- **One timeline per event.** A many-to-many link is left out until a real case needs it.
+- **The first event creates a default timeline** so there is no mandatory previous step.
+
 ## Combat tracker
 
 - A DM control view, list-based. No map.
@@ -93,7 +124,7 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 
 ## Images
 
-- One image per NPC, PC, location and faction (`image_path`). The same file serves both the large portrait and the small icon (CSS). No gallery or polymorphic table.
+- One image per NPC, PC, location, faction, item, arc, lore entry and quest (`image_path`). The same file serves both the large portrait and the small icon (CSS). No gallery or polymorphic table.
 - On the filesystem under `UPLOADS_ROOT`, not a BLOB: the DB and backups stay light. Outside the vault.
 - Written only by its own endpoint, never by the entity's `PUT` (a form save doesn't overwrite it) or by the reindex.
 - **PNG and JPEG only**, detected by decoding the content. SVG rejected: it would be served from the same origin and could run JS with the DM's session. WebP/AVIF would need a new dependency.

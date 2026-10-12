@@ -1,3 +1,4 @@
+import { Crack } from "./Crack";
 import { useState, type ReactNode } from "react";
 import "./EntityDetail.css";
 import "../screens/NpcDetail.css";
@@ -78,7 +79,11 @@ export function EntityDetail({
           )}
           {accentColor ? (
             <span className="title-underline">
-              <span className="display" style={{ fontSize: 22 }}>
+              <span
+                className="display page-title"
+                role="heading"
+                aria-level={1}
+              >
                 {titleNode ?? title}
               </span>
               <span
@@ -87,7 +92,7 @@ export function EntityDetail({
               />
             </span>
           ) : (
-            <span className="display" style={{ fontSize: 22 }}>
+            <span className="display page-title" role="heading" aria-level={1}>
               {titleNode ?? title}
             </span>
           )}
@@ -110,6 +115,7 @@ export function EntityDetail({
         </div>
         {subtitle && <div className="entity-detail__subtitle">{subtitle}</div>}
       </div>
+      <Crack />
       <div className="entity-detail__fields">
         {fields.map((f) => (
           <div key={f.label}>

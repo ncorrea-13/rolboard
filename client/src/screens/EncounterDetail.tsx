@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   Check,
   Zap,
@@ -355,12 +355,13 @@ export function EncounterDetail({
 
   function renderParticipant(p: EncounterParticipant) {
     const isActed = acted.has(p.id);
+    const isNext = p.id === nextId;
     const color = identityColor(p);
     const flash = hpFlash[p.id];
     return (
       <div
         key={p.id}
-        className={`encounter-card${isActed ? " encounter-card--acted" : ""}${flash ? ` encounter-card--${flash.kind}-${flash.n % 2}` : ""}`}
+        className={`encounter-card${isActed ? " encounter-card--acted" : ""}${isNext ? " encounter-card--next" : ""}${flash ? ` encounter-card--${flash.kind}-${flash.n % 2}` : ""}`}
         style={{ viewTransitionName: `encounter-p-${p.id}` }}
       >
         <div className="encounter-card__top">
@@ -371,18 +372,16 @@ export function EncounterDetail({
           >
             {isActed && <Check size={13} strokeWidth={3} />}
           </button>
-          {participantImageUrl(p) ? (
-            <img
-              className="encounter-card__avatar"
-              src={participantImageUrl(p)}
-              alt=""
-            />
-          ) : (
-            <span
-              className="status-dot"
-              style={{ background: color, flex: "none" }}
-            />
-          )}
+          <span
+            className="encounter-card__portrait"
+            style={{ "--c": color } as CSSProperties}
+          >
+            {participantImageUrl(p) ? (
+              <img src={participantImageUrl(p)} alt="" />
+            ) : (
+              <span>{nameFor(p).slice(0, 2).toUpperCase()}</span>
+            )}
+          </span>
           {p.pcId || p.npcId ? (
             <Link
               className="encounter-card__name encounter-card__name--link"
@@ -449,6 +448,7 @@ export function EncounterDetail({
               })()}
               <div className="encounter-card__hp-values">
                 <input
+                  aria-label={t("encounterDetail.currentHp")}
                   className="encounter-card__hp-input"
                   type="text"
                   inputMode="numeric"
@@ -466,6 +466,7 @@ export function EncounterDetail({
                 />
                 <span className="encounter-card__hp-sep">/</span>
                 <input
+                  aria-label={t("encounterDetail.maxHp")}
                   className="encounter-card__hp-input"
                   type="text"
                   inputMode="numeric"
@@ -527,6 +528,7 @@ export function EncounterDetail({
             </div>
             <div className="encounter-card__ini-badge">
               <input
+                aria-label={t("encounterDetail.initiative")}
                 className="encounter-card__stat-value"
                 type="number"
                 disabled={closed}
@@ -617,6 +619,18 @@ export function EncounterDetail({
   const unassigned = participants
     .filter((p) => !p.turnType)
     .sort(byInitiativeDesc);
+  const nextId =
+    encounter.status === "activo"
+      ? phases
+          .flatMap((phase) =>
+            participants
+              .filter(
+                (p) => p.turnType === phase.key && !!p.pcId === phase.isPc,
+              )
+              .sort(byInitiativeDesc),
+          )
+          .find((p) => !acted.has(p.id))?.id
+      : undefined;
   const sheetModalParticipant = participants.find((p) => p.id === sheetModalId);
   const sheetModalSheet = sheetModalParticipant
     ? linkedSheet(sheetModalParticipant)
@@ -625,7 +639,11 @@ export function EncounterDetail({
   return (
     <>
       <EntityDetail
-        eyebrow={t("encounterDetail.breadcrumb")}
+        eyebrow={
+          sessions.find((s) => s.id === encounter.sessionId)
+            ? sessionCode(sessions.find((s) => s.id === encounter.sessionId)!)
+            : `#${encounter.id}`
+        }
         backLabel={t("encounterDetail.breadcrumb")}
         onBack={onBack}
         title={`${encounter.name || `${t("encountersList.unnamed")} #${encounter.id}`} · ${t("encountersList.round")} ${encounter.round}`}
@@ -667,36 +685,6 @@ export function EncounterDetail({
         onDelete={onDelete}
         fields={[
           {
-            label: t("encounterDetail.name"),
-            value: (
-              <input
-                className="npc-edit__input"
-                placeholder={t("encounterDetail.namePlaceholder")}
-                value={nameDraft}
-                onChange={(e) => setNameDraft(e.target.value)}
-                onBlur={commitName}
-                onKeyDown={(e) => e.key === "Enter" && commitName()}
-              />
-            ),
-          },
-          {
-            label: t("encounterDetail.session"),
-            value: (
-              <select
-                className="npc-edit__select npc-edit__select--native"
-                value={encounter.sessionId ?? ""}
-                onChange={(e) => onChangeSession(e.target.value || undefined)}
-              >
-                <option value="">{t("encountersList.noSession")}</option>
-                {sessions.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {sessionCode(s)}
-                  </option>
-                ))}
-              </select>
-            ),
-          },
-          {
             label: `${t("encounterDetail.participants")} (${participants.length})`,
             value: (
               <div className="encounter-tracker">
@@ -728,7 +716,7 @@ export function EncounterDetail({
                     .sort(byInitiativeDesc);
                   if (rows.length === 0) return null;
                   return (
-                    <div key={phase.titleKey}>
+                    <div key={phase.titleKey} data-phase>
                       <div
                         className="encounter-phase__header"
                         style={{
@@ -844,6 +832,37 @@ export function EncounterDetail({
                   </div>
                 )}
               </div>
+            ),
+          },
+          {
+            label: t("encounterDetail.name"),
+            value: (
+              <input
+                className="npc-edit__input"
+                placeholder={t("encounterDetail.namePlaceholder")}
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onBlur={commitName}
+                onKeyDown={(e) => e.key === "Enter" && commitName()}
+              />
+            ),
+          },
+          {
+            label: t("encounterDetail.session"),
+            value: (
+              <select
+                aria-label={t("encounterDetail.session")}
+                className="npc-edit__select npc-edit__select--native"
+                value={encounter.sessionId ?? ""}
+                onChange={(e) => onChangeSession(e.target.value || undefined)}
+              >
+                <option value="">{t("encountersList.noSession")}</option>
+                {sessions.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {sessionCode(s)}
+                  </option>
+                ))}
+              </select>
             ),
           },
         ]}

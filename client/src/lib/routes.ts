@@ -16,6 +16,10 @@ const slugBySection: Record<DashboardSection, string> = {
   jugadores: "players",
   encuentros: "encounters",
   wardails: "wardails",
+  notas: "notes",
+  mundo: "world",
+  secretos: "secrets",
+  objetos: "items",
   papelera: "trash",
 };
 
@@ -54,7 +58,7 @@ function subPath(route: Route): string {
     case "player-create":
       return "/players/new";
     case "session-plan":
-      return "/sessions/new";
+      return route.oneshot ? "/sessions/new-oneshot" : "/sessions/new";
     case "session-detail":
       return `/sessions/${route.sessionId}`;
     case "session-edit":
@@ -69,6 +73,24 @@ function subPath(route: Route): string {
       return `/quests/${route.questId}/edit`;
     case "quest-create":
       return "/quests/new";
+    case "note-detail":
+      return `/notes/${route.noteId}`;
+    case "note-edit":
+      return `/notes/${route.noteId}/edit`;
+    case "note-create":
+      return "/notes/new";
+    case "lore-detail":
+      return `/world/${route.entryId}`;
+    case "lore-edit":
+      return `/world/${route.entryId}/edit`;
+    case "lore-create":
+      return "/world/new";
+    case "secret-detail":
+      return `/secrets/${route.secretId}`;
+    case "secret-edit":
+      return `/secrets/${route.secretId}/edit`;
+    case "secret-create":
+      return "/secrets/new";
     case "faction-edit":
       return `/factions/${route.factionId}/edit`;
     case "faction-create":
@@ -99,6 +121,9 @@ function parseCampaignRoute(parts: string[]): Route | null {
   if (!section || section === "resumen") return null;
   if (!id) return { name: "section", section };
 
+  if (section === "sesiones" && id === "new-oneshot" && !action)
+    return { name: "session-plan", oneshot: true };
+
   const isNew = id === "new";
   if (!isNew && !/^\d+$/.test(id)) return null;
   if (isNew && action) return null;
@@ -128,6 +153,21 @@ function parseCampaignRoute(parts: string[]): Route | null {
       if (isNew) return { name: "arc-create" };
       if (edit) return { name: "arc-edit", arcId: id };
       break;
+    case "secretos":
+      if (isNew) return { name: "secret-create" };
+      return edit
+        ? { name: "secret-edit", secretId: id }
+        : { name: "secret-detail", secretId: id };
+    case "mundo":
+      if (isNew) return { name: "lore-create" };
+      return edit
+        ? { name: "lore-edit", entryId: id }
+        : { name: "lore-detail", entryId: id };
+    case "notas":
+      if (isNew) return { name: "note-create" };
+      return edit
+        ? { name: "note-edit", noteId: id }
+        : { name: "note-detail", noteId: id };
     case "quests":
       if (isNew) return { name: "quest-create" };
       if (edit) return { name: "quest-edit", questId: id };

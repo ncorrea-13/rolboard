@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import "../styles/list.css";
 import { locationTypeLabel, type Location } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
@@ -38,7 +38,7 @@ export function LocationsList({
     <div className="card list-page">
       <div className="list-page__header">
         <div>
-          <div className="display" style={{ fontSize: 21 }}>
+          <div className="display page-title" role="heading" aria-level={1}>
             {t("locationsList.title")}
           </div>
           <span className="list-page__count">
@@ -65,11 +65,12 @@ export function LocationsList({
             l.hasImage,
             imageVersion,
           );
+          const depth = depthOf(l, locations);
           return (
             <Link
               key={l.id}
-              className="list-page__row list-page__row--clickable"
-              style={{ marginLeft: depthOf(l, locations) * 22 }}
+              className={`list-page__row list-page__row--clickable location-row${depth > 0 ? " location-row--child" : ""}`}
+              style={{ "--depth": depth } as CSSProperties}
               route={{ name: "entity-detail", kind: "location", id: l.id }}
             >
               {imageUrl && (
@@ -87,7 +88,7 @@ export function LocationsList({
                   <MarkdownText inline text={l.description} />
                 </div>
               </div>
-              <span className="list-page__badge">
+              <span className="location-row__type">
                 {locationTypeLabel[lang][l.locationType]}
               </span>
             </Link>

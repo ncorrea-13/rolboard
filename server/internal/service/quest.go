@@ -34,3 +34,15 @@ func (s *QuestService) Update(ctx context.Context, id int64, q *models.Quest) er
 func (s *QuestService) Delete(ctx context.Context, id int64) error {
 	return s.repo.Delete(ctx, id)
 }
+
+func (s *QuestService) ListNpcs(ctx context.Context, questID int64) ([]models.QuestNpc, error) {
+	return s.repo.ListNpcs(ctx, questID)
+}
+
+func (s *QuestService) SetNpc(ctx context.Context, questID, npcID int64, role string) error {
+	return s.repo.SetNpc(ctx, questID, npcID, role)
+}
+
+func (s *QuestService) RemoveNpc(ctx context.Context, questID, npcID int64) error {
+	return s.repo.RemoveNpc(ctx, questID, npcID)
+}

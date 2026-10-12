@@ -9,6 +9,11 @@ import {
   Swords,
   Skull,
   Cross,
+  StickyNote,
+  Earth,
+  EyeOff,
+  Gem,
+  Search,
   Trash2,
   Settings,
   LogOut,
@@ -90,6 +95,30 @@ const navItems: {
     color: "var(--accent-wardail)",
   },
   {
+    labelKey: "sidebar.mundo",
+    section: "mundo",
+    Icon: Earth,
+    color: "var(--accent-lime)",
+  },
+  {
+    labelKey: "sidebar.objetos",
+    section: "objetos",
+    Icon: Gem,
+    color: "var(--accent-cyan)",
+  },
+  {
+    labelKey: "sidebar.secretos",
+    section: "secretos",
+    Icon: EyeOff,
+    color: "var(--accent-sun)",
+  },
+  {
+    labelKey: "sidebar.notas",
+    section: "notas",
+    Icon: StickyNote,
+    color: "var(--accent-orchid)",
+  },
+  {
     labelKey: "sidebar.papelera",
     section: "papelera",
     Icon: Trash2,
@@ -103,6 +132,7 @@ interface SidebarProps {
   onNavigate: (section: DashboardSection) => void;
   onBack: () => void;
   onOpenSettings?: () => void;
+  onSearch?: () => void;
   onHelp: () => void;
   onAdminLogout?: () => void;
   onBackdropClick?: () => void;
@@ -115,6 +145,7 @@ export function Sidebar({
   onNavigate,
   onBack,
   onOpenSettings,
+  onSearch,
   onHelp,
   onAdminLogout,
   onBackdropClick,
@@ -143,6 +174,19 @@ export function Sidebar({
         >
           <ArrowLeft size={16} strokeWidth={1.75} />
         </button>
+        {onSearch && (
+          <button
+            className="sidebar__head-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSearch();
+            }}
+            title={t("search.open")}
+            aria-label={t("search.open")}
+          >
+            <Search size={16} strokeWidth={1.75} />
+          </button>
+        )}
         <a
           href="/help"
           onClick={(e) => {
@@ -174,15 +218,7 @@ export function Sidebar({
               strokeWidth={1.75}
               style={{ color: item.color }}
             />
-            <span className="sidebar__item-label">
-              {t(item.labelKey)}
-              {isActive && (
-                <span
-                  className="sidebar__item-underline"
-                  style={{ background: item.color }}
-                />
-              )}
-            </span>
+            <span className="sidebar__item-label">{t(item.labelKey)}</span>
           </Link>
         );
       })}

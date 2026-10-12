@@ -1,5 +1,12 @@
-import "./NpcEdit.css";
-import { sessionCode, type Arc, type Session } from "../data/domain";
+import "./SessionDetail.css";
+import {
+  formatDate,
+  isPlayed,
+  sessionCode,
+  type Arc,
+  type Session,
+} from "../data/domain";
+import { Crack } from "../components/Crack";
 import { MarkdownText } from "../components/MarkdownText";
 import { RenderedNoteButton } from "../components/RenderedNoteButton";
 import { useSessionExpectations } from "../hooks/useSessionExpectations";
@@ -25,73 +32,50 @@ export function SessionDetail({
   onMarkPlayed,
 }: SessionDetailProps) {
   const t = useT();
-  const played = session.sessionType !== "planning";
-  const { npcs, quests } = useSessionExpectations(session.id);
-
-  const planned = (
-    <div className="npc-edit__col">
-      <span className="label">{t("sessionEdit.planned")}</span>
-      <div>
-        <span className="label">{t("sessionEdit.prepNotesOnly")}</span>
-        <MarkdownText
-          className="npc-detail__desc"
-          text={played ? session.prepNotes || "" : session.summary}
-        />
-      </div>
-      {npcs.length > 0 && (
-        <div>
-          <span className="label">{t("planSession.expectedNpcs")}</span>
-          <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
-            {npcs.map((n) => (
-              <span key={n.npc_id} className="npc-edit__type-chip">
-                {n.name}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-      {quests.length > 0 && (
-        <div>
-          <span className="label">{t("planSession.expectedQuests")}</span>
-          <div className="npc-edit__type-row" style={{ flexWrap: "wrap" }}>
-            {quests.map((q) => (
-              <span key={q.quest_id} className="npc-edit__type-chip">
-                {q.title}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-      {!played && (
-        <button className="btn btn-primary" onClick={onMarkPlayed}>
-          {t("sessionEdit.markAsPlayed")}
-        </button>
-      )}
-    </div>
+  const sessionPrefix = t(
+    session.sessionType === "oneshot"
+      ? "sessionEdit.oneshotPrefix"
+      : "sessionEdit.sessionPrefix",
   );
+  const played = isPlayed(session);
+  const { npcs, quests } = useSessionExpectations(session.id);
+  const code = `${sessionPrefix} ${sessionCode(session)}`;
+  const mainText = session.summary;
+  const prepNotes = played ? session.prepNotes || "" : "";
 
   return (
-    <div className="card npc-edit">
-      <div
-        className={`npc-edit__bar ${played ? "npc-edit__bar--played" : "npc-edit__bar--planned"}`}
-      >
-        <div className="npc-edit__bar-left">
-          <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
-            {t("sessionEdit.sessionPrefix")} {sessionCode(session)}{" "}
-            {arc ? `· ${arc.label}` : ""}{" "}
-            {played
-              ? t("sessionEdit.playedSuffix")
-              : t("sessionEdit.plannedSuffix")}
-          </span>
+    <div className="session-detail">
+      <header className="session-detail__head">
+        <div className="session-detail__titles">
+          <div className="session-detail__over">
+            {arc ? `${arc.label} · ${code}` : code}
+          </div>
+          <div className="display page-title" role="heading" aria-level={1}>
+            {session.title || code}
+          </div>
+          <div className="session-detail__meta">
+            <span
+              className={`session-detail__state session-detail__state--${played ? "played" : "planned"}`}
+            >
+              <span className="status-dot" />
+              {t(
+                session.sessionType === "oneshot"
+                  ? played
+                    ? "sessionEdit.playedSuffixMasc"
+                    : "sessionEdit.plannedSuffixMasc"
+                  : played
+                    ? "sessionEdit.playedSuffix"
+                    : "sessionEdit.plannedSuffix",
+              ).replace(/^·\s*/, "")}
+            </span>
+            <span>
+              {session.date
+                ? formatDate(session.date)
+                : t("sessionEdit.notSet")}
+            </span>
+          </div>
         </div>
-        <div className="npc-edit__bar-actions">
+        <div className="session-detail__actions">
           <button className="btn btn-danger-outline" onClick={onDelete}>
             {t("entityDetail.deactivate")}
           </button>
@@ -101,35 +85,68 @@ export function SessionDetail({
           <RenderedNoteButton
             campaignId={campaignId}
             path={session.obsidianPath}
-            title={`${t("sessionEdit.sessionPrefix")} ${sessionCode(session)}`}
+            title={code}
             fallback={session.summary}
           />
           <button className="btn btn-primary" onClick={onEdit}>
             {t("common.edit")}
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className={`npc-edit__body ${played ? "npc-edit__body--even" : ""}`}>
-        {planned}
-        {played && (
-          <div className="npc-edit__col">
-            <span className="label">{t("sessionEdit.whatHappened")}</span>
+      <Crack />
+
+      <div className="session-detail__body">
+        <section className="session-detail__main">
+          <h2 className="label">
+            {played ? t("sessionEdit.history") : t("sessionEdit.planned")}
+          </h2>
+          {mainText ? (
+            <MarkdownText className="npc-detail__desc" text={mainText} />
+          ) : (
+            <p className="session-detail__empty">
+              {t("entityDetail.noContent")}
+            </p>
+          )}
+        </section>
+
+        <aside className="session-detail__side">
+          {prepNotes && (
             <div>
-              <span className="label">{t("sessionEdit.realDate")}</span>
-              <div className="npc-edit__input">
-                {session.date || t("sessionEdit.notSet")}
+              <h2 className="label">{t("sessionEdit.prepNotesOnly")}</h2>
+              <MarkdownText className="npc-detail__desc" text={prepNotes} />
+            </div>
+          )}
+          {npcs.length > 0 && (
+            <div>
+              <h2 className="label">{t("planSession.expectedNpcs")}</h2>
+              <div className="session-detail__chips">
+                {npcs.map((n) => (
+                  <span key={n.npc_id} className="session-detail__chip">
+                    {n.name}
+                  </span>
+                ))}
               </div>
             </div>
+          )}
+          {quests.length > 0 && (
             <div>
-              <span className="label">{t("sessionEdit.history")}</span>
-              <MarkdownText
-                className="npc-detail__desc"
-                text={session.summary}
-              />
+              <h2 className="label">{t("planSession.expectedQuests")}</h2>
+              <div className="session-detail__chips">
+                {quests.map((q) => (
+                  <span key={q.quest_id} className="session-detail__chip">
+                    {q.title}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+          {!played && (
+            <button className="btn btn-primary" onClick={onMarkPlayed}>
+              {t("sessionEdit.markAsPlayed")}
+            </button>
+          )}
+        </aside>
       </div>
     </div>
   );

@@ -2,11 +2,17 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import { questStatusLabel, type Quest, type QuestStatus } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
+import { EntityImageField } from "../components/EntityImageField";
+import { usePendingImage } from "../hooks/usePendingImage";
 
 interface QuestEditProps {
   quest: Quest;
-  onSave: (patch: Partial<Quest>) => void;
+  onSave: (patch: Partial<Quest>, image?: File) => void;
   onDiscard: () => void;
+  imageVersion?: number;
+  onUploadImage?: (file: File) => Promise<void>;
+  onRemoveImage?: () => Promise<void>;
 }
 
 const questStatusOrder: QuestStatus[] = [
@@ -16,9 +22,17 @@ const questStatusOrder: QuestStatus[] = [
   "failed",
 ];
 
-export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
+export function QuestEdit({
+  quest,
+  onSave,
+  onDiscard,
+  imageVersion,
+  onUploadImage,
+  onRemoveImage,
+}: QuestEditProps) {
   const t = useT();
   const lang = useLang();
+  const pendingImage = usePendingImage();
   const statusOptions: { value: QuestStatus; label: string }[] =
     questStatusOrder.map((value) => ({
       value,
@@ -43,7 +57,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
     notes !== quest.notes;
 
   function handleSave() {
-    onSave({ name, hook, status, priority, notes });
+    onSave({ name, hook, status, priority, notes }, pendingImage.file);
   }
 
   return (
@@ -51,13 +65,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
       <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {quest.id
               ? `${t("common.editing")} · ${quest.name}`
               : t("questEdit.new")}
@@ -89,38 +97,43 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
           <div>
             <span className="label">{t("questEdit.title")}</span>
             <input
+              aria-label={t("questEdit.title")}
               className="npc-edit__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
 
-          <div>
-            <span className="label">{t("questEdit.hookLabel")}</span>
-            <textarea
-              className="npc-edit__textarea"
-              style={{ minHeight: 140 }}
-              value={hook}
-              onChange={(e) => setHook(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={t("questEdit.hookLabel")}
+            minHeight={140}
+            value={hook}
+            onChange={setHook}
+          />
 
-          <div>
-            <span className="label">{t("questEdit.notesLabel")}</span>
-            <textarea
-              className="npc-edit__textarea"
-              style={{ minHeight: 160 }}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={t("questEdit.notesLabel")}
+            minHeight={160}
+            value={notes}
+            onChange={setNotes}
+          />
         </div>
 
         <div className="npc-edit__col">
+          <EntityImageField
+            kind="quest"
+            label={t("questEdit.image")}
+            entity={quest}
+            pending={pendingImage}
+            imageVersion={imageVersion}
+            onUpload={onUploadImage}
+            onRemove={onRemoveImage}
+          />
           <div className="npc-edit__grid-2">
             <div>
               <span className="label">{t("common.status")}</span>
               <select
+                aria-label={t("common.status")}
                 className="npc-edit__select npc-edit__select--native"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as QuestStatus)}
@@ -135,6 +148,7 @@ export function QuestEdit({ quest, onSave, onDiscard }: QuestEditProps) {
             <div>
               <span className="label">{t("questDetail.priority")}</span>
               <select
+                aria-label={t("questDetail.priority")}
                 className="npc-edit__select npc-edit__select--native"
                 value={priority}
                 onChange={(e) =>

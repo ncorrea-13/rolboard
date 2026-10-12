@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Shield } from "lucide-react";
 import "../styles/list.css";
 import type { Group } from "../data/domain";
 import { useT } from "../lib/i18n";
@@ -27,7 +28,7 @@ export function FactionsList({
     <div className="card list-page">
       <div className="list-page__header">
         <div>
-          <div className="display" style={{ fontSize: 21 }}>
+          <div className="display page-title" role="heading" aria-level={1}>
             {t("factionsList.title")}
           </div>
           <span className="list-page__count">
@@ -46,7 +47,7 @@ export function FactionsList({
           </button>
         </div>
       </div>
-      <div className="list-page__rows">
+      <div className="faction-grid">
         {filtered.map((g) => {
           const imageUrl = entityImageUrl(
             "group",
@@ -57,26 +58,26 @@ export function FactionsList({
           return (
             <Link
               key={g.id}
-              className="list-page__row list-page__row--clickable"
+              className="faction-card"
               route={{ name: "entity-detail", kind: "faction", id: g.id }}
             >
-              {imageUrl && (
-                <img className="list-page__thumbnail" src={imageUrl} alt="" />
-              )}
-              <div className="list-page__row-main">
-                <span className="title-underline">
-                  <span className="list-page__row-title">{g.name}</span>
-                  <span
-                    className="title-underline__bar"
-                    style={{ background: "var(--crystal-faction-quest)" }}
-                  />
+              <span className="faction-card__emblem">
+                {imageUrl ? (
+                  <img src={imageUrl} alt="" />
+                ) : (
+                  <Shield size={26} strokeWidth={1.5} />
+                )}
+              </span>
+              <span className="faction-card__body">
+                <span className="display faction-card__name">{g.name}</span>
+                {g.description && (
+                  <span className="faction-card__desc">
+                    <MarkdownText inline text={g.description} />
+                  </span>
+                )}
+                <span className="faction-card__members">
+                  {g.memberCount} {t("factionsList.members")}
                 </span>
-                <div className="list-page__row-sub" style={{ marginTop: 6 }}>
-                  <MarkdownText inline text={g.description} />
-                </div>
-              </div>
-              <span className="list-page__badge">
-                {g.memberCount} {t("factionsList.members")}
               </span>
             </Link>
           );

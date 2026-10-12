@@ -15,6 +15,8 @@ type CreateSessionPayload struct {
 	SessionNumber int64   `json:"session_number"`
 	SubNumber     int64   `json:"sub_number"`
 	SessionType   string  `json:"session_type"`
+	Title         string  `json:"title"`
+	Planned       bool    `json:"planned"`
 	Date          string  `json:"date"`
 	Summary       string  `json:"summary"`
 	PrepNotes     string  `json:"prep_notes"`
@@ -26,16 +28,23 @@ type UpdateSessionPayload struct {
 	SessionNumber int64   `json:"session_number"`
 	SubNumber     int64   `json:"sub_number"`
 	SessionType   string  `json:"session_type"`
+	Title         string  `json:"title"`
+	Planned       bool    `json:"planned"`
 	Date          string  `json:"date"`
 	Summary       string  `json:"summary"`
 	PrepNotes     string  `json:"prep_notes"`
 	ObsidianPath  *string `json:"obsidian_path"`
 }
 
+func isUnscheduled(sessionType string, planned bool) bool {
+	return sessionType == "planning" || (sessionType == "oneshot" && planned)
+}
+
 var validSessionTypes = map[string]bool{
 	"session":   true,
 	"interlude": true,
 	"planning":  true,
+	"oneshot":   true,
 }
 
 func (h *Handlers) ListSessions(w http.ResponseWriter, r *http.Request) {
@@ -69,8 +78,8 @@ func (h *Handlers) CreateSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if (payload.Date == "" && payload.SessionType != "planning") || !validSessionTypes[payload.SessionType] {
-		http.Error(w, "Date (except for planning sessions) and a valid session_type are required fields", http.StatusBadRequest)
+	if (payload.Date == "" && !isUnscheduled(payload.SessionType, payload.Planned)) || !validSessionTypes[payload.SessionType] {
+		http.Error(w, "Date (except for planned sessions) and a valid session_type are required fields", http.StatusBadRequest)
 		return
 	}
 	if payload.ArcID != nil {
@@ -95,6 +104,8 @@ func (h *Handlers) CreateSession(w http.ResponseWriter, r *http.Request) {
 		SessionNumber: payload.SessionNumber,
 		SubNumber:     payload.SubNumber,
 		SessionType:   payload.SessionType,
+		Title:         payload.Title,
+		Planned:       payload.Planned,
 		Date:          payload.Date,
 		Summary:       payload.Summary,
 		PrepNotes:     payload.PrepNotes,
@@ -151,8 +162,8 @@ func (h *Handlers) UpdateSession(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if (payload.Date == "" && payload.SessionType != "planning") || !validSessionTypes[payload.SessionType] {
-		http.Error(w, "Date (except for planning sessions) and a valid session_type are required fields", http.StatusBadRequest)
+	if (payload.Date == "" && !isUnscheduled(payload.SessionType, payload.Planned)) || !validSessionTypes[payload.SessionType] {
+		http.Error(w, "Date (except for planned sessions) and a valid session_type are required fields", http.StatusBadRequest)
 		return
 	}
 	if payload.ArcID != nil {
@@ -185,6 +196,8 @@ func (h *Handlers) UpdateSession(w http.ResponseWriter, r *http.Request) {
 		SessionNumber: payload.SessionNumber,
 		SubNumber:     payload.SubNumber,
 		SessionType:   payload.SessionType,
+		Title:         payload.Title,
+		Planned:       payload.Planned,
 		Date:          payload.Date,
 		Summary:       payload.Summary,
 		PrepNotes:     payload.PrepNotes,

@@ -4,7 +4,8 @@
   --bg-elevated: #161a1d;
   --border: #23282c;
   --border-subtle: #1b1f22;
-  --border-hairline: #131719;
+  --border-hairline: #1c2125;
+  --border-strong: #34393d;
 
   --text-primary: #f2f4f3;
   --text-secondary: #8a9391;
@@ -35,6 +36,10 @@
   --callout-example: var(--accent-crystalline);
   --callout-quote: var(--text-secondary);
   --accent-teal: #4fb5a3;
+  --accent-lime: #a3c255;
+  --accent-orchid: #c07ad9;
+  --accent-sun: #e6d35c;
+  --accent-cyan: #3fc1d8;
 
   --crystal-npc: #c79a55;
   --crystal-spren: #6fa98c;
@@ -60,6 +65,15 @@
   --font-body: "Inter Variable", "Inter", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
+  --footer-h: 40px;
+
+  --radius-sm: 5px;
   --radius-md: 7px;
   --radius-lg: 9px;
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --shadow-raised: 0 10px 30px -14px rgb(0 0 0 / 0.7);
+  --shadow-pop: 0 8px 24px rgb(0 0 0 / 0.4);
+  --focus-ring: var(--accent-obsidian);
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Cross } from "lucide-react";
 import "./NpcEdit.css";
 import {
+  isPlayed,
   sessionCode,
   type Arc,
   type Npc,
@@ -14,6 +15,7 @@ import { useSessionExpectations } from "../hooks/useSessionExpectations";
 import { apiFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
 import { reportError } from "../lib/notify";
+import { MarkdownField } from "../components/MarkdownField";
 
 interface SessionEditProps {
   arc?: Arc;
@@ -39,8 +41,15 @@ export function SessionEdit({
   autoConfirm,
 }: SessionEditProps) {
   const t = useT();
-  const played = session.sessionType !== "planning";
+  const sessionPrefix = t(
+    session.sessionType === "oneshot"
+      ? "sessionEdit.oneshotPrefix"
+      : "sessionEdit.sessionPrefix",
+  );
+  const isOneshot = session.sessionType === "oneshot";
+  const played = isPlayed(session);
   const [date, setDate] = useState(session.date);
+  const [title, setTitle] = useState(session.title);
   const [text, setText] = useState(session.summary);
   const [arcId, setArcId] = useState(session.arcId ?? "");
   const [confirmingPlay, setConfirmingPlay] = useState(
@@ -119,7 +128,12 @@ export function SessionEdit({
 
   function handleSave() {
     syncRelations().then(() =>
-      onSave({ date, summary: text, arcId: arcId || undefined }),
+      onSave({
+        date,
+        summary: text,
+        arcId: arcId || undefined,
+        ...(isOneshot ? { title: title.trim() } : {}),
+      }),
     );
   }
 
@@ -128,11 +142,13 @@ export function SessionEdit({
       date: playDate,
       summary: recap.trim() || t("newSessionForm.defaultSummary"),
       prepNotes: session.prepNotes || session.summary,
-      sessionType: "session",
+      ...(isOneshot
+        ? { planned: false, title: title.trim() }
+        : { sessionType: "session" as const }),
     });
   }
 
-  const noteTitle = `${t("sessionEdit.sessionPrefix")} ${sessionCode(session)}`;
+  const noteTitle = `${sessionPrefix} ${sessionCode(session)}`;
   const noteButton = (
     <RenderedNoteButton
       campaignId={campaignId}
@@ -148,16 +164,9 @@ export function SessionEdit({
         <div className="npc-edit__bar npc-edit__bar--played">
           <div className="npc-edit__bar-left">
             <span className="status-dot" />
-            <span
-              style={{
-                fontWeight: 500,
-                fontSize: 13.5,
-                color: "var(--text-primary)",
-              }}
-            >
-              {t("sessionEdit.confirmingPlay")} ·{" "}
-              {t("sessionEdit.sessionPrefix")} {sessionCode(session)}{" "}
-              {arc ? `· ${arc.label}` : ""}
+            <span className="npc-edit__title" role="heading" aria-level={1}>
+              {t("sessionEdit.confirmingPlay")} · {sessionPrefix}{" "}
+              {sessionCode(session)} {arc ? `· ${arc.label}` : ""}
             </span>
           </div>
           <div className="npc-edit__bar-actions">
@@ -181,7 +190,7 @@ export function SessionEdit({
             <span className="label">{t("sessionEdit.planned")}</span>
             <div className="npc-edit__grid-2" style={{ marginTop: 10 }}>
               <div>
-                <span className="label">{t("newSessionForm.session")}</span>
+                <span className="label">{sessionPrefix}</span>
                 <div className="npc-edit__input">{sessionCode(session)}</div>
               </div>
               <div>
@@ -241,6 +250,7 @@ export function SessionEdit({
               <div>
                 <span className="label">{t("sessionEdit.realDate")}</span>
                 <input
+                  aria-label={t("sessionEdit.realDate")}
                   type="date"
                   className="npc-edit__input"
                   value={playDate}
@@ -249,13 +259,12 @@ export function SessionEdit({
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
-              <span className="label">{t("sessionEdit.recapLabel")}</span>
-              <textarea
-                className="npc-edit__textarea"
-                style={{ minHeight: 220 }}
+              <MarkdownField
+                label={t("sessionEdit.recapLabel")}
+                minHeight={220}
                 placeholder={t("sessionEdit.recapPlaceholder")}
                 value={recap}
-                onChange={(e) => setRecap(e.target.value)}
+                onChange={setRecap}
               />
             </div>
             {wardails.trim() && (
@@ -284,9 +293,20 @@ export function SessionEdit({
     );
   }
 
+  const titleField = isOneshot && (
+    <div>
+      <span className="label">{t("sessionEdit.titleLabel")}</span>
+      <input
+        aria-label={t("sessionEdit.titleLabel")}
+        className="npc-edit__input"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
+    </div>
+  );
   const codeField = (
     <div>
-      <span className="label">{t("newSessionForm.session")}</span>
+      <span className="label">{sessionPrefix}</span>
       <div className="npc-edit__input">{sessionCode(session)}</div>
     </div>
   );
@@ -296,6 +316,7 @@ export function SessionEdit({
         {played ? t("sessionEdit.realDate") : t("newSessionForm.date")}
       </span>
       <input
+        aria-label={t(played ? "sessionEdit.realDate" : "newSessionForm.date")}
         type="date"
         className="npc-edit__input"
         value={date}
@@ -307,6 +328,7 @@ export function SessionEdit({
     <div>
       <span className="label">{t("sessionEdit.arc")}</span>
       <select
+        aria-label={t("sessionEdit.arc")}
         className="npc-edit__select npc-edit__select--native"
         value={arcId}
         onChange={(e) => setArcId(e.target.value)}
@@ -321,18 +343,12 @@ export function SessionEdit({
     </div>
   );
   const summaryField = (
-    <div>
-      <span className="label">
-        {played ? t("sessionEdit.history") : t("sessionEdit.prepNotesOnly")}{" "}
-        {t("common.supportsMarkdown")}
-      </span>
-      <textarea
-        className="npc-edit__textarea"
-        style={{ minHeight: played ? 260 : 160 }}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-    </div>
+    <MarkdownField
+      label={`${played ? t("sessionEdit.history") : t("sessionEdit.prepNotesOnly")} ${t("common.supportsMarkdown")}`}
+      minHeight={played ? 260 : 160}
+      value={text}
+      onChange={setText}
+    />
   );
   const expectedBlock = (
     <>
@@ -384,18 +400,19 @@ export function SessionEdit({
       >
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
-            {t("sessionEdit.sessionPrefix")} {sessionCode(session)}{" "}
+          <span className="npc-edit__title" role="heading" aria-level={1}>
+            {sessionPrefix} {sessionCode(session)}{" "}
+            {title.trim() ? `· ${title.trim()} ` : ""}
             {arc ? `· ${arc.label}` : ""}{" "}
-            {played
-              ? t("sessionEdit.playedSuffix")
-              : t("sessionEdit.plannedSuffix")}
+            {t(
+              session.sessionType === "oneshot"
+                ? played
+                  ? "sessionEdit.playedSuffixMasc"
+                  : "sessionEdit.plannedSuffixMasc"
+                : played
+                  ? "sessionEdit.playedSuffix"
+                  : "sessionEdit.plannedSuffix",
+            )}
           </span>
         </div>
         <div className="npc-edit__bar-actions">
@@ -413,6 +430,7 @@ export function SessionEdit({
         <div className="npc-edit__body npc-edit__body--even">
           <div className="npc-edit__col">
             <span className="label">{t("sessionEdit.planned")}</span>
+            {titleField}
             <div className="npc-edit__grid-2">
               {codeField}
               {arcField}
@@ -439,6 +457,7 @@ export function SessionEdit({
       ) : (
         <div className="npc-edit__body">
           <div className="npc-edit__col">
+            {titleField}
             <div className="npc-edit__grid-2">
               {codeField}
               {dateField}

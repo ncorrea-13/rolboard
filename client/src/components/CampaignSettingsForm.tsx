@@ -96,6 +96,7 @@ export function CampaignSettingsForm({
       <div>
         <span className="label">{t("newCampaignForm.name")}</span>
         <input
+          aria-label={t("newCampaignForm.name")}
           className="npc-edit__input"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -104,6 +105,7 @@ export function CampaignSettingsForm({
       <div>
         <span className="label">{t("newCampaignForm.system")}</span>
         <input
+          aria-label={t("newCampaignForm.system")}
           className="npc-edit__input"
           value={system}
           onChange={(e) => setSystem(e.target.value)}
@@ -112,6 +114,7 @@ export function CampaignSettingsForm({
       <div>
         <span className="label">{t("campaignSettings.status")}</span>
         <select
+          aria-label={t("campaignSettings.status")}
           className="npc-edit__input"
           value={status}
           onChange={(e) => setStatus(e.target.value as CampaignStatus)}
@@ -126,6 +129,7 @@ export function CampaignSettingsForm({
       <div>
         <span className="label">{t("newCampaignForm.vaultDir")}</span>
         <select
+          aria-label={t("newCampaignForm.vaultDir")}
           className="npc-edit__input"
           value={vaultPath}
           onChange={(e) => setVaultPath(e.target.value)}

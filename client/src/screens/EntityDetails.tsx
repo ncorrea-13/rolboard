@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { EntityDetail } from "../components/EntityDetail";
 import { StatusPill } from "../components/StatusPill";
 import { QuestStatusPill } from "../components/StatusPill";
+import { QuestNpcs } from "../components/QuestNpcs";
+import { ShopStock } from "../components/ShopStock";
+import { AppearsIn, type AppearsGroup } from "../components/AppearsIn";
 import { ArcStatusPill } from "../components/StatusPill";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { MarkdownText } from "../components/MarkdownText";
@@ -21,6 +24,8 @@ import {
   sessionCode,
   type Arc,
   type Group,
+  type Currency,
+  type Item,
   type Location,
   type Quest,
   type Npc,
@@ -46,6 +51,7 @@ export function ArcDetail({
   onDelete,
   onStart,
   onClose,
+  imageVersion = 0,
 }: {
   arc: Arc;
   sessions: Session[];
@@ -54,6 +60,7 @@ export function ArcDetail({
   onBack: () => void;
   onStart: () => void;
   onClose: () => void;
+  imageVersion?: number;
 } & EditableProps) {
   const t = useT();
   return (
@@ -62,6 +69,7 @@ export function ArcDetail({
       backLabel={t("entityDetails.arcosBreadcrumb")}
       onBack={onBack}
       title={arc.label}
+      imageUrl={entityImageUrl("arc", arc.id, arc.hasImage, imageVersion)}
       status={<ArcStatusPill status={arc.status} />}
       extraActions={
         arc.status === "en_curso" ? (
@@ -132,8 +140,10 @@ export function FactionDetail({
   onEdit,
   onDelete,
   imageVersion = 0,
+  appearsIn = [],
 }: {
   group: Group;
+  appearsIn?: AppearsGroup[];
   npcs: Npc[];
   playerCharacters: PlayerCharacter[];
   vaultName: string;
@@ -247,6 +257,14 @@ export function FactionDetail({
           : []),
         ...(lider
           ? [{ label: t("factionDetail.leader"), value: lider.name }]
+          : []),
+        ...(appearsIn.some((g) => g.items.length > 0)
+          ? [
+              {
+                label: t("appearsIn.title"),
+                value: <AppearsIn groups={appearsIn} />,
+              },
+            ]
           : []),
         {
           label: `${t("factionDetail.members")} (${members.length})`,
@@ -400,8 +418,14 @@ export function LocationDetail({
   onEdit,
   onDelete,
   imageVersion = 0,
+  items,
+  currencies,
+  appearsIn = [],
 }: {
   location: Location;
+  items: Item[];
+  currencies: Currency[];
+  appearsIn?: AppearsGroup[];
   allLocations: Location[];
   vaultName: string;
   campaignId: string;
@@ -447,6 +471,24 @@ export function LocationDetail({
           value: <MarkdownText text={location.description} />,
         },
         {
+          label: t("shop.title"),
+          value: (
+            <ShopStock
+              locationId={location.id}
+              items={items}
+              currencies={currencies}
+            />
+          ),
+        },
+        ...(appearsIn.some((g) => g.items.length > 0)
+          ? [
+              {
+                label: t("appearsIn.title"),
+                value: <AppearsIn groups={appearsIn} />,
+              },
+            ]
+          : []),
+        {
           label: `${t("locationDetail.subLocations")} (${children.length})`,
           value:
             children.length > 0 ? (
@@ -473,10 +515,17 @@ export function LocationDetail({
 
 export function QuestDetail({
   quest,
+  npcs,
   onBack,
   onEdit,
   onDelete,
-}: { quest: Quest; onBack: () => void } & EditableProps) {
+  imageVersion = 0,
+}: {
+  quest: Quest;
+  npcs: Npc[];
+  onBack: () => void;
+  imageVersion?: number;
+} & EditableProps) {
   const t = useT();
   const priorityLabel = {
     1: t("questDetail.priorityHigh"),
@@ -489,6 +538,7 @@ export function QuestDetail({
       backLabel={t("sidebar.quests")}
       onBack={onBack}
       title={quest.name}
+      imageUrl={entityImageUrl("quest", quest.id, quest.hasImage, imageVersion)}
       accentColor={crystalColor[quest.crystal]}
       status={<QuestStatusPill status={quest.status} />}
       onEdit={onEdit}
@@ -510,6 +560,10 @@ export function QuestDetail({
               },
             ]
           : []),
+        {
+          label: t("questDetail.npcs"),
+          value: <QuestNpcs questId={quest.id} npcs={npcs} />,
+        },
       ]}
     />
   );

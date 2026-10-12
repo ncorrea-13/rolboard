@@ -2,16 +2,31 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import { arcStatusLabel, type Arc, type ArcStatus } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
+import { EntityImageField } from "../components/EntityImageField";
+import { usePendingImage } from "../hooks/usePendingImage";
 
 interface ArcEditProps {
   arc: Arc;
   hasVault: boolean;
-  onSave: (patch: Partial<Arc>) => void;
+  onSave: (patch: Partial<Arc>, image?: File) => void;
   onDiscard: () => void;
+  imageVersion?: number;
+  onUploadImage?: (file: File) => Promise<void>;
+  onRemoveImage?: () => Promise<void>;
 }
 
-export function ArcEdit({ arc, hasVault, onSave, onDiscard }: ArcEditProps) {
+export function ArcEdit({
+  arc,
+  hasVault,
+  onSave,
+  onDiscard,
+  imageVersion,
+  onUploadImage,
+  onRemoveImage,
+}: ArcEditProps) {
   const t = useT();
+  const pendingImage = usePendingImage();
   const lang = useLang();
   const statusOptions: { value: ArcStatus; label: string }[] = (
     Object.entries(arcStatusLabel[lang]) as [ArcStatus, string][]
@@ -34,14 +49,17 @@ export function ArcEdit({ arc, hasVault, onSave, onDiscard }: ArcEditProps) {
     obsidianPath !== arc.obsidianPath;
 
   function handleSave() {
-    onSave({
-      label,
-      summary,
-      order: Number(order) || arc.order,
-      subarcOrder: subarcOrder.trim() ? Number(subarcOrder) : undefined,
-      status,
-      obsidianPath,
-    });
+    onSave(
+      {
+        label,
+        summary,
+        order: Number(order) || arc.order,
+        subarcOrder: subarcOrder.trim() ? Number(subarcOrder) : undefined,
+        status,
+        obsidianPath,
+      },
+      pendingImage.file,
+    );
   }
 
   return (
@@ -49,13 +67,7 @@ export function ArcEdit({ arc, hasVault, onSave, onDiscard }: ArcEditProps) {
       <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {arc.id
               ? `${t("common.editing")} · ${arc.label}`
               : t("arcEdit.new")}
@@ -88,6 +100,7 @@ export function ArcEdit({ arc, hasVault, onSave, onDiscard }: ArcEditProps) {
             <div>
               <span className="label">{t("arcEdit.nameLabel")}</span>
               <input
+                aria-label={t("arcEdit.nameLabel")}
                 className="npc-edit__input"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
@@ -97,6 +110,7 @@ export function ArcEdit({ arc, hasVault, onSave, onDiscard }: ArcEditProps) {
             <div>
               <span className="label">{t("arcEdit.numberLabel")}</span>
               <input
+                aria-label={t("arcEdit.numberLabel")}
                 className="npc-edit__input"
                 type="number"
                 value={order}
@@ -117,23 +131,28 @@ export function ArcEdit({ arc, hasVault, onSave, onDiscard }: ArcEditProps) {
             </div>
           </div>
 
-          <div>
-            <span className="label">
-              {t("common.summary")} {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              style={{ minHeight: 200 }}
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={`${t("common.summary")} ${t("common.supportsMarkdown")}`}
+            minHeight={200}
+            value={summary}
+            onChange={setSummary}
+          />
         </div>
 
         <div className="npc-edit__col">
+          <EntityImageField
+            kind="arc"
+            label={t("arcEdit.image")}
+            entity={arc}
+            pending={pendingImage}
+            imageVersion={imageVersion}
+            onUpload={onUploadImage}
+            onRemove={onRemoveImage}
+          />
           <div>
             <span className="label">{t("common.status")}</span>
             <select
+              aria-label={t("common.status")}
               className="npc-edit__select npc-edit__select--native"
               value={status}
               onChange={(e) => setStatus(e.target.value as ArcStatus)}
@@ -149,6 +168,7 @@ export function ArcEdit({ arc, hasVault, onSave, onDiscard }: ArcEditProps) {
             <div>
               <span className="label">{t("arcEdit.obsidianPathLabel")}</span>
               <input
+                aria-label={t("arcEdit.obsidianPathLabel")}
                 className="npc-edit__input"
                 value={obsidianPath}
                 onChange={(e) => setObsidianPath(e.target.value)}

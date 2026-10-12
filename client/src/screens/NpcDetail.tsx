@@ -3,11 +3,15 @@ import "./NpcDetail.css";
 import {
   crystalColorFor,
   crystalLabelFor,
-  questStatusColor,
+  sessionCode,
+  type Item,
   type Npc,
-  type Quest,
 } from "../data/domain";
 import { CharacterSheet } from "../components/CharacterSheet";
+import { Inventory } from "../components/Inventory";
+import { AppearsIn } from "../components/AppearsIn";
+import { useAppearances } from "../hooks/useAppearances";
+import { sessionGroup } from "../lib/appearances";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
 import { Modal } from "../components/Modal";
@@ -22,7 +26,7 @@ import type { CSSProperties } from "react";
 interface NpcDetailProps {
   npc: Npc;
   npcs: Npc[];
-  quests: Quest[];
+  items: Item[];
   campaignId: string;
   vaultName: string;
   onEdit: () => void;
@@ -34,7 +38,7 @@ interface NpcDetailProps {
 export function NpcDetail({
   npc,
   npcs,
-  quests,
+  items,
   campaignId,
   vaultName,
   onEdit,
@@ -82,10 +86,8 @@ export function NpcDetail({
   const links = relations
     .map((l) => ({ ...l, target: npcs.find((n) => n.id === l.npcId) }))
     .filter((l): l is typeof l & { target: Npc } => Boolean(l.target));
-  const appearances = npc.appearances ?? [];
-  const relatedQuests = quests.filter((q) =>
-    (npc.relatedQuestIds ?? []).includes(q.id),
-  );
+  const appears = useAppearances("npcs", npc.id);
+  const appearances = appears.sessions.map((s) => sessionCode(s));
   const locationParts = npc.location.split(" · ");
 
   return (
@@ -237,43 +239,40 @@ export function NpcDetail({
               ))}
             </div>
           </div>
-          {appearances.length > 0 && (
-            <div>
-              <span className="label">{t("npcDetail.appearances")}</span>
-              <div className="npc-detail__appearances">
-                {appearances.map((a, i) => (
-                  <span
-                    key={`${i}:${a}`}
-                    className={`npc-detail__appearance-chip${i === appearances.length - 1 ? " npc-detail__appearance-chip--active" : ""}`}
-                  >
-                    {a}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {relatedQuests.length > 0 && (
-            <div>
-              <span className="label">{t("npcDetail.relatedQuests")}</span>
-              {relatedQuests.map((q) => (
-                <div key={q.id} className="card npc-detail__quest">
-                  <span className="title-underline" style={{ flex: 1 }}>
-                    <span style={{ fontSize: 13, color: "var(--text-body)" }}>
-                      {q.name}
-                    </span>
-                    <span
-                      className="title-underline__bar"
-                      style={{ background: "var(--crystal-faction-quest)" }}
-                    />
-                  </span>
-                  <span
-                    className="status-dot"
-                    style={{ background: questStatusColor[q.status] }}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
+          <AppearsIn
+            groups={[
+              sessionGroup(appears.sessions, t("npcDetail.appearances")),
+              {
+                title: t("npcDetail.relatedQuests"),
+                items: appears.quests.map((q) => ({
+                  key: `quest-${q.id}`,
+                  label: q.title,
+                  hint: q.role || undefined,
+                  route: { name: "entity-detail", kind: "quest", id: q.id },
+                })),
+              },
+              {
+                title: t("appearsIn.encounters"),
+                items: appears.encounters.map((e) => ({
+                  key: `encounter-${e.id}`,
+                  label: e.name,
+                  route: { name: "encounter-detail", encounterId: e.id },
+                })),
+              },
+              {
+                title: t("appearsIn.secrets"),
+                items: appears.secrets.map((x) => ({
+                  key: `secret-${x.id}`,
+                  label: x.title,
+                  route: { name: "secret-detail", secretId: x.id },
+                })),
+              },
+            ]}
+          />
+          <div>
+            <span className="label">{t("inventory.title")}</span>
+            <Inventory kind="npcs" ownerId={npc.id} items={items} />
+          </div>
           {npc.obsidianPath && (
             <div>
               <span className="label">{t("entityDetail.obsidianNote")}</span>

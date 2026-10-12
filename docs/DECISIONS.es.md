@@ -73,6 +73,37 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - **El cliente traduce los errores de la API, no el servidor.** El texto de `http.Error` está en inglés y es para los logs; solo los errores sobre los que el usuario puede actuar llevan un `code` que la UI mapea al idioma de la app. El resto muestra un mensaje genérico según el estado.
 - **Las confirmaciones usan un diálogo propio**, no el `confirm()` del navegador: respeta el estilo y el idioma de la app y funciona en los webviews de escritorio y Android.
 
+## Lore
+
+- **Por campaña, no compartido.** No hay entidad "mundo": rompería el aislamiento por campaña (auth, vault, reindex, papelera).
+- **Las categorías son datos, no un enum**, mismo patrón que `npc_types`: cada campaña tiene las suyas, sembradas al crearla. Una entrada puede no tener categoría.
+- **Una categoría usada por cualquier entrada no se puede borrar** (`409`), contando también las entradas dadas de baja, para que restaurar nunca apunte a una categoría inexistente.
+- **Borrar un arco o una locación no se bloquea por entradas de lore.** El vínculo es opcional y la entrada simplemente deja de mostrarlo.
+
+## Objetos y economía
+
+- **Narrativo, no una simulación.** Un objeto tiene un "qué hace" en texto libre, categoría y rareza; no hay bonos mecánicos ni oferta y demanda.
+- **Una moneda base opcional por campaña.** Las demás llevan `rate_to_base`; marcar una nueva base mueve la marca. Las monedas no dependen del sistema de juego: cada campaña define las suyas.
+- **Precios por moneda.** Un objeto puede costar 5 esferas o 2 de oro; una tienda puede pisar el precio de catálogo en su locación.
+- **Una moneda usada por un objeto o un precio de tienda no se puede borrar** (`409`).
+
+## Búsqueda y "aparece en"
+
+- **La búsqueda es del lado del cliente.** Toda entidad de la campaña ya está cargada en memoria, así que la paleta (Ctrl/Cmd+K o el botón del sidebar) filtra localmente: sin endpoint y sin índice que mantener sincronizado. El orden prioriza el título, luego el subtítulo y luego el cuerpo; ignora tildes y mayúsculas.
+- **"Aparece en" se calcula donde viven los datos.** Las sesiones, quests y encuentros de un NPC o un jugador salen de `GET .../appearances` (requieren joins inversos); locaciones, facciones y lore usan las listas que el cliente ya tiene (lore, eventos de la línea de tiempo, secretos, NPCs, monedas).
+
+## Secretos
+
+- **Un secreto no está atado a un solo NPC.** Apunta opcionalmente a un NPC, una locación o una entrada de lore (de qué trata), y un bridge aparte lista quién lo conoce.
+- **Revelar guarda la sesión.** Al revelar se guarda la sesión (opcional); al volver a ocultarlo se limpia, para que una sesión nunca quede asociada a un secreto oculto.
+
+## Línea de tiempo
+
+- **Fechas en texto libre, orden numérico.** Cada setting tiene su calendario y no se puede parsear, así que `date_label` solo se muestra y `sort_key` (escrito a mano) ordena. Insertar un evento en el medio no obliga a renumerar.
+- **Varias cronologías, una vista.** Las cronologías son carriles (historia del mundo, crónica de la campaña, una guerra) que se muestran juntos y se filtran con chips. "Eventos de la facción X / del lugar Y" son filtros sobre `group_id` / `location_id`, no cronologías extra; filtrar por locación incluye sus sub-locaciones.
+- **Un evento pertenece a una sola cronología.** La relación muchos a muchos queda afuera hasta que haga falta.
+- **El primer evento crea una cronología por defecto**, sin exigir un paso previo.
+
 ## Tracker de combate
 
 - Vista de control del DM, en lista. Sin mapa.

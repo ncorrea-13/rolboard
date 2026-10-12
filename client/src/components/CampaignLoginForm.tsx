@@ -33,6 +33,7 @@ export function CampaignLoginForm({
       <div>
         <span className="label">{t("login.label")}</span>
         <input
+          aria-label={t("login.label")}
           className="npc-edit__input"
           type="password"
           autoFocus

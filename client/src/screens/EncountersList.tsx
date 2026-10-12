@@ -59,7 +59,7 @@ export function EncountersList({
     <div className="card list-page">
       <div className="list-page__header">
         <div>
-          <div className="display" style={{ fontSize: 21 }}>
+          <div className="display page-title" role="heading" aria-level={1}>
             {t("encountersList.title")}
           </div>
           <span className="list-page__count">
@@ -98,6 +98,7 @@ export function EncountersList({
         ))}
         <span className="npc-list__divider" />
         <select
+          aria-label={t("encounterDetail.session")}
           className={`npc-list__filter-chip${sessionId ? " npc-list__filter-chip--active" : ""}`}
           value={sessionId}
           onChange={(e) => setSessionId(e.target.value)}
@@ -119,13 +120,18 @@ export function EncountersList({
               className="list-page__row list-page__row--clickable"
               route={{ name: "encounter-detail", encounterId: e.id }}
             >
+              <div className="enc-round">
+                <span className="enc-round__label">
+                  {t("encountersList.round")}
+                </span>
+                <span className="enc-round__n">{e.round}</span>
+              </div>
               <div className="list-page__row-main">
-                <span className="list-page__row-title">{label(e)}</span>
+                <span className="display enc-title">{label(e)}</span>
                 <div className="list-page__row-sub" style={{ marginTop: 6 }}>
                   {session
                     ? sessionCode(session)
                     : t("encountersList.noSession")}{" "}
-                  · {t("encountersList.round")} {e.round}
                 </div>
               </div>
               <EncounterStatusPill status={e.status} />

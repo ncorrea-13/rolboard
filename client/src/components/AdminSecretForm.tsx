@@ -30,6 +30,7 @@ export function AdminSecretForm({ onSubmit, onCancel }: AdminSecretFormProps) {
       <div>
         <span className="label">{t("adminSecret.label")}</span>
         <input
+          aria-label={t("adminSecret.label")}
           className="npc-edit__input"
           type="password"
           autoFocus

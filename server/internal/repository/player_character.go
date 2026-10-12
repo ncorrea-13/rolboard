@@ -17,7 +17,7 @@ func NewPlayerCharacterRepository(db *sql.DB) *PlayerCharacterRepository {
 }
 
 func (r *PlayerCharacterRepository) List(ctx context.Context, campaignID int64) ([]models.PlayerCharacter, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, image_path, historia_path, avances_path, created_at, updated_at
+	rows, err := r.db.QueryContext(ctx, `SELECT id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, description, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, image_path, historia_path, avances_path, created_at, updated_at
 		FROM player_characters WHERE campaign_id = ? AND deleted_at IS NULL ORDER BY character_name`,
 		campaignID,
 	)
@@ -36,7 +36,7 @@ func (r *PlayerCharacterRepository) List(ctx context.Context, campaignID int64) 
 		var obsidianPath, imagePath, historiaPath, avancesPath sql.NullString
 		var sprenNPCID, currentHp, maxHp sql.NullInt64
 		var attributes, skills string
-		if err := rows.Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &imagePath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt); err != nil {
+		if err := rows.Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Description, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &imagePath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt); err != nil {
 			return nil, err
 		}
 		p.ObsidianPath = fromNullString(obsidianPath)
@@ -61,15 +61,14 @@ func (r *PlayerCharacterRepository) Create(ctx context.Context, p *models.Player
 	var sprenNPCID, currentHp, maxHp sql.NullInt64
 	var attributes, skills string
 	err := r.db.QueryRowContext(ctx, `
-		INSERT INTO player_characters (campaign_id, player_name, character_name, race, class, status, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		INSERT INTO player_characters (campaign_id, player_name, character_name, race, class, status, description, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
 			player_name = excluded.player_name, character_name = excluded.character_name,
-			race = excluded.race, class = excluded.class, status = excluded.status,
-			backstory = excluded.backstory, progression_notes = excluded.progression_notes, deleted_at = NULL, updated_at = datetime('now')
-		RETURNING id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, created_at, updated_at`,
-		p.CampaignID, p.PlayerName, p.CharacterName, p.Race, p.Class, p.Status, p.Backstory, p.ProgressionNotes, toJSONText(p.Attributes), toJSONText(p.Skills), toNullInt64(p.CurrentHp), toNullInt64(p.MaxHp), toNullString(p.ObsidianPath),
-	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt)
+			race = excluded.race, status = excluded.status, deleted_at = NULL, updated_at = datetime('now')
+		RETURNING id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, description, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, created_at, updated_at`,
+		p.CampaignID, p.PlayerName, p.CharacterName, p.Race, p.Class, p.Status, p.Description, p.Backstory, p.ProgressionNotes, toJSONText(p.Attributes), toJSONText(p.Skills), toNullInt64(p.CurrentHp), toNullInt64(p.MaxHp), toNullString(p.ObsidianPath),
+	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Description, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		return err
 	}
@@ -90,10 +89,10 @@ func (r *PlayerCharacterRepository) GetByID(ctx context.Context, id int64) (*mod
 	var sprenNPCID, currentHp, maxHp sql.NullInt64
 	var attributes, skills string
 	err := r.db.QueryRowContext(ctx, `
-		SELECT id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, image_path, historia_path, avances_path, created_at, updated_at
+		SELECT id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, description, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, image_path, historia_path, avances_path, created_at, updated_at
 		FROM player_characters WHERE id = ? AND deleted_at IS NULL`,
 		id,
-	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &imagePath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt)
+	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Description, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &imagePath, &historiaPath, &avancesPath, &p.CreatedAt, &p.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, ErrNotFound
 	}
@@ -134,11 +133,11 @@ func (r *PlayerCharacterRepository) Update(ctx context.Context, id int64, p *mod
 	var attributes, skills string
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE player_characters
-		SET player_name = ?, character_name = ?, race = ?, class = ?, status = ?, backstory = ?, progression_notes = ?, attributes = ?, skills = ?, current_hp = ?, max_hp = ?, obsidian_path = ?, updated_at = datetime('now')
+		SET player_name = ?, character_name = ?, race = ?, class = ?, status = ?, description = ?, backstory = ?, progression_notes = ?, attributes = ?, skills = ?, current_hp = ?, max_hp = ?, obsidian_path = ?, updated_at = datetime('now')
 		WHERE id = ? AND deleted_at IS NULL
-		RETURNING id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, image_path, created_at, updated_at`,
-		p.PlayerName, p.CharacterName, p.Race, p.Class, p.Status, p.Backstory, p.ProgressionNotes, toJSONText(p.Attributes), toJSONText(p.Skills), toNullInt64(p.CurrentHp), toNullInt64(p.MaxHp), toNullString(p.ObsidianPath), id,
-	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &imagePath, &p.CreatedAt, &p.UpdatedAt)
+		RETURNING id, campaign_id, player_name, character_name, race, class, status, spren_npc_id, description, backstory, progression_notes, attributes, skills, current_hp, max_hp, obsidian_path, historia_path, avances_path, image_path, created_at, updated_at`,
+		p.PlayerName, p.CharacterName, p.Race, p.Class, p.Status, p.Description, p.Backstory, p.ProgressionNotes, toJSONText(p.Attributes), toJSONText(p.Skills), toNullInt64(p.CurrentHp), toNullInt64(p.MaxHp), toNullString(p.ObsidianPath), id,
+	).Scan(&p.ID, &p.CampaignID, &p.PlayerName, &p.CharacterName, &p.Race, &p.Class, &p.Status, &sprenNPCID, &p.Description, &p.Backstory, &p.ProgressionNotes, &attributes, &skills, &currentHp, &maxHp, &obsidianPath, &historiaPath, &avancesPath, &imagePath, &p.CreatedAt, &p.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return ErrNotFound
 	}

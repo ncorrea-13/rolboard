@@ -1,6 +1,6 @@
 .toast {
   position: fixed;
-  bottom: 24px;
+  bottom: calc(var(--footer-h) + 16px);
   left: 50%;
   transform: translateX(-50%);
   background: var(--bg-elevated);

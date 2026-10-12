@@ -184,3 +184,51 @@ func TestArcDeleteBlockedByActiveSession(t *testing.T) {
 		t.Fatalf("Expected arc delete to work once sessions are gone, got %v", err)
 	}
 }
+
+func TestOneshotNumberingIsIndependent(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+	repo := NewSessionRepository(db)
+
+	regular := &models.Session{CampaignID: campaignID, SessionNumber: 1, SessionType: "session", Date: "2026-01-01"}
+	if err := repo.Create(ctx, regular); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	oneshot := &models.Session{CampaignID: campaignID, SessionNumber: 1, SessionType: "oneshot", Date: "2026-01-02"}
+	if err := repo.Create(ctx, oneshot); err != nil {
+		t.Fatalf("Expected oneshot 1 to coexist with session 1, got %v", err)
+	}
+	dup := &models.Session{CampaignID: campaignID, SessionNumber: 1, SessionType: "oneshot", Date: "2026-01-03"}
+	if err := repo.Create(ctx, dup); !errors.Is(err, ErrConflict) {
+		t.Fatalf("Expected ErrConflict for duplicate oneshot number, got %v", err)
+	}
+}
+
+func TestOneshotTitleAndPlannedRoundTrip(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+	repo := NewSessionRepository(db)
+
+	s := &models.Session{CampaignID: campaignID, SessionNumber: 1, SessionType: "oneshot", Title: "La torre", Planned: true}
+	if err := repo.Create(ctx, s); err != nil {
+		t.Fatalf("Create failed: %v", err)
+	}
+	got, err := repo.GetByID(ctx, s.ID)
+	if err != nil {
+		t.Fatalf("GetByID failed: %v", err)
+	}
+	if got.Title != "La torre" || !got.Planned {
+		t.Fatalf("Expected title and planned to round-trip, got %q planned=%v", got.Title, got.Planned)
+	}
+
+	update := &models.Session{SessionNumber: 1, SessionType: "oneshot", Title: "La torre", Planned: false, Date: "2026-03-01"}
+	if err := repo.Update(ctx, s.ID, update); err != nil {
+		t.Fatalf("Update failed: %v", err)
+	}
+	got, _ = repo.GetByID(ctx, s.ID)
+	if got.Planned {
+		t.Fatal("Expected planned to be false after update")
+	}
+}

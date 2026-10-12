@@ -1,10 +1,9 @@
-.entity-detail {
-  padding: 20px 24px;
+.card.entity-detail {
+  padding: 22px 26px;
 }
 
 .entity-detail__header {
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 14px;
 }
 
 .entity-detail__breadcrumb {
@@ -28,9 +27,9 @@
 }
 
 .entity-detail__portrait {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
   object-fit: cover;
   flex: none;
 }
@@ -53,7 +52,7 @@
 }
 
 @media (max-width: 640px) {
-  .entity-detail {
+  .card.entity-detail {
     padding: 16px;
   }
 

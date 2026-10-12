@@ -45,6 +45,7 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
       <div>
         <span className="label">{t("newCampaignForm.name")}</span>
         <input
+          aria-label={t("newCampaignForm.name")}
           className="npc-edit__input"
           placeholder={t("newCampaignForm.namePlaceholder")}
           value={name}
@@ -54,6 +55,7 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
       <div>
         <span className="label">{t("newCampaignForm.system")}</span>
         <input
+          aria-label={t("newCampaignForm.system")}
           className="npc-edit__input"
           placeholder={t("newCampaignForm.systemPlaceholder")}
           value={system}
@@ -63,6 +65,7 @@ export function NewCampaignForm({ onConfirm, onCancel }: NewCampaignFormProps) {
       <div>
         <span className="label">{t("newCampaignForm.vaultDir")}</span>
         <select
+          aria-label={t("newCampaignForm.vaultDir")}
           className="npc-edit__input"
           value={vaultPath}
           onChange={(e) => setVaultPath(e.target.value)}

@@ -31,7 +31,12 @@ export function EntityIdentity({
       </div>
       <div className="entity-identity__text">
         <span className="entity-identity__name-wrap">
-          <span className="entity-identity__name">{name}</span>
+          <span
+            className="entity-identity__name"
+            {...(size === "header" ? { role: "heading", "aria-level": 1 } : {})}
+          >
+            {name}
+          </span>
           <span
             className="entity-identity__underline"
             style={{ background: color }}

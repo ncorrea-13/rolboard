@@ -5,6 +5,7 @@ import { ImageUploadField } from "../components/ImageUploadField";
 import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT } from "../lib/i18n";
+import { MarkdownField } from "../components/MarkdownField";
 
 interface FactionEditProps {
   group: Group;
@@ -55,13 +56,7 @@ export function FactionEdit({
       <div className="npc-edit__bar">
         <div className="npc-edit__bar-left">
           <span className="status-dot" />
-          <span
-            style={{
-              fontWeight: 500,
-              fontSize: 13.5,
-              color: "var(--text-primary)",
-            }}
-          >
+          <span className="npc-edit__title" role="heading" aria-level={1}>
             {group.id
               ? `${t("common.editing")} · ${group.name}`
               : t("factionEdit.new")}
@@ -93,21 +88,17 @@ export function FactionEdit({
           <div>
             <span className="label">{t("common.name")}</span>
             <input
+              aria-label={t("common.name")}
               className="npc-edit__input"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
           </div>
-          <div>
-            <span className="label">
-              {t("common.description")} {t("common.supportsMarkdown")}
-            </span>
-            <textarea
-              className="npc-edit__textarea"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+          <MarkdownField
+            label={`${t("common.description")} ${t("common.supportsMarkdown")}`}
+            value={description}
+            onChange={setDescription}
+          />
         </div>
 
         <div className="npc-edit__col">
@@ -136,6 +127,7 @@ export function FactionEdit({
           <div>
             <span className="label">{t("factionDetail.alignment")}</span>
             <input
+              aria-label={t("factionDetail.alignment")}
               className="npc-edit__input"
               value={alineacion}
               onChange={(e) => setAlineacion(e.target.value)}
@@ -144,6 +136,7 @@ export function FactionEdit({
           <div>
             <span className="label">{t("factionDetail.leader")}</span>
             <select
+              aria-label={t("factionDetail.leader")}
               className="npc-edit__select npc-edit__select--native"
               value={liderNpcId}
               onChange={(e) => setLiderNpcId(e.target.value)}

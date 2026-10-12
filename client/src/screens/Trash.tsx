@@ -20,6 +20,13 @@ const KINDS: { kind: string; titleKey: TranslationKey }[] = [
   { kind: "location", titleKey: "trash.location" },
   { kind: "group", titleKey: "trash.group" },
   { kind: "quest", titleKey: "trash.quest" },
+  { kind: "loose_note", titleKey: "trash.loose_note" },
+  { kind: "lore_entry", titleKey: "trash.lore_entry" },
+  { kind: "secret", titleKey: "trash.secret" },
+  { kind: "item", titleKey: "trash.item" },
+  { kind: "currency", titleKey: "trash.currency" },
+  { kind: "timeline", titleKey: "trash.timeline" },
+  { kind: "timeline_event", titleKey: "trash.timeline_event" },
   { kind: "encounter", titleKey: "trash.encounter" },
 ];
 
@@ -67,7 +74,7 @@ export function Trash({ campaignId, onRestored, notify }: TrashProps) {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Trash2 size={22} strokeWidth={1.75} />
           <div>
-            <div className="display" style={{ fontSize: 21 }}>
+            <div className="display page-title" role="heading" aria-level={1}>
               {t("trash.title")}
             </div>
             <span className="list-page__count">{t("trash.subtitle")}</span>
