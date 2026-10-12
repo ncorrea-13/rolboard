@@ -197,6 +197,7 @@ export interface Quest {
   status: QuestStatus;
   priority: 1 | 2 | 3;
   notes: string;
+  hasImage?: boolean;
 }
 
 export interface Group {
@@ -357,6 +358,7 @@ export interface Arc {
   status: ArcStatus;
   subarcOrder?: number;
   obsidianPath: string;
+  hasImage?: boolean;
 }
 
 export type EncounterStatus = "planificado" | "activo" | "cerrado";
@@ -434,6 +436,7 @@ export interface LoreEntry {
   locationId?: string;
   createdAt: string;
   updatedAt: string;
+  hasImage?: boolean;
 }
 
 export interface Timeline {
@@ -508,6 +511,7 @@ export interface Item {
   rarity: string;
   weight?: number;
   prices: ItemPrice[];
+  hasImage?: boolean;
 }
 
 export interface InventoryEntry {

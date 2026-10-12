@@ -3,6 +3,10 @@ const basePathByKind = {
   "player-character": "/player-characters",
   location: "/locations",
   group: "/groups",
+  item: "/items",
+  arc: "/arcs",
+  lore: "/lore",
+  quest: "/quests",
 } as const;
 
 export type EntityImageKind = keyof typeof basePathByKind;
