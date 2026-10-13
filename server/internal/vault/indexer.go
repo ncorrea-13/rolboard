@@ -78,6 +78,7 @@ var locationTypeMap = map[string]string{
 	"región":     "region",
 	"planeta":    "planet",
 	"estructura": "site",
+	"plano":      "plane",
 	"shadesmar":  "plane",
 }
 
