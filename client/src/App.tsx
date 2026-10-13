@@ -838,6 +838,7 @@ export default function App() {
                 <LoreDetail
                   key={entry.id}
                   entry={entry}
+                  campaignId={activeCampaignId!}
                   appearsIn={appearsForLore(entry.id, appearsCtx, t)}
                   category={loreCategories.find(
                     (c) => c.id === entry.categoryId,

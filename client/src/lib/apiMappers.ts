@@ -597,6 +597,7 @@ export interface ApiLoreEntry {
   body: string;
   arc_id?: number;
   location_id?: number;
+  obsidian_path?: string;
   image_path?: string;
   created_at: string;
   updated_at: string;
@@ -611,6 +612,7 @@ export function mapLoreEntry(e: ApiLoreEntry): LoreEntry {
     body: e.body,
     arcId: e.arc_id ? String(e.arc_id) : undefined,
     locationId: e.location_id ? String(e.location_id) : undefined,
+    obsidianPath: e.obsidian_path,
     hasImage: Boolean(e.image_path),
     createdAt: e.created_at,
     updatedAt: e.updated_at,

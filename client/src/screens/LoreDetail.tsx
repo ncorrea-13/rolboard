@@ -7,9 +7,11 @@ import { MarkdownText } from "../components/MarkdownText";
 import { Link } from "../components/Link";
 import { entityImageUrl } from "../lib/images";
 import { AppearsIn, type AppearsGroup } from "../components/AppearsIn";
+import { RenderedNoteButton } from "../components/RenderedNoteButton";
 
 interface LoreDetailProps {
   entry: LoreEntry;
+  campaignId: string;
   category?: LoreCategory;
   arc?: Arc;
   location?: Location;
@@ -23,6 +25,7 @@ interface LoreDetailProps {
 
 export function LoreDetail({
   entry,
+  campaignId,
   category,
   arc,
   location,
@@ -58,6 +61,12 @@ export function LoreDetail({
           )}
         </div>
         <div className="npc-edit__bar-actions">
+          <RenderedNoteButton
+            campaignId={campaignId}
+            path={entry.obsidianPath}
+            title={entry.title}
+            fallback={entry.body}
+          />
           <button className="btn btn-danger-outline" onClick={onDelete}>
             {t("entityDetail.deactivate")}
           </button>

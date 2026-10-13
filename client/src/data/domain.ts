@@ -434,6 +434,7 @@ export interface LoreEntry {
   body: string;
   arcId?: string;
   locationId?: string;
+  obsidianPath?: string;
   createdAt: string;
   updatedAt: string;
   hasImage?: boolean;
