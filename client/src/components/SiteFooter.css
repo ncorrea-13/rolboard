@@ -15,12 +15,10 @@
   color: var(--text-secondary);
   background: var(--bg-canvas);
   border-top: 1px solid var(--border-subtle);
-  pointer-events: none;
 }
 
 .site-footer a,
 .site-footer__icon {
-  pointer-events: auto;
   color: inherit;
   display: inline-flex;
   align-items: center;

@@ -154,6 +154,7 @@ export default function App() {
     return !loc.help && loc.campaignId !== null;
   });
 
+  const [helpKey, setHelpKey] = useState(0);
   const [helpOpen, setHelpOpen] = useState(
     () => window.location.pathname === "/help",
   );
@@ -215,8 +216,12 @@ export default function App() {
   useEffect(() => bootFromUrl(), []);
 
   function openHelp() {
-    window.history.pushState({ help: true }, "", "/help");
     window.scrollTo(0, 0);
+    if (helpOpen) {
+      setHelpKey((k) => k + 1);
+      return;
+    }
+    window.history.pushState({ help: true }, "", "/help");
     withViewTransition(() => setHelpOpen(true), "help");
   }
 
@@ -621,7 +626,7 @@ export default function App() {
     return (
       <div className="app">
         <div className="app__stage">
-          <Help onBack={closeHelp} />
+          <Help key={helpKey} onBack={closeHelp} />
         </div>
         <SiteFooter onHelp={openHelp} />
       </div>
