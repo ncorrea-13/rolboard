@@ -33,6 +33,7 @@ MainActivity (Kotlin)
               ├── request            POST / PUT / DELETE → Mobile.request
               ├── settings           {"vaultsRoot", "syncDir"}
               ├── pickFolder         Android folder picker → Mobile.setVaultsRoot / setSyncDir
+              ├── saveFile           "save as" dialog (ACTION_CREATE_DOCUMENT) → writes the response of a GET (campaign export)
               └── openExternal       https links in the system browser
 ```
 

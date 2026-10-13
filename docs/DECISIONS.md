@@ -58,6 +58,10 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - No indexes on FKs yet: at this volume a scan is instant.
 - `groups` and `player_characters` are first-class entities from the start.
 - `npc_relations` is directed with a free-text role, instead of a fixed relationship field.
+- `origen` and `subtipo` are free text on NPCs (they were `etnia` and `tipo_spren`); the vault parser keeps the old keys as aliases so existing notes don't lose the value on the next reindex. `wardails` keeps its name in the code and the API; the UI calls it "Sensitive topics".
+- **The export is Markdown in the indexer's own format**, so it doubles as backup and as a way out. Images go along under `Imagenes/`, named after their note; the trash stays out (deleted means deleted). Entities the vault never had (quests, secrets, items...) go to their own folders, which the indexer ignores.
+- **`Lore/` in the vault only fixes title, category, arc and location.** The text stays in the note (rendered from the entry) and the database `body` stays the dashboard's, like the description of an NPC.
+- NPC ↔ player links live in `npc_player_relations` (free-text role, `source` like the group bridges), not in a spren column: the same NPC can be tied to several characters and any kind of tie fits. The vault declares them from the NPC note (`vinculado_a`), without a role. Deleting an NPC with links is allowed: reads hide the links of deleted rows.
 - `attributes` / `skills` as free-form JSON: each game system (Cosmere, D&D) defines its own; no case needs filtering by attribute.
 - An important NPC with a full sheet = `detail_level = full`, not a separate entity.
 

@@ -7,8 +7,10 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -122,6 +124,9 @@ func (d *desktopApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/open":
 		d.openURL(w, r)
 		return
+	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/save-export":
+		d.saveExport(w, r)
+		return
 	case r.Method == http.MethodGet && r.URL.Path == "/api/desktop/settings":
 		d.writeSettings(w)
 		return
@@ -165,6 +170,59 @@ func (d *desktopApp) openURL(w http.ResponseWriter, r *http.Request) {
 	}
 	runtime.BrowserOpenURL(d.ctx, u.String())
 	w.WriteHeader(http.StatusNoContent)
+}
+
+var (
+	campaignIDPattern = regexp.MustCompile(`^[0-9]+$`)
+	filenamePattern   = regexp.MustCompile(`filename="([^"]+)"`)
+)
+
+func (d *desktopApp) saveExport(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		CampaignID string `json:"campaignId"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&payload); err != nil || !campaignIDPattern.MatchString(payload.CampaignID) {
+		http.Error(w, "Invalid body", http.StatusBadRequest)
+		return
+	}
+	rt := d.rt.Load()
+	if rt == nil {
+		http.Error(w, "Starting", http.StatusServiceUnavailable)
+		return
+	}
+
+	req := httptest.NewRequestWithContext(r.Context(), http.MethodGet, "/api/campaigns/"+payload.CampaignID+"/export", nil)
+	rec := httptest.NewRecorder()
+	rt.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		http.Error(w, "Error exporting campaign", rec.Code)
+		return
+	}
+
+	name := "rolboard-campaign.zip"
+	if m := filenamePattern.FindStringSubmatch(rec.Header().Get("Content-Disposition")); m != nil {
+		name = m[1]
+	}
+	path, err := runtime.SaveFileDialog(d.ctx, runtime.SaveDialogOptions{
+		Title:           "Guardar la campaña exportada",
+		DefaultFilename: name,
+		Filters:         []runtime.FileFilter{{DisplayName: "ZIP (*.zip)", Pattern: "*.zip"}},
+	})
+	if err != nil {
+		http.Error(w, "Error opening dialog", http.StatusInternalServerError)
+		return
+	}
+	if path == "" {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+	if err := os.WriteFile(path, rec.Body.Bytes(), 0o644); err != nil {
+		slog.Error("error guardando el export", "path", path, "err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]string{"path": path})
 }
 
 func (d *desktopApp) writeSettings(w http.ResponseWriter) {

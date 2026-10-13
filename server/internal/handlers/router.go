@@ -190,6 +190,7 @@ func NewRouter(h *Handlers) http.Handler {
 	})
 
 	mux.Handle("POST /api/campaigns/{id}/reindex", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.Reindex)))
+	mux.Handle("GET /api/campaigns/{id}/export", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ExportCampaign)))
 	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.requireCampaign(resolveCampaignIDFromQuery, h.ListVaultDirs)))
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

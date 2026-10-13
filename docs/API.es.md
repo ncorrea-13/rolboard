@@ -361,11 +361,13 @@ POST /api/campaigns/{id}/trash/{kind}/{itemId}/restore
 
 ```
 POST /api/campaigns/{id}/reindex
+GET  /api/campaigns/{id}/export
 GET  /api/campaigns/{id}/notes/render?path=<ruta relativa>
 GET  /api/admin/vault-dirs[?campaignId=N]
 ```
 
 - `reindex`: reindexa el vault de la campaña de forma síncrona. Devuelve `{Processed, UnresolvedWikilinks, Conflicts, Errors}`.
+- `export`: adjunto `application/zip` con toda la campaña como notas Markdown (ver `VAULT_INDEXER.md`). Incluye las imágenes en `Imagenes/`; excluye filas borradas y el código de acceso.
 - `notes/render`: `{"html": "..."}` con la nota renderizada y sanitizada; wikilinks resueltos a links de entidad.
 - `vault-dirs`: carpetas bajo `VAULTS_ROOT` sin campaña asignada (la carpeta de `campaignId` se incluye, para poder reasignarla). Admin sin parámetro, o sesión de la campaña `campaignId`.
 

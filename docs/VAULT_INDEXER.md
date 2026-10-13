@@ -148,6 +148,12 @@ A wikilink is looked up by name and filtered by the type expected for that field
 
 `npc_groups` / `pc_groups` track origin (`source`): the reindex only rewrites what came from the vault and respects what was added or removed from the dashboard. See `DATA_MODEL.md`.
 
+## Exporting a campaign
+
+`GET /api/campaigns/{id}/export` (Campaign settings → *Export campaign*) returns a `.zip` with every entity as a Markdown note: `Campaña.md`, plus one folder per type. The six folders the indexer reads (`NPC/`, `Locaciones/`, `Grupos/`, `Sesiones/`, `Jugadores/`, `Arcos/`) and `Lore/` use the same frontmatter keys as above, so an export can be dropped into a vault and reindexed. `Quests/`, `Secretos/`, `Notas/`, `Objetos/`, `Monedas/`, `Linea-de-tiempo/` and `Encuentros/` are written for backup and reading; the indexer ignores them.
+
+Images go to `Imagenes/<folder>/<note name>.<ext>` (one folder per type, named after the note), and the note links them with `imagen:` and an `![[...]]` embed. Every note ends with a rule (`---`) and an italic line with its creation and last edit dates (UTC). Not included: deleted items (the trash) and the access code. Code: `server/internal/export/`.
+
 ## Note rendering
 
 `GET /api/campaigns/{id}/notes/render?path=...`:

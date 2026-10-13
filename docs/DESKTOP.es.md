@@ -46,6 +46,7 @@ GET  /api/desktop/settings      {"vaultsRoot": "...", "syncDir": "..."}  ("" si 
 POST /api/desktop/vaults-root   abre el diálogo nativo de carpetas; 200 con los ajustes o 204 si se cancela
 POST /api/desktop/sync-dir      lo mismo, para la carpeta de sincronización
 POST /api/desktop/open          {"url": "https://..."}  la abre en el browser predeterminado; solo https
+POST /api/desktop/save-export   {"campaignId": "N"}  arma el export de la campaña y abre el diálogo nativo de guardado; 200 {"path"} o 204 si se cancela
 ```
 
 Cambiar una carpeta guarda `config.json` y reconstruye la app en caliente (nuevo `app.New`, cambio de handler, se cierra la DB anterior): no hace falta reiniciar.

@@ -148,6 +148,12 @@ Un wikilink se busca por nombre y se filtra por el tipo esperado según el campo
 
 `npc_groups` / `pc_groups` distinguen origen (`source`): el reindex solo reescribe lo que vino del vault y respeta lo agregado o quitado desde el dashboard. Ver `DATA_MODEL.md`.
 
+## Exportar una campaña
+
+`GET /api/campaigns/{id}/export` (Ajustes de la campaña → *Exportar campaña*) devuelve un `.zip` con cada entidad como nota Markdown: `Campaña.md`, más una carpeta por tipo. Las seis carpetas que lee el indexador (`NPC/`, `Locaciones/`, `Grupos/`, `Sesiones/`, `Jugadores/`, `Arcos/`) y `Lore/` usan las mismas claves de frontmatter de arriba, así que un export se puede meter en un vault y reindexar. `Quests/`, `Secretos/`, `Notas/`, `Objetos/`, `Monedas/`, `Linea-de-tiempo/` y `Encuentros/` se escriben para respaldo y lectura; el indexador las ignora.
+
+Las imágenes van a `Imagenes/<carpeta>/<nombre de la nota>.<ext>` (una carpeta por tipo, con el nombre de la nota), y la nota las enlaza con `imagen:` y un embed `![[...]]`. Cada nota termina con una regla (`---`) y una línea en cursiva con sus fechas de creación y de última edición (UTC). No incluye: lo borrado (la papelera) ni el código de acceso. Código: `server/internal/export/`.
+
 ## Render de notas
 
 `GET /api/campaigns/{id}/notes/render?path=...`:

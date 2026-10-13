@@ -2,16 +2,7 @@
 
 Lo que quedó fuera de la ronda de worldbuilding narrativo. Cuando se implemente algo, pasa a `DECISIONS.md` / `DATA_MODEL.md` / `API.md` y se borra de acá. Ninguno de los tres necesita esquema nuevo.
 
-## 1. Exportar la campaña a Markdown
-
-La salida de emergencia de una herramienta que pretende reemplazar un Notion: poder llevarse todo.
-
-- Un `.zip` (o carpeta) por campaña con una carpeta por tipo: `NPC/`, `Jugadores/`, `Locaciones/`, `Facciones/`, `Arcos/`, `Sesiones/`, `Oneshots/`, `Quests/`, `Lore/`, `Secretos/`, `Notas/`, `Objetos/`, `Linea-de-tiempo/`.
-- Una nota por entidad, con frontmatter YAML mínimo (`tipo`, `status`, vínculos como `[[wikilinks]]`) y el cuerpo en Markdown.
-- Mismo formato que el indexer lee del vault, para que lo exportado se pueda volver a importar.
-- Decisión abierta: ¿incluye las imágenes de `uploads/`, o solo los textos?
-
-## 2. Importador del vault (jugadores)
+## 1. Importador del vault (jugadores)
 
 Traer a la base el contenido de las notas del vault que hoy solo se ven renderizadas, ya que la DB gana.
 

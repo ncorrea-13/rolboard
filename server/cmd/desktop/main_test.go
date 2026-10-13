@@ -23,3 +23,14 @@ func TestOpenURLRejectsNonHTTPS(t *testing.T) {
 		}
 	}
 }
+
+func TestSaveExportRejectsBadCampaignID(t *testing.T) {
+	d := &desktopApp{}
+	for _, body := range []string{`{"campaignId":"../admin"}`, `{"campaignId":""}`, `{"campaignId":"1/export?x"}`, `not json`} {
+		rec := httptest.NewRecorder()
+		d.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/api/desktop/save-export", strings.NewReader(body)))
+		if rec.Code != http.StatusBadRequest {
+			t.Errorf("%s: got %d, want 400", body, rec.Code)
+		}
+	}
+}
