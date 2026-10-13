@@ -1103,6 +1103,7 @@ export default function App() {
             <NpcDetail
               npc={selectedNpc}
               npcs={campaignNpcs}
+              players={campaignPlayerCharacters}
               items={items}
               campaignId={activeCampaignId!}
               vaultName={activeCampaign!.vaultPath}
@@ -1298,6 +1299,7 @@ export default function App() {
               key={selectedNpc.id}
               npc={selectedNpc}
               npcs={campaignNpcs}
+              players={campaignPlayerCharacters}
               locations={campaignLocations}
               npcTypesApi={npcTypesApi}
               onSave={(patch) => {
@@ -1320,6 +1322,7 @@ export default function App() {
             <NpcEdit
               npc={blankDrafts.npc}
               npcs={campaignNpcs}
+              players={campaignPlayerCharacters}
               locations={campaignLocations}
               npcTypesApi={npcTypesApi}
               onSave={createNpc}
@@ -1330,6 +1333,7 @@ export default function App() {
           {route.name === "player-detail" && selectedPlayer && (
             <PlayerDetail
               player={selectedPlayer}
+              npcs={campaignNpcs}
               items={items}
               campaignId={activeCampaignId!}
               vaultName={activeCampaign!.vaultPath}

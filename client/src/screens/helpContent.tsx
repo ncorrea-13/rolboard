@@ -215,7 +215,7 @@ const es: HelpPage[] = [
               <strong>Juégala:</strong> ábrela y toca{" "}
               <em>Marcar como jugada</em>. Anotas la fecha real y un resumen;
               tus notas de preparación se conservan. Debajo del resumen ves los
-              wardails para tenerlos presentes.
+              temas sensibles para tenerlos presentes.
             </li>
             <li>
               <strong>Consúltala después:</strong> la sesión queda en la línea
@@ -363,13 +363,13 @@ const es: HelpPage[] = [
       },
       {
         id: "wardails",
-        title: "Wardails",
+        title: "Temas sensibles",
         body: (
           <p>
-            Son los temas sensibles que quieren cuidar en la mesa (violencia,
-            duelo, abuso…). Los escribes una vez por campaña en la sección{" "}
-            <em>Wardails</em> del sidebar, con el botón <em>Editar</em>, y se
-            muestran en cada sesión jugada para tenerlos presentes.
+            Son los temas que quieren cuidar en la mesa (violencia, duelo,
+            abuso…). Los escribes una vez por campaña en la sección{" "}
+            <em>Temas sensibles</em> del sidebar, con el botón <em>Editar</em>,
+            y se muestran en cada sesión jugada para tenerlos presentes.
           </p>
         ),
       },
@@ -1078,8 +1078,8 @@ const en: HelpPage[] = [
             <li>
               <strong>Play it:</strong> open it and press{" "}
               <em>Mark as played</em>. You add the real date and a recap; your
-              prep notes are kept. Below the recap you see the wardails, to keep
-              them in mind.
+              prep notes are kept. Below the recap you see the sensitive topics,
+              to keep them in mind.
             </li>
             <li>
               <strong>Look it up later:</strong> the session stays on its arc's
@@ -1223,13 +1223,14 @@ const en: HelpPage[] = [
       },
       {
         id: "wardails",
-        title: "Wardails",
+        title: "Sensitive topics",
         body: (
           <p>
-            These are the sensitive topics you want to be careful with at the
-            table (violence, grief, abuse…). You write them once per campaign in
-            the <em>Wardails</em> section of the sidebar, with the <em>Edit</em>{" "}
-            button, and they show on every played session to keep them in mind.
+            These are the topics you want to be careful with at the table
+            (violence, grief, abuse…). You write them once per campaign in the{" "}
+            <em>Sensitive topics</em> section of the sidebar, with the{" "}
+            <em>Edit</em> button, and they show on every played session to keep
+            them in mind.
           </p>
         ),
       },

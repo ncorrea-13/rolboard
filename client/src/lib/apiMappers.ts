@@ -68,8 +68,8 @@ export interface ApiNpc {
   detail_level: string;
   status: string;
   rol?: string;
-  etnia?: string;
-  tipo_spren?: string;
+  origen?: string;
+  subtipo?: string;
   location_id?: number;
   description: string;
   attributes?: StatMap;
@@ -130,8 +130,8 @@ export function mapNpc(n: ApiNpc): Npc {
     campaignId: String(n.campaign_id),
     name: n.name,
     role: n.rol ?? "",
-    etnia: n.etnia,
-    tipoSpren: n.tipo_spren,
+    origen: n.origen,
+    subtipo: n.subtipo,
     description: n.description,
     crystal,
     detailLevel: n.detail_level === "minor" ? "minor" : "full",
@@ -171,8 +171,8 @@ export function npcToApiPayload(npc: Npc) {
     status: npcStatusToApi(npc),
     description: npc.description,
     rol: npc.role || undefined,
-    etnia: npc.etnia || undefined,
-    tipo_spren: npc.tipoSpren || undefined,
+    origen: npc.origen || undefined,
+    subtipo: npc.subtipo || undefined,
     location_id: npc.locationId ? Number(npc.locationId) : undefined,
     attributes: npc.attributes,
     skills: npc.skills,
