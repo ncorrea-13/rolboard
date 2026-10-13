@@ -64,7 +64,7 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 ## Deletions and trash
 
 - **Nothing is deleted for good.** `DELETE` is a soft delete and the trash screen restores it. There is no "empty trash": a hard delete would need a cascade that this schema deliberately avoids.
-- **Deleting is blocked when it would leave visible orphans:** an arc with active sessions, a location with active NPCs or sub-locations, an NPC that is a character's spren. `409` with a code, and the user moves the dependants first. Not blocked, on purpose: sessions with encounters (the encounter just loses its link), a faction leader (the UI already warns), and the session↔NPC/quest bridges (they are history; reads filter deleted rows).
+- **Deleting is blocked when it would leave visible orphans:** an arc with active sessions, a location with active NPCs or sub-locations. `409` with a code, and the user moves the dependants first. Not blocked, on purpose: sessions with encounters (the encounter just loses its link), a faction leader (the UI already warns), and the session↔NPC/quest bridges (they are history; reads filter deleted rows).
 - **Restoring checks its parents.** A session, NPC or location whose arc or location is still deleted can't be restored (`restore_parent_deleted`), so a restore never creates an orphan.
 - **Session numbers are unique among active sessions only** (partial index), so a deleted number can be reused. The trade-off: restoring can hit `409` if the number was reused.
 - **Vault-archived sessions (`sub_number = 99`) stay out of the trash.** The vault manages that state: the next reindex would archive them again.

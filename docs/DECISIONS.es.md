@@ -64,7 +64,7 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 ## Bajas y papelera
 
 - **Nada se borra para siempre.** `DELETE` es baja lógica y la pantalla de papelera lo restaura. No hay "vaciar papelera": un borrado físico necesitaría una cascada que este esquema evita a propósito.
-- **Se bloquea la baja cuando dejaría huérfanos visibles:** un arco con sesiones activas, una ubicación con NPCs o sub-ubicaciones activas, un NPC que es el spren de un personaje. `409` con un código, y el usuario mueve primero a los dependientes. No se bloquea, a propósito: sesiones con encuentros (el encuentro solo pierde su vínculo), el líder de una facción (la UI ya avisa) ni las tablas puente sesión↔NPC/quest (son historia; las lecturas filtran lo borrado).
+- **Se bloquea la baja cuando dejaría huérfanos visibles:** un arco con sesiones activas, una ubicación con NPCs o sub-ubicaciones activas. `409` con un código, y el usuario mueve primero a los dependientes. No se bloquea, a propósito: sesiones con encuentros (el encuentro solo pierde su vínculo), el líder de una facción (la UI ya avisa) ni las tablas puente sesión↔NPC/quest (son historia; las lecturas filtran lo borrado).
 - **Restaurar revisa a los padres.** Una sesión, NPC o ubicación cuyo arco o ubicación sigue borrado no se puede restaurar (`restore_parent_deleted`), así que restaurar nunca crea un huérfano.
 - **El número de sesión es único solo entre sesiones activas** (índice parcial), así que un número borrado se puede reutilizar. A cambio: restaurar puede dar `409` si el número se reutilizó.
 - **Las sesiones archivadas por el vault (`sub_number = 99`) no van a la papelera.** Ese estado lo maneja el vault: el próximo reindex las archivaría de nuevo.

@@ -159,12 +159,12 @@ type stagedNPC struct {
 	id         int64
 	location   string
 	vinculoCon string
+	vinculados []string
 	facciones  []string
 }
 
 type stagedPC struct {
 	id        int64
-	spren     string
 	facciones []string
 }
 
@@ -314,10 +314,17 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 					facciones = append(facciones, target)
 				}
 			}
+			var vinculados []string
+			for _, raw := range fm.VinculadoA {
+				if target := firstWikilinkTarget(raw); target != "" {
+					vinculados = append(vinculados, target)
+				}
+			}
 			stagedNPCs = append(stagedNPCs, stagedNPC{
 				id:         npc.ID,
 				location:   firstWikilinkTarget(fm.CurrentLocation),
 				vinculoCon: firstWikilinkTarget(fm.VinculoCon),
+				vinculados: vinculados,
 				facciones:  facciones,
 			})
 			result.Processed++
@@ -455,7 +462,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 						pcFacciones = append(pcFacciones, target)
 					}
 				}
-				stagedPCs = append(stagedPCs, stagedPC{id: pc.ID, spren: firstWikilinkTarget(fm.Spren), facciones: pcFacciones})
+				stagedPCs = append(stagedPCs, stagedPC{id: pc.ID, facciones: pcFacciones})
 				result.Processed++
 			case fm.Tipo == "historia-jugador" || fm.Tipo == "avances":
 				personaje := firstWikilinkTarget(fm.Personaje)
@@ -661,6 +668,26 @@ func (ix *Indexer) resolveNPCs(ctx context.Context, idx *NameIndex, staged []sta
 			}
 		}
 
+		if _, err := ix.db.ExecContext(ctx, `DELETE FROM npc_player_relations WHERE npc_id = ? AND source = 'vault'`, sn.id); err != nil {
+			result.Errors = append(result.Errors, err.Error())
+			continue
+		}
+		for _, vinculado := range sn.vinculados {
+			pcID, err := Resolve(idx, vinculado, "player_character")
+			if err != nil {
+				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, vinculado)
+				continue
+			}
+			if _, err := ix.db.ExecContext(ctx,
+				`INSERT INTO npc_player_relations (npc_id, player_character_id, source) VALUES (?, ?, 'vault')
+				 ON CONFLICT (npc_id, player_character_id) DO UPDATE SET
+				   source = CASE WHEN source = 'removed' THEN 'removed' ELSE 'vault' END`,
+				sn.id, pcID,
+			); err != nil {
+				result.Errors = append(result.Errors, err.Error())
+			}
+		}
+
 		if _, err := ix.db.ExecContext(ctx, `DELETE FROM npc_groups WHERE npc_id = ? AND source = 'vault'`, sn.id); err != nil {
 			result.Errors = append(result.Errors, err.Error())
 			continue
@@ -724,16 +751,6 @@ func (ix *Indexer) resolvePlayerNotes(ctx context.Context, idx *NameIndex, stage
 
 func (ix *Indexer) resolvePCs(ctx context.Context, idx *NameIndex, staged []stagedPC, result *Result) {
 	for _, sp := range staged {
-		if sp.spren != "" {
-			if sprenID, err := Resolve(idx, sp.spren, "npc"); err == nil {
-				if _, err := ix.db.ExecContext(ctx, `UPDATE player_characters SET spren_npc_id = ? WHERE id = ?`, sprenID, sp.id); err != nil {
-					result.Errors = append(result.Errors, err.Error())
-				}
-			} else {
-				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, sp.spren)
-			}
-		}
-
 		if _, err := ix.db.ExecContext(ctx, `DELETE FROM pc_groups WHERE pc_id = ? AND source = 'vault'`, sp.id); err != nil {
 			result.Errors = append(result.Errors, err.Error())
 			continue

@@ -30,3 +30,9 @@ type NPCRelation struct {
 	ToNPCID   int64  `json:"to_npc_id"`
 	Role      string `json:"role"`
 }
+
+type NPCPlayerRelation struct {
+	NPCID             int64  `json:"npc_id"`
+	PlayerCharacterID int64  `json:"player_character_id"`
+	Role              string `json:"role"`
+}

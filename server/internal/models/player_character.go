@@ -10,7 +10,6 @@ type PlayerCharacter struct {
 	Race             string          `json:"race"`
 	Class            string          `json:"class"`
 	Status           string          `json:"status"`
-	SprenNPCID       *int64          `json:"spren_npc_id,omitempty"`
 	Description      string          `json:"description"`
 	Backstory        string          `json:"backstory"`
 	ProgressionNotes string          `json:"progression_notes"`

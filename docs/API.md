@@ -17,7 +17,6 @@ REST + JSON under `/api`. Router: `net/http` stdlib (`ServeMux` with methods and
 | `409`  | `session_conflict`         | creating, editing or restoring a session whose number is already taken |
 | `409`  | `arc_in_use`               | deleting an arc that still has active sessions                        |
 | `409`  | `location_in_use`          | deleting a location that still has active NPCs or sub-locations       |
-| `409`  | `npc_in_use`               | deleting an NPC that is the spren of an active player character       |
 | `409`  | `restore_parent_deleted`   | restoring a record whose arc or location is still deleted             |
 | `400`  | `image_unsupported_format` | uploading an image that isn't PNG or JPEG                             |
 | `400`  | `image_too_large`          | uploading an image over 5 MiB or an invalid form                      |
@@ -145,6 +144,9 @@ DELETE /api/npcs/{id}
 GET    /api/npcs/{id}/relations
 POST   /api/npcs/{id}/relations                {"to_npc_id": N, "role": "ACREEDOR"}
 DELETE /api/npcs/{id}/relations/{toId}/{role}
+GET    /api/npcs/{id}/players
+PUT    /api/npcs/{id}/players/{pcId}           {"role": ""}
+DELETE /api/npcs/{id}/players/{pcId}
 POST   /api/npcs/{id}/image
 DELETE /api/npcs/{id}/image
 GET    /api/npcs/{id}/image
@@ -169,7 +171,9 @@ GET    /api/player-characters/{id}/image
 
 Body: `player_name`, `character_name`, `race`, `class`, `status` (`vivo` | `muerto` | `desaparecido` | `activo`), `description`, `backstory`, `progression_notes`, `attributes`, `skills`, `current_hp`, `max_hp`, `obsidian_path`.
 
-`spren_npc_id`, `historia_path` and `avances_path` are only written by the reindex.
+`historia_path` and `avances_path` are only written by the reindex.
+
+The links between an NPC and player characters (`npc_player_relations`) are listed from either side: `GET /api/npcs/{id}/players` and `GET /api/player-characters/{id}/npcs`, both returning `{npc_id, player_character_id, role}`. `PUT` creates the link or updates its `role`; `DELETE` removes it (the next reindex does not bring it back).
 
 ## Groups (factions)
 

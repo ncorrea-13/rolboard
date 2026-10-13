@@ -213,7 +213,7 @@ func TestReindexPreservesDashboardEditWhenNoteUnchanged(t *testing.T) {
 	}
 }
 
-func TestReindexResolvesPlayerCharacterSprenAndFaccion(t *testing.T) {
+func TestReindexResolvesNPCPlayerLinkAndFaccion(t *testing.T) {
 	db := setupIndexerTestDB(t)
 	ctx := context.Background()
 
@@ -225,7 +225,7 @@ func TestReindexResolvesPlayerCharacterSprenAndFaccion(t *testing.T) {
 	root := t.TempDir()
 	writeVaultFile(t, root, "NPC/Astillas/Cuarzo.md", "---\ntipo: spren\nstatus: vivo\ntipo_spren: Honorspren\nvinculado_a:\n  - \"[[Valisha]]\"\n---\nSpren de Valisha.")
 	writeVaultFile(t, root, "Grupos/Radiantes.md", "---\ntipo: faccion\nalineacion: neutral\n---\nOrden de Radiantes.")
-	writeVaultFile(t, root, "Jugadores/Valisha.md", "---\ntipo: jugador\njugador: Agus Horas\nstatus: activo\nraza: Cognitiva\nspren: \"[[Cuarzo]]\"\nfacciones:\n  - \"[[Radiantes]]\"\n---\nPersonaje jugado por Agus.")
+	writeVaultFile(t, root, "Jugadores/Valisha.md", "---\ntipo: jugador\njugador: Agus Horas\nstatus: activo\nraza: Cognitiva\nfacciones:\n  - \"[[Radiantes]]\"\n---\nPersonaje jugado por Agus.")
 
 	indexer := NewIndexer(root, campaign.ID, db)
 	result, err := indexer.Reindex(ctx)
@@ -263,8 +263,9 @@ func TestReindexResolvesPlayerCharacterSprenAndFaccion(t *testing.T) {
 	if valisha.Status != "activo" {
 		t.Errorf("Expected status 'activo', got %q", valisha.Status)
 	}
-	if valisha.SprenNPCID == nil || *valisha.SprenNPCID != cuarzo.ID {
-		t.Errorf("Expected SprenNPCID = %d, got %v", cuarzo.ID, valisha.SprenNPCID)
+	links, err := repository.NewNPCRepository(db).ListLinksOfPlayer(ctx, valisha.ID)
+	if err != nil || len(links) != 1 || links[0].NPCID != cuarzo.ID || links[0].Role != "" {
+		t.Errorf("Expected one link Cuarzo -> Valisha with empty role, err=%v links=%+v", err, links)
 	}
 
 	var groupID int64

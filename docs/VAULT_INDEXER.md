@@ -22,7 +22,7 @@ render.go       Markdown → sanitized HTML
 ## Flow
 
 1. **Read.** For each note: detect type by folder, parse frontmatter, upsert by `(campaign_id, obsidian_path)`, register in the name index and store what needs resolving later.
-2. **Resolve.** With every note already in the index, resolve wikilinks: location parent, NPC location/factions/relation, PC spren/factions, arc and session mentions, faction leader, backstory/progression notes.
+2. **Resolve.** With every note already in the index, resolve wikilinks: location parent, NPC location/factions/relation, NPC links to PCs, PC factions, arc and session mentions, faction leader, backstory/progression notes.
 3. **Cleanup.** Entities whose `obsidian_path` no longer exists in the vault → soft delete (and their `vault_file_state` is removed).
 
 Done in two passes because a note can reference another that hasn't been read yet.
@@ -62,6 +62,7 @@ Wikilinks go in quotes in YAML: `"[[Name]]"`.
 | `current_location`  | wikilink to a location → `location_id` |
 | `faccion`           | **list** of wikilinks to groups → `npc_groups` |
 | `vinculo_con`       | wikilink to an NPC → `npc_relations` with role `vinculado_a` |
+| `vinculado_a`       | **list** of wikilinks to players → `npc_player_relations` (empty role; edit it in the app) |
 
 NPCs from the vault are created with `detail_level = full`.
 
@@ -106,7 +107,6 @@ Depending on `tipo`:
   | `jugador`   | → `player_name` |
   | `raza`      | → `race` |
   | `status`    | `vivo` \| `muerto` \| `desaparecido` \| `activo`; other → `activo` |
-  | `spren`     | wikilink to an NPC → `spren_npc_id` |
   | `facciones` | list of wikilinks to groups → `pc_groups` |
 - `historia-jugador` / `avances` with `personaje: "[[PC]]"`: its path is stored in the PC's `historia_path` / `avances_path`.
 - Any other note (including `tipo: jugador` with `personaje`) is ignored.

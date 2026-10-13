@@ -22,7 +22,7 @@ render.go       Markdown → HTML sanitizado
 ## Flujo
 
 1. **Lectura.** Por cada nota: detectar tipo por carpeta, parsear frontmatter, upsert por `(campaign_id, obsidian_path)`, registrar en el índice de nombres y guardar lo que hay que resolver después.
-2. **Resolución.** Con todas las notas ya en el índice, resolver wikilinks: padre de locación, ubicación/facciones/vínculo de NPC, spren/facciones de PJ, arco y menciones de sesión, líder de facción, notas de historia/avances.
+2. **Resolución.** Con todas las notas ya en el índice, resolver wikilinks: padre de locación, ubicación/facciones/vínculo de NPC, vínculos de NPC con PJ, facciones de PJ, arco y menciones de sesión, líder de facción, notas de historia/avances.
 3. **Limpieza.** Entidades con `obsidian_path` que ya no existe en el vault → baja lógica (y se borra su `vault_file_state`).
 
 Se hace en dos pasadas porque una nota puede referenciar otra que todavía no se leyó.
@@ -62,6 +62,7 @@ Los wikilinks van entre comillas en YAML: `"[[Nombre]]"`.
 | `current_location` | wikilink a locación → `location_id` |
 | `faccion`          | **lista** de wikilinks a grupos → `npc_groups` |
 | `vinculo_con`      | wikilink a NPC → `npc_relations` con rol `vinculado_a` |
+| `vinculado_a`      | **lista** de wikilinks a jugadores → `npc_player_relations` (rol vacío; se edita en la app) |
 
 Los NPCs del vault se crean con `detail_level = full`.
 
@@ -106,7 +107,6 @@ Según `tipo`:
   | `jugador`   | → `player_name` |
   | `raza`      | → `race` |
   | `status`    | `vivo` \| `muerto` \| `desaparecido` \| `activo`; otro → `activo` |
-  | `spren`     | wikilink a NPC → `spren_npc_id` |
   | `facciones` | lista de wikilinks a grupos → `pc_groups` |
 - `historia-jugador` / `avances` con `personaje: "[[PJ]]"`: se guarda su ruta en `historia_path` / `avances_path` del PJ.
 - Cualquier otra nota (incluida `tipo: jugador` con `personaje`) se ignora.

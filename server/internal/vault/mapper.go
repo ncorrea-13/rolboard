@@ -75,7 +75,6 @@ type JugadorFrontmatter struct {
 	Tipo      string   `yaml:"tipo"`
 	Jugador   string   `yaml:"jugador"`
 	Personaje string   `yaml:"personaje"`
-	Spren     string   `yaml:"spren,omitempty"`
 	Origen    string   `yaml:"origen,omitempty"`
 	Raza      string   `yaml:"raza,omitempty"`
 	Facciones []string `yaml:"facciones,omitempty"`

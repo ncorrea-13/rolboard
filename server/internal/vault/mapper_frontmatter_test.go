@@ -19,6 +19,9 @@ func TestParseNPC(t *testing.T) {
 	if fm.Etnia != "Alethi" || fm.Rol != "soldado" || !slices.Equal(fm.Faccion, []string{"Bridge Four"}) {
 		t.Errorf("Unexpected optional fields: %+v", fm)
 	}
+	if !slices.Equal(fm.VinculadoA, []string{"[[Shallan]]"}) {
+		t.Errorf("Expected vinculado_a [[[Shallan]]], got %v", fm.VinculadoA)
+	}
 	if fm.CurrentLocation != "[[Urithiru]]" {
 		t.Errorf("Expected current_location '[[Urithiru]]', got '%s'", fm.CurrentLocation)
 	}
@@ -103,7 +106,7 @@ func TestParseSessionZeroNumber(t *testing.T) {
 }
 
 func TestParseJugador(t *testing.T) {
-	raw := []byte("tipo: jugador\njugador: Nico\npersonaje: \"[[Shallan]]\"\nspren: \"[[Patrón]]\"")
+	raw := []byte("tipo: jugador\njugador: Nico\npersonaje: \"[[Shallan]]\"")
 
 	fm, err := ParseJugador(raw)
 	if err != nil {
@@ -114,9 +117,6 @@ func TestParseJugador(t *testing.T) {
 	}
 	if fm.Personaje != "[[Shallan]]" {
 		t.Errorf("Expected personaje '[[Shallan]]', got '%s'", fm.Personaje)
-	}
-	if fm.Spren != "[[Patrón]]" {
-		t.Errorf("Expected spren '[[Patrón]]', got '%s'", fm.Spren)
 	}
 }
 

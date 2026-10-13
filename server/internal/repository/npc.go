@@ -163,11 +163,6 @@ func (r *NPCRepository) Update(ctx context.Context, id int64, n *models.NPC) err
 }
 
 func (r *NPCRepository) Delete(ctx context.Context, id int64) error {
-	if used, err := hasActive(ctx, r.db, `SELECT EXISTS(SELECT 1 FROM player_characters WHERE spren_npc_id = ? AND deleted_at IS NULL)`, id); err != nil {
-		return err
-	} else if used {
-		return ErrInUse
-	}
 	err := r.db.QueryRowContext(ctx, `
 		UPDATE npcs
 		SET deleted_at = datetime('now')
@@ -222,6 +217,59 @@ func (r *NPCRepository) DeleteRelation(ctx context.Context, fromNPCID, toNPCID i
 	_, err := r.db.ExecContext(ctx, `
 		DELETE FROM npc_relations WHERE from_npc_id = ? AND to_npc_id = ? AND role = ?`,
 		fromNPCID, toNPCID, role,
+	)
+	return err
+}
+
+func (r *NPCRepository) ListPlayerLinks(ctx context.Context, npcID int64) ([]models.NPCPlayerRelation, error) {
+	return r.listPlayerLinks(ctx, `r.npc_id = ?`, npcID)
+}
+
+func (r *NPCRepository) ListLinksOfPlayer(ctx context.Context, pcID int64) ([]models.NPCPlayerRelation, error) {
+	return r.listPlayerLinks(ctx, `r.player_character_id = ?`, pcID)
+}
+
+func (r *NPCRepository) listPlayerLinks(ctx context.Context, where string, id int64) ([]models.NPCPlayerRelation, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT r.npc_id, r.player_character_id, r.role
+		FROM npc_player_relations r
+		JOIN npcs n ON n.id = r.npc_id AND n.deleted_at IS NULL
+		JOIN player_characters p ON p.id = r.player_character_id AND p.deleted_at IS NULL
+		WHERE r.source != 'removed' AND `+where+`
+		ORDER BY n.name`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err := rows.Close(); err != nil {
+			return
+		}
+	}()
+
+	links := []models.NPCPlayerRelation{}
+	for rows.Next() {
+		var l models.NPCPlayerRelation
+		if err := rows.Scan(&l.NPCID, &l.PlayerCharacterID, &l.Role); err != nil {
+			return nil, err
+		}
+		links = append(links, l)
+	}
+	return links, rows.Err()
+}
+
+func (r *NPCRepository) SetPlayerLink(ctx context.Context, l *models.NPCPlayerRelation) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO npc_player_relations (npc_id, player_character_id, role, source) VALUES (?, ?, ?, 'dashboard')
+		ON CONFLICT (npc_id, player_character_id) DO UPDATE SET role = excluded.role, source = 'dashboard'`,
+		l.NPCID, l.PlayerCharacterID, l.Role,
+	)
+	return err
+}
+
+func (r *NPCRepository) RemovePlayerLink(ctx context.Context, npcID, pcID int64) error {
+	_, err := r.db.ExecContext(ctx, `
+		UPDATE npc_player_relations SET source = 'removed' WHERE npc_id = ? AND player_character_id = ?`,
+		npcID, pcID,
 	)
 	return err
 }

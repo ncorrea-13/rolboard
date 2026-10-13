@@ -201,3 +201,70 @@ func TestNPCSetImagePathNotFound(t *testing.T) {
 		t.Errorf("expected ErrNotFound, got %v", err)
 	}
 }
+
+func TestNPCPlayerLinks(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+
+	npcs := NewNPCRepository(db)
+	npc := &models.NPC{CampaignID: campaignID, Name: "Patron", NPCKind: "npc", DetailLevel: "full", Status: "vivo"}
+	if err := npcs.Create(ctx, npc); err != nil {
+		t.Fatalf("Create npc failed: %v", err)
+	}
+	pc := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "Shallan", Status: "activo"}
+	if err := NewPlayerCharacterRepository(db).Create(ctx, pc); err != nil {
+		t.Fatalf("Create pc failed: %v", err)
+	}
+
+	link := &models.NPCPlayerRelation{NPCID: npc.ID, PlayerCharacterID: pc.ID, Role: "spren"}
+	if err := npcs.SetPlayerLink(ctx, link); err != nil {
+		t.Fatalf("SetPlayerLink failed: %v", err)
+	}
+	link.Role = "mentor"
+	if err := npcs.SetPlayerLink(ctx, link); err != nil {
+		t.Fatalf("SetPlayerLink (update) failed: %v", err)
+	}
+
+	byNPC, err := npcs.ListPlayerLinks(ctx, npc.ID)
+	if err != nil || len(byNPC) != 1 || byNPC[0].Role != "mentor" {
+		t.Fatalf("Expected one link with role mentor, err=%v links=%+v", err, byNPC)
+	}
+	byPC, err := npcs.ListLinksOfPlayer(ctx, pc.ID)
+	if err != nil || len(byPC) != 1 || byPC[0].NPCID != npc.ID {
+		t.Fatalf("Expected the inverse link, err=%v links=%+v", err, byPC)
+	}
+
+	if err := npcs.Delete(ctx, npc.ID); err != nil {
+		t.Fatalf("Delete npc with a player link failed: %v", err)
+	}
+	if links, _ := npcs.ListLinksOfPlayer(ctx, pc.ID); len(links) != 0 {
+		t.Errorf("Expected the link of a deleted npc to be hidden, got %+v", links)
+	}
+}
+
+func TestNPCPlayerLinkRemoved(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+
+	npcs := NewNPCRepository(db)
+	npc := &models.NPC{CampaignID: campaignID, Name: "Patron", NPCKind: "npc", DetailLevel: "full", Status: "vivo"}
+	if err := npcs.Create(ctx, npc); err != nil {
+		t.Fatalf("Create npc failed: %v", err)
+	}
+	pc := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "Shallan", Status: "activo"}
+	if err := NewPlayerCharacterRepository(db).Create(ctx, pc); err != nil {
+		t.Fatalf("Create pc failed: %v", err)
+	}
+
+	if err := npcs.SetPlayerLink(ctx, &models.NPCPlayerRelation{NPCID: npc.ID, PlayerCharacterID: pc.ID}); err != nil {
+		t.Fatalf("SetPlayerLink failed: %v", err)
+	}
+	if err := npcs.RemovePlayerLink(ctx, npc.ID, pc.ID); err != nil {
+		t.Fatalf("RemovePlayerLink failed: %v", err)
+	}
+	if links, _ := npcs.ListPlayerLinks(ctx, npc.ID); len(links) != 0 {
+		t.Errorf("Expected no active links after removal, got %+v", links)
+	}
+}

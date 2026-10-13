@@ -12,7 +12,7 @@ campaigns
 │   └── sessions            (arc_id optional)
 ├── locations               (hierarchical: parent_location_id)
 ├── npcs                    (location_id optional)
-├── player_characters       (spren_npc_id optional)
+├── player_characters
 ├── groups                  (lider_npc_id optional)
 ├── quests
 ├── encounters              (session_id optional)
@@ -24,6 +24,7 @@ Bridge tables
 npc_groups      npc ↔ group        (role_in_group, source)
 pc_groups       pc ↔ group         (role_in_group, source)
 npc_relations   npc → npc          (role, directed)
+npc_player_relations npc ↔ pc     (role, source)
 session_npcs    session ↔ npc
 session_pcs     session ↔ pc
 session_quests  session ↔ quest
@@ -127,7 +128,6 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 | character_name     | |
 | race, class        | free text; `class` dashboard only |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` (default) |
-| spren_npc_id       | optional, reindex only |
 | description, backstory, progression_notes | dashboard only; the reindex never overwrites them (nor `class`) |
 | attributes, skills | JSON |
 | current_hp, max_hp | optional; persist across encounters |
@@ -261,13 +261,14 @@ PK `(campaign_id, path)`. Stores `content_hash` (SHA-256), `entity_type`, `entit
 npc_groups     (npc_id, group_id, role_in_group, source)   PK (npc_id, group_id)
 pc_groups      (pc_id, group_id, role_in_group, source)    PK (pc_id, group_id)
 npc_relations  (from_npc_id, to_npc_id, role)               PK (from_npc_id, to_npc_id, role)
+npc_player_relations (npc_id, player_character_id, role, source) PK (npc_id, player_character_id)
 session_npcs   (session_id, npc_id)                         PK (session_id, npc_id)
 session_pcs    (session_id, pc_id)                           PK (session_id, pc_id)
 session_quests (session_id, quest_id)                        PK (session_id, quest_id)
 quest_npcs     (quest_id, npc_id, role)                      PK (quest_id, npc_id)
 ```
 
-`source` (`npc_groups`, `pc_groups`): `vault` | `dashboard` (default) | `removed`.
+`source` (`npc_groups`, `pc_groups`, `npc_player_relations`): `vault` | `dashboard` (default) | `removed`.
 
 - The reindex only deletes and rewrites `vault` rows.
 - If the vault confirms a `dashboard` row, it becomes `vault`; a `removed` row stays `removed`.

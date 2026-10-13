@@ -17,7 +17,6 @@ REST + JSON bajo `/api`. Router: `net/http` stdlib (`ServeMux` con métodos y pa
 | `409`  | `session_conflict`         | crear, editar o restaurar una sesión cuyo número ya está ocupado          |
 | `409`  | `arc_in_use`               | borrar un arco que todavía tiene sesiones activas                         |
 | `409`  | `location_in_use`          | borrar una ubicación que todavía tiene NPCs o sub-ubicaciones activas     |
-| `409`  | `npc_in_use`               | borrar un NPC que es el spren de un personaje jugador activo              |
 | `409`  | `restore_parent_deleted`   | restaurar un registro cuyo arco o ubicación sigue borrado                 |
 | `400`  | `image_unsupported_format` | subir una imagen que no es PNG ni JPEG                                    |
 | `400`  | `image_too_large`          | subir una imagen de más de 5 MiB o un formulario inválido                 |
@@ -145,6 +144,9 @@ DELETE /api/npcs/{id}
 GET    /api/npcs/{id}/relations
 POST   /api/npcs/{id}/relations                {"to_npc_id": N, "role": "ACREEDOR"}
 DELETE /api/npcs/{id}/relations/{toId}/{role}
+GET    /api/npcs/{id}/players
+PUT    /api/npcs/{id}/players/{pcId}           {"role": ""}
+DELETE /api/npcs/{id}/players/{pcId}
 POST   /api/npcs/{id}/image
 DELETE /api/npcs/{id}/image
 GET    /api/npcs/{id}/image
@@ -169,7 +171,9 @@ GET    /api/player-characters/{id}/image
 
 Body: `player_name`, `character_name`, `race`, `class`, `status` (`vivo` | `muerto` | `desaparecido` | `activo`), `description`, `backstory`, `progression_notes`, `attributes`, `skills`, `current_hp`, `max_hp`, `obsidian_path`.
 
-`spren_npc_id`, `historia_path` y `avances_path` solo los escribe el reindex.
+`historia_path` y `avances_path` solo los escribe el reindex.
+
+Los vínculos entre un NPC y personajes jugadores (`npc_player_relations`) se listan desde ambos lados: `GET /api/npcs/{id}/players` y `GET /api/player-characters/{id}/npcs`, los dos devuelven `{npc_id, player_character_id, role}`. `PUT` crea el vínculo o actualiza su `role`; `DELETE` lo quita (el próximo reindex no lo trae de vuelta).
 
 ## Groups (facciones)
 
