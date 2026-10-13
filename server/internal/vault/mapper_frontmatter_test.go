@@ -6,7 +6,7 @@ import (
 )
 
 func TestParseNPC(t *testing.T) {
-	raw := []byte("tipo: npc\nstatus: vivo\netnia: Alethi\nrol: soldado\nfaccion:\n  - Bridge Four\ncurrent_location: \"[[Urithiru]]\"\ntags:\n  - protagonista\n  - spren-bond")
+	raw := []byte("tipo: npc\nstatus: vivo\netnia: Alethi\nrol: soldado\nfaccion:\n  - Bridge Four\nvinculado_a:\n  - \"[[Shallan]]\"\ncurrent_location: \"[[Urithiru]]\"\ntags:\n  - protagonista\n  - spren-bond")
 
 	fm, err := ParseNPC(raw)
 	if err != nil {

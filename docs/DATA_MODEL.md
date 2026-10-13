@@ -112,7 +112,7 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 | detail_level           | `full` \| `minor` |
 | status                 | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` \| `paused` |
 | location_id            | current location, optional |
-| etnia, rol, tipo_spren | optional |
+| origen, rol, subtipo | optional, free text |
 | description, notes     | |
 | attributes, skills     | JSON |
 | current_hp, max_hp     | optional; persist across encounters |

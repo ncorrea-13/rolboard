@@ -112,7 +112,7 @@ quest_npcs      quest ↔ npc        (rol)
 | detail_level       | `full` \| `minor` |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` \| `paused` |
 | location_id        | ubicación actual, opcional |
-| etnia, rol, tipo_spren | opcionales |
+| origen, rol, subtipo | opcionales, texto libre |
 | description, notes | |
 | attributes, skills | JSON |
 | current_hp, max_hp | opcionales; persisten entre combates |

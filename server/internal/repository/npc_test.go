@@ -28,7 +28,7 @@ func TestNPCCreate(t *testing.T) {
 	if npc.ID == 0 {
 		t.Error("Expected npc ID to be set")
 	}
-	if npc.LocationID != nil || npc.Etnia != nil {
+	if npc.LocationID != nil || npc.Origen != nil {
 		t.Error("Expected nullable fields to stay nil")
 	}
 }
@@ -45,7 +45,7 @@ func TestNPCCreateWithNullableFields(t *testing.T) {
 	}
 
 	repo := NewNPCRepository(db)
-	etnia := "Alethi"
+	origen := "Alethi"
 	npc := &models.NPC{
 		CampaignID:  campaignID,
 		Name:        "Kaladin",
@@ -53,7 +53,7 @@ func TestNPCCreateWithNullableFields(t *testing.T) {
 		DetailLevel: "full",
 		Status:      "vivo",
 		LocationID:  &loc.ID,
-		Etnia:       &etnia,
+		Origen:      &origen,
 	}
 
 	if err := repo.Create(ctx, npc); err != nil {
@@ -63,8 +63,8 @@ func TestNPCCreateWithNullableFields(t *testing.T) {
 	if npc.LocationID == nil || *npc.LocationID != loc.ID {
 		t.Errorf("Expected LocationID %d, got %v", loc.ID, npc.LocationID)
 	}
-	if npc.Etnia == nil || *npc.Etnia != "Alethi" {
-		t.Errorf("Expected Etnia 'Alethi', got %v", npc.Etnia)
+	if npc.Origen == nil || *npc.Origen != "Alethi" {
+		t.Errorf("Expected Origen 'Alethi', got %v", npc.Origen)
 	}
 }
 

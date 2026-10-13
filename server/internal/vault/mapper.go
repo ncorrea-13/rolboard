@@ -30,10 +30,13 @@ type ArcFrontmatter struct {
 type NPCFrontmatter struct {
 	Tipo            string   `yaml:"tipo"`
 	Status          string   `yaml:"status"`
+	Origen          string   `yaml:"origen,omitempty"`
 	Etnia           string   `yaml:"etnia,omitempty"`
 	Rol             string   `yaml:"rol,omitempty"`
 	Faccion         []string `yaml:"faccion,omitempty"`
 	VinculoCon      string   `yaml:"vinculo_con,omitempty"`
+	VinculadoA      []string `yaml:"vinculado_a,omitempty"`
+	Subtipo         string   `yaml:"subtipo,omitempty"`
 	TipoSpren       string   `yaml:"tipo_spren,omitempty"`
 	CurrentLocation string   `yaml:"current_location,omitempty"`
 	Tags            []string `yaml:"tags,omitempty"`
@@ -49,13 +52,11 @@ type LocationFrontmatter struct {
 }
 
 type GroupFrontmatter struct {
-	Tipo        string   `yaml:"tipo"`
-	Alineacion  string   `yaml:"alineacion"`
-	Alcance     string   `yaml:"alcance,omitempty"`
-	Astilla     string   `yaml:"astilla,omitempty"`
-	Investidura string   `yaml:"investidura,omitempty"`
-	Lider       string   `yaml:"lider,omitempty"`
-	Tags        []string `yaml:"tags,omitempty"`
+	Tipo       string   `yaml:"tipo"`
+	Alineacion string   `yaml:"alineacion"`
+	Alcance    string   `yaml:"alcance,omitempty"`
+	Lider      string   `yaml:"lider,omitempty"`
+	Tags       []string `yaml:"tags,omitempty"`
 }
 
 type SessionFrontmatter struct {

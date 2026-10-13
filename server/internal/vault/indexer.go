@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"cmp"
 	"context"
 	"crypto/sha256"
 	"database/sql"
@@ -287,17 +288,17 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 				Name:         name,
 				NPCKind:      kind,
 				DetailLevel:  "full",
-				Status:       fm.Status,
+				Status:       cmp.Or(fm.Status, "activo"),
 				ObsidianPath: &obsidianPath,
 			}
-			if fm.Etnia != "" {
-				npc.Etnia = &fm.Etnia
+			if origen := cmp.Or(fm.Origen, fm.Etnia); origen != "" {
+				npc.Origen = &origen
 			}
 			if fm.Rol != "" {
 				npc.Rol = &fm.Rol
 			}
-			if fm.TipoSpren != "" {
-				npc.TipoSpren = &fm.TipoSpren
+			if subtipo := cmp.Or(fm.Subtipo, fm.TipoSpren); subtipo != "" {
+				npc.Subtipo = &subtipo
 			}
 			if err := ix.npcs.Create(ctx, npc); err != nil {
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))

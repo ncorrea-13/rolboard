@@ -10,9 +10,9 @@ type NPC struct {
 	DetailLevel  string          `json:"detail_level"`
 	Status       string          `json:"status"`
 	LocationID   *int64          `json:"location_id,omitempty"`
-	Etnia        *string         `json:"etnia,omitempty"`
+	Origen       *string         `json:"origen,omitempty"`
 	Rol          *string         `json:"rol,omitempty"`
-	TipoSpren    *string         `json:"tipo_spren,omitempty"`
+	Subtipo      *string         `json:"subtipo,omitempty"`
 	Description  string          `json:"description"`
 	Notes        string          `json:"notes"`
 	Attributes   json.RawMessage `json:"attributes"`

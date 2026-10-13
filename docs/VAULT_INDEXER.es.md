@@ -57,8 +57,8 @@ Los wikilinks van entre comillas en YAML: `"[[Nombre]]"`.
 | Clave              | Uso |
 | ------------------ | --- |
 | `tipo`             | `npc_kind`: la key del tipo (`Monstruo Élite` → `monstruo-elite`). Un `tipo` que la campaña aún no tiene se crea solo (etiqueta tomada de la nota, siguiente color libre; se renombra o recolorea en la app). `referencia` está reservado. Ausente → error en esa nota |
-| `status`           | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` |
-| `etnia`, `rol`, `tipo_spren` | texto |
+| `status`           | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado`. Falta → `activo`; otro valor → error en esa nota |
+| `origen`, `rol`, `subtipo` | texto. `etnia` y `tipo_spren` se siguen leyendo como alias deprecados de `origen` y `subtipo` (gana la key nueva) |
 | `current_location` | wikilink a locación → `location_id` |
 | `faccion`          | **lista** de wikilinks a grupos → `npc_groups` |
 | `vinculo_con`      | wikilink a NPC → `npc_relations` con rol `vinculado_a` |

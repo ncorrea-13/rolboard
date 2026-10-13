@@ -223,7 +223,7 @@ func TestReindexResolvesPlayerCharacterSprenAndFaccion(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	writeVaultFile(t, root, "NPC/Astillas/Cuarzo.md", "---\ntipo: spren\nstatus: vivo\ntipo_spren: Honorspren\n---\nSpren de Valisha.")
+	writeVaultFile(t, root, "NPC/Astillas/Cuarzo.md", "---\ntipo: spren\nstatus: vivo\ntipo_spren: Honorspren\nvinculado_a:\n  - \"[[Valisha]]\"\n---\nSpren de Valisha.")
 	writeVaultFile(t, root, "Grupos/Radiantes.md", "---\ntipo: faccion\nalineacion: neutral\n---\nOrden de Radiantes.")
 	writeVaultFile(t, root, "Jugadores/Valisha.md", "---\ntipo: jugador\njugador: Agus Horas\nstatus: activo\nraza: Cognitiva\nspren: \"[[Cuarzo]]\"\nfacciones:\n  - \"[[Radiantes]]\"\n---\nPersonaje jugado por Agus.")
 
