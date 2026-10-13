@@ -3,6 +3,7 @@ import type { Campaign, CampaignStatus } from "../data/domain";
 import {
   apiFetch,
   describeError,
+  downloadCampaignExport,
   hasAdminSecret,
   isLocalMode,
 } from "../lib/api";
@@ -36,6 +37,7 @@ export function CampaignSettingsForm({
   const [vaultPath, setVaultPath] = useState(campaign.vaultPath);
   const [vaultDirs, setVaultDirs] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [exportedTo, setExportedTo] = useState<string | null>(null);
 
   const [accessCode, setAccessCode] = useState("");
   const [codeSaving, setCodeSaving] = useState(false);
@@ -161,6 +163,42 @@ export function CampaignSettingsForm({
         >
           {t("campaignSettings.save")}
         </button>
+      </div>
+
+      <hr
+        style={{
+          margin: "16px 0",
+          border: "none",
+          borderTop: "1px solid var(--border-subtle)",
+        }}
+      />
+
+      <div>
+        <span className="label">{t("campaignSettings.exportTitle")}</span>
+        <p style={{ margin: "4px 0 10px", opacity: 0.7 }}>
+          {t("campaignSettings.exportHint")}
+        </p>
+        <button
+          className="btn"
+          style={{
+            width: "100%",
+            padding: "10px 13px",
+            background: "var(--accent-teal)",
+            color: "var(--bg-canvas)",
+          }}
+          onClick={() =>
+            downloadCampaignExport(campaign.id)
+              .then((where) => setExportedTo(where))
+              .catch((err) => reportError("toast.errorExporting", err))
+          }
+        >
+          {t("campaignSettings.export")}
+        </button>
+        {exportedTo && (
+          <p style={{ marginTop: 8, color: "var(--status-alive)" }}>
+            {t("campaignSettings.exportSaved")} {exportedTo}
+          </p>
+        )}
       </div>
 
       {!isLocalMode() && (

@@ -1,5 +1,5 @@
 import type { TranslationKey } from "./i18n";
-import { androidBridge, send } from "./android";
+import { androidBridge, saveFile, send } from "./android";
 import { reportError } from "./notify";
 
 export class ApiError extends Error {
@@ -124,6 +124,39 @@ export async function apiFetch<T>(
   if (!res.ok) throw await failure(res, init?.method ?? "GET", path);
   if (res.status === 204) return undefined as T;
   return res.json();
+}
+
+export async function downloadCampaignExport(
+  campaignId: string,
+): Promise<string | null> {
+  const path = `/campaigns/${campaignId}/export`;
+  const bridge = androidBridge();
+  if (bridge) {
+    const name = `rolboard-campaign-${new Date().toISOString().slice(0, 10)}.zip`;
+    const { status } = await saveFile(bridge, `/api${path}`, name);
+    if (status >= 400)
+      throw new ApiError(status, `GET ${path} failed: ${status}`);
+    return status === 204 ? null : name;
+  }
+  if (localMode) {
+    const saved = await apiFetch<{ path: string } | undefined>(
+      "/desktop/save-export",
+      { method: "POST", body: JSON.stringify({ campaignId }) },
+    );
+    return saved?.path ?? null;
+  }
+  const res = await send(`/api${path}`);
+  if (!res.ok) throw await failure(res, "GET", path);
+  const disposition = res.headers.get("Content-Disposition") ?? "";
+  const filename =
+    /filename="([^"]+)"/.exec(disposition)?.[1] ?? "campaign.zip";
+  const url = URL.createObjectURL(await res.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+  return filename;
 }
 
 export async function loginAsAdmin(token: string) {

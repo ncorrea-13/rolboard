@@ -68,6 +68,11 @@ const dict = {
     "campaignSettings.statusPaused": "Pausada",
     "campaignSettings.statusFinished": "Finalizada",
     "campaignSettings.save": "Guardar cambios",
+    "campaignSettings.exportTitle": "Respaldo",
+    "campaignSettings.export": "Exportar campaña",
+    "campaignSettings.exportSaved": "Guardado en",
+    "campaignSettings.exportHint":
+      "Todas las entidades en notas Markdown, con la estructura que lee el indexer, y sus imágenes en Imagenes/. No incluye lo borrado.",
     "campaignSettings.accessCodeTitle": "Nuevo código de acceso",
     "campaignSettings.accessCodePlaceholder": "Código (mín. 8 caracteres)",
     "campaignSettings.accessCodeSave": "Guardar código",
@@ -579,6 +584,7 @@ const dict = {
 
     "toast.reindexed": "Vault reindexado",
     "toast.errorReindexing": "Error reindexando el vault",
+    "toast.errorExporting": "Error exportando la campaña",
     "toast.errorVaultsRoot": "Error cambiando la carpeta de vaults",
     "toast.errorSyncDir": "Error cambiando la carpeta de sincronización",
     "toast.vaultsRootPermission":
@@ -801,6 +807,11 @@ const dict = {
     "campaignSettings.statusPaused": "Paused",
     "campaignSettings.statusFinished": "Finished",
     "campaignSettings.save": "Save changes",
+    "campaignSettings.exportTitle": "Backup",
+    "campaignSettings.export": "Export campaign",
+    "campaignSettings.exportSaved": "Saved to",
+    "campaignSettings.exportHint":
+      "Every entity as Markdown notes, in the structure the indexer reads, with their images in Imagenes/. Deleted items are not included.",
     "campaignSettings.accessCodeTitle": "New access code",
     "campaignSettings.accessCodePlaceholder": "Code (min. 8 characters)",
     "campaignSettings.accessCodeSave": "Save code",
@@ -1311,6 +1322,7 @@ const dict = {
 
     "toast.reindexed": "Vault reindexed",
     "toast.errorReindexing": "Error reindexing the vault",
+    "toast.errorExporting": "Error exporting the campaign",
     "toast.errorVaultsRoot": "Error changing the vaults folder",
     "toast.errorSyncDir": "Error changing the sync folder",
     "toast.vaultsRootPermission":
