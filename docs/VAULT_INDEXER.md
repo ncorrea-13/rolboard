@@ -71,7 +71,7 @@ NPCs from the vault are created with `detail_level = full`.
 
 | Key      | Use |
 | -------- | --- |
-| `tipo`   | `planeta` → planet, `región` → region, `ciudad` → city, `estructura` → site, `shadesmar` → plane. Any other value → error |
+| `tipo`   | `planeta` → planet, `región` → region, `ciudad` → city, `estructura` → site, `plano` → plane (`shadesmar` is still accepted as an alias). Any other value → error |
 | `parent` | wikilink to a location → `parent_location_id` |
 
 ### Groups
@@ -81,7 +81,7 @@ NPCs from the vault are created with `detail_level = full`.
 | `alineacion` | text |
 | `lider`      | wikilink to an NPC → `lider_npc_id` |
 
-`tipo`, `alcance`, `astilla`, `investidura` are read but not stored.
+`tipo` and `alcance` are read but not stored.
 
 ### Sessions
 

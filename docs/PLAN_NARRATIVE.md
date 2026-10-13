@@ -1,6 +1,6 @@
 # Pendientes
 
-Lo que quedó fuera de la ronda de worldbuilding narrativo. Cuando se implemente algo, pasa a `DECISIONS.md` / `DATA_MODEL.md` / `API.md` y se borra de acá. Ninguno de los tres necesita esquema nuevo.
+Lo que quedó fuera de la ronda de worldbuilding narrativo. Cuando se implemente algo, pasa a `DECISIONS.md` / `DATA_MODEL.md` / `API.md` y se borra de acá. Ninguno necesita esquema nuevo.
 
 ## 1. Importador del vault (jugadores)
 

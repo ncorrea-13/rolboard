@@ -71,7 +71,7 @@ Los NPCs del vault se crean con `detail_level = full`.
 
 | Clave    | Uso |
 | -------- | --- |
-| `tipo`   | `planeta` → planet, `región` → region, `ciudad` → city, `estructura` → site, `shadesmar` → plane. Otro valor → error |
+| `tipo`   | `planeta` → planet, `región` → region, `ciudad` → city, `estructura` → site, `plano` → plane (`shadesmar` sigue valiendo como alias). Otro valor → error |
 | `parent` | wikilink a locación → `parent_location_id` |
 
 ### Grupos
@@ -81,7 +81,7 @@ Los NPCs del vault se crean con `detail_level = full`.
 | `alineacion` | texto |
 | `lider`      | wikilink a NPC → `lider_npc_id` |
 
-`tipo`, `alcance`, `astilla`, `investidura` se leen pero no se guardan.
+`tipo` y `alcance` se leen pero no se guardan.
 
 ### Sesiones
 
