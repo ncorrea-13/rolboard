@@ -169,7 +169,7 @@ Lore por campaña. Las categorías siguen el patrón de `npc_types` (`key` deriv
 | body                   | Markdown |
 | category_id            | opcional; una categoría referenciada por alguna entrada (aun borrada) no se puede borrar |
 | arc_id, location_id    | opcionales, `ON DELETE RESTRICT` |
-| obsidian_path          | reservado para una carpeta `Lore/` del vault a futuro |
+| obsidian_path          | nota de la carpeta `Lore/` del vault; el reindex fija título, categoría, arco y locación, nunca `body` |
 
 ### currencies / items y sus bridges
 

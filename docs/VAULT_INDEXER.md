@@ -43,6 +43,7 @@ Only the top-level folder counts; subfolders are accepted.
 | `Sesiones/`   | sessions |
 | `Jugadores/`  | player_characters |
 | `Arcos/`      | arcs |
+| `Lore/`       | lore_entries |
 
 Any other folder is ignored. Excluded files: `CLAUDE.md`, `FORMAT.md`, `Primer Ideal.md`, `Método para crear NPCs.md`.
 
@@ -120,6 +121,16 @@ Depending on `tipo`:
 | `titulo`           | → `title` |
 | `status`           | `planificado` \| `en curso` \| `cerrado`; other → `planificado` |
 | `mision_principal` | → `summary` |
+
+### Lore
+
+| Key        | Use |
+| ---------- | --- |
+| `tipo`     | lore category: its key comes from the label (`Historia` → `historia`). A category the campaign does not have yet is created automatically. No `tipo` → entry without category |
+| `arco`     | wikilink to an arc → `arc_id` |
+| `locacion` | wikilink to a location → `location_id` |
+
+The title is the file name. The text is not imported: the note is shown rendered from the entry's detail, and the database `body` stays the dashboard's. If the file disappears from the vault the entry is soft deleted.
 
 ### Quests
 

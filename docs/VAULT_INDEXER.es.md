@@ -43,6 +43,7 @@ Solo cuenta la carpeta de primer nivel; las subcarpetas se aceptan.
 | `Sesiones/`   | sessions |
 | `Jugadores/`  | player_characters |
 | `Arcos/`      | arcs |
+| `Lore/`       | lore_entries |
 
 Cualquier otra carpeta se ignora. Archivos excluidos: `CLAUDE.md`, `FORMAT.md`, `Primer Ideal.md`, `Método para crear NPCs.md`.
 
@@ -120,6 +121,16 @@ Según `tipo`:
 | `titulo`           | → `title` |
 | `status`           | `planificado` \| `en curso` \| `cerrado`; otro → `planificado` |
 | `mision_principal` | → `summary` |
+
+### Lore
+
+| Clave      | Uso |
+| ---------- | --- |
+| `tipo`     | categoría de lore: su clave sale de la etiqueta (`Historia` → `historia`). Una categoría que la campaña no tiene se crea sola. Sin `tipo` → entrada sin categoría |
+| `arco`     | wikilink a un arco → `arc_id` |
+| `locacion` | wikilink a una locación → `location_id` |
+
+El título es el nombre del archivo. El texto no se importa: la nota se ve renderizada desde el detalle de la entrada, y el `body` de la base sigue siendo del dashboard. Si el archivo desaparece del vault, la entrada se borra (soft delete).
 
 ### Quests
 

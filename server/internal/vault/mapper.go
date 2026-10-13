@@ -14,6 +14,7 @@ var folderToEntityType = map[string]string{
 	"Sesiones":   "session",
 	"Jugadores":  "player_character",
 	"Arcos":      "arc",
+	"Lore":       "lore",
 }
 
 type ArcFrontmatter struct {
@@ -40,6 +41,13 @@ type NPCFrontmatter struct {
 	TipoSpren       string   `yaml:"tipo_spren,omitempty"`
 	CurrentLocation string   `yaml:"current_location,omitempty"`
 	Tags            []string `yaml:"tags,omitempty"`
+}
+
+type LoreFrontmatter struct {
+	Tipo     string   `yaml:"tipo,omitempty"`
+	Arco     string   `yaml:"arco,omitempty"`
+	Locacion string   `yaml:"locacion,omitempty"`
+	Tags     []string `yaml:"tags,omitempty"`
 }
 
 type LocationFrontmatter struct {
@@ -95,6 +103,12 @@ func entityTypeForPath(relPath string) (string, bool) {
 
 func ParseNPC(raw []byte) (NPCFrontmatter, error) {
 	var fm NPCFrontmatter
+	err := yaml.Unmarshal(raw, &fm)
+	return fm, err
+}
+
+func ParseLore(raw []byte) (LoreFrontmatter, error) {
+	var fm LoreFrontmatter
 	err := yaml.Unmarshal(raw, &fm)
 	return fm, err
 }

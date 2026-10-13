@@ -40,6 +40,8 @@ type Indexer struct {
 	sessions         *repository.SessionRepository
 	arcs             *repository.ArcRepository
 	playerCharacters *repository.PlayerCharacterRepository
+	loreEntries      *repository.LoreEntryRepository
+	loreCategories   *repository.LoreCategoryRepository
 	fileState        *repository.VaultFileStateRepository
 }
 
@@ -55,6 +57,8 @@ func NewIndexer(root string, campaignID int64, db *sql.DB) *Indexer {
 		sessions:         repository.NewSessionRepository(db),
 		arcs:             repository.NewArcRepository(db),
 		playerCharacters: repository.NewPlayerCharacterRepository(db),
+		loreEntries:      repository.NewLoreEntryRepository(db),
+		loreCategories:   repository.NewLoreCategoryRepository(db),
 		fileState:        repository.NewVaultFileStateRepository(db),
 	}
 }
@@ -174,6 +178,12 @@ type stagedPlayerNote struct {
 	kind      string // "historia" o "avances"
 }
 
+type stagedLore struct {
+	id       int64
+	arco     string
+	locacion string
+}
+
 type stagedSession struct {
 	id   int64
 	arco string
@@ -207,6 +217,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	var stagedSessions []stagedSession
 	var stagedGroups []stagedGroup
 	var stagedPlayerNotes []stagedPlayerNote
+	var stagedLoreEntries []stagedLore
 
 	for _, relPath := range paths {
 		content, err := root.ReadFile(relPath)
@@ -427,6 +438,36 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 			idx.Add(IndexEntry{ID: arc.ID, Name: name, Type: "arc", RawPath: relPath})
 			result.Processed++
 
+		case "lore":
+			if ix.skipUnchanged(ctx, idx, relPath, name, "lore", content) {
+				result.Processed++
+				continue
+			}
+			fm, err := ParseLore(raw)
+			if err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+				continue
+			}
+			entry := &models.LoreEntry{CampaignID: ix.campaignID, Title: name, ObsidianPath: &obsidianPath}
+			if key := repository.NPCTypeKey(fm.Tipo); key != "" {
+				category, err := ix.loreCategories.Ensure(ctx, ix.campaignID, key, npcTypeLabel(fm.Tipo))
+				if err != nil {
+					result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+					continue
+				}
+				entry.CategoryID = &category.ID
+			}
+			if err := ix.loreEntries.Create(ctx, entry); err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+				continue
+			}
+			idx.Add(IndexEntry{ID: entry.ID, Name: name, Type: "lore", RawPath: relPath})
+			if err := ix.fileState.Set(ctx, ix.campaignID, relPath, contentHash(content), "lore", entry.ID); err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", relPath, err))
+			}
+			stagedLoreEntries = append(stagedLoreEntries, stagedLore{id: entry.ID, arco: firstWikilinkTarget(fm.Arco), locacion: firstWikilinkTarget(fm.Locacion)})
+			result.Processed++
+
 		case "player_character":
 			fm, err := ParseJugador(raw)
 			if err != nil {
@@ -486,6 +527,7 @@ func (ix *Indexer) Reindex(ctx context.Context) (*Result, error) {
 	ix.resolveSessions(ctx, idx, stagedSessions, result)
 	ix.resolveGroups(ctx, idx, stagedGroups, result)
 	ix.resolvePlayerNotes(ctx, idx, stagedPlayerNotes, result)
+	ix.resolveLore(ctx, idx, stagedLoreEntries, result)
 
 	ix.deleteStalePaths(ctx, stalePaths, seenPaths, result)
 
@@ -498,6 +540,7 @@ type obsidianPathSnapshot struct {
 	groups           map[string]int64
 	sessions         map[string]int64
 	playerCharacters map[string]int64
+	lore             map[string]int64
 }
 
 func (ix *Indexer) snapshotObsidianPaths(ctx context.Context) (obsidianPathSnapshot, error) {
@@ -507,6 +550,7 @@ func (ix *Indexer) snapshotObsidianPaths(ctx context.Context) (obsidianPathSnaps
 		groups:           make(map[string]int64),
 		sessions:         make(map[string]int64),
 		playerCharacters: make(map[string]int64),
+		lore:             make(map[string]int64),
 	}
 
 	locations, err := ix.locations.List(ctx, ix.campaignID)
@@ -559,6 +603,16 @@ func (ix *Indexer) snapshotObsidianPaths(ctx context.Context) (obsidianPathSnaps
 		}
 	}
 
+	loreEntries, err := ix.loreEntries.List(ctx, ix.campaignID)
+	if err != nil {
+		return snap, err
+	}
+	for _, e := range loreEntries {
+		if e.ObsidianPath != nil {
+			snap.lore[*e.ObsidianPath] = e.ID
+		}
+	}
+
 	return snap, nil
 }
 
@@ -605,6 +659,45 @@ func (ix *Indexer) deleteStalePaths(ctx context.Context, stale obsidianPathSnaps
 				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", path, err))
 			}
 			deleteState(path)
+		}
+	}
+	for path, id := range stale.lore {
+		if !seen[path] {
+			if err := ix.loreEntries.Delete(ctx, id); err != nil {
+				result.Errors = append(result.Errors, fmt.Sprintf("%s: %v", path, err))
+			}
+			deleteState(path)
+		}
+	}
+}
+
+func (ix *Indexer) resolveLore(ctx context.Context, idx *NameIndex, staged []stagedLore, result *Result) {
+	for _, sl := range staged {
+		if sl.arco == "" && sl.locacion == "" {
+			continue
+		}
+		entry, err := ix.loreEntries.GetByID(ctx, sl.id)
+		if err != nil {
+			result.Errors = append(result.Errors, err.Error())
+			continue
+		}
+		entry.ArcID, entry.LocationID = nil, nil
+		if sl.arco != "" {
+			if arcID, err := Resolve(idx, sl.arco, "arc"); err == nil {
+				entry.ArcID = &arcID
+			} else {
+				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, sl.arco)
+			}
+		}
+		if sl.locacion != "" {
+			if locationID, err := Resolve(idx, sl.locacion, "location"); err == nil {
+				entry.LocationID = &locationID
+			} else {
+				result.UnresolvedWikilinks = append(result.UnresolvedWikilinks, sl.locacion)
+			}
+		}
+		if err := ix.loreEntries.Update(ctx, sl.id, entry); err != nil {
+			result.Errors = append(result.Errors, err.Error())
 		}
 	}
 }

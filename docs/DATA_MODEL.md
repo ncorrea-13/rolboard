@@ -170,7 +170,7 @@ Per-campaign lore. Categories follow the `npc_types` pattern (`key` derived from
 | body                   | Markdown |
 | category_id            | optional; a category referenced by any entry (even a deleted one) can't be deleted |
 | arc_id, location_id    | optional, `ON DELETE RESTRICT` |
-| obsidian_path          | reserved for a future `Lore/` folder in the vault |
+| obsidian_path          | note in the vault's `Lore/` folder; the reindex sets title, category, arc and location, never `body` |
 | image_path             | illustration; written by the image endpoint only (migration 0027) |
 
 ### currencies / items and their bridges
