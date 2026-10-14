@@ -1,17 +1,17 @@
-## Qué cambia
+## What changes
 
-<!-- Resumen en 1-3 viñetas de lo que hace el PR -->
+<!-- 1-3 bullets summarising what the PR does -->
 
-## Por qué
+## Why
 
-<!-- Problema o motivo. Si cierra un issue: Closes #N -->
+<!-- The problem or motive. If it closes an issue: Closes #N -->
 
-## Cómo se probó
+## How it was tested
 
 - [ ] `cd server && go build ./... && go vet ./... && go test ./...`
 - [ ] `cd client && pnpm lint && pnpm format:check && pnpm test`
-- [ ] Probado a mano (describir qué pantalla o flujo)
+- [ ] Tested by hand (describe which screen or flow)
 
-## Notas para quien revisa
+## Notes for reviewers
 
-<!-- Migraciones nuevas, cambios de API o de docs, riesgos, cosas que quedaron fuera -->
+<!-- New migrations, API or docs changes, risks, anything left out -->
