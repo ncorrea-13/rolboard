@@ -62,7 +62,7 @@ Para una sola computadora, sin servidor ni Docker. Todo queda en tu máquina.
 | Linux x86_64    | [Descargar AppImage](https://github.com/ncorrea-13/rolboard/releases/latest) |
 
 - **Windows:** no está firmado, así que SmartScreen avisa en el primer arranque: *Más información → Ejecutar de todas formas*. Necesita WebView2 (viene con Windows 10/11).
-- **Linux:** necesita `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` en Debian/Ubuntu). Después `chmod +x rolboard-linux-x86_64-*.AppImage` y ejecutarlo.
+- **Linux:** necesita `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` en Debian/Ubuntu). Después `chmod +x rolboard-linux-amd64-*.AppImage` y ejecutarlo.
 - Sin login ni códigos de acceso: la app de escritorio siempre está en modo local.
 - Para leer un vault de Obsidian, abrir **Ajustes de la app** (el engranaje del selector de campañas) y elegir la carpeta que contiene los vaults.
 - Para usar las mismas campañas en otro dispositivo, elegir una **carpeta de sincronización** en el mismo lugar y mantenerla sincronizada con cualquier herramienta (Syncthing, una nube o a mano). Un dispositivo por vez: gana la última copia guardada.
