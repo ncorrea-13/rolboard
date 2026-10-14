@@ -84,3 +84,19 @@ func (s *NPCService) CreateRelation(ctx context.Context, rel *models.NPCRelation
 func (s *NPCService) DeleteRelation(ctx context.Context, fromNPCID, toNPCID int64, role string) error {
 	return s.repo.DeleteRelation(ctx, fromNPCID, toNPCID, role)
 }
+
+func (s *NPCService) ListPlayerLinks(ctx context.Context, npcID int64) ([]models.NPCPlayerRelation, error) {
+	return s.repo.ListPlayerLinks(ctx, npcID)
+}
+
+func (s *NPCService) ListLinksOfPlayer(ctx context.Context, pcID int64) ([]models.NPCPlayerRelation, error) {
+	return s.repo.ListLinksOfPlayer(ctx, pcID)
+}
+
+func (s *NPCService) SetPlayerLink(ctx context.Context, l *models.NPCPlayerRelation) error {
+	return s.repo.SetPlayerLink(ctx, l)
+}
+
+func (s *NPCService) RemovePlayerLink(ctx context.Context, npcID, pcID int64) error {
+	return s.repo.RemovePlayerLink(ctx, npcID, pcID)
+}

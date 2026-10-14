@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import "./Modal.css";
 import { useT } from "../lib/i18n";
 
@@ -60,7 +61,7 @@ export function Modal({
     };
   }, []);
 
-  return (
+  return createPortal(
     <div ref={backdropRef} className="modal-backdrop" onClick={onClose}>
       <div
         ref={panelRef}
@@ -85,6 +86,7 @@ export function Modal({
         </div>
         <div className="modal-panel__body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

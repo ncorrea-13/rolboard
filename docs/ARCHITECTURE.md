@@ -65,7 +65,7 @@ Backend layers: `handlers → service → repository`. The handler only translat
 
 - **Admin**: `POST /api/admin/login` with the instance token (`ADMIN_TOKEN_FILE` or `ADMIN_TOKEN`). Issues the `rolboard_admin_session` cookie (24 h, in-memory sessions — lost on restart). Grants access to everything.
 - **Campaign**: `POST /api/campaigns/{id}/login` with the access code (bcrypt against `campaigns.access_code_hash`). Issues the `rolboard_session_<id>` cookie (one per campaign, 24 h, token hash in `auth_sessions`). Only grants access to that campaign's resources: each route resolves which campaign the resource belongs to and compares it against the session.
-- Cookies are `HttpOnly`, `SameSite=Lax`, `Secure` unless `COOKIE_SECURE=false`. Logins are rate limited.
+- Cookies are `HttpOnly`, `SameSite=Strict`, `Secure` unless `COOKIE_SECURE=false`. Logins are rate limited.
 
 ## Deployment
 
@@ -83,4 +83,4 @@ Mounted read-only; the app never writes to it. Synced externally (Syncthing). In
 
 ## Images
 
-One image per NPC, PC, location and faction. Stored at `UPLOADS_ROOT/<entity>/<id>-portrait.<png|jpg>`; the DB stores the relative path in `image_path`. The client downsizes the image to 1600 px (JPEG) before upload; the server accepts only real PNG/JPEG, max 5 MiB.
+One image per NPC, PC, location and faction. Stored at `UPLOADS_ROOT/<entity>/<id>-portrait.<png|jpg>`; the DB stores the relative path in `image_path`. The client downsizes the image to 1600 px (JPEG) before upload; the server accepts only real PNG/JPEG, max 5 MiB and 4096 px per side.

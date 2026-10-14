@@ -9,6 +9,7 @@ interface AndroidBridge {
   openExternal(url: string): void;
   settings(): string;
   pickFolder(id: string, kind: string): void;
+  saveFile(id: string, path: string, name: string): void;
 }
 
 interface BridgeResult {
@@ -87,6 +88,18 @@ export function pickFolder(
       }),
     );
     bridge.pickFolder(id, kind);
+  });
+}
+
+export function saveFile(
+  bridge: AndroidBridge,
+  path: string,
+  name: string,
+): Promise<{ status: number }> {
+  const id = String(nextId++);
+  return new Promise((resolve) => {
+    pending.set(id, (result) => resolve({ status: result.status }));
+    bridge.saveFile(id, path, name);
   });
 }
 

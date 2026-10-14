@@ -169,3 +169,15 @@ func TestDeleteRejectsPathsOutsideRoot(t *testing.T) {
 		t.Fatalf("file outside root was removed: %v", err)
 	}
 }
+
+func TestStoreRejectsOversizedDimensions(t *testing.T) {
+	var buf bytes.Buffer
+	img := image.NewGray(image.Rect(0, 0, MaxDimension+1, 1))
+	if err := png.Encode(&buf, img); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Store(t.TempDir(), "npcs", 1, buf.Bytes())
+	if !errors.Is(err, ErrUnsupportedFormat) {
+		t.Fatalf("expected ErrUnsupportedFormat, got %v", err)
+	}
+}

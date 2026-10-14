@@ -58,13 +58,17 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - No indexes on FKs yet: at this volume a scan is instant.
 - `groups` and `player_characters` are first-class entities from the start.
 - `npc_relations` is directed with a free-text role, instead of a fixed relationship field.
+- `origen` and `subtipo` are free text on NPCs (they were `etnia` and `tipo_spren`); the vault parser keeps the old keys as aliases so existing notes don't lose the value on the next reindex. `wardails` keeps its name in the code and the API; the UI calls it "Sensitive topics".
+- **The export is Markdown in the indexer's own format**, so it doubles as backup and as a way out. Images go along under `Imagenes/`, named after their note; the trash stays out (deleted means deleted). Entities the vault never had (quests, secrets, items...) go to their own folders, which the indexer ignores.
+- **`Lore/` in the vault only fixes title, category, arc and location.** The text stays in the note (rendered from the entry) and the database `body` stays the dashboard's, like the description of an NPC.
+- NPC ↔ player links live in `npc_player_relations` (free-text role, `source` like the group bridges), not in a spren column: the same NPC can be tied to several characters and any kind of tie fits. The vault declares them from the NPC note (`vinculado_a`), without a role. Deleting an NPC with links is allowed: reads hide the links of deleted rows.
 - `attributes` / `skills` as free-form JSON: each game system (Cosmere, D&D) defines its own; no case needs filtering by attribute.
 - An important NPC with a full sheet = `detail_level = full`, not a separate entity.
 
 ## Deletions and trash
 
 - **Nothing is deleted for good.** `DELETE` is a soft delete and the trash screen restores it. There is no "empty trash": a hard delete would need a cascade that this schema deliberately avoids.
-- **Deleting is blocked when it would leave visible orphans:** an arc with active sessions, a location with active NPCs or sub-locations, an NPC that is a character's spren. `409` with a code, and the user moves the dependants first. Not blocked, on purpose: sessions with encounters (the encounter just loses its link), a faction leader (the UI already warns), and the session↔NPC/quest bridges (they are history; reads filter deleted rows).
+- **Deleting is blocked when it would leave visible orphans:** an arc with active sessions, a location with active NPCs or sub-locations. `409` with a code, and the user moves the dependants first. Not blocked, on purpose: sessions with encounters (the encounter just loses its link), a faction leader (the UI already warns), and the session↔NPC/quest bridges (they are history; reads filter deleted rows).
 - **Restoring checks its parents.** A session, NPC or location whose arc or location is still deleted can't be restored (`restore_parent_deleted`), so a restore never creates an orphan.
 - **Session numbers are unique among active sessions only** (partial index), so a deleted number can be reused. The trade-off: restoring can hit `409` if the number was reused.
 - **Vault-archived sessions (`sub_number = 99`) stay out of the trash.** The vault manages that state: the next reindex would archive them again.

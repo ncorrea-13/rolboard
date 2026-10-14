@@ -7,7 +7,7 @@ import (
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 )
 
-const loreEntryColumns = `id, campaign_id, category_id, title, body, arc_id, location_id, image_path, created_at, updated_at`
+const loreEntryColumns = `id, campaign_id, category_id, title, body, arc_id, location_id, obsidian_path, image_path, created_at, updated_at`
 
 type LoreEntryRepository struct {
 	db *sql.DB
@@ -23,10 +23,11 @@ type loreScanner interface {
 
 func scanLoreEntry(row loreScanner, e *models.LoreEntry) error {
 	var categoryID, arcID, locationID sql.NullInt64
-	var imagePath sql.NullString
-	if err := row.Scan(&e.ID, &e.CampaignID, &categoryID, &e.Title, &e.Body, &arcID, &locationID, &imagePath, &e.CreatedAt, &e.UpdatedAt); err != nil {
+	var obsidianPath, imagePath sql.NullString
+	if err := row.Scan(&e.ID, &e.CampaignID, &categoryID, &e.Title, &e.Body, &arcID, &locationID, &obsidianPath, &imagePath, &e.CreatedAt, &e.UpdatedAt); err != nil {
 		return err
 	}
+	e.ObsidianPath = fromNullString(obsidianPath)
 	e.ImagePath = fromNullString(imagePath)
 	e.CategoryID = fromNullInt64(categoryID)
 	e.ArcID = fromNullInt64(arcID)
@@ -57,10 +58,12 @@ func (r *LoreEntryRepository) List(ctx context.Context, campaignID int64) ([]mod
 
 func (r *LoreEntryRepository) Create(ctx context.Context, e *models.LoreEntry) error {
 	return scanLoreEntry(r.db.QueryRowContext(ctx, `
-		INSERT INTO lore_entries (campaign_id, category_id, title, body, arc_id, location_id)
-		VALUES (?, ?, ?, ?, ?, ?)
+		INSERT INTO lore_entries (campaign_id, category_id, title, body, arc_id, location_id, obsidian_path)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT (campaign_id, obsidian_path) DO UPDATE SET
+			title = excluded.title, category_id = excluded.category_id, deleted_at = NULL, updated_at = datetime('now')
 		RETURNING `+loreEntryColumns,
-		e.CampaignID, toNullInt64(e.CategoryID), e.Title, e.Body, toNullInt64(e.ArcID), toNullInt64(e.LocationID),
+		e.CampaignID, toNullInt64(e.CategoryID), e.Title, e.Body, toNullInt64(e.ArcID), toNullInt64(e.LocationID), toNullString(e.ObsidianPath),
 	), e)
 }
 

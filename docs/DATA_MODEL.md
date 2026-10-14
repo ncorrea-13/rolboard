@@ -4,6 +4,8 @@
 
 SQLite. Schema = migrations in `server/internal/repository/migrations/`, applied in order at startup and tracked in `schema_migrations`. An applied migration is never edited: a new one is added instead.
 
+The DB runs in WAL mode (`synchronous=NORMAL`): next to `campaign.db` there are `campaign.db-wal` and `campaign.db-shm` while the server is up. To copy it, use `sqlite3 campaign.db ".backup out.db"` (or `VACUUM INTO`), or stop the server first; copying only `campaign.db` while it runs can miss recent writes.
+
 ## Entities
 
 ```
@@ -12,7 +14,7 @@ campaigns
 │   └── sessions            (arc_id optional)
 ├── locations               (hierarchical: parent_location_id)
 ├── npcs                    (location_id optional)
-├── player_characters       (spren_npc_id optional)
+├── player_characters
 ├── groups                  (lider_npc_id optional)
 ├── quests
 ├── encounters              (session_id optional)
@@ -24,6 +26,7 @@ Bridge tables
 npc_groups      npc ↔ group        (role_in_group, source)
 pc_groups       pc ↔ group         (role_in_group, source)
 npc_relations   npc → npc          (role, directed)
+npc_player_relations npc ↔ pc     (role, source)
 session_npcs    session ↔ npc
 session_pcs     session ↔ pc
 session_quests  session ↔ quest
@@ -112,7 +115,7 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 | detail_level           | `full` \| `minor` |
 | status                 | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` \| `paused` |
 | location_id            | current location, optional |
-| etnia, rol, tipo_spren | optional |
+| origen, rol, subtipo | optional, free text |
 | description, notes     | |
 | attributes, skills     | JSON |
 | current_hp, max_hp     | optional; persist across encounters |
@@ -127,7 +130,6 @@ Unique partial index `sessions_active_number_uq` on `(campaign_id, session_numbe
 | character_name     | |
 | race, class        | free text; `class` dashboard only |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` (default) |
-| spren_npc_id       | optional, reindex only |
 | description, backstory, progression_notes | dashboard only; the reindex never overwrites them (nor `class`) |
 | attributes, skills | JSON |
 | current_hp, max_hp | optional; persist across encounters |
@@ -170,7 +172,7 @@ Per-campaign lore. Categories follow the `npc_types` pattern (`key` derived from
 | body                   | Markdown |
 | category_id            | optional; a category referenced by any entry (even a deleted one) can't be deleted |
 | arc_id, location_id    | optional, `ON DELETE RESTRICT` |
-| obsidian_path          | reserved for a future `Lore/` folder in the vault |
+| obsidian_path          | note in the vault's `Lore/` folder; the reindex sets title, category, arc and location, never `body` |
 | image_path             | illustration; written by the image endpoint only (migration 0027) |
 
 ### currencies / items and their bridges
@@ -261,13 +263,14 @@ PK `(campaign_id, path)`. Stores `content_hash` (SHA-256), `entity_type`, `entit
 npc_groups     (npc_id, group_id, role_in_group, source)   PK (npc_id, group_id)
 pc_groups      (pc_id, group_id, role_in_group, source)    PK (pc_id, group_id)
 npc_relations  (from_npc_id, to_npc_id, role)               PK (from_npc_id, to_npc_id, role)
+npc_player_relations (npc_id, player_character_id, role, source) PK (npc_id, player_character_id)
 session_npcs   (session_id, npc_id)                         PK (session_id, npc_id)
 session_pcs    (session_id, pc_id)                           PK (session_id, pc_id)
 session_quests (session_id, quest_id)                        PK (session_id, quest_id)
 quest_npcs     (quest_id, npc_id, role)                      PK (quest_id, npc_id)
 ```
 
-`source` (`npc_groups`, `pc_groups`): `vault` | `dashboard` (default) | `removed`.
+`source` (`npc_groups`, `pc_groups`, `npc_player_relations`): `vault` | `dashboard` (default) | `removed`.
 
 - The reindex only deletes and rewrites `vault` rows.
 - If the vault confirms a `dashboard` row, it becomes `vault`; a `removed` row stays `removed`.

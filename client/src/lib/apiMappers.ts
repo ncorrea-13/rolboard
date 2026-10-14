@@ -68,8 +68,8 @@ export interface ApiNpc {
   detail_level: string;
   status: string;
   rol?: string;
-  etnia?: string;
-  tipo_spren?: string;
+  origen?: string;
+  subtipo?: string;
   location_id?: number;
   description: string;
   attributes?: StatMap;
@@ -130,8 +130,8 @@ export function mapNpc(n: ApiNpc): Npc {
     campaignId: String(n.campaign_id),
     name: n.name,
     role: n.rol ?? "",
-    etnia: n.etnia,
-    tipoSpren: n.tipo_spren,
+    origen: n.origen,
+    subtipo: n.subtipo,
     description: n.description,
     crystal,
     detailLevel: n.detail_level === "minor" ? "minor" : "full",
@@ -171,8 +171,8 @@ export function npcToApiPayload(npc: Npc) {
     status: npcStatusToApi(npc),
     description: npc.description,
     rol: npc.role || undefined,
-    etnia: npc.etnia || undefined,
-    tipo_spren: npc.tipoSpren || undefined,
+    origen: npc.origen || undefined,
+    subtipo: npc.subtipo || undefined,
     location_id: npc.locationId ? Number(npc.locationId) : undefined,
     attributes: npc.attributes,
     skills: npc.skills,
@@ -597,6 +597,7 @@ export interface ApiLoreEntry {
   body: string;
   arc_id?: number;
   location_id?: number;
+  obsidian_path?: string;
   image_path?: string;
   created_at: string;
   updated_at: string;
@@ -611,6 +612,7 @@ export function mapLoreEntry(e: ApiLoreEntry): LoreEntry {
     body: e.body,
     arcId: e.arc_id ? String(e.arc_id) : undefined,
     locationId: e.location_id ? String(e.location_id) : undefined,
+    obsidianPath: e.obsidian_path,
     hasImage: Boolean(e.image_path),
     createdAt: e.created_at,
     updatedAt: e.updated_at,

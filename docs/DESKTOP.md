@@ -46,6 +46,7 @@ GET  /api/desktop/settings      {"vaultsRoot": "...", "syncDir": "..."}  ("" if 
 POST /api/desktop/vaults-root   opens the native folder dialog; 200 with the settings or 204 if cancelled
 POST /api/desktop/sync-dir      same, for the sync folder
 POST /api/desktop/open          {"url": "https://..."}  opens it in the default browser; https only
+POST /api/desktop/save-export   {"campaignId": "N"}  builds the campaign export and opens the native save dialog; 200 {"path"} or 204 if cancelled
 ```
 
 Changing a folder saves `config.json` and rebuilds the app in place (new `app.New`, handler swap, old DB closed): no restart.

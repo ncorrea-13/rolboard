@@ -23,7 +23,7 @@ func NewRouter(h *Handlers) http.Handler {
 	mux.Handle("GET /api/campaigns", http.HandlerFunc(h.ListCampaigns))
 	mux.HandleFunc("POST /api/campaigns", h.requireAdmin(h.CreateCampaign))
 	mux.HandleFunc("POST /api/campaigns/{id}/access-code", h.requireAdmin(h.SetAccessCode))
-	mux.HandleFunc("POST /api/campaigns/{id}/login", h.rateLimit(loginLimiter, h.Login))
+	mux.HandleFunc("POST /api/campaigns/{id}/login", h.rateLimitFailures(loginLimiter, h.Login))
 	mux.HandleFunc("POST /api/campaigns/{id}/logout", h.Logout)
 
 	mux.Handle("GET /api/campaigns/{id}", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.GetCampaign)))
@@ -60,6 +60,10 @@ func NewRouter(h *Handlers) http.Handler {
 	mux.Handle("GET /api/npcs/{id}/relations", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.ListNPCRelations)))
 	mux.Handle("POST /api/npcs/{id}/relations", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.CreateNPCRelation)))
 	mux.Handle("DELETE /api/npcs/{id}/relations/{toId}/{role}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.DeleteNPCRelation)))
+	mux.Handle("GET /api/npcs/{id}/players", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.ListNPCPlayerLinks)))
+	mux.Handle("PUT /api/npcs/{id}/players/{pcId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.SetNPCPlayerLink)))
+	mux.Handle("DELETE /api/npcs/{id}/players/{pcId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.DeleteNPCPlayerLink)))
+	mux.Handle("GET /api/player-characters/{id}/npcs", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), h.ListPlayerNPCLinks)))
 	mux.Handle("POST /api/npcs/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.SetNPCImage)))
 	mux.Handle("DELETE /api/npcs/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.DeleteNPCImage)))
 	mux.Handle("GET /api/npcs/{id}/image", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("npcs"), h.GetNPCImage)))
@@ -186,6 +190,7 @@ func NewRouter(h *Handlers) http.Handler {
 	})
 
 	mux.Handle("POST /api/campaigns/{id}/reindex", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.Reindex)))
+	mux.Handle("GET /api/campaigns/{id}/export", http.HandlerFunc(h.requireCampaign(resolveCampaignFromPath, h.ExportCampaign)))
 	mux.Handle("GET /api/admin/vault-dirs", http.HandlerFunc(h.requireCampaign(resolveCampaignIDFromQuery, h.ListVaultDirs)))
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

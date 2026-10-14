@@ -61,3 +61,18 @@ func TestSplitEmptyFrontmatter(t *testing.T) {
 		t.Errorf("Expected 'Body only', got %q", string(body))
 	}
 }
+
+func TestSplitIgnoresDelimiterInsideAValueAndBody(t *testing.T) {
+	content := []byte("---\ntitulo: \"uno --- dos\"\nnota: x\n---\n\nCuerpo\n\n---\n\n*pie*\n")
+
+	fm, body, err := Split(content)
+	if err != nil {
+		t.Fatalf("Split failed: %v", err)
+	}
+	if string(fm) != "titulo: \"uno --- dos\"\nnota: x\n" {
+		t.Errorf("unexpected frontmatter %q", fm)
+	}
+	if string(body) != "Cuerpo\n\n---\n\n*pie*" {
+		t.Errorf("unexpected body %q", body)
+	}
+}

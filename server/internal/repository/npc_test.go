@@ -28,7 +28,7 @@ func TestNPCCreate(t *testing.T) {
 	if npc.ID == 0 {
 		t.Error("Expected npc ID to be set")
 	}
-	if npc.LocationID != nil || npc.Etnia != nil {
+	if npc.LocationID != nil || npc.Origen != nil {
 		t.Error("Expected nullable fields to stay nil")
 	}
 }
@@ -45,7 +45,7 @@ func TestNPCCreateWithNullableFields(t *testing.T) {
 	}
 
 	repo := NewNPCRepository(db)
-	etnia := "Alethi"
+	origen := "Alethi"
 	npc := &models.NPC{
 		CampaignID:  campaignID,
 		Name:        "Kaladin",
@@ -53,7 +53,7 @@ func TestNPCCreateWithNullableFields(t *testing.T) {
 		DetailLevel: "full",
 		Status:      "vivo",
 		LocationID:  &loc.ID,
-		Etnia:       &etnia,
+		Origen:      &origen,
 	}
 
 	if err := repo.Create(ctx, npc); err != nil {
@@ -63,8 +63,8 @@ func TestNPCCreateWithNullableFields(t *testing.T) {
 	if npc.LocationID == nil || *npc.LocationID != loc.ID {
 		t.Errorf("Expected LocationID %d, got %v", loc.ID, npc.LocationID)
 	}
-	if npc.Etnia == nil || *npc.Etnia != "Alethi" {
-		t.Errorf("Expected Etnia 'Alethi', got %v", npc.Etnia)
+	if npc.Origen == nil || *npc.Origen != "Alethi" {
+		t.Errorf("Expected Origen 'Alethi', got %v", npc.Origen)
 	}
 }
 
@@ -199,5 +199,72 @@ func TestNPCSetImagePathNotFound(t *testing.T) {
 	path := "npcs/999-portrait.png"
 	if _, err := repo.SetImagePath(ctx, 999, &path); err != ErrNotFound {
 		t.Errorf("expected ErrNotFound, got %v", err)
+	}
+}
+
+func TestNPCPlayerLinks(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+
+	npcs := NewNPCRepository(db)
+	npc := &models.NPC{CampaignID: campaignID, Name: "Patron", NPCKind: "npc", DetailLevel: "full", Status: "vivo"}
+	if err := npcs.Create(ctx, npc); err != nil {
+		t.Fatalf("Create npc failed: %v", err)
+	}
+	pc := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "Shallan", Status: "activo"}
+	if err := NewPlayerCharacterRepository(db).Create(ctx, pc); err != nil {
+		t.Fatalf("Create pc failed: %v", err)
+	}
+
+	link := &models.NPCPlayerRelation{NPCID: npc.ID, PlayerCharacterID: pc.ID, Role: "spren"}
+	if err := npcs.SetPlayerLink(ctx, link); err != nil {
+		t.Fatalf("SetPlayerLink failed: %v", err)
+	}
+	link.Role = "mentor"
+	if err := npcs.SetPlayerLink(ctx, link); err != nil {
+		t.Fatalf("SetPlayerLink (update) failed: %v", err)
+	}
+
+	byNPC, err := npcs.ListPlayerLinks(ctx, npc.ID)
+	if err != nil || len(byNPC) != 1 || byNPC[0].Role != "mentor" {
+		t.Fatalf("Expected one link with role mentor, err=%v links=%+v", err, byNPC)
+	}
+	byPC, err := npcs.ListLinksOfPlayer(ctx, pc.ID)
+	if err != nil || len(byPC) != 1 || byPC[0].NPCID != npc.ID {
+		t.Fatalf("Expected the inverse link, err=%v links=%+v", err, byPC)
+	}
+
+	if err := npcs.Delete(ctx, npc.ID); err != nil {
+		t.Fatalf("Delete npc with a player link failed: %v", err)
+	}
+	if links, _ := npcs.ListLinksOfPlayer(ctx, pc.ID); len(links) != 0 {
+		t.Errorf("Expected the link of a deleted npc to be hidden, got %+v", links)
+	}
+}
+
+func TestNPCPlayerLinkRemoved(t *testing.T) {
+	db := setupTestDB(t)
+	ctx := context.Background()
+	campaignID := createTestCampaign(t, ctx, NewCampaignRepository(db))
+
+	npcs := NewNPCRepository(db)
+	npc := &models.NPC{CampaignID: campaignID, Name: "Patron", NPCKind: "npc", DetailLevel: "full", Status: "vivo"}
+	if err := npcs.Create(ctx, npc); err != nil {
+		t.Fatalf("Create npc failed: %v", err)
+	}
+	pc := &models.PlayerCharacter{CampaignID: campaignID, PlayerName: "Nico", CharacterName: "Shallan", Status: "activo"}
+	if err := NewPlayerCharacterRepository(db).Create(ctx, pc); err != nil {
+		t.Fatalf("Create pc failed: %v", err)
+	}
+
+	if err := npcs.SetPlayerLink(ctx, &models.NPCPlayerRelation{NPCID: npc.ID, PlayerCharacterID: pc.ID}); err != nil {
+		t.Fatalf("SetPlayerLink failed: %v", err)
+	}
+	if err := npcs.RemovePlayerLink(ctx, npc.ID, pc.ID); err != nil {
+		t.Fatalf("RemovePlayerLink failed: %v", err)
+	}
+	if links, _ := npcs.ListPlayerLinks(ctx, npc.ID); len(links) != 0 {
+		t.Errorf("Expected no active links after removal, got %+v", links)
 	}
 }

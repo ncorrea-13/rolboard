@@ -36,6 +36,13 @@ export function AppShell({
     if (window.innerWidth <= 640) setSidebarOpen(false);
   }
 
+  function closeOnNarrow(action?: () => void) {
+    return () => {
+      action?.();
+      if (window.innerWidth <= 640) setSidebarOpen(false);
+    };
+  }
+
   function handleBackdropClick() {
     if (window.innerWidth <= 640) setSidebarOpen(false);
   }
@@ -50,9 +57,9 @@ export function AppShell({
           active={activeNav}
           onNavigate={handleNavigate}
           onBack={onBackToCampaigns}
-          onOpenSettings={onOpenSettings}
-          onSearch={onSearch}
-          onHelp={onHelp}
+          onOpenSettings={onOpenSettings && closeOnNarrow(onOpenSettings)}
+          onSearch={onSearch && closeOnNarrow(onSearch)}
+          onHelp={closeOnNarrow(onHelp)}
           onAdminLogout={onAdminLogout}
           onBackdropClick={handleBackdropClick}
           onClose={() => setSidebarOpen(false)}

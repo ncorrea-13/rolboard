@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./NpcDetail.css";
-import { type Item, type PlayerCharacter } from "../data/domain";
+import { type Item, type Npc, type PlayerCharacter } from "../data/domain";
 import { CharacterSheet } from "../components/CharacterSheet";
 import { EntityIdentity } from "../components/EntityIdentity";
 import { StatusPill } from "../components/StatusPill";
@@ -37,6 +37,7 @@ function readStoredTab(): PlayerTab | null {
 interface PlayerDetailProps {
   player: PlayerCharacter;
   campaignId: string;
+  npcs: Npc[];
   items: Item[];
   vaultName: string;
   onEdit: () => void;
@@ -48,6 +49,7 @@ interface PlayerDetailProps {
 export function PlayerDetail({
   player,
   campaignId,
+  npcs,
   items,
   vaultName,
   onEdit,
@@ -57,6 +59,17 @@ export function PlayerDetail({
 }: PlayerDetailProps) {
   const t = useT();
   const appears = useAppearances("player-characters", player.id);
+  const [npcLinks, setNpcLinks] = useState<{ npc_id: number; role: string }[]>(
+    [],
+  );
+
+  useEffect(() => {
+    apiFetch<{ npc_id: number; role: string }[]>(
+      `/player-characters/${player.id}/npcs`,
+    )
+      .then((data) => setNpcLinks(data ?? []))
+      .catch(() => setNpcLinks([]));
+  }, [player.id]);
   const [tab, setTab] = useState<PlayerTab>(() => readStoredTab() ?? "summary");
   const [noteOpen, setNoteOpen] = useState<{
     title: string;
@@ -185,6 +198,25 @@ export function PlayerDetail({
               <div style={{ marginTop: 20 }}>
                 <AppearsIn
                   groups={[
+                    {
+                      title: t("playerDetail.linkedNpcs"),
+                      items: npcLinks.flatMap((l) => {
+                        const npc = npcs.find((n) => n.id === String(l.npc_id));
+                        return npc
+                          ? [
+                              {
+                                key: `npc-${npc.id}`,
+                                label: npc.name,
+                                hint: l.role || undefined,
+                                route: {
+                                  name: "npc-detail" as const,
+                                  npcId: npc.id,
+                                },
+                              },
+                            ]
+                          : [];
+                      }),
+                    },
                     sessionGroup(appears.sessions, t("appearsIn.sessions")),
                     {
                       title: t("appearsIn.encounters"),

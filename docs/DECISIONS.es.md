@@ -58,13 +58,17 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - Sin índices sobre FKs todavía: con este volumen un scan es instantáneo.
 - `groups` y `player_characters` son entidades propias desde el principio.
 - `npc_relations` dirigida con rol libre, en lugar de un campo fijo de vínculo.
+- `origen` y `subtipo` son texto libre en los NPC (antes `etnia` y `tipo_spren`); el parser del vault conserva las keys viejas como alias para que las notas existentes no pierdan el valor en el próximo reindex. `wardails` mantiene el nombre en el código y la API; la UI lo muestra como "Temas sensibles".
+- **El export es Markdown en el formato propio del indexador**, así que sirve de respaldo y de salida. Las imágenes van en `Imagenes/`, con el nombre de su nota; la papelera queda afuera (borrado es borrado). Lo que el vault nunca tuvo (quests, secretos, objetos...) va a carpetas propias, que el indexador ignora.
+- **`Lore/` en el vault solo fija título, categoría, arco y locación.** El texto queda en la nota (se ve renderizado desde la entrada) y el `body` de la base sigue siendo del dashboard, igual que la descripción de un NPC.
+- Los vínculos NPC ↔ jugador viven en `npc_player_relations` (rol libre, `source` como en los puentes de grupos), no en una columna de spren: un mismo NPC puede estar atado a varios personajes y entra cualquier tipo de vínculo. El vault los declara desde la nota del NPC (`vinculado_a`), sin rol. Borrar un NPC con vínculos está permitido: las lecturas ocultan los vínculos de filas borradas.
 - `attributes` / `skills` como JSON libre: cada sistema de juego (Cosmere, D&D) define los suyos; no hay caso que necesite filtrar por atributo.
 - NPC importante con ficha completa = `detail_level = full`, no una entidad aparte.
 
 ## Bajas y papelera
 
 - **Nada se borra para siempre.** `DELETE` es baja lógica y la pantalla de papelera lo restaura. No hay "vaciar papelera": un borrado físico necesitaría una cascada que este esquema evita a propósito.
-- **Se bloquea la baja cuando dejaría huérfanos visibles:** un arco con sesiones activas, una ubicación con NPCs o sub-ubicaciones activas, un NPC que es el spren de un personaje. `409` con un código, y el usuario mueve primero a los dependientes. No se bloquea, a propósito: sesiones con encuentros (el encuentro solo pierde su vínculo), el líder de una facción (la UI ya avisa) ni las tablas puente sesión↔NPC/quest (son historia; las lecturas filtran lo borrado).
+- **Se bloquea la baja cuando dejaría huérfanos visibles:** un arco con sesiones activas, una ubicación con NPCs o sub-ubicaciones activas. `409` con un código, y el usuario mueve primero a los dependientes. No se bloquea, a propósito: sesiones con encuentros (el encuentro solo pierde su vínculo), el líder de una facción (la UI ya avisa) ni las tablas puente sesión↔NPC/quest (son historia; las lecturas filtran lo borrado).
 - **Restaurar revisa a los padres.** Una sesión, NPC o ubicación cuyo arco o ubicación sigue borrado no se puede restaurar (`restore_parent_deleted`), así que restaurar nunca crea un huérfano.
 - **El número de sesión es único solo entre sesiones activas** (índice parcial), así que un número borrado se puede reutilizar. A cambio: restaurar puede dar `409` si el número se reutilizó.
 - **Las sesiones archivadas por el vault (`sub_number = 99`) no van a la papelera.** Ese estado lo maneja el vault: el próximo reindex las archivaría de nuevo.

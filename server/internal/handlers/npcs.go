@@ -18,9 +18,9 @@ type CreateNPCPayload struct {
 	DetailLevel  string          `json:"detail_level"`
 	Status       string          `json:"status"`
 	LocationID   *int64          `json:"location_id"`
-	Etnia        *string         `json:"etnia"`
+	Origen       *string         `json:"origen"`
 	Rol          *string         `json:"rol"`
-	TipoSpren    *string         `json:"tipo_spren"`
+	Subtipo      *string         `json:"subtipo"`
 	Description  string          `json:"description"`
 	Notes        string          `json:"notes"`
 	Attributes   json.RawMessage `json:"attributes"`
@@ -36,9 +36,9 @@ type UpdateNPCPayload struct {
 	DetailLevel  string          `json:"detail_level"`
 	Status       string          `json:"status"`
 	LocationID   *int64          `json:"location_id"`
-	Etnia        *string         `json:"etnia"`
+	Origen       *string         `json:"origen"`
 	Rol          *string         `json:"rol"`
-	TipoSpren    *string         `json:"tipo_spren"`
+	Subtipo      *string         `json:"subtipo"`
 	Description  string          `json:"description"`
 	Notes        string          `json:"notes"`
 	Attributes   json.RawMessage `json:"attributes"`
@@ -123,9 +123,9 @@ func (h *Handlers) CreateNPC(w http.ResponseWriter, r *http.Request) {
 		DetailLevel:  payload.DetailLevel,
 		Status:       payload.Status,
 		LocationID:   payload.LocationID,
-		Etnia:        payload.Etnia,
+		Origen:       payload.Origen,
 		Rol:          payload.Rol,
-		TipoSpren:    payload.TipoSpren,
+		Subtipo:      payload.Subtipo,
 		Description:  payload.Description,
 		Notes:        payload.Notes,
 		Attributes:   payload.Attributes,
@@ -219,9 +219,9 @@ func (h *Handlers) UpdateNPC(w http.ResponseWriter, r *http.Request) {
 		DetailLevel:  payload.DetailLevel,
 		Status:       payload.Status,
 		LocationID:   payload.LocationID,
-		Etnia:        payload.Etnia,
+		Origen:       payload.Origen,
 		Rol:          payload.Rol,
-		TipoSpren:    payload.TipoSpren,
+		Subtipo:      payload.Subtipo,
 		Description:  payload.Description,
 		Notes:        payload.Notes,
 		Attributes:   payload.Attributes,
