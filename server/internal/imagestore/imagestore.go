@@ -15,6 +15,8 @@ import (
 
 const MaxUploadBytes = 5 << 20
 
+const MaxDimension = 4096
+
 var ErrUnsupportedFormat = errors.New("unsupported image format: only PNG and JPEG are accepted")
 
 var ErrInvalidPath = errors.New("image path escapes the uploads root")
@@ -83,9 +85,12 @@ func ContentType(relPath string) string {
 }
 
 func detectExt(data []byte) (string, error) {
-	_, format, err := image.DecodeConfig(bytes.NewReader(data))
+	cfg, format, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
 		return "", ErrUnsupportedFormat
+	}
+	if cfg.Width > MaxDimension || cfg.Height > MaxDimension {
+		return "", fmt.Errorf("%w: dimensions exceed %d px", ErrUnsupportedFormat, MaxDimension)
 	}
 	switch format {
 	case "png":
