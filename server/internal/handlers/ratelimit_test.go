@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 )
@@ -113,8 +114,46 @@ func TestRateLimiterPurgesIdleKeys(t *testing.T) {
 	rl := newRateLimiter(1, 10*time.Millisecond)
 	rl.allow("1.2.3.4")
 	time.Sleep(20 * time.Millisecond)
-	rl.blocked("1.2.3.4")
+	rl.allow("5.6.7.8")
 	if _, ok := rl.attempts["1.2.3.4"]; ok {
 		t.Fatal("expected idle key to be removed")
+	}
+}
+
+func TestRateLimitFailuresCountsConcurrentAttempts(t *testing.T) {
+	h := &Handlers{}
+	rl := newRateLimiter(3, time.Minute)
+	release := make(chan struct{})
+	handler := h.rateLimitFailures(rl, func(w http.ResponseWriter, r *http.Request) {
+		<-release
+		w.WriteHeader(http.StatusUnauthorized)
+	})
+
+	var wg sync.WaitGroup
+	codes := make(chan int, 10)
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			req := httptest.NewRequest(http.MethodPost, "/api/admin/login", nil)
+			req.RemoteAddr = "203.0.113.9:1"
+			rec := httptest.NewRecorder()
+			handler(rec, req)
+			codes <- rec.Code
+		}()
+	}
+	time.Sleep(50 * time.Millisecond)
+	close(release)
+	wg.Wait()
+	close(codes)
+
+	passed := 0
+	for c := range codes {
+		if c == http.StatusUnauthorized {
+			passed++
+		}
+	}
+	if passed != 3 {
+		t.Fatalf("expected exactly 3 attempts to reach the handler, got %d", passed)
 	}
 }

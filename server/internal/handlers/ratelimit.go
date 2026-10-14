@@ -12,6 +12,7 @@ type rateLimiter struct {
 	attempts map[string][]time.Time
 	limit    int
 	window   time.Duration
+	swept    time.Time
 }
 
 func newRateLimiter(limit int, window time.Duration) *rateLimiter {
@@ -34,30 +35,44 @@ func (rl *rateLimiter) recent(key string, now time.Time) []time.Time {
 	return kept
 }
 
-func (rl *rateLimiter) allow(key string) bool {
+func (rl *rateLimiter) reserve(key string) (time.Time, bool) {
 	now := time.Now()
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
+
+	if now.Sub(rl.swept) >= rl.window {
+		for k := range rl.attempts {
+			rl.recent(k, now)
+		}
+		rl.swept = now
+	}
 
 	kept := rl.recent(key, now)
 	if len(kept) >= rl.limit {
-		return false
+		return time.Time{}, false
 	}
 	rl.attempts[key] = append(kept, now)
-	return true
+	return now, true
 }
 
-func (rl *rateLimiter) blocked(key string) bool {
-	rl.mu.Lock()
-	defer rl.mu.Unlock()
-	return len(rl.recent(key, time.Now())) >= rl.limit
+func (rl *rateLimiter) allow(key string) bool {
+	_, ok := rl.reserve(key)
+	return ok
 }
 
-func (rl *rateLimiter) fail(key string) {
-	now := time.Now()
+func (rl *rateLimiter) release(key string, at time.Time) {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	rl.attempts[key] = append(rl.recent(key, now), now)
+	attempts := rl.attempts[key]
+	for i, t := range attempts {
+		if t.Equal(at) {
+			rl.attempts[key] = append(attempts[:i], attempts[i+1:]...)
+			break
+		}
+	}
+	if len(rl.attempts[key]) == 0 {
+		delete(rl.attempts, key)
+	}
 }
 
 func clientIP(r *http.Request, trustProxyHeaders bool) string {
@@ -86,14 +101,15 @@ func (h *Handlers) rateLimit(rl *rateLimiter, next http.HandlerFunc) http.Handle
 func (h *Handlers) rateLimitFailures(rl *rateLimiter, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := clientIP(r, h.trustProxyHeaders)
-		if rl.blocked(key) {
+		at, ok := rl.reserve(key)
+		if !ok {
 			http.Error(w, "Too many attempts, try again later", http.StatusTooManyRequests)
 			return
 		}
 		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		next(rec, r)
-		if rec.status == http.StatusUnauthorized {
-			rl.fail(key)
+		if rec.status != http.StatusUnauthorized {
+			rl.release(key, at)
 		}
 	}
 }
