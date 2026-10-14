@@ -112,10 +112,10 @@ The AppImage is packaged with `appimagetool` 1.9.1; the steps are in [`.github/w
 
 `.github/workflows/release.yml`, `desktop` job on `ubuntu-latest` (the `android` job runs after it, see [`ANDROID.md`](ANDROID.md#release)):
 
-- **Tag `v*`:** builds both targets and creates a **draft** GitHub Release with `rolboard-windows-amd64-vX.Y.Z.exe` and `rolboard-linux-x86_64-vX.Y.Z.AppImage`. Review the notes and publish it by hand.
+- **Tag `v*`:** builds both targets and creates a **draft** GitHub Release with `rolboard-windows-amd64-vX.Y.Z.exe` and `rolboard-linux-amd64-vX.Y.Z.AppImage`. Review the notes and publish it by hand.
 - **Manual run:** builds both and uploads them as a workflow artifact, no release.
 
-The version also goes into `wails.json` (`info.productVersion`), so the `.exe` shows it in its file properties; manual runs use `dev-<sha>` in the file names and `0.0.0` as product version. The Wails CLI version is read from `go.mod`, so Dependabot bumps keep it in sync. The README links to the latest release page and the landing page reads the asset URLs from the GitHub API, so keep the `windows-amd64` / `linux-x86_64` parts of the names. Third-party actions are pinned by SHA and `appimagetool` is checked against its SHA-256.
+The version also goes into `wails.json` (`info.productVersion`), so the `.exe` shows it in its file properties; manual runs use `dev-<sha>` in the file names and `0.0.0` as product version. The Wails CLI version is read from `go.mod`, so Dependabot bumps keep it in sync. The README links to the latest release page and the landing page reads the asset URLs from the GitHub API, so keep the `windows-amd64` / `linux-amd64` parts of the names. Third-party actions are pinned by SHA and `appimagetool` is checked against its SHA-256.
 
 ## Known limitations
 

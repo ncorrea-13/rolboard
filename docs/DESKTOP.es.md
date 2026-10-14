@@ -112,10 +112,10 @@ El AppImage se arma con `appimagetool` 1.9.1; los pasos están en [`.github/work
 
 `.github/workflows/release.yml`, job `desktop` en `ubuntu-latest` (el job `android` corre después, ver [`ANDROID.es.md`](ANDROID.es.md#release)):
 
-- **Tag `v*`:** compila los dos targets y crea un GitHub Release **en borrador** con `rolboard-windows-amd64-vX.Y.Z.exe` y `rolboard-linux-x86_64-vX.Y.Z.AppImage`. Las notas se revisan y se publica a mano.
+- **Tag `v*`:** compila los dos targets y crea un GitHub Release **en borrador** con `rolboard-windows-amd64-vX.Y.Z.exe` y `rolboard-linux-amd64-vX.Y.Z.AppImage`. Las notas se revisan y se publica a mano.
 - **Ejecución manual:** compila los dos y los sube como artifact del workflow, sin release.
 
-La versión también se escribe en `wails.json` (`info.productVersion`), así que el `.exe` la muestra en sus propiedades; las ejecuciones manuales usan `dev-<sha>` en los nombres y `0.0.0` como versión de producto. La versión del CLI de Wails se lee de `go.mod`, así que los bumps de Dependabot la mantienen al día. El README enlaza a la página del último release y la landing lee las URLs de los assets desde la API de GitHub, así que hay que mantener las partes `windows-amd64` / `linux-x86_64` de los nombres. Las acciones de terceros están fijadas por SHA y `appimagetool` se verifica contra su SHA-256.
+La versión también se escribe en `wails.json` (`info.productVersion`), así que el `.exe` la muestra en sus propiedades; las ejecuciones manuales usan `dev-<sha>` en los nombres y `0.0.0` como versión de producto. La versión del CLI de Wails se lee de `go.mod`, así que los bumps de Dependabot la mantienen al día. El README enlaza a la página del último release y la landing lee las URLs de los assets desde la API de GitHub, así que hay que mantener las partes `windows-amd64` / `linux-amd64` de los nombres. Las acciones de terceros están fijadas por SHA y `appimagetool` se verifica contra su SHA-256.
 
 ## Limitaciones conocidas
 

@@ -93,7 +93,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.tag }}
         run: |
           mkdir dist
-          mv rolboard.AppImage "dist/rolboard-linux-x86_64-$VERSION.AppImage"
+          mv rolboard.AppImage "dist/rolboard-linux-amd64-$VERSION.AppImage"
           mv server/cmd/desktop/build/bin/rolboard.exe "dist/rolboard-windows-amd64-$VERSION.exe"
 
       - name: Upload artifacts
