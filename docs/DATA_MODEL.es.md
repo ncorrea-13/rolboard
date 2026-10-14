@@ -4,6 +4,8 @@
 
 SQLite. Esquema = migraciones en `server/internal/repository/migrations/`, aplicadas en orden al arrancar y registradas en `schema_migrations`. Nunca se edita una migración ya aplicada: se agrega una nueva.
 
+La DB corre en modo WAL (`synchronous=NORMAL`): junto a `campaign.db` hay `campaign.db-wal` y `campaign.db-shm` mientras el server está arriba. Para copiarla usá `sqlite3 campaign.db ".backup out.db"` (o `VACUUM INTO`), o detené el server antes; copiar solo `campaign.db` en caliente puede perder escrituras recientes.
+
 ## Entidades
 
 ```
