@@ -91,7 +91,9 @@ func Import(ctx context.Context, dir, dbPath string) error {
 	if err := os.Rename(dbPath, dbPath+".bak"); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return err
 	}
-	_ = os.Remove(dbPath + "-journal")
+	for _, suffix := range []string{"-journal", "-wal", "-shm"} {
+		_ = os.Remove(dbPath + suffix)
+	}
 	return os.Rename(tmp, dbPath)
 }
 
