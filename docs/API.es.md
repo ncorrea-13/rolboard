@@ -32,10 +32,10 @@ REST + JSON bajo `/api`. Router: `net/http` stdlib (`ServeMux` con métodos y pa
 La sesión de admin pasa cualquier chequeo de campaña. La de campaña solo accede a recursos de esa campaña (el middleware resuelve la campaña del recurso y compara; si no coincide → `401`).
 
 ```
-POST /api/admin/login              {"token": "..."}      rate limit 5 / 15 min
+POST /api/admin/login              {"token": "..."}      5 intentos fallidos / 15 min
 POST /api/admin/logout
 GET  /api/admin/session            admin — 204 si la sesión es válida
-POST /api/campaigns/{id}/login     {"code": "..."}       rate limit 5 / min
+POST /api/campaigns/{id}/login     {"code": "..."}       5 intentos fallidos / min
 POST /api/campaigns/{id}/logout
 POST /api/campaigns/{id}/access-code   admin — {"code": "..."}, mínimo 8 caracteres
 ```
@@ -339,7 +339,7 @@ GET    /api/{entidad}/{id}/image
 
 Entidades: `npcs`, `player-characters`, `locations`, `groups`.
 
-- `POST`: solo PNG/JPEG (detectado por contenido), máx. 5 MiB. Reemplaza la anterior. Devuelve la entidad.
+- `POST`: solo PNG/JPEG (detectado por contenido), máx. 5 MiB y 4096 px por lado. Reemplaza la anterior. Devuelve la entidad.
 - `DELETE`: borra archivo y limpia `image_path`. Devuelve la entidad.
 - `GET`: sirve el archivo con `X-Content-Type-Options: nosniff` y `Cache-Control: no-cache` (el navegador revalida, así que una imagen reemplazada se ve). `404` si no hay imagen.
 

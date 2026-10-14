@@ -73,7 +73,7 @@ func (s *adminSessionStore) revoke(token string) {
 }
 
 func (h *Handlers) AdminLogin(w http.ResponseWriter, r *http.Request) {
-	h.rateLimit(adminLoginLimiter, func(w http.ResponseWriter, r *http.Request) {
+	h.rateLimitFailures(adminLoginLimiter, func(w http.ResponseWriter, r *http.Request) {
 		var payload struct {
 			Token string `json:"token"`
 		}
