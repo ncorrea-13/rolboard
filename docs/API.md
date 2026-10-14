@@ -32,10 +32,10 @@ REST + JSON under `/api`. Router: `net/http` stdlib (`ServeMux` with methods and
 An admin session passes any campaign check. A campaign session only accesses resources from that campaign (middleware resolves the resource's campaign and compares; mismatch → `401`).
 
 ```
-POST /api/admin/login              {"token": "..."}      rate limit 5 / 15 min
+POST /api/admin/login              {"token": "..."}      5 failed attempts / 15 min
 POST /api/admin/logout
 GET  /api/admin/session            admin — 200 {"localMode": bool} if the session is valid
-POST /api/campaigns/{id}/login     {"code": "..."}       rate limit 5 / min
+POST /api/campaigns/{id}/login     {"code": "..."}       5 failed attempts / min
 POST /api/campaigns/{id}/logout
 POST /api/campaigns/{id}/access-code   admin — {"code": "..."}, minimum 8 characters
 ```
@@ -339,7 +339,7 @@ GET    /api/{entity}/{id}/image
 
 Entities: `npcs`, `player-characters`, `locations`, `groups`, `items`, `arcs`, `lore`, `quests`.
 
-- `POST`: PNG/JPEG only (detected by content), max 5 MiB. Replaces the previous image. Returns the entity.
+- `POST`: PNG/JPEG only (detected by content), max 5 MiB and 4096 px per side. Replaces the previous image. Returns the entity.
 - `DELETE`: deletes the file and clears `image_path`. Returns the entity.
 - `GET`: serves the file with `X-Content-Type-Options: nosniff` and `Cache-Control: no-cache` (the browser revalidates, so a replaced image shows up). `404` if there's no image.
 

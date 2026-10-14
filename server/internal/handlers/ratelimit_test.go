@@ -80,3 +80,41 @@ func TestRateLimiterResetsAfterWindow(t *testing.T) {
 		t.Fatal("expected attempt after window to be allowed again")
 	}
 }
+
+func TestRateLimitFailuresOnlyCountsUnauthorized(t *testing.T) {
+	h := &Handlers{}
+	rl := newRateLimiter(2, time.Minute)
+	status := http.StatusNoContent
+	handler := h.rateLimitFailures(rl, func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(status)
+	})
+	call := func() int {
+		req := httptest.NewRequest(http.MethodPost, "/api/admin/login", nil)
+		req.RemoteAddr = "203.0.113.9:1"
+		rec := httptest.NewRecorder()
+		handler(rec, req)
+		return rec.Code
+	}
+
+	for i := 0; i < 5; i++ {
+		if got := call(); got != http.StatusNoContent {
+			t.Fatalf("successful attempt %d: expected 204, got %d", i, got)
+		}
+	}
+	status = http.StatusUnauthorized
+	call()
+	call()
+	if got := call(); got != http.StatusTooManyRequests {
+		t.Fatalf("expected 429 after 2 failures, got %d", got)
+	}
+}
+
+func TestRateLimiterPurgesIdleKeys(t *testing.T) {
+	rl := newRateLimiter(1, 10*time.Millisecond)
+	rl.allow("1.2.3.4")
+	time.Sleep(20 * time.Millisecond)
+	rl.blocked("1.2.3.4")
+	if _, ok := rl.attempts["1.2.3.4"]; ok {
+		t.Fatal("expected idle key to be removed")
+	}
+}
