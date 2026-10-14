@@ -59,7 +59,7 @@ Para una sola computadora, sin servidor ni Docker. Todo queda en tu máquina.
 | Sistema | Descarga |
 | ------- | -------- |
 | Windows 10 / 11 | [Descargar `.exe`](https://github.com/ncorrea-13/rolboard/releases/latest) |
-| Linux x86_64    | [Descargar AppImage](https://github.com/ncorrea-13/rolboard/releases/latest) |
+| Linux x64 (amd64) | [Descargar AppImage](https://github.com/ncorrea-13/rolboard/releases/latest) |
 
 - **Windows:** no está firmado, así que SmartScreen avisa en el primer arranque: *Más información → Ejecutar de todas formas*. Necesita WebView2 (viene con Windows 10/11).
 - **Linux:** necesita `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` en Debian/Ubuntu). Después `chmod +x rolboard-linux-amd64-*.AppImage` y ejecutarlo.

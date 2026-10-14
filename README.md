@@ -59,7 +59,7 @@ For a single computer, no server or Docker. Everything stays on your machine.
 | System  | Download |
 | ------- | -------- |
 | Windows 10 / 11 | [Download `.exe`](https://github.com/ncorrea-13/rolboard/releases/latest) |
-| Linux x86_64    | [Download AppImage](https://github.com/ncorrea-13/rolboard/releases/latest) |
+| Linux x64 (amd64) | [Download AppImage](https://github.com/ncorrea-13/rolboard/releases/latest) |
 
 - **Windows:** unsigned, so SmartScreen warns on first launch: *More info → Run anyway*. Needs WebView2 (bundled with Windows 10/11).
 - **Linux:** needs `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` on Debian/Ubuntu). Then `chmod +x rolboard-linux-amd64-*.AppImage` and run it.
