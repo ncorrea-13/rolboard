@@ -13,7 +13,9 @@ export function withViewTransition(update: () => void, kind: MotionKind) {
   const root = document.documentElement;
   root.dataset.motion = kind;
   const transition = document.startViewTransition(() => flushSync(update));
-  transition.finished.finally(() => {
-    if (root.dataset.motion === kind) delete root.dataset.motion;
-  });
+  transition.finished
+    .catch(() => {})
+    .finally(() => {
+      if (root.dataset.motion === kind) delete root.dataset.motion;
+    });
 }

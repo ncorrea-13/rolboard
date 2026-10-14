@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { excerpt } from "../lib/excerpt";
 import "./CampaignDashboard.css";
 import {
   crystalColor,
@@ -595,7 +596,7 @@ export function CampaignDashboard({
                   <span className="dash-row__title">{n.title}</span>
                   {n.body && (
                     <div className="dash-row__sub">
-                      <MarkdownText inline text={n.body} />
+                      <MarkdownText inline text={excerpt(n.body)} />
                     </div>
                   )}
                 </div>
@@ -625,7 +626,7 @@ export function CampaignDashboard({
                     <span className="dash-row__title">{e.title}</span>
                     {e.body && (
                       <div className="dash-row__sub">
-                        <MarkdownText inline text={e.body} />
+                        <MarkdownText inline text={excerpt(e.body)} />
                       </div>
                     )}
                   </div>
