@@ -88,16 +88,6 @@ func clientIP(r *http.Request, trustProxyHeaders bool) string {
 	return host
 }
 
-func (h *Handlers) rateLimit(rl *rateLimiter, next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if !rl.allow(clientIP(r, h.trustProxyHeaders)) {
-			http.Error(w, "Too many attempts, try again later", http.StatusTooManyRequests)
-			return
-		}
-		next(w, r)
-	}
-}
-
 func (h *Handlers) rateLimitFailures(rl *rateLimiter, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		key := clientIP(r, h.trustProxyHeaders)
