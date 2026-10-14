@@ -1,16 +1,16 @@
 ---
 name: pr
-description: Arma el título y la descripción de un pull request de rolboard a partir de la rama actual, usando .github/pull_request_template.md. Usar cuando el usuario pida "armar el PR", "descripción del PR" o /pr.
+description: Builds the title and description of a rolboard pull request from the current branch, using .github/pull_request_template.md. Use when the user asks to "write the PR", "PR description" or /pr.
 ---
 
-# Armar un PR
+# Writing a PR
 
-1. **Base.** Si la rama actual es `dev`, la base es `main`; en cualquier otro caso, `dev`. Confirmá con `git branch --show-current`.
-2. **Contexto.** Corré `git log <base>..HEAD --format='%h %s'` y `git diff <base>...HEAD --stat`. Leé los archivos clave del diff si el porqué no sale de los commits.
-3. **Plantilla.** Leé `.github/pull_request_template.md` y completá cada sección en español, sin dejar los comentarios `<!-- -->`.
-   - *Qué cambia*: viñetas por comportamiento, no por archivo.
-   - *Por qué*: el motivo real; si no lo sabés, preguntalo en vez de inventarlo.
-   - *Cómo se probó*: marcá `[x]` solo lo que corriste en esta sesión y pegá el resultado real (pasó/falló). Si no lo corriste, dejalo sin marcar.
-   - *Notas*: migraciones nuevas, cambios de API o docs, y lo que quedó fuera.
-4. **Título.** Una línea al estilo Conventional Commits en español (`fix: ...`, `feat: ...`, `perf: ...`), igual que los commits del repo.
-5. **Entrega.** Mostrá título y cuerpo al usuario. No hagas push ni `gh pr create` sin que lo pida explícitamente; si lo pide: `gh pr create --base <base> --title "..." --body-file <archivo>`.
+1. **Base.** If the current branch is `dev`, the base is `main`; otherwise it is `dev`. Confirm with `git branch --show-current`.
+2. **Context.** Run `git log <base>..HEAD --format='%h %s'` and `git diff <base>...HEAD --stat`. Read the key files in the diff if the reason does not come out of the commits.
+3. **Template.** Read `.github/pull_request_template.md` and fill in every section in English, without leaving the `<!-- -->` comments.
+   - *What changes*: bullets per behaviour, not per file.
+   - *Why*: the real motive; if you do not know it, ask instead of inventing it.
+   - *How it was tested*: tick `[x]` only what you ran in this session and paste the real result (passed/failed). If you did not run it, leave it unticked.
+   - *Notes for reviewers*: new migrations, API or docs changes, and what was left out.
+4. **Title.** One line in Conventional Commits style, in English (`fix: ...`, `feat: ...`, `perf: ...`).
+5. **Delivery.** Show the title and body to the user. Do not push or run `gh pr create` unless asked explicitly; if asked: `gh pr create --base <base> --title "..." --body-file <file>`.
