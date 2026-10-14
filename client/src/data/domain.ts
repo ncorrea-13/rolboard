@@ -264,8 +264,8 @@ export interface Npc {
   campaignId: string;
   name: string;
   role: string;
-  etnia?: string;
-  tipoSpren?: string;
+  origen?: string;
+  subtipo?: string;
   description: string;
   /** The NPC type key (npc_kind). */
   crystal: string;
@@ -434,6 +434,7 @@ export interface LoreEntry {
   body: string;
   arcId?: string;
   locationId?: string;
+  obsidianPath?: string;
   createdAt: string;
   updatedAt: string;
   hasImage?: boolean;

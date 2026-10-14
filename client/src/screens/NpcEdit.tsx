@@ -6,6 +6,7 @@ import {
   statusColor,
   locationBreadcrumb,
   type Npc,
+  type PlayerCharacter,
   type StatMap,
   type StatusKind,
   type Location,
@@ -29,6 +30,7 @@ const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
 interface NpcEditProps {
   npc: Npc;
   npcs: Npc[];
+  players: PlayerCharacter[];
   locations: Location[];
   npcTypesApi: NpcTypesApi;
   onSave: (
@@ -44,6 +46,7 @@ interface NpcEditProps {
 export function NpcEdit({
   npc,
   npcs,
+  players,
   locations,
   npcTypesApi,
   onSave,
@@ -66,6 +69,10 @@ export function NpcEdit({
       ? npc.crystal
       : (npcTypesApi.types[0]?.key ?? npc.crystal),
   );
+  const [playerRoles, setPlayerRoles] = useState<Record<string, string>>({});
+  const [savedPlayerRoles, setSavedPlayerRoles] = useState<
+    Record<string, string>
+  >({});
   const [linkRole, setLinkRole] = useState("");
   const [linkNpcId, setLinkNpcId] = useState("");
   const [existingLink, setExistingLink] = useState<{
@@ -73,8 +80,8 @@ export function NpcEdit({
     npcId: string;
   } | null>(null);
   const [locationId, setLocationId] = useState(npc.locationId ?? "");
-  const [etnia, setEtnia] = useState(npc.etnia ?? "");
-  const [tipoSpren, setTipoSpren] = useState(npc.tipoSpren ?? "");
+  const [origen, setOrigen] = useState(npc.origen ?? "");
+  const [subtipo, setSubtipo] = useState(npc.subtipo ?? "");
   const [attributes, setAttributes] = useState<StatMap>(npc.attributes);
   const [skills, setSkills] = useState<StatMap>(npc.skills);
   const [currentHp, setCurrentHp] = useState<number | undefined>(npc.currentHp);
@@ -96,15 +103,34 @@ export function NpcEdit({
       });
   }, [npc.id]);
 
+  useEffect(() => {
+    if (!npc.id) return;
+    apiFetch<{ player_character_id: number; role: string }[]>(
+      `/npcs/${npc.id}/players`,
+    )
+      .then((data) => {
+        const roles = Object.fromEntries(
+          (data ?? []).map((l) => [String(l.player_character_id), l.role]),
+        );
+        setSavedPlayerRoles(roles);
+        setPlayerRoles(roles);
+      })
+      .catch((err) => {
+        reportError("toast.errorLoading", err);
+      });
+  }, [npc.id]);
+
   const dirty =
+    JSON.stringify(Object.entries(playerRoles).sort()) !==
+      JSON.stringify(Object.entries(savedPlayerRoles).sort()) ||
     name !== npc.name ||
     description !== npc.description ||
     status !== npc.status ||
     detailLevel !== npc.detailLevel ||
     crystal !== npc.crystal ||
     locationId !== (npc.locationId ?? "") ||
-    etnia !== (npc.etnia ?? "") ||
-    tipoSpren !== (npc.tipoSpren ?? "") ||
+    origen !== (npc.origen ?? "") ||
+    subtipo !== (npc.subtipo ?? "") ||
     linkRole !== (existingLink?.role ?? "") ||
     linkNpcId !== (existingLink?.npcId ?? "") ||
     JSON.stringify(attributes) !== JSON.stringify(npc.attributes) ||
@@ -136,6 +162,26 @@ export function NpcEdit({
     }
   }
 
+  function syncPlayers(savedNpcId: string) {
+    for (const [id, role] of Object.entries(playerRoles)) {
+      if (savedPlayerRoles[id] === role && id in savedPlayerRoles) continue;
+      apiFetch(`/npcs/${savedNpcId}/players/${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ role }),
+      }).catch((err) => {
+        reportError("common.toastErrorSaving", err);
+      });
+    }
+    for (const id of Object.keys(savedPlayerRoles)) {
+      if (id in playerRoles) continue;
+      apiFetch(`/npcs/${savedNpcId}/players/${id}`, {
+        method: "DELETE",
+      }).catch((err) => {
+        reportError("common.toastErrorDeleting", err);
+      });
+    }
+  }
+
   function handleSave() {
     const saved = onSave(
       {
@@ -145,8 +191,8 @@ export function NpcEdit({
         detailLevel,
         crystal,
         locationId: locationId || undefined,
-        etnia,
-        tipoSpren,
+        origen,
+        subtipo,
         attributes,
         skills,
         currentHp,
@@ -155,8 +201,12 @@ export function NpcEdit({
       pendingImage.file,
     );
     if (saved === false) return;
-    if (npc.id) syncLink(npc.id);
-    else if (saved instanceof Promise) saved.then((id) => id && syncLink(id));
+    const syncAll = (id: string) => {
+      syncLink(id);
+      syncPlayers(id);
+    };
+    if (npc.id) syncAll(npc.id);
+    else if (saved instanceof Promise) saved.then((id) => id && syncAll(id));
   }
 
   const linkTarget = npcs.find((n) => n.id === linkNpcId);
@@ -260,29 +310,26 @@ export function NpcEdit({
           </div>
 
           <div className="npc-edit__grid-2">
-            {crystal === "spren" ? (
-              <div>
-                <span className="label">{t("npcEdit.sprenType")}</span>
-                <input
-                  aria-label={t("npcEdit.sprenType")}
-                  className="npc-edit__input"
-                  value={tipoSpren}
-                  onChange={(e) => setTipoSpren(e.target.value)}
-                  placeholder={t("npcEdit.sprenPlaceholder")}
-                />
-              </div>
-            ) : (
-              <div>
-                <span className="label">{t("npcEdit.ethnicity")}</span>
-                <input
-                  aria-label={t("npcEdit.ethnicity")}
-                  className="npc-edit__input"
-                  value={etnia}
-                  onChange={(e) => setEtnia(e.target.value)}
-                  placeholder={t("npcEdit.ethnicityPlaceholder")}
-                />
-              </div>
-            )}
+            <div>
+              <span className="label">{t("npcEdit.origin")}</span>
+              <input
+                aria-label={t("npcEdit.origin")}
+                className="npc-edit__input"
+                value={origen}
+                onChange={(e) => setOrigen(e.target.value)}
+                placeholder={t("npcEdit.originPlaceholder")}
+              />
+            </div>
+            <div>
+              <span className="label">{t("npcEdit.subtype")}</span>
+              <input
+                aria-label={t("npcEdit.subtype")}
+                className="npc-edit__input"
+                value={subtipo}
+                onChange={(e) => setSubtipo(e.target.value)}
+                placeholder={t("npcEdit.subtypePlaceholder")}
+              />
+            </div>
           </div>
 
           <MarkdownField
@@ -324,6 +371,51 @@ export function NpcEdit({
               </select>
             </div>
           </div>
+
+          {players.length > 0 && (
+            <div>
+              <span className="label">{t("npcEdit.linkedPlayers")}</span>
+              {players.map((p) => {
+                const linked = p.id in playerRoles;
+                return (
+                  <div key={p.id} style={{ marginBottom: 6 }}>
+                    <label
+                      style={{ display: "flex", alignItems: "center", gap: 8 }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={linked}
+                        onChange={(e) =>
+                          setPlayerRoles((prev) => {
+                            const next = { ...prev };
+                            if (e.target.checked) next[p.id] = "";
+                            else delete next[p.id];
+                            return next;
+                          })
+                        }
+                      />
+                      {p.characterName}
+                    </label>
+                    {linked && (
+                      <input
+                        aria-label={`${t("npcEdit.playerRole")} ${p.characterName}`}
+                        className="npc-edit__input"
+                        style={{ marginTop: 4 }}
+                        placeholder={t("npcEdit.playerRolePlaceholder")}
+                        value={playerRoles[p.id]}
+                        onChange={(e) =>
+                          setPlayerRoles((prev) => ({
+                            ...prev,
+                            [p.id]: e.target.value,
+                          }))
+                        }
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           <SkillsEditor
             label={t("characterSheet.attributes")}

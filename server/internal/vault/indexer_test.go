@@ -213,7 +213,7 @@ func TestReindexPreservesDashboardEditWhenNoteUnchanged(t *testing.T) {
 	}
 }
 
-func TestReindexResolvesPlayerCharacterSprenAndFaccion(t *testing.T) {
+func TestReindexResolvesNPCPlayerLinkAndFaccion(t *testing.T) {
 	db := setupIndexerTestDB(t)
 	ctx := context.Background()
 
@@ -223,9 +223,9 @@ func TestReindexResolvesPlayerCharacterSprenAndFaccion(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	writeVaultFile(t, root, "NPC/Astillas/Cuarzo.md", "---\ntipo: spren\nstatus: vivo\ntipo_spren: Honorspren\n---\nSpren de Valisha.")
+	writeVaultFile(t, root, "NPC/Astillas/Cuarzo.md", "---\ntipo: spren\nstatus: vivo\ntipo_spren: Honorspren\nvinculado_a:\n  - \"[[Valisha]]\"\n---\nSpren de Valisha.")
 	writeVaultFile(t, root, "Grupos/Radiantes.md", "---\ntipo: faccion\nalineacion: neutral\n---\nOrden de Radiantes.")
-	writeVaultFile(t, root, "Jugadores/Valisha.md", "---\ntipo: jugador\njugador: Agus Horas\nstatus: activo\nraza: Cognitiva\nspren: \"[[Cuarzo]]\"\nfacciones:\n  - \"[[Radiantes]]\"\n---\nPersonaje jugado por Agus.")
+	writeVaultFile(t, root, "Jugadores/Valisha.md", "---\ntipo: jugador\njugador: Agus Horas\nstatus: activo\nraza: Cognitiva\nfacciones:\n  - \"[[Radiantes]]\"\n---\nPersonaje jugado por Agus.")
 
 	indexer := NewIndexer(root, campaign.ID, db)
 	result, err := indexer.Reindex(ctx)
@@ -263,8 +263,9 @@ func TestReindexResolvesPlayerCharacterSprenAndFaccion(t *testing.T) {
 	if valisha.Status != "activo" {
 		t.Errorf("Expected status 'activo', got %q", valisha.Status)
 	}
-	if valisha.SprenNPCID == nil || *valisha.SprenNPCID != cuarzo.ID {
-		t.Errorf("Expected SprenNPCID = %d, got %v", cuarzo.ID, valisha.SprenNPCID)
+	links, err := repository.NewNPCRepository(db).ListLinksOfPlayer(ctx, valisha.ID)
+	if err != nil || len(links) != 1 || links[0].NPCID != cuarzo.ID || links[0].Role != "" {
+		t.Errorf("Expected one link Cuarzo -> Valisha with empty role, err=%v links=%+v", err, links)
 	}
 
 	var groupID int64
@@ -554,5 +555,143 @@ func TestReindexRejectsSymlinkOutsideVault(t *testing.T) {
 	}
 	if count != 0 {
 		t.Errorf("Expected symlinked note outside the vault to be skipped, found %d", count)
+	}
+}
+
+func TestReindexNPCOrigenSubtipoAndLegacyAliases(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Test", System: "Generic"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "NPC/Nuevo.md", "---\ntipo: npc\nstatus: vivo\norigen: Alethkar\nsubtipo: Honorspren\n---\nKeys nuevas.")
+	writeVaultFile(t, root, "NPC/Viejo.md", "---\ntipo: npc\nstatus: vivo\netnia: Alethi\ntipo_spren: Cryptic\n---\nKeys deprecadas.")
+
+	result, err := NewIndexer(root, campaign.ID, db).Reindex(ctx)
+	if err != nil || len(result.Errors) != 0 {
+		t.Fatalf("Reindex failed: err=%v errors=%v", err, result.Errors)
+	}
+
+	npcs, err := repository.NewNPCRepository(db).List(ctx, campaign.ID)
+	if err != nil || len(npcs) != 2 {
+		t.Fatalf("Expected 2 npcs, err=%v npcs=%+v", err, npcs)
+	}
+	want := map[string][2]string{"Nuevo": {"Alethkar", "Honorspren"}, "Viejo": {"Alethi", "Cryptic"}}
+	for _, n := range npcs {
+		w := want[n.Name]
+		if n.Origen == nil || *n.Origen != w[0] || n.Subtipo == nil || *n.Subtipo != w[1] {
+			t.Errorf("%s: expected origen=%q subtipo=%q, got %v / %v", n.Name, w[0], w[1], n.Origen, n.Subtipo)
+		}
+	}
+}
+
+func TestReindexLoreFolder(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Test", System: "Generic"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	root := t.TempDir()
+	writeVaultFile(t, root, "Arcos/Arco 1.md", "---\ntipo: arco\narco: 1\ntitulo: Inicio\nstatus: en curso\n---\n")
+	writeVaultFile(t, root, "Locaciones/Ciudad.md", "---\ntipo: ciudad\n---\n")
+	writeVaultFile(t, root, "Lore/Guerra antigua.md", "---\ntipo: Historia\narco: \"[[Arco 1]]\"\nlocacion: \"[[Ciudad]]\"\n---\nTexto.")
+	writeVaultFile(t, root, "Lore/Cosmología.md", "---\ntipo: Cosmología\n---\nTexto.")
+	writeVaultFile(t, root, "Lore/Suelta.md", "---\ntags:\n  - lore\n---\nSin tipo.")
+
+	indexer := NewIndexer(root, campaign.ID, db)
+	result, err := indexer.Reindex(ctx)
+	if err != nil || len(result.Errors) != 0 || len(result.UnresolvedWikilinks) != 0 {
+		t.Fatalf("Reindex failed: err=%v result=%+v", err, result)
+	}
+
+	entries, err := repository.NewLoreEntryRepository(db).List(ctx, campaign.ID)
+	if err != nil || len(entries) != 3 {
+		t.Fatalf("Expected 3 lore entries, err=%v entries=%+v", err, entries)
+	}
+	categories, _ := repository.NewLoreCategoryRepository(db).List(ctx, campaign.ID)
+	labelByID := map[int64]string{}
+	for _, c := range categories {
+		labelByID[c.ID] = c.Label
+	}
+	for _, e := range entries {
+		switch e.Title {
+		case "Guerra antigua":
+			if e.CategoryID == nil || labelByID[*e.CategoryID] != "Historia" {
+				t.Errorf("Expected the seeded Historia category, got %+v", e)
+			}
+			if e.ArcID == nil || e.LocationID == nil {
+				t.Errorf("Expected arc and location resolved, got %+v", e)
+			}
+		case "Cosmología":
+			if e.CategoryID == nil || labelByID[*e.CategoryID] != "Cosmología" {
+				t.Errorf("Expected an auto-created Cosmología category, got %+v", e)
+			}
+		case "Suelta":
+			if e.CategoryID != nil {
+				t.Errorf("Expected no category without tipo, got %+v", e)
+			}
+		}
+	}
+
+	if err := os.Remove(filepath.Join(root, "Lore", "Suelta.md")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := indexer.Reindex(ctx); err != nil {
+		t.Fatalf("Second reindex failed: %v", err)
+	}
+	if entries, _ := repository.NewLoreEntryRepository(db).List(ctx, campaign.ID); len(entries) != 2 {
+		t.Errorf("Expected the removed note's entry to be soft deleted, got %d entries", len(entries))
+	}
+}
+
+func TestVaultTemplateIndexesWithoutProblems(t *testing.T) {
+	db := setupIndexerTestDB(t)
+	ctx := context.Background()
+
+	campaign := &models.Campaign{Name: "Template", System: "Generic"}
+	if err := repository.NewCampaignRepository(db).Create(ctx, campaign); err != nil {
+		t.Fatalf("Create campaign failed: %v", err)
+	}
+
+	result, err := NewIndexer("../../../vault-template", campaign.ID, db).Reindex(ctx)
+	if err != nil {
+		t.Fatalf("Reindex failed: %v", err)
+	}
+	if len(result.Errors) != 0 || len(result.UnresolvedWikilinks) != 0 {
+		t.Fatalf("template has problems: errors=%v unresolved=%v", result.Errors, result.UnresolvedWikilinks)
+	}
+
+	count := func(q string) int {
+		var n int
+		if err := db.QueryRowContext(ctx, q, campaign.ID).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+	for table, want := range map[string]int{
+		"arcs": 2, "locations": 5, "npcs": 3, "groups": 2, "player_characters": 1, "lore_entries": 2,
+	} {
+		if got := count(`SELECT COUNT(*) FROM ` + table + ` WHERE campaign_id = ? AND deleted_at IS NULL`); got != want {
+			t.Errorf("%s: expected %d, got %d", table, want, got)
+		}
+	}
+	if got := count(`SELECT COUNT(*) FROM sessions WHERE campaign_id = ? AND deleted_at IS NULL`); got != 4 {
+		t.Errorf("active sessions: expected 4, got %d", got)
+	}
+	if got := count(`SELECT COUNT(*) FROM sessions WHERE campaign_id = ? AND deleted_at IS NOT NULL`); got != 1 {
+		t.Errorf("archived sessions: expected 1, got %d", got)
+	}
+	if got := count(`SELECT COUNT(*) FROM npc_player_relations r JOIN npcs n ON n.id = r.npc_id WHERE n.campaign_id = ?`); got != 1 {
+		t.Errorf("npc_player_relations: expected 1, got %d", got)
+	}
+	if got := count(`SELECT COUNT(*) FROM player_characters WHERE campaign_id = ? AND historia_path IS NOT NULL AND avances_path IS NOT NULL`); got != 1 {
+		t.Errorf("history and progression notes should be attached, got %d", got)
 	}
 }

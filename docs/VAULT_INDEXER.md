@@ -22,7 +22,7 @@ render.go       Markdown → sanitized HTML
 ## Flow
 
 1. **Read.** For each note: detect type by folder, parse frontmatter, upsert by `(campaign_id, obsidian_path)`, register in the name index and store what needs resolving later.
-2. **Resolve.** With every note already in the index, resolve wikilinks: location parent, NPC location/factions/relation, PC spren/factions, arc and session mentions, faction leader, backstory/progression notes.
+2. **Resolve.** With every note already in the index, resolve wikilinks: location parent, NPC location/factions/relation, NPC links to PCs, PC factions, arc and session mentions, faction leader, backstory/progression notes.
 3. **Cleanup.** Entities whose `obsidian_path` no longer exists in the vault → soft delete (and their `vault_file_state` is removed).
 
 Done in two passes because a note can reference another that hasn't been read yet.
@@ -43,6 +43,7 @@ Only the top-level folder counts; subfolders are accepted.
 | `Sesiones/`   | sessions |
 | `Jugadores/`  | player_characters |
 | `Arcos/`      | arcs |
+| `Lore/`       | lore_entries |
 
 Any other folder is ignored. Excluded files: `CLAUDE.md`, `FORMAT.md`, `Primer Ideal.md`, `Método para crear NPCs.md`.
 
@@ -57,11 +58,12 @@ Wikilinks go in quotes in YAML: `"[[Name]]"`.
 | Key                 | Use |
 | ------------------- | --- |
 | `tipo`              | `npc_kind`: the type's key (`Monstruo Élite` → `monstruo-elite`). A `tipo` the campaign does not have yet is created automatically (label from the note, next free color; rename or recolor it in the app). `referencia` is reserved. Missing → error on that note |
-| `status`            | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` |
-| `etnia`, `rol`, `tipo_spren` | text |
+| `status`            | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado`. Missing → `activo`; any other value → error on that note |
+| `origen`, `rol`, `subtipo` | text. `etnia` and `tipo_spren` are still read as deprecated aliases of `origen` and `subtipo` (the new key wins) |
 | `current_location`  | wikilink to a location → `location_id` |
 | `faccion`           | **list** of wikilinks to groups → `npc_groups` |
 | `vinculo_con`       | wikilink to an NPC → `npc_relations` with role `vinculado_a` |
+| `vinculado_a`       | **list** of wikilinks to players → `npc_player_relations` (empty role; edit it in the app) |
 
 NPCs from the vault are created with `detail_level = full`.
 
@@ -69,7 +71,7 @@ NPCs from the vault are created with `detail_level = full`.
 
 | Key      | Use |
 | -------- | --- |
-| `tipo`   | `planeta` → planet, `región` → region, `ciudad` → city, `estructura` → site, `shadesmar` → plane. Any other value → error |
+| `tipo`   | `planeta` → planet, `región` → region, `ciudad` → city, `estructura` → site, `plano` → plane (`shadesmar` is still accepted as an alias). Any other value → error |
 | `parent` | wikilink to a location → `parent_location_id` |
 
 ### Groups
@@ -79,7 +81,7 @@ NPCs from the vault are created with `detail_level = full`.
 | `alineacion` | text |
 | `lider`      | wikilink to an NPC → `lider_npc_id` |
 
-`tipo`, `alcance`, `astilla`, `investidura` are read but not stored.
+`tipo` and `alcance` are read but not stored.
 
 ### Sessions
 
@@ -106,7 +108,6 @@ Depending on `tipo`:
   | `jugador`   | → `player_name` |
   | `raza`      | → `race` |
   | `status`    | `vivo` \| `muerto` \| `desaparecido` \| `activo`; other → `activo` |
-  | `spren`     | wikilink to an NPC → `spren_npc_id` |
   | `facciones` | list of wikilinks to groups → `pc_groups` |
 - `historia-jugador` / `avances` with `personaje: "[[PC]]"`: its path is stored in the PC's `historia_path` / `avances_path`.
 - Any other note (including `tipo: jugador` with `personaje`) is ignored.
@@ -120,6 +121,16 @@ Depending on `tipo`:
 | `titulo`           | → `title` |
 | `status`           | `planificado` \| `en curso` \| `cerrado`; other → `planificado` |
 | `mision_principal` | → `summary` |
+
+### Lore
+
+| Key        | Use |
+| ---------- | --- |
+| `tipo`     | lore category: its key comes from the label (`Historia` → `historia`). A category the campaign does not have yet is created automatically. No `tipo` → entry without category |
+| `arco`     | wikilink to an arc → `arc_id` |
+| `locacion` | wikilink to a location → `location_id` |
+
+The title is the file name. The text is not imported: the note is shown rendered from the entry's detail, and the database `body` stays the dashboard's. If the file disappears from the vault the entry is soft deleted.
 
 ### Quests
 
@@ -136,6 +147,12 @@ A wikilink is looked up by name and filtered by the type expected for that field
 ## Memberships and manual edits
 
 `npc_groups` / `pc_groups` track origin (`source`): the reindex only rewrites what came from the vault and respects what was added or removed from the dashboard. See `DATA_MODEL.md`.
+
+## Exporting a campaign
+
+`GET /api/campaigns/{id}/export` (Campaign settings → *Export campaign*) returns a `.zip` with every entity as a Markdown note: `Campaña.md`, plus one folder per type. The six folders the indexer reads (`NPC/`, `Locaciones/`, `Grupos/`, `Sesiones/`, `Jugadores/`, `Arcos/`) and `Lore/` use the same frontmatter keys as above, so an export can be dropped into a vault and reindexed. `Quests/`, `Secretos/`, `Notas/`, `Objetos/`, `Monedas/`, `Linea-de-tiempo/` and `Encuentros/` are written for backup and reading; the indexer ignores them.
+
+Images go to `Imagenes/<folder>/<note name>.<ext>` (one folder per type, named after the note), and the note links them with `imagen:` and an `![[...]]` embed. Every note ends with a rule (`---`) and an italic line with its creation and last edit dates (UTC). Not included: deleted items (the trash) and the access code. Code: `server/internal/export/`.
 
 ## Note rendering
 

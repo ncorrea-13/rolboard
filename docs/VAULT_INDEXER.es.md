@@ -22,7 +22,7 @@ render.go       Markdown → HTML sanitizado
 ## Flujo
 
 1. **Lectura.** Por cada nota: detectar tipo por carpeta, parsear frontmatter, upsert por `(campaign_id, obsidian_path)`, registrar en el índice de nombres y guardar lo que hay que resolver después.
-2. **Resolución.** Con todas las notas ya en el índice, resolver wikilinks: padre de locación, ubicación/facciones/vínculo de NPC, spren/facciones de PJ, arco y menciones de sesión, líder de facción, notas de historia/avances.
+2. **Resolución.** Con todas las notas ya en el índice, resolver wikilinks: padre de locación, ubicación/facciones/vínculo de NPC, vínculos de NPC con PJ, facciones de PJ, arco y menciones de sesión, líder de facción, notas de historia/avances.
 3. **Limpieza.** Entidades con `obsidian_path` que ya no existe en el vault → baja lógica (y se borra su `vault_file_state`).
 
 Se hace en dos pasadas porque una nota puede referenciar otra que todavía no se leyó.
@@ -43,6 +43,7 @@ Solo cuenta la carpeta de primer nivel; las subcarpetas se aceptan.
 | `Sesiones/`   | sessions |
 | `Jugadores/`  | player_characters |
 | `Arcos/`      | arcs |
+| `Lore/`       | lore_entries |
 
 Cualquier otra carpeta se ignora. Archivos excluidos: `CLAUDE.md`, `FORMAT.md`, `Primer Ideal.md`, `Método para crear NPCs.md`.
 
@@ -57,11 +58,12 @@ Los wikilinks van entre comillas en YAML: `"[[Nombre]]"`.
 | Clave              | Uso |
 | ------------------ | --- |
 | `tipo`             | `npc_kind`: la key del tipo (`Monstruo Élite` → `monstruo-elite`). Un `tipo` que la campaña aún no tiene se crea solo (etiqueta tomada de la nota, siguiente color libre; se renombra o recolorea en la app). `referencia` está reservado. Ausente → error en esa nota |
-| `status`           | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` |
-| `etnia`, `rol`, `tipo_spren` | texto |
+| `status`           | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado`. Falta → `activo`; otro valor → error en esa nota |
+| `origen`, `rol`, `subtipo` | texto. `etnia` y `tipo_spren` se siguen leyendo como alias deprecados de `origen` y `subtipo` (gana la key nueva) |
 | `current_location` | wikilink a locación → `location_id` |
 | `faccion`          | **lista** de wikilinks a grupos → `npc_groups` |
 | `vinculo_con`      | wikilink a NPC → `npc_relations` con rol `vinculado_a` |
+| `vinculado_a`      | **lista** de wikilinks a jugadores → `npc_player_relations` (rol vacío; se edita en la app) |
 
 Los NPCs del vault se crean con `detail_level = full`.
 
@@ -69,7 +71,7 @@ Los NPCs del vault se crean con `detail_level = full`.
 
 | Clave    | Uso |
 | -------- | --- |
-| `tipo`   | `planeta` → planet, `región` → region, `ciudad` → city, `estructura` → site, `shadesmar` → plane. Otro valor → error |
+| `tipo`   | `planeta` → planet, `región` → region, `ciudad` → city, `estructura` → site, `plano` → plane (`shadesmar` sigue valiendo como alias). Otro valor → error |
 | `parent` | wikilink a locación → `parent_location_id` |
 
 ### Grupos
@@ -79,7 +81,7 @@ Los NPCs del vault se crean con `detail_level = full`.
 | `alineacion` | texto |
 | `lider`      | wikilink a NPC → `lider_npc_id` |
 
-`tipo`, `alcance`, `astilla`, `investidura` se leen pero no se guardan.
+`tipo` y `alcance` se leen pero no se guardan.
 
 ### Sesiones
 
@@ -106,7 +108,6 @@ Según `tipo`:
   | `jugador`   | → `player_name` |
   | `raza`      | → `race` |
   | `status`    | `vivo` \| `muerto` \| `desaparecido` \| `activo`; otro → `activo` |
-  | `spren`     | wikilink a NPC → `spren_npc_id` |
   | `facciones` | lista de wikilinks a grupos → `pc_groups` |
 - `historia-jugador` / `avances` con `personaje: "[[PJ]]"`: se guarda su ruta en `historia_path` / `avances_path` del PJ.
 - Cualquier otra nota (incluida `tipo: jugador` con `personaje`) se ignora.
@@ -120,6 +121,16 @@ Según `tipo`:
 | `titulo`           | → `title` |
 | `status`           | `planificado` \| `en curso` \| `cerrado`; otro → `planificado` |
 | `mision_principal` | → `summary` |
+
+### Lore
+
+| Clave      | Uso |
+| ---------- | --- |
+| `tipo`     | categoría de lore: su clave sale de la etiqueta (`Historia` → `historia`). Una categoría que la campaña no tiene se crea sola. Sin `tipo` → entrada sin categoría |
+| `arco`     | wikilink a un arco → `arc_id` |
+| `locacion` | wikilink a una locación → `location_id` |
+
+El título es el nombre del archivo. El texto no se importa: la nota se ve renderizada desde el detalle de la entrada, y el `body` de la base sigue siendo del dashboard. Si el archivo desaparece del vault, la entrada se borra (soft delete).
 
 ### Quests
 
@@ -136,6 +147,12 @@ Un wikilink se busca por nombre y se filtra por el tipo esperado según el campo
 ## Membresías y ediciones manuales
 
 `npc_groups` / `pc_groups` distinguen origen (`source`): el reindex solo reescribe lo que vino del vault y respeta lo agregado o quitado desde el dashboard. Ver `DATA_MODEL.md`.
+
+## Exportar una campaña
+
+`GET /api/campaigns/{id}/export` (Ajustes de la campaña → *Exportar campaña*) devuelve un `.zip` con cada entidad como nota Markdown: `Campaña.md`, más una carpeta por tipo. Las seis carpetas que lee el indexador (`NPC/`, `Locaciones/`, `Grupos/`, `Sesiones/`, `Jugadores/`, `Arcos/`) y `Lore/` usan las mismas claves de frontmatter de arriba, así que un export se puede meter en un vault y reindexar. `Quests/`, `Secretos/`, `Notas/`, `Objetos/`, `Monedas/`, `Linea-de-tiempo/` y `Encuentros/` se escriben para respaldo y lectura; el indexador las ignora.
+
+Las imágenes van a `Imagenes/<carpeta>/<nombre de la nota>.<ext>` (una carpeta por tipo, con el nombre de la nota), y la nota las enlaza con `imagen:` y un embed `![[...]]`. Cada nota termina con una regla (`---`) y una línea en cursiva con sus fechas de creación y de última edición (UTC). No incluye: lo borrado (la papelera) ni el código de acceso. Código: `server/internal/export/`.
 
 ## Render de notas
 

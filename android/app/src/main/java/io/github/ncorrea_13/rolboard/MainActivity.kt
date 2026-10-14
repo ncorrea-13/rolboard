@@ -33,6 +33,7 @@ class MainActivity : Activity() {
     private val io = Executors.newCachedThreadPool()
     private val sync = Executors.newSingleThreadExecutor()
     private var pendingPick: Pair<String, String>? = null
+    private var pendingSave: Pair<String, String>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -153,8 +154,45 @@ class MainActivity : Activity() {
         startActivityForResult(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE), PICK_FOLDER)
     }
 
+    private fun saveFile(id: String, path: String, name: String) {
+        pendingSave = id to path
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/zip"
+            putExtra(Intent.EXTRA_TITLE, name)
+        }
+        startActivityForResult(intent, SAVE_FILE)
+    }
+
+    private fun finishSave(resultCode: Int, uri: Uri?) {
+        val (id, path) = pendingSave ?: return
+        pendingSave = null
+        if (resultCode != RESULT_OK || uri == null) {
+            deliverText(id, 204, "")
+            return
+        }
+        io.execute {
+            try {
+                val res = Mobile.request("GET", path, "", ByteArray(0))
+                if (res.status.toInt() != 200) {
+                    deliverText(id, res.status.toInt(), "export failed")
+                    return@execute
+                }
+                val out = contentResolver.openOutputStream(uri) ?: throw FileNotFoundException("no output stream")
+                out.use { it.write(res.body ?: ByteArray(0)) }
+                deliverText(id, 200, "")
+            } catch (e: Exception) {
+                deliverText(id, 500, e.message ?: "error")
+            }
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == SAVE_FILE) {
+            finishSave(resultCode, data?.data)
+            return
+        }
         if (requestCode != PICK_FOLDER) return
         val (id, kind) = pendingPick ?: return
         pendingPick = null
@@ -261,6 +299,11 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
+        fun saveFile(id: String, path: String, name: String) {
+            runOnUiThread { this@MainActivity.saveFile(id, path, name) }
+        }
+
+        @JavascriptInterface
         fun openExternal(url: String) {
             runOnUiThread { this@MainActivity.openExternal(url) }
         }
@@ -270,6 +313,7 @@ class MainActivity : Activity() {
         private val BACKGROUND = Color.parseColor("#07080A")
         private const val PICK_FOLDER = 1
         private const val PERMISSION_STORAGE = 2
+        private const val SAVE_FILE = 3
         private const val HOST = "rolboard.local"
         private const val ORIGIN = "https://$HOST"
         private const val CSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; " +

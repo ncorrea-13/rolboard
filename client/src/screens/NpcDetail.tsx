@@ -6,6 +6,7 @@ import {
   sessionCode,
   type Item,
   type Npc,
+  type PlayerCharacter,
 } from "../data/domain";
 import { CharacterSheet } from "../components/CharacterSheet";
 import { Inventory } from "../components/Inventory";
@@ -26,6 +27,7 @@ import type { CSSProperties } from "react";
 interface NpcDetailProps {
   npc: Npc;
   npcs: Npc[];
+  players: PlayerCharacter[];
   items: Item[];
   campaignId: string;
   vaultName: string;
@@ -38,6 +40,7 @@ interface NpcDetailProps {
 export function NpcDetail({
   npc,
   npcs,
+  players,
   items,
   campaignId,
   vaultName,
@@ -78,6 +81,20 @@ export function NpcDetail({
           })),
         ),
       )
+      .catch((err) => {
+        reportError("toast.errorLoading", err);
+      });
+  }, [npc.id]);
+
+  const [playerLinks, setPlayerLinks] = useState<
+    { player_character_id: number; role: string }[]
+  >([]);
+
+  useEffect(() => {
+    apiFetch<{ player_character_id: number; role: string }[]>(
+      `/npcs/${npc.id}/players`,
+    )
+      .then((data) => setPlayerLinks(data ?? []))
       .catch((err) => {
         reportError("toast.errorLoading", err);
       });
@@ -241,6 +258,27 @@ export function NpcDetail({
           </div>
           <AppearsIn
             groups={[
+              {
+                title: t("npcDetail.linkedPlayers"),
+                items: playerLinks.flatMap((l) => {
+                  const pc = players.find(
+                    (p) => p.id === String(l.player_character_id),
+                  );
+                  return pc
+                    ? [
+                        {
+                          key: `player-${pc.id}`,
+                          label: pc.characterName,
+                          hint: l.role || undefined,
+                          route: {
+                            name: "player-detail" as const,
+                            playerId: pc.id,
+                          },
+                        },
+                      ]
+                    : [];
+                }),
+              },
               sessionGroup(appears.sessions, t("npcDetail.appearances")),
               {
                 title: t("npcDetail.relatedQuests"),

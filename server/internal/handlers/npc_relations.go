@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/ncorrea-13/rolboard/server/internal/models"
 	"github.com/ncorrea-13/rolboard/server/internal/repository"
@@ -109,5 +110,103 @@ func (h *Handlers) DeleteNPCRelation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusNoContent)
+}
+
+type SetNPCPlayerLinkPayload struct {
+	Role string `json:"role"`
+}
+
+func (h *Handlers) ListNPCPlayerLinks(w http.ResponseWriter, r *http.Request) {
+	npcID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid npc id", http.StatusBadRequest)
+		return
+	}
+	links, err := h.npcs.ListPlayerLinks(r.Context(), npcID)
+	if err != nil {
+		internalError(w, err, "Error retrieving player links")
+		return
+	}
+	writeJSON(w, http.StatusOK, links)
+}
+
+func (h *Handlers) ListPlayerNPCLinks(w http.ResponseWriter, r *http.Request) {
+	pcID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid player character id", http.StatusBadRequest)
+		return
+	}
+	links, err := h.npcs.ListLinksOfPlayer(r.Context(), pcID)
+	if err != nil {
+		internalError(w, err, "Error retrieving npc links")
+		return
+	}
+	writeJSON(w, http.StatusOK, links)
+}
+
+func (h *Handlers) SetNPCPlayerLink(w http.ResponseWriter, r *http.Request) {
+	npcID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid npc id", http.StatusBadRequest)
+		return
+	}
+	pcID, err := strconv.ParseInt(r.PathValue("pcId"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid player character id", http.StatusBadRequest)
+		return
+	}
+	var payload SetNPCPlayerLinkPayload
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	npc, err := h.npcs.GetByID(r.Context(), npcID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "NPC not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving npc", http.StatusInternalServerError)
+		return
+	}
+	pc, err := h.playerCharacters.GetByID(r.Context(), pcID)
+	if errors.Is(err, repository.ErrNotFound) {
+		http.Error(w, "Player character not found", http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error retrieving player character", http.StatusInternalServerError)
+		return
+	}
+	if npc.CampaignID != pc.CampaignID {
+		http.Error(w, "NPC and player character must belong to the same campaign", http.StatusBadRequest)
+		return
+	}
+
+	link := models.NPCPlayerRelation{NPCID: npcID, PlayerCharacterID: pcID, Role: strings.TrimSpace(payload.Role)}
+	if err := h.npcs.SetPlayerLink(r.Context(), &link); err != nil {
+		internalError(w, err, "Error saving player link")
+		return
+	}
+	writeJSON(w, http.StatusOK, link)
+}
+
+func (h *Handlers) DeleteNPCPlayerLink(w http.ResponseWriter, r *http.Request) {
+	npcID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid npc id", http.StatusBadRequest)
+		return
+	}
+	pcID, err := strconv.ParseInt(r.PathValue("pcId"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid player character id", http.StatusBadRequest)
+		return
+	}
+	if err := h.npcs.RemovePlayerLink(r.Context(), npcID, pcID); err != nil {
+		internalError(w, err, "Error removing player link")
+		return
+	}
 	w.WriteHeader(http.StatusNoContent)
 }

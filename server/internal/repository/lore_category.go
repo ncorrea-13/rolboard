@@ -141,3 +141,25 @@ func CampaignIDByLoreCategory(ctx context.Context, db *sql.DB, id int64) (int64,
 	}
 	return campaignID, err
 }
+
+func (r *LoreCategoryRepository) Ensure(ctx context.Context, campaignID int64, key, label string) (*models.LoreCategory, error) {
+	var c models.LoreCategory
+	err := r.db.QueryRowContext(ctx,
+		`SELECT id, campaign_id, key, label, color, position FROM lore_categories WHERE campaign_id = ? AND key = ?`, campaignID, key,
+	).Scan(&c.ID, &c.CampaignID, &c.Key, &c.Label, &c.Color, &c.Position)
+	if err == nil {
+		return &c, nil
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
+	var count int
+	if err := r.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM lore_categories WHERE campaign_id = ?`, campaignID).Scan(&count); err != nil {
+		return nil, err
+	}
+	c = models.LoreCategory{CampaignID: campaignID, Key: key, Label: label, Color: autoTypeColors[count%len(autoTypeColors)]}
+	if err := r.Create(ctx, &c); err != nil {
+		return nil, err
+	}
+	return &c, nil
+}

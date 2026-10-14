@@ -12,7 +12,7 @@ campaigns
 │   └── sessions            (arc_id opcional)
 ├── locations               (jerárquicas: parent_location_id)
 ├── npcs                    (location_id opcional)
-├── player_characters       (spren_npc_id opcional)
+├── player_characters
 ├── groups                  (lider_npc_id opcional)
 ├── quests
 ├── encounters              (session_id opcional)
@@ -24,6 +24,7 @@ Tablas puente
 npc_groups      npc ↔ group        (role_in_group, source)
 pc_groups       pc ↔ group         (role_in_group, source)
 npc_relations   npc → npc          (role, dirigida)
+npc_player_relations npc ↔ pc     (role, source)
 session_npcs    session ↔ npc
 session_pcs     session ↔ pc
 session_quests  session ↔ quest
@@ -112,7 +113,7 @@ quest_npcs      quest ↔ npc        (rol)
 | detail_level       | `full` \| `minor` |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` \| `consolidado` \| `paused` |
 | location_id        | ubicación actual, opcional |
-| etnia, rol, tipo_spren | opcionales |
+| origen, rol, subtipo | opcionales, texto libre |
 | description, notes | |
 | attributes, skills | JSON |
 | current_hp, max_hp | opcionales; persisten entre combates |
@@ -127,7 +128,6 @@ quest_npcs      quest ↔ npc        (rol)
 | character_name     | |
 | race, class        | texto libre; `class` solo dashboard |
 | status             | `vivo` \| `muerto` \| `desaparecido` \| `activo` (default) |
-| spren_npc_id       | opcional, solo reindex |
 | description, backstory, progression_notes | solo dashboard; el reindex nunca los pisa (ni `class`) |
 | attributes, skills | JSON |
 | current_hp, max_hp | opcionales; persisten entre combates |
@@ -169,7 +169,7 @@ Lore por campaña. Las categorías siguen el patrón de `npc_types` (`key` deriv
 | body                   | Markdown |
 | category_id            | opcional; una categoría referenciada por alguna entrada (aun borrada) no se puede borrar |
 | arc_id, location_id    | opcionales, `ON DELETE RESTRICT` |
-| obsidian_path          | reservado para una carpeta `Lore/` del vault a futuro |
+| obsidian_path          | nota de la carpeta `Lore/` del vault; el reindex fija título, categoría, arco y locación, nunca `body` |
 
 ### currencies / items y sus bridges
 
@@ -259,13 +259,14 @@ PK `(campaign_id, path)`. Guarda `content_hash` (SHA-256), `entity_type`, `entit
 npc_groups     (npc_id, group_id, role_in_group, source)   PK (npc_id, group_id)
 pc_groups      (pc_id, group_id, role_in_group, source)    PK (pc_id, group_id)
 npc_relations  (from_npc_id, to_npc_id, role)              PK (from_npc_id, to_npc_id, role)
+npc_player_relations (npc_id, player_character_id, role, source) PK (npc_id, player_character_id)
 session_npcs   (session_id, npc_id)                        PK (session_id, npc_id)
 session_pcs    (session_id, pc_id)                         PK (session_id, pc_id)
 session_quests (session_id, quest_id)                      PK (session_id, quest_id)
 quest_npcs     (quest_id, npc_id, role)                    PK (quest_id, npc_id)
 ```
 
-`source` (`npc_groups`, `pc_groups`): `vault` | `dashboard` (default) | `removed`.
+`source` (`npc_groups`, `pc_groups`, `npc_player_relations`): `vault` | `dashboard` (default) | `removed`.
 
 - El reindex solo borra y reescribe filas `vault`.
 - Si el vault confirma una fila `dashboard`, pasa a `vault`; una `removed` sigue `removed`.

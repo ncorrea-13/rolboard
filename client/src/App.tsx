@@ -154,6 +154,7 @@ export default function App() {
     return !loc.help && loc.campaignId !== null;
   });
 
+  const [helpKey, setHelpKey] = useState(0);
   const [helpOpen, setHelpOpen] = useState(
     () => window.location.pathname === "/help",
   );
@@ -215,8 +216,12 @@ export default function App() {
   useEffect(() => bootFromUrl(), []);
 
   function openHelp() {
-    window.history.pushState({ help: true }, "", "/help");
     window.scrollTo(0, 0);
+    if (helpOpen) {
+      setHelpKey((k) => k + 1);
+      return;
+    }
+    window.history.pushState({ help: true }, "", "/help");
     withViewTransition(() => setHelpOpen(true), "help");
   }
 
@@ -621,7 +626,7 @@ export default function App() {
     return (
       <div className="app">
         <div className="app__stage">
-          <Help onBack={closeHelp} />
+          <Help key={helpKey} onBack={closeHelp} />
         </div>
         <SiteFooter onHelp={openHelp} />
       </div>
@@ -838,6 +843,7 @@ export default function App() {
                 <LoreDetail
                   key={entry.id}
                   entry={entry}
+                  campaignId={activeCampaignId!}
                   appearsIn={appearsForLore(entry.id, appearsCtx, t)}
                   category={loreCategories.find(
                     (c) => c.id === entry.categoryId,
@@ -1103,6 +1109,7 @@ export default function App() {
             <NpcDetail
               npc={selectedNpc}
               npcs={campaignNpcs}
+              players={campaignPlayerCharacters}
               items={items}
               campaignId={activeCampaignId!}
               vaultName={activeCampaign!.vaultPath}
@@ -1298,6 +1305,7 @@ export default function App() {
               key={selectedNpc.id}
               npc={selectedNpc}
               npcs={campaignNpcs}
+              players={campaignPlayerCharacters}
               locations={campaignLocations}
               npcTypesApi={npcTypesApi}
               onSave={(patch) => {
@@ -1320,6 +1328,7 @@ export default function App() {
             <NpcEdit
               npc={blankDrafts.npc}
               npcs={campaignNpcs}
+              players={campaignPlayerCharacters}
               locations={campaignLocations}
               npcTypesApi={npcTypesApi}
               onSave={createNpc}
@@ -1330,6 +1339,7 @@ export default function App() {
           {route.name === "player-detail" && selectedPlayer && (
             <PlayerDetail
               player={selectedPlayer}
+              npcs={campaignNpcs}
               items={items}
               campaignId={activeCampaignId!}
               vaultName={activeCampaign!.vaultPath}

@@ -14,6 +14,7 @@ var folderToEntityType = map[string]string{
 	"Sesiones":   "session",
 	"Jugadores":  "player_character",
 	"Arcos":      "arc",
+	"Lore":       "lore",
 }
 
 type ArcFrontmatter struct {
@@ -30,13 +31,23 @@ type ArcFrontmatter struct {
 type NPCFrontmatter struct {
 	Tipo            string   `yaml:"tipo"`
 	Status          string   `yaml:"status"`
+	Origen          string   `yaml:"origen,omitempty"`
 	Etnia           string   `yaml:"etnia,omitempty"`
 	Rol             string   `yaml:"rol,omitempty"`
 	Faccion         []string `yaml:"faccion,omitempty"`
 	VinculoCon      string   `yaml:"vinculo_con,omitempty"`
+	VinculadoA      []string `yaml:"vinculado_a,omitempty"`
+	Subtipo         string   `yaml:"subtipo,omitempty"`
 	TipoSpren       string   `yaml:"tipo_spren,omitempty"`
 	CurrentLocation string   `yaml:"current_location,omitempty"`
 	Tags            []string `yaml:"tags,omitempty"`
+}
+
+type LoreFrontmatter struct {
+	Tipo     string   `yaml:"tipo,omitempty"`
+	Arco     string   `yaml:"arco,omitempty"`
+	Locacion string   `yaml:"locacion,omitempty"`
+	Tags     []string `yaml:"tags,omitempty"`
 }
 
 type LocationFrontmatter struct {
@@ -49,13 +60,11 @@ type LocationFrontmatter struct {
 }
 
 type GroupFrontmatter struct {
-	Tipo        string   `yaml:"tipo"`
-	Alineacion  string   `yaml:"alineacion"`
-	Alcance     string   `yaml:"alcance,omitempty"`
-	Astilla     string   `yaml:"astilla,omitempty"`
-	Investidura string   `yaml:"investidura,omitempty"`
-	Lider       string   `yaml:"lider,omitempty"`
-	Tags        []string `yaml:"tags,omitempty"`
+	Tipo       string   `yaml:"tipo"`
+	Alineacion string   `yaml:"alineacion"`
+	Alcance    string   `yaml:"alcance,omitempty"`
+	Lider      string   `yaml:"lider,omitempty"`
+	Tags       []string `yaml:"tags,omitempty"`
 }
 
 type SessionFrontmatter struct {
@@ -74,7 +83,6 @@ type JugadorFrontmatter struct {
 	Tipo      string   `yaml:"tipo"`
 	Jugador   string   `yaml:"jugador"`
 	Personaje string   `yaml:"personaje"`
-	Spren     string   `yaml:"spren,omitempty"`
 	Origen    string   `yaml:"origen,omitempty"`
 	Raza      string   `yaml:"raza,omitempty"`
 	Facciones []string `yaml:"facciones,omitempty"`
@@ -95,6 +103,12 @@ func entityTypeForPath(relPath string) (string, bool) {
 
 func ParseNPC(raw []byte) (NPCFrontmatter, error) {
 	var fm NPCFrontmatter
+	err := yaml.Unmarshal(raw, &fm)
+	return fm, err
+}
+
+func ParseLore(raw []byte) (LoreFrontmatter, error) {
+	var fm LoreFrontmatter
 	err := yaml.Unmarshal(raw, &fm)
 	return fm, err
 }
