@@ -39,6 +39,14 @@ type InventoryEntry struct {
 	Notes    string `json:"notes"`
 }
 
+type ItemOwner struct {
+	Kind     string `json:"kind"`
+	OwnerID  int64  `json:"owner_id"`
+	Name     string `json:"name"`
+	Quantity int64  `json:"quantity"`
+	Notes    string `json:"notes"`
+}
+
 type ShopEntry struct {
 	ItemID int64   `json:"item_id"`
 	Name   string  `json:"name"`

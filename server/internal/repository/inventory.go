@@ -52,6 +52,34 @@ func (r *InventoryRepository) List(ctx context.Context, kind string, ownerID int
 	return entries, rows.Err()
 }
 
+func (r *InventoryRepository) ListOwners(ctx context.Context, itemID int64) ([]models.ItemOwner, error) {
+	rows, err := r.db.QueryContext(ctx, `
+		SELECT 'pc' AS kind, p.id AS owner_id, p.character_name AS name, inv.quantity, inv.notes
+		FROM pc_items inv
+		JOIN player_characters p ON p.id = inv.pc_id AND p.deleted_at IS NULL
+		WHERE inv.item_id = ?
+		UNION ALL
+		SELECT 'npc', n.id, n.name, inv.quantity, inv.notes
+		FROM npc_items inv
+		JOIN npcs n ON n.id = inv.npc_id AND n.deleted_at IS NULL
+		WHERE inv.item_id = ?
+		ORDER BY name`, itemID, itemID)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+
+	owners := []models.ItemOwner{}
+	for rows.Next() {
+		var o models.ItemOwner
+		if err := rows.Scan(&o.Kind, &o.OwnerID, &o.Name, &o.Quantity, &o.Notes); err != nil {
+			return nil, err
+		}
+		owners = append(owners, o)
+	}
+	return owners, rows.Err()
+}
+
 func (r *InventoryRepository) Set(ctx context.Context, kind string, ownerID, itemID, quantity int64, notes string) error {
 	t, ok := inventoryTables[kind]
 	if !ok {
