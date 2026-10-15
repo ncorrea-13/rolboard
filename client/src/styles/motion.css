@@ -214,3 +214,14 @@ html[data-motion="route"]::view-transition-group(.encounter-phase) {
     animation: none;
   }
 }
+
+html[data-motion="filter"] .vt,
+html[data-motion="filter"] .tl__item {
+  view-transition-name: var(--vt);
+  animation: none;
+}
+
+html[data-motion="filter"]::view-transition-old(page),
+html[data-motion="filter"]::view-transition-new(page) {
+  animation: none;
+}
