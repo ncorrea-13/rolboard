@@ -67,6 +67,10 @@ func (s *EconomyService) ListInventory(ctx context.Context, kind string, ownerID
 	return s.inventory.List(ctx, kind, ownerID)
 }
 
+func (s *EconomyService) ListItemOwners(ctx context.Context, itemID int64) ([]models.ItemOwner, error) {
+	return s.inventory.ListOwners(ctx, itemID)
+}
+
 func (s *EconomyService) SetInventory(ctx context.Context, kind string, ownerID, itemID, quantity int64, notes string) error {
 	return s.inventory.Set(ctx, kind, ownerID, itemID, quantity, notes)
 }

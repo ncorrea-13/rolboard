@@ -111,6 +111,21 @@ func TestInventoryAndShopUpsert(t *testing.T) {
 		t.Fatalf("Expected ErrUnknownOwnerKind, got %v", err)
 	}
 
+	npc := &models.NPC{CampaignID: campaignID, Name: "Aldric", NPCKind: "npc", DetailLevel: "minor", Status: "vivo"}
+	if err := NewNPCRepository(db).Create(ctx, npc); err != nil {
+		t.Fatalf("Create npc failed: %v", err)
+	}
+	if err := inventory.Set(ctx, "npc", npc.ID, item.ID, 1, ""); err != nil {
+		t.Fatalf("Set npc inventory failed: %v", err)
+	}
+	owners, err := inventory.ListOwners(ctx, item.ID)
+	if err != nil || len(owners) != 2 {
+		t.Fatalf("Expected 2 owners, got %+v (%v)", owners, err)
+	}
+	if owners[0].Kind != "npc" || owners[0].Name != "Aldric" || owners[1].Kind != "pc" || owners[1].Quantity != 5 {
+		t.Fatalf("Unexpected owners (ordered by name): %+v", owners)
+	}
+
 	if err := shops.Set(ctx, loc.ID, item.ID, "stock limitado", []models.Price{{CurrencyID: cur.ID, Amount: 12}}); err != nil {
 		t.Fatalf("Set shop failed: %v", err)
 	}

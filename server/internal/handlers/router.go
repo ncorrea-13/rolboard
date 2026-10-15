@@ -105,6 +105,7 @@ func NewRouter(h *Handlers) http.Handler {
 	mux.Handle("GET /api/items/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("items"), h.GetItem)))
 	mux.Handle("PUT /api/items/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("items"), h.UpdateItem)))
 	mux.Handle("DELETE /api/items/{id}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("items"), h.DeleteItem)))
+	mux.Handle("GET /api/items/{id}/owners", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("items"), h.ListItemOwners)))
 	pcList, pcSet, pcRemove := h.inventoryHandlers("pc")
 	mux.Handle("GET /api/player-characters/{id}/items", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), pcList)))
 	mux.Handle("PUT /api/player-characters/{id}/items/{itemId}", http.HandlerFunc(h.requireCampaign(h.resolveViaTable("player_characters"), pcSet)))

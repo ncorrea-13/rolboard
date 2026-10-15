@@ -269,6 +269,7 @@ POST   /api/campaigns/{id}/items           {"name", "description", "effect", "ca
 GET    /api/items/{id}
 PUT    /api/items/{id}
 DELETE /api/items/{id}
+GET    /api/items/{id}/owners              quién lo tiene: [{"kind": "pc"|"npc", "owner_id", "name", "quantity", "notes"}], por nombre
 
 GET    /api/player-characters/{id}/items   inventario de un PJ
 PUT    /api/player-characters/{id}/items/{itemId}   {"quantity", "notes"}   idempotente

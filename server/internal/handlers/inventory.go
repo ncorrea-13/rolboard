@@ -116,6 +116,20 @@ func (h *Handlers) inventoryHandlers(kind string) (list, set, remove http.Handle
 	return list, set, remove
 }
 
+func (h *Handlers) ListItemOwners(w http.ResponseWriter, r *http.Request) {
+	itemID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+	owners, err := h.economy.ListItemOwners(r.Context(), itemID)
+	if err != nil {
+		internalError(w, err, "Error retrieving item owners")
+		return
+	}
+	writeJSON(w, http.StatusOK, owners)
+}
+
 func (h *Handlers) ListShop(w http.ResponseWriter, r *http.Request) {
 	locationID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
