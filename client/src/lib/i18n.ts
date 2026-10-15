@@ -634,6 +634,8 @@ const dict = {
     "timeline.sortKeyHint":
       "Ordena la línea de tiempo: -3000, 0, 1174.5. La fecha de arriba es solo para mostrar.",
     "timeline.session": "Sesión",
+    "timeline.noDescription": "Sin descripción.",
+    "timeline.date": "Fecha",
     "timeline.faction": "Facción",
     "timeline.loreEntry": "Entrada de lore",
     "timeline.none": "— ninguna —",
@@ -1373,6 +1375,8 @@ const dict = {
     "timeline.sortKeyHint":
       "Sorts the timeline: -3000, 0, 1174.5. The date above is display-only.",
     "timeline.session": "Session",
+    "timeline.noDescription": "No description.",
+    "timeline.date": "Date",
     "timeline.faction": "Faction",
     "timeline.loreEntry": "Lore entry",
     "timeline.none": "— none —",
