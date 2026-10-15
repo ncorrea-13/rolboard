@@ -78,8 +78,11 @@ export function LoreDetail({
           </button>
         </div>
       </div>
-      <div className="npc-edit__body">
-        <div className="npc-edit__col">
+      <div className="detail-split">
+        <div className="detail-split__main">
+          {imageUrl && (
+            <img className="lore-detail__image" src={imageUrl} alt="" />
+          )}
           {entry.body ? (
             <MarkdownText className="npc-detail__desc" text={entry.body} />
           ) : (
@@ -88,40 +91,39 @@ export function LoreDetail({
             </span>
           )}
         </div>
-        <div className="npc-edit__col">
-          {imageUrl && (
-            <img className="lore-detail__image" src={imageUrl} alt="" />
-          )}
-          {arc && (
-            <div>
-              <span className="label">{t("loreEdit.arc")}</span>
+        {(arc || location || appearsIn.length > 0) && (
+          <aside className="detail-split__aside">
+            {arc && (
               <div>
-                <Link
-                  route={{ name: "entity-detail", kind: "arc", id: arc.id }}
-                >
-                  {arc.label}
-                </Link>
+                <span className="label">{t("loreEdit.arc")}</span>
+                <div>
+                  <Link
+                    route={{ name: "entity-detail", kind: "arc", id: arc.id }}
+                  >
+                    {arc.label}
+                  </Link>
+                </div>
               </div>
-            </div>
-          )}
-          {location && (
-            <div>
-              <span className="label">{t("loreEdit.location")}</span>
+            )}
+            {location && (
               <div>
-                <Link
-                  route={{
-                    name: "entity-detail",
-                    kind: "location",
-                    id: location.id,
-                  }}
-                >
-                  {locationBreadcrumb(location, locations)}
-                </Link>
+                <span className="label">{t("loreEdit.location")}</span>
+                <div>
+                  <Link
+                    route={{
+                      name: "entity-detail",
+                      kind: "location",
+                      id: location.id,
+                    }}
+                  >
+                    {locationBreadcrumb(location, locations)}
+                  </Link>
+                </div>
               </div>
-            </div>
-          )}
-          <AppearsIn groups={appearsIn} />
-        </div>
+            )}
+            <AppearsIn groups={appearsIn} />
+          </aside>
+        )}
       </div>
     </div>
   );
