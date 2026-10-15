@@ -13,6 +13,7 @@ import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
 import { Link } from "../components/Link";
 import { excerpt } from "../lib/excerpt";
+import { withViewTransition } from "../lib/motion";
 
 interface SecretsListProps {
   secrets: Secret[];
@@ -80,7 +81,12 @@ export function SecretsList({
             key={s}
             className={`npc-list__filter-chip${status === s ? " npc-list__filter-chip--active" : ""}`}
             style={{ "--c": secretTone[s] } as CSSProperties}
-            onClick={() => setStatus(status === s ? null : s)}
+            onClick={() =>
+              withViewTransition(
+                () => setStatus(status === s ? null : s),
+                "filter",
+              )
+            }
           >
             {t(s === "hidden" ? "secret.hidden" : "secret.revealed")}
             {s === "hidden" ? ` (${hiddenCount})` : ""}
@@ -109,8 +115,13 @@ export function SecretsList({
           return (
             <div
               key={s.id}
-              className={`secret-card secret-card--${s.status}`}
-              style={{ "--c": secretTone[s.status] } as CSSProperties}
+              className={`secret-card secret-card--${s.status} vt`}
+              style={
+                {
+                  "--c": secretTone[s.status],
+                  "--vt": `secret-${s.id}`,
+                } as CSSProperties
+              }
             >
               <Link
                 className="secret-card__link"

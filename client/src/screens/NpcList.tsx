@@ -16,6 +16,7 @@ import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 import type { CSSProperties } from "react";
 import { Link } from "../components/Link";
+import { withViewTransition } from "../lib/motion";
 
 const statusFilters: StatusKind[] = ["alive", "dead", "missing", "paused"];
 
@@ -49,23 +50,27 @@ export function NpcList({
   );
 
   function toggleType(crystal: string) {
-    setActiveTypes((prev) => {
-      const next = new Set(prev);
-      if (next.has(crystal)) next.delete(crystal);
-      else next.add(crystal);
-      return next;
-    });
-    setPage(1);
+    withViewTransition(() => {
+      setActiveTypes((prev) => {
+        const next = new Set(prev);
+        if (next.has(crystal)) next.delete(crystal);
+        else next.add(crystal);
+        return next;
+      });
+      setPage(1);
+    }, "filter");
   }
 
   function toggleStatus(status: StatusKind) {
-    setActiveStatuses((prev) => {
-      const next = new Set(prev);
-      if (next.has(status)) next.delete(status);
-      else next.add(status);
-      return next;
-    });
-    setPage(1);
+    withViewTransition(() => {
+      setActiveStatuses((prev) => {
+        const next = new Set(prev);
+        if (next.has(status)) next.delete(status);
+        else next.add(status);
+        return next;
+      });
+      setPage(1);
+    }, "filter");
   }
 
   const filtered = useMemo(() => {
@@ -174,8 +179,13 @@ export function NpcList({
           return (
             <Link
               key={n.id}
-              className="npc-card"
-              style={{ "--c": crystalColorFor(n.crystal) } as CSSProperties}
+              className="npc-card vt"
+              style={
+                {
+                  "--c": crystalColorFor(n.crystal),
+                  "--vt": `npc-${n.id}`,
+                } as CSSProperties
+              }
               route={{ name: "npc-detail", npcId: n.id }}
             >
               <span className="npc-card__portrait">

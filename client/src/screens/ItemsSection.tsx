@@ -27,6 +27,7 @@ import { reportError } from "../lib/notify";
 import { Link } from "../components/Link";
 import { useT } from "../lib/i18n";
 import { CurrenciesView } from "./CurrenciesView";
+import { withViewTransition } from "../lib/motion";
 
 type ItemsTab = "items" | "currencies";
 const TAB_STORAGE_KEY = "rolboard.itemsTab";
@@ -380,12 +381,14 @@ function ItemsList({
   }, [items, search, activeCategories]);
 
   function toggle(category: string) {
-    setActiveCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(category)) next.delete(category);
-      else next.add(category);
-      return next;
-    });
+    withViewTransition(() => {
+      setActiveCategories((prev) => {
+        const next = new Set(prev);
+        if (next.has(category)) next.delete(category);
+        else next.add(category);
+        return next;
+      });
+    }, "filter");
   }
 
   return (
@@ -446,7 +449,8 @@ function ItemsList({
             <button
               key={i.id}
               type="button"
-              className="item-card"
+              className="item-card vt"
+              style={{ "--vt": `item-${i.id}` } as CSSProperties}
               onClick={() => setEditing(i)}
             >
               {imageUrl && (

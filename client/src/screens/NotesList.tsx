@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import "../styles/list.css";
 import "./NpcEdit.css";
 import { formatDate, type LooseNote } from "../data/domain";
 import { useT } from "../lib/i18n";
 import { MarkdownText } from "../components/MarkdownText";
 import { Link } from "../components/Link";
+import { withViewTransition } from "../lib/motion";
 
 interface NotesListProps {
   notes: LooseNote[];
@@ -58,14 +59,18 @@ export function NotesList({
         <button
           type="button"
           className={`npc-edit__type-chip${!onlyPending ? " npc-edit__type-chip--active" : ""}`}
-          onClick={() => setOnlyPending(false)}
+          onClick={() =>
+            withViewTransition(() => setOnlyPending(false), "filter")
+          }
         >
           {t("notesList.filterAll")}
         </button>
         <button
           type="button"
           className={`npc-edit__type-chip${onlyPending ? " npc-edit__type-chip--active" : ""}`}
-          onClick={() => setOnlyPending(true)}
+          onClick={() =>
+            withViewTransition(() => setOnlyPending(true), "filter")
+          }
         >
           {t("notesList.filterPending")}
         </button>
@@ -81,7 +86,8 @@ export function NotesList({
           .map((n) => (
             <div
               key={n.id}
-              className={`list-page__row list-page__row--clickable${n.pending ? " note-row--pending" : ""}`}
+              className={`list-page__row list-page__row--clickable vt${n.pending ? " note-row--pending" : ""}`}
+              style={{ "--vt": `note-${n.id}` } as CSSProperties}
             >
               <Link
                 className="note-row__link"
