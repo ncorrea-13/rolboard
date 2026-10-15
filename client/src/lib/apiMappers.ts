@@ -22,6 +22,7 @@ import {
   type Item,
   type ItemPrice,
   type InventoryEntry,
+  type ItemOwner,
   type ShopEntry,
   type TimelineEvent,
   type SessionType,
@@ -878,6 +879,24 @@ export function mapInventoryEntry(e: ApiInventoryEntry): InventoryEntry {
     name: e.name,
     quantity: e.quantity,
     notes: e.notes,
+  };
+}
+
+export interface ApiItemOwner {
+  kind: "pc" | "npc";
+  owner_id: number;
+  name: string;
+  quantity: number;
+  notes: string;
+}
+
+export function mapItemOwner(o: ApiItemOwner): ItemOwner {
+  return {
+    kind: o.kind,
+    ownerId: String(o.owner_id),
+    name: o.name,
+    quantity: o.quantity,
+    notes: o.notes,
   };
 }
 

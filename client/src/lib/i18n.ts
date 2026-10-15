@@ -153,6 +153,7 @@ const dict = {
     "items.weight": "Peso",
     "items.effect": "Qué hace",
     "items.prices": "Precios",
+    "items.heldBy": "Lo tienen",
     "items.empty":
       "El inventario está vacío. Agregá el primer objeto con «Nuevo objeto».",
     "currencies.title": "Monedas",
@@ -893,6 +894,7 @@ const dict = {
     "items.weight": "Weight",
     "items.effect": "What it does",
     "items.prices": "Prices",
+    "items.heldBy": "Held by",
     "items.empty":
       "The inventory is empty. Add the first item with “New item”.",
     "currencies.title": "Currencies",

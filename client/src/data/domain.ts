@@ -522,6 +522,14 @@ export interface InventoryEntry {
   notes: string;
 }
 
+export interface ItemOwner {
+  kind: "pc" | "npc";
+  ownerId: string;
+  name: string;
+  quantity: number;
+  notes: string;
+}
+
 export interface ShopEntry {
   itemId: string;
   name: string;
