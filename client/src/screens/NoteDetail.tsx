@@ -51,7 +51,7 @@ export function NoteDetail({
           </button>
         </div>
       </div>
-      <div className="npc-edit__body">
+      <div className="npc-edit__body npc-edit__body--single">
         <div className="npc-edit__col">
           {note.body ? (
             <MarkdownText className="npc-detail__desc" text={note.body} />

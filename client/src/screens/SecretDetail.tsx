@@ -81,8 +81,8 @@ export function SecretDetail({
           </button>
         </div>
       </div>
-      <div className="npc-edit__body">
-        <div className="npc-edit__col">
+      <div className="detail-split">
+        <div className="detail-split__main">
           {secret.body ? (
             <MarkdownText className="npc-detail__desc" text={secret.body} />
           ) : (
@@ -91,7 +91,7 @@ export function SecretDetail({
             </span>
           )}
         </div>
-        <div className="npc-edit__col">
+        <aside className="detail-split__aside">
           {session && (
             <div>
               <span className="label">{t("secretEdit.revealedIn")}</span>
@@ -153,7 +153,7 @@ export function SecretDetail({
               <div className="npc-edit__hint">{t("secretDetail.nobody")}</div>
             )}
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

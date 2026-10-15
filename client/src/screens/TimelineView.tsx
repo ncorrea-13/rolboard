@@ -109,6 +109,11 @@ export function TimelineView({
       .sort((a, b) => a.sortKey - b.sortKey || Number(a.id) - Number(b.id));
   }, [events, search, activeTimelines, groupId, locationId, locations]);
 
+  const activeTimeline =
+    activeTimelines.size === 1
+      ? timelines.find((tl) => activeTimelines.has(tl.id))
+      : undefined;
+
   const hasFilters =
     search !== "" || activeTimelines.size > 0 || groupId || locationId;
 
@@ -196,6 +201,22 @@ export function TimelineView({
           </button>
         )}
       </div>
+
+      {activeTimeline?.description && (
+        <div
+          className="tl__about"
+          style={{ "--c": activeTimeline.color } as CSSProperties}
+        >
+          <div className="tl__about-head">
+            <span className="tl__about-dot" aria-hidden="true" />
+            <span className="label">{activeTimeline.name}</span>
+          </div>
+          <MarkdownText
+            className="npc-detail__desc"
+            text={activeTimeline.description}
+          />
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="npc-list__empty">

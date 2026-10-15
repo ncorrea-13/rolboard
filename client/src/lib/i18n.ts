@@ -153,6 +153,7 @@ const dict = {
     "items.weight": "Peso",
     "items.effect": "Qué hace",
     "items.prices": "Precios",
+    "items.heldBy": "Lo tienen",
     "items.empty":
       "El inventario está vacío. Agregá el primer objeto con «Nuevo objeto».",
     "currencies.title": "Monedas",
@@ -634,6 +635,8 @@ const dict = {
     "timeline.sortKeyHint":
       "Ordena la línea de tiempo: -3000, 0, 1174.5. La fecha de arriba es solo para mostrar.",
     "timeline.session": "Sesión",
+    "timeline.noDescription": "Sin descripción.",
+    "timeline.date": "Fecha",
     "timeline.faction": "Facción",
     "timeline.loreEntry": "Entrada de lore",
     "timeline.none": "— ninguna —",
@@ -891,6 +894,7 @@ const dict = {
     "items.weight": "Weight",
     "items.effect": "What it does",
     "items.prices": "Prices",
+    "items.heldBy": "Held by",
     "items.empty":
       "The inventory is empty. Add the first item with “New item”.",
     "currencies.title": "Currencies",
@@ -1373,6 +1377,8 @@ const dict = {
     "timeline.sortKeyHint":
       "Sorts the timeline: -3000, 0, 1174.5. The date above is display-only.",
     "timeline.session": "Session",
+    "timeline.noDescription": "No description.",
+    "timeline.date": "Date",
     "timeline.faction": "Faction",
     "timeline.loreEntry": "Lore entry",
     "timeline.none": "— none —",

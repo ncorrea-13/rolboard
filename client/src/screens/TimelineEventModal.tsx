@@ -2,6 +2,8 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import { Modal } from "../components/Modal";
 import { MarkdownField } from "../components/MarkdownField";
+import { MarkdownText } from "../components/MarkdownText";
+import { Link } from "../components/Link";
 import {
   locationBreadcrumb,
   sessionCode,
@@ -58,6 +60,7 @@ export function TimelineEventModal({
   const [groupId, setGroupId] = useState(event?.groupId ?? "");
   const [loreEntryId, setLoreEntryId] = useState(event?.loreEntryId ?? "");
   const [saving, setSaving] = useState(false);
+  const [viewing, setViewing] = useState(event !== null);
 
   const parsedKey = Number(sortKey.replace(",", "."));
   const keyValid = sortKey.trim() !== "" && Number.isFinite(parsedKey);
@@ -101,6 +104,98 @@ export function TimelineEventModal({
           </option>
         ))}
       </select>
+    );
+  }
+
+  if (viewing && event) {
+    const timeline = timelines.find((x) => x.id === event.timelineId);
+    const arc = arcs.find((a) => a.id === event.arcId);
+    const session = sessions.find((x) => x.id === event.sessionId);
+    const location = locations.find((l) => l.id === event.locationId);
+    const group = groups.find((g) => g.id === event.groupId);
+    const lore = loreEntries.find((l) => l.id === event.loreEntryId);
+    const dates = [event.dateLabel, event.endDateLabel]
+      .filter(Boolean)
+      .join(" → ");
+    const links = [
+      arc && {
+        label: t("loreEdit.arc"),
+        text: arc.label,
+        route: { name: "entity-detail", kind: "arc", id: arc.id } as const,
+      },
+      session && {
+        label: t("timeline.session"),
+        text: sessionCode(session),
+        route: { name: "session-detail", sessionId: session.id } as const,
+      },
+      location && {
+        label: t("loreEdit.location"),
+        text: locationBreadcrumb(location, locations),
+        route: {
+          name: "entity-detail",
+          kind: "location",
+          id: location.id,
+        } as const,
+      },
+      group && {
+        label: t("timeline.faction"),
+        text: group.name,
+        route: {
+          name: "entity-detail",
+          kind: "faction",
+          id: group.id,
+        } as const,
+      },
+      lore && {
+        label: t("timeline.loreEntry"),
+        text: lore.title,
+        route: { name: "lore-detail", entryId: lore.id } as const,
+      },
+    ].filter((x): x is NonNullable<typeof x> => Boolean(x));
+    const facts = [
+      dates ? { label: t("timeline.date"), text: dates } : undefined,
+      timeline && { label: t("timeline.timeline"), text: timeline.name },
+    ].filter((x): x is NonNullable<typeof x> => Boolean(x));
+    return (
+      <Modal title={event.title} onClose={onClose} size="sheet">
+        {facts.length > 0 && (
+          <div className="detail-meta detail-meta--top">
+            {facts.map((f) => (
+              <div key={f.label}>
+                <span className="label">{f.label}</span>
+                <div>{f.text}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {event.description ? (
+          <MarkdownText className="npc-detail__desc" text={event.description} />
+        ) : (
+          <span style={{ color: "var(--text-secondary)" }}>
+            {t("timeline.noDescription")}
+          </span>
+        )}
+        {links.length > 0 && (
+          <div className="detail-meta detail-meta--bottom">
+            {links.map((l) => (
+              <div key={l.label}>
+                <span className="label">{l.label}</span>
+                <div>
+                  <Link route={l.route}>{l.text}</Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button className="btn btn-secondary" onClick={onClose}>
+            {t("common.close")}
+          </button>
+          <button className="btn btn-primary" onClick={() => setViewing(false)}>
+            {t("common.edit")}
+          </button>
+        </div>
+      </Modal>
     );
   }
 
