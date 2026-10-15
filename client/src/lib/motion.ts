@@ -13,6 +13,8 @@ export function withViewTransition(update: () => void, kind: MotionKind) {
   const root = document.documentElement;
   root.dataset.motion = kind;
   const transition = document.startViewTransition(() => flushSync(update));
+  transition.ready.catch(() => {});
+  transition.updateCallbackDone.catch(() => {});
   transition.finished
     .catch(() => {})
     .finally(() => {
