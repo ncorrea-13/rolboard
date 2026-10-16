@@ -152,3 +152,29 @@
     flex: 1 1 140px;
   }
 }
+
+.tl__about {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+}
+
+.tl__about-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tl__about-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--c);
+  flex: none;
+}
+
+.tl__about .npc-detail__desc {
+  margin-top: 6px;
+}

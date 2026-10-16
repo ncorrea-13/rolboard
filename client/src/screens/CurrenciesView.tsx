@@ -42,6 +42,7 @@ function CurrencyModal({
     currency?.locationIds ?? [],
   );
   const [saving, setSaving] = useState(false);
+  const [viewing, setViewing] = useState(currency !== null);
 
   const parsedRate =
     rate.trim() === "" ? undefined : Number(rate.replace(",", "."));
@@ -62,6 +63,56 @@ function CurrencyModal({
     });
     setSaving(false);
     if (ok) onClose();
+  }
+
+  if (viewing && currency) {
+    const places = currency.locationIds
+      .map((id) => locations.find((l) => l.id === id))
+      .filter((l): l is Location => Boolean(l));
+    const value = currency.isBase
+      ? t("currencies.base")
+      : currency.rateToBase != null
+        ? `1 ${currency.name} = ${currency.rateToBase} ${base?.name ?? ""}`.trim()
+        : "";
+    return (
+      <Modal
+        title={`${currency.symbol} ${currency.name}`.trim()}
+        onClose={onClose}
+        size="sheet"
+      >
+        {value && (
+          <div className="detail-meta detail-meta--top">
+            <div>
+              <span className="label">{t("currencies.rate")}</span>
+              <div>{value}</div>
+            </div>
+          </div>
+        )}
+        {places.length > 0 && (
+          <div>
+            <span className="label">{t("currencies.circulatesIn")}</span>
+            <div
+              className="npc-edit__type-row"
+              style={{ flexWrap: "wrap", marginTop: 6 }}
+            >
+              {places.map((l) => (
+                <span key={l.id} className="npc-edit__type-chip">
+                  {locationBreadcrumb(l, locations)}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button className="btn btn-secondary" onClick={onClose}>
+            {t("common.close")}
+          </button>
+          <button className="btn btn-primary" onClick={() => setViewing(false)}>
+            {t("common.edit")}
+          </button>
+        </div>
+      </Modal>
+    );
   }
 
   return (

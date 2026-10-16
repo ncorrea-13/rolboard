@@ -15,6 +15,7 @@ import {
 import type { TimelineEventValues } from "../lib/apiMappers";
 import type { TimelineValues } from "../hooks/useTimeline";
 import { useT } from "../lib/i18n";
+import { withViewTransition } from "../lib/motion";
 import { MarkdownText } from "../components/MarkdownText";
 import { TimelineManager } from "./TimelineManager";
 import { TimelineEventModal } from "./TimelineEventModal";
@@ -77,12 +78,16 @@ export function TimelineView({
   const [editing, setEditing] = useState<TimelineEvent | "new" | null>(null);
 
   function toggleTimeline(id: string) {
-    setActiveTimelines((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    withViewTransition(
+      () =>
+        setActiveTimelines((prev) => {
+          const next = new Set(prev);
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          return next;
+        }),
+      "filter",
+    );
   }
 
   const filtered = useMemo(() => {
@@ -109,14 +114,21 @@ export function TimelineView({
       .sort((a, b) => a.sortKey - b.sortKey || Number(a.id) - Number(b.id));
   }, [events, search, activeTimelines, groupId, locationId, locations]);
 
+  const activeTimeline =
+    activeTimelines.size === 1
+      ? timelines.find((tl) => activeTimelines.has(tl.id))
+      : undefined;
+
   const hasFilters =
     search !== "" || activeTimelines.size > 0 || groupId || locationId;
 
   function clearFilters() {
-    setSearch("");
-    setActiveTimelines(new Set());
-    setGroupId("");
-    setLocationId("");
+    withViewTransition(() => {
+      setSearch("");
+      setActiveTimelines(new Set());
+      setGroupId("");
+      setLocationId("");
+    }, "filter");
   }
 
   return (
@@ -169,7 +181,10 @@ export function TimelineView({
         <select
           className="tl-filter"
           value={groupId}
-          onChange={(e) => setGroupId(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value;
+            withViewTransition(() => setGroupId(v), "filter");
+          }}
         >
           <option value="">{t("timeline.allFactions")}</option>
           {groups.map((g) => (
@@ -181,7 +196,10 @@ export function TimelineView({
         <select
           className="tl-filter"
           value={locationId}
-          onChange={(e) => setLocationId(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value;
+            withViewTransition(() => setLocationId(v), "filter");
+          }}
         >
           <option value="">{t("timeline.allLocations")}</option>
           {locations.map((l) => (
@@ -196,6 +214,22 @@ export function TimelineView({
           </button>
         )}
       </div>
+
+      {activeTimeline?.description && (
+        <div
+          className="tl__about"
+          style={{ "--c": activeTimeline.color } as CSSProperties}
+        >
+          <div className="tl__about-head">
+            <span className="tl__about-dot" aria-hidden="true" />
+            <span className="label">{activeTimeline.name}</span>
+          </div>
+          <MarkdownText
+            className="npc-detail__desc"
+            text={activeTimeline.description}
+          />
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="npc-list__empty">
@@ -222,7 +256,7 @@ export function TimelineView({
               <li
                 key={e.id}
                 className="tl__item"
-                style={{ "--c": color } as CSSProperties}
+                style={{ "--c": color, "--vt": `tl-${e.id}` } as CSSProperties}
               >
                 <div className="tl__date">
                   <span>{e.dateLabel || "—"}</span>

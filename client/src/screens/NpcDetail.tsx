@@ -22,6 +22,7 @@ import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
 import { reportError } from "../lib/notify";
 import { MarkdownText } from "../components/MarkdownText";
+import { Link } from "../components/Link";
 import type { CSSProperties } from "react";
 
 interface NpcDetailProps {
@@ -240,14 +241,31 @@ export function NpcDetail({
                 <span key={`${i}:${part}`}>
                   {i > 0 && <>{" ".repeat(i * 3)}└ </>}
                   {i === locationParts.length - 1 ? (
-                    <span
-                      style={{
-                        color: "var(--crystal-location)",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {part}
-                    </span>
+                    npc.locationId ? (
+                      <Link
+                        className="link-inline"
+                        route={{
+                          name: "entity-detail",
+                          kind: "location",
+                          id: npc.locationId,
+                        }}
+                        style={{
+                          color: "var(--crystal-location)",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {part}
+                      </Link>
+                    ) : (
+                      <span
+                        style={{
+                          color: "var(--crystal-location)",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {part}
+                      </span>
+                    )
                   ) : (
                     part
                   )}

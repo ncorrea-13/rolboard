@@ -8,6 +8,7 @@ import {
 } from "../data/domain";
 import { Crack } from "../components/Crack";
 import { MarkdownText } from "../components/MarkdownText";
+import { Link } from "../components/Link";
 import { RenderedNoteButton } from "../components/RenderedNoteButton";
 import { useSessionExpectations } from "../hooks/useSessionExpectations";
 import { useT } from "../lib/i18n";
@@ -48,7 +49,19 @@ export function SessionDetail({
       <header className="session-detail__head">
         <div className="session-detail__titles">
           <div className="session-detail__over">
-            {arc ? `${arc.label} · ${code}` : code}
+            {arc ? (
+              <>
+                <Link
+                  className="link-inline"
+                  route={{ name: "entity-detail", kind: "arc", id: arc.id }}
+                >
+                  {arc.label}
+                </Link>
+                {` · ${code}`}
+              </>
+            ) : (
+              code
+            )}
           </div>
           <div className="display page-title" role="heading" aria-level={1}>
             {session.title || code}
@@ -122,9 +135,13 @@ export function SessionDetail({
               <h2 className="label">{t("planSession.expectedNpcs")}</h2>
               <div className="session-detail__chips">
                 {npcs.map((n) => (
-                  <span key={n.npc_id} className="session-detail__chip">
+                  <Link
+                    key={n.npc_id}
+                    className="link-inline session-detail__chip"
+                    route={{ name: "npc-detail", npcId: String(n.npc_id) }}
+                  >
                     {n.name}
-                  </span>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -134,9 +151,17 @@ export function SessionDetail({
               <h2 className="label">{t("planSession.expectedQuests")}</h2>
               <div className="session-detail__chips">
                 {quests.map((q) => (
-                  <span key={q.quest_id} className="session-detail__chip">
+                  <Link
+                    key={q.quest_id}
+                    className="link-inline session-detail__chip"
+                    route={{
+                      name: "entity-detail",
+                      kind: "quest",
+                      id: String(q.quest_id),
+                    }}
+                  >
                     {q.title}
-                  </span>
+                  </Link>
                 ))}
               </div>
             </div>

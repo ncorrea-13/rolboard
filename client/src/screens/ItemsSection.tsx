@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import "./NpcList.css";
 import { Tabs } from "../components/Tabs";
 import { Modal } from "../components/Modal";
@@ -11,13 +11,23 @@ import { entityImageUrl } from "../lib/images";
 import {
   formatPrices,
   type Currency,
+  type ItemOwner,
   type Item,
   type ItemPrice,
   type Location,
 } from "../data/domain";
-import type { CurrencyValues, ItemValues } from "../lib/apiMappers";
+import {
+  mapItemOwner,
+  type ApiItemOwner,
+  type CurrencyValues,
+  type ItemValues,
+} from "../lib/apiMappers";
+import { apiFetch } from "../lib/api";
+import { reportError } from "../lib/notify";
+import { Link } from "../components/Link";
 import { useT } from "../lib/i18n";
 import { CurrenciesView } from "./CurrenciesView";
+import { withViewTransition } from "../lib/motion";
 
 type ItemsTab = "items" | "currencies";
 const TAB_STORAGE_KEY = "rolboard.itemsTab";
@@ -59,7 +69,7 @@ function ItemModal({
   onSave,
   onDelete,
   onClose,
-  imageVersion,
+  imageVersion = 0,
   onUploadImage,
   onRemoveImage,
 }: {
@@ -85,6 +95,22 @@ function ItemModal({
   const [effect, setEffect] = useState(item?.effect ?? "");
   const [prices, setPrices] = useState<ItemPrice[]>(item?.prices ?? []);
   const [saving, setSaving] = useState(false);
+  const [viewing, setViewing] = useState(item !== null);
+  const [owners, setOwners] = useState<ItemOwner[]>([]);
+  const itemId = item?.id;
+
+  useEffect(() => {
+    if (!itemId || !viewing) return;
+    let stale = false;
+    apiFetch<ApiItemOwner[]>(`/items/${itemId}/owners`)
+      .then((data) => {
+        if (!stale) setOwners((data ?? []).map(mapItemOwner));
+      })
+      .catch((err) => reportError("toast.errorLoading", err));
+    return () => {
+      stale = true;
+    };
+  }, [itemId, viewing]);
 
   const categories = [...new Set(items.map((i) => i.category).filter(Boolean))];
   const rarities = [...new Set(items.map((i) => i.rarity).filter(Boolean))];
@@ -110,6 +136,86 @@ function ItemModal({
     );
     setSaving(false);
     if (ok) onClose();
+  }
+
+  if (viewing && item) {
+    const imageUrl = entityImageUrl(
+      "item",
+      item.id,
+      item.hasImage,
+      imageVersion,
+    );
+    const prices = formatPrices(item.prices, currencies);
+    const facts = [
+      [t("items.category"), item.category],
+      [t("items.rarity"), item.rarity],
+      [t("items.weight"), item.weight != null ? String(item.weight) : ""],
+      [t("items.prices"), prices],
+    ].filter(([, value]) => value);
+    return (
+      <Modal title={item.name} onClose={onClose} size="sheet">
+        {imageUrl && (
+          <img className="lore-detail__image" src={imageUrl} alt="" />
+        )}
+        {facts.length > 0 && (
+          <div className="detail-meta detail-meta--top">
+            {facts.map(([label, value]) => (
+              <div key={label}>
+                <span className="label">{label}</span>
+                <div>{value}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {item.effect && (
+          <div>
+            <span className="label">{t("items.effect")}</span>
+            <MarkdownText className="npc-detail__desc" text={item.effect} />
+          </div>
+        )}
+        {item.description && (
+          <div>
+            <span className="label">{t("common.description")}</span>
+            <MarkdownText
+              className="npc-detail__desc"
+              text={item.description}
+            />
+          </div>
+        )}
+        {owners.length > 0 && (
+          <div>
+            <span className="label">{t("items.heldBy")}</span>
+            <div
+              className="npc-edit__type-row"
+              style={{ flexWrap: "wrap", marginTop: 6 }}
+            >
+              {owners.map((o) => (
+                <Link
+                  key={`${o.kind}-${o.ownerId}`}
+                  className="npc-edit__type-chip"
+                  route={
+                    o.kind === "pc"
+                      ? { name: "player-detail", playerId: o.ownerId }
+                      : { name: "npc-detail", npcId: o.ownerId }
+                  }
+                >
+                  {o.name}
+                  {o.quantity > 1 ? ` ×${o.quantity}` : ""}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button className="btn btn-secondary" onClick={onClose}>
+            {t("common.close")}
+          </button>
+          <button className="btn btn-primary" onClick={() => setViewing(false)}>
+            {t("common.edit")}
+          </button>
+        </div>
+      </Modal>
+    );
   }
 
   return (
@@ -275,12 +381,14 @@ function ItemsList({
   }, [items, search, activeCategories]);
 
   function toggle(category: string) {
-    setActiveCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(category)) next.delete(category);
-      else next.add(category);
-      return next;
-    });
+    withViewTransition(() => {
+      setActiveCategories((prev) => {
+        const next = new Set(prev);
+        if (next.has(category)) next.delete(category);
+        else next.add(category);
+        return next;
+      });
+    }, "filter");
   }
 
   return (
@@ -341,7 +449,8 @@ function ItemsList({
             <button
               key={i.id}
               type="button"
-              className="item-card"
+              className="item-card vt"
+              style={{ "--vt": `item-${i.id}` } as CSSProperties}
               onClick={() => setEditing(i)}
             >
               {imageUrl && (

@@ -100,7 +100,9 @@ export function ArcDetail({
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {sessions.map((s) => (
                 <div key={s.id} style={{ display: "flex", gap: 12 }}>
-                  <span
+                  <Link
+                    className="link-inline"
+                    route={{ name: "session-detail", sessionId: s.id }}
                     style={{
                       font: "500 13px var(--font-mono)",
                       color: "var(--accent-sky)",
@@ -108,7 +110,7 @@ export function ArcDetail({
                     }}
                   >
                     {sessionCode(s)}
-                  </span>
+                  </Link>
                   <span style={{ flex: 1 }}>
                     <MarkdownText inline text={s.summary} />
                   </span>
@@ -256,7 +258,19 @@ export function FactionDetail({
           ? [{ label: t("factionDetail.alignment"), value: group.alineacion }]
           : []),
         ...(lider
-          ? [{ label: t("factionDetail.leader"), value: lider.name }]
+          ? [
+              {
+                label: t("factionDetail.leader"),
+                value: (
+                  <Link
+                    className="link-inline"
+                    route={{ name: "npc-detail", npcId: lider.id }}
+                  >
+                    {lider.name}
+                  </Link>
+                ),
+              },
+            ]
           : []),
         ...(appearsIn.some((g) => g.items.length > 0)
           ? [
@@ -464,7 +478,21 @@ export function LocationDetail({
       fields={[
         {
           label: t("locationDetail.hierarchy"),
-          value: breadcrumb.map((l) => l.name).join(" › "),
+          value: breadcrumb.map((l, i) => (
+            <span key={l.id}>
+              {i > 0 && " › "}
+              {l.id === location.id ? (
+                l.name
+              ) : (
+                <Link
+                  className="link-inline"
+                  route={{ name: "entity-detail", kind: "location", id: l.id }}
+                >
+                  {l.name}
+                </Link>
+              )}
+            </span>
+          )),
         },
         {
           label: t("common.description"),
@@ -495,7 +523,16 @@ export function LocationDetail({
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {children.map((c) => (
                   <div key={c.id}>
-                    {c.name}{" "}
+                    <Link
+                      className="link-inline"
+                      route={{
+                        name: "entity-detail",
+                        kind: "location",
+                        id: c.id,
+                      }}
+                    >
+                      {c.name}
+                    </Link>{" "}
                     <span style={{ color: "var(--text-secondary)" }}>
                       · {locationTypeLabel[lang][c.locationType]}
                     </span>

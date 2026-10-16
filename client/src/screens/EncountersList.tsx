@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import "../styles/list.css";
 import "./NpcList.css";
 import {
@@ -12,6 +12,7 @@ import {
 import { EncounterStatusPill } from "../components/StatusPill";
 import { useLang, useT } from "../lib/i18n";
 import { Link } from "../components/Link";
+import { withViewTransition } from "../lib/motion";
 
 const statusFilters: EncounterStatus[] = ["planificado", "activo", "cerrado"];
 
@@ -39,12 +40,14 @@ export function EncountersList({
   }
 
   function toggleStatus(s: EncounterStatus) {
-    setActiveStatuses((prev) => {
-      const next = new Set(prev);
-      if (next.has(s)) next.delete(s);
-      else next.add(s);
-      return next;
-    });
+    withViewTransition(() => {
+      setActiveStatuses((prev) => {
+        const next = new Set(prev);
+        if (next.has(s)) next.delete(s);
+        else next.add(s);
+        return next;
+      });
+    }, "filter");
   }
 
   const q = search.trim().toLowerCase();
@@ -101,7 +104,10 @@ export function EncountersList({
           aria-label={t("encounterDetail.session")}
           className={`npc-list__filter-chip${sessionId ? " npc-list__filter-chip--active" : ""}`}
           value={sessionId}
-          onChange={(e) => setSessionId(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value;
+            withViewTransition(() => setSessionId(v), "filter");
+          }}
         >
           <option value="">{t("encountersList.allSessions")}</option>
           {sessions.map((s) => (
@@ -117,7 +123,8 @@ export function EncountersList({
           return (
             <Link
               key={e.id}
-              className="list-page__row list-page__row--clickable"
+              className="list-page__row list-page__row--clickable vt"
+              style={{ "--vt": `enc-${e.id}` } as CSSProperties}
               route={{ name: "encounter-detail", encounterId: e.id }}
             >
               <div className="enc-round">

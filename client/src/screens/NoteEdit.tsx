@@ -53,7 +53,7 @@ export function NoteEdit({ note, onSave, onDiscard }: NoteEditProps) {
           </button>
         </div>
       </div>
-      <div className="npc-edit__body">
+      <div className="npc-edit__body npc-edit__body--single">
         <div className="npc-edit__col">
           <div>
             <span className="label">{t("noteEdit.title")}</span>

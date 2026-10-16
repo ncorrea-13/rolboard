@@ -12,6 +12,7 @@ import {
   type NpcTypesApi,
   type NpcTypesTexts,
 } from "../components/NpcTypesManager";
+import { withViewTransition } from "../lib/motion";
 
 const LORE_TEXTS: NpcTypesTexts = {
   manage: "loreCategories.manage",
@@ -50,13 +51,15 @@ export function LoreList({
   const [page, setPage] = useState(1);
 
   function toggleCategory(id: string) {
-    setActiveCategories((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-    setPage(1);
+    withViewTransition(() => {
+      setActiveCategories((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      });
+      setPage(1);
+    }, "filter");
   }
 
   const filtered = useMemo(() => {
@@ -175,7 +178,8 @@ export function LoreList({
                 return (
                   <Link
                     key={e.id}
-                    className="lore-entry"
+                    className="lore-entry vt"
+                    style={{ "--vt": `lore-${e.id}` } as CSSProperties}
                     route={{ name: "lore-detail", entryId: e.id }}
                   >
                     {e.hasImage && (
