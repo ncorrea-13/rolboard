@@ -122,8 +122,8 @@ export async function apiFetch<T>(
     },
   });
   if (!res.ok) throw await failure(res, init?.method ?? "GET", path);
-  if (res.status === 204) return undefined as T;
-  return res.json();
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 export async function downloadCampaignExport(
