@@ -1,5 +1,6 @@
 const LATEST_RELEASE =
   "https://api.github.com/repos/ncorrea-13/rolboard/releases/latest";
+export const DOWNLOAD_URL = "https://rolboard.ncorrea.com.ar/download";
 const CACHE_KEY = "updateCheck";
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -63,5 +64,7 @@ export async function newerRelease(): Promise<Release | null> {
         : null;
     writeCache(release);
   }
-  return release && isNewer(release.tag, current) ? release : null;
+  return release && isNewer(release.tag, current)
+    ? { tag: release.tag, url: DOWNLOAD_URL }
+    : null;
 }

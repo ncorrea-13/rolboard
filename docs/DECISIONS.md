@@ -153,7 +153,7 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - **Data in `os.UserConfigDir()/rolboard/`**: `config.json` (vaults and sync folders), `rolboard.db`, `uploads/`. Both folders are optional and are picked with a native dialog from **App settings**, the gear on the campaign selector (`POST /api/desktop/vaults-root`, `POST /api/desktop/sync-dir`). Changing one rebuilds the app in place, no restart. They are per-device settings, so they aren't in the campaign forms or in Docker, which uses `VAULTS_ROOT`. Without a vaults folder, campaigns work dashboard-only. No app menu bar.
 - **External links** go through `POST /api/desktop/open`, which only accepts `https` URLs and calls `runtime.BrowserOpenURL`. Wails' JS runtime is only injected on `/`, so it's missing after reloading a deep link.
 - **WebKitGTK workarounds (Linux):** image uploads send the multipart already serialized to bytes, because Wails reads request bodies off the GTK main thread and crashes on a body that references a `File`. Selects use `appearance: base-select` so the dropdown is HTML and not a GTK menu.
-- **Update notice, not auto-update.** The app only links to a newer GitHub release; replacing a binary in place (or an APK) is a lot of code and a security surface for little gain.
+- **Update notice, not auto-update.** The app only links to the website's download page when a newer GitHub release exists; replacing a binary in place (or an APK) is a lot of code and a security surface for little gain.
 - **Packaging:** unsigned `.exe` (cross-compiled from Linux, no CGO) and AppImage that relies on the system's `libwebkit2gtk-4.1`.
 
 ## Sync between devices
