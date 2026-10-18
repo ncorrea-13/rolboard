@@ -1,4 +1,5 @@
 import "./Splash.css";
+import { Sigil } from "../components/Sigil";
 import { BookOpenText } from "lucide-react";
 import {
   GITHUB_URL,
@@ -18,7 +19,8 @@ interface SplashProps {
 export function Splash({ onContinue, onHelp }: SplashProps) {
   const t = useT();
   return (
-    <div className="splash">
+    <div className="splash aura aura--center">
+      <Sigil className="aura__sigil aura__sigil--center" />
       <div className="splash__lang">
         <LanguageToggle />
       </div>

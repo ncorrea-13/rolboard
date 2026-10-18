@@ -125,6 +125,7 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - `activo` → alive, `consolidado` → dead in the traffic light.
 - Faction membership is managed only from the faction (a PC/NPC can belong to several).
 - Custom Spanish/English i18n (`lib/i18n.ts`), no library.
+- **Violet sky and magic circles (`styles/aura.css`, `components/Sigil.tsx`):** crisp on the splash and the campaign selector; blurred (`aura--soft`) and faint on help and behind the campaign screens (`AppShell`), with one of three designs by section (circle, astrolabe for the world, runes for combat and secrets). Cards keep their own surface, so data never sits directly on it. It is a static layer: Android WebView and webkit2gtk lack scroll-driven animation, and a still SVG is cheap on low-end phones and OLED. The blur is one `filter` on two layers: check it on low-end Android.
 
 ## Images
 

@@ -1,0 +1,146 @@
+/* Violet sky with constellations and a magic circle behind a screen. Static on purpose: the app also runs
+   in Android WebView and webkit2gtk, where a still layer is cheap and scroll-driven animation is missing.
+   Use only on low-density screens (splash, campaign selector, help), never behind data. */
+.aura {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  --aura-glow: 55% 60% at 82% 45%, rgb(116 87 201 / 0.26), transparent 70%;
+  --aura-stars: url("/constellation.svg");
+  --aura-stars-opacity: 0.28;
+}
+
+.aura::before,
+.aura::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.aura::before {
+  background: radial-gradient(var(--aura-glow));
+}
+
+.aura::after {
+  background: var(--aura-stars) center / cover no-repeat;
+  opacity: var(--aura-stars-opacity);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 22%,
+    black 78%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 22%,
+    black 78%,
+    transparent
+  );
+}
+
+.aura--right {
+  --aura-glow: 55% 60% at 82% 45%, rgb(116 87 201 / 0.26), transparent 70%;
+}
+
+.aura--left {
+  --aura-glow: 55% 60% at 14% 50%, rgb(116 87 201 / 0.22), transparent 70%;
+}
+
+.aura--center {
+  --aura-glow: 50% 60% at 50% 50%, rgb(116 87 201 / 0.22), transparent 70%;
+}
+
+.aura--c2 {
+  --aura-stars: url("/constellation-2.svg");
+}
+
+.aura--c3 {
+  --aura-stars: url("/constellation-3.svg");
+}
+
+.aura--soft {
+  --aura-stars-opacity: 0.22;
+}
+
+.aura--soft::after {
+  filter: blur(1.5px);
+}
+
+.aura--soft .aura__sigil {
+  opacity: 0.1;
+  filter: blur(2.5px);
+}
+
+.aura--faint {
+  --aura-stars-opacity: 0.16;
+}
+
+.sigil {
+  width: 100%;
+  fill: none;
+  stroke: var(--accent-flame);
+  stroke-width: 1;
+}
+
+.sigil__ring--soft {
+  stroke-opacity: 0.45;
+}
+
+.sigil__tick {
+  stroke-opacity: 0.7;
+}
+
+.sigil__rune {
+  fill: var(--accent-flame);
+  stroke: none;
+  fill-opacity: 0.8;
+}
+
+.sigil__star {
+  stroke: var(--accent-obsidian);
+  stroke-opacity: 0.7;
+}
+
+.sigil__bead {
+  fill: var(--bg-canvas);
+  stroke: var(--accent-flame);
+}
+
+.sigil__glyph {
+  stroke: var(--accent-flame);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.85;
+}
+
+.aura__sigil {
+  position: absolute;
+  z-index: -1;
+  width: clamp(16rem, 42vw, 34rem);
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.aura__sigil--right {
+  right: -6%;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.aura__sigil--left {
+  left: -6%;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+.aura__sigil--center {
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: clamp(20rem, 64vw, 46rem);
+  opacity: 0.12;
+}

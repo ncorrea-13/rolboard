@@ -125,6 +125,7 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - `activo` → alive, `consolidado` → dead en el semáforo.
 - La membresía a facciones se gestiona solo desde la facción (un PJ/NPC puede estar en varias).
 - i18n español/inglés propio (`lib/i18n.ts`), sin librería.
+- **Cielo violeta y círculos mágicos (`styles/aura.css`, `components/Sigil.tsx`):** nítido en el splash y el selector de campañas; difuso (`aura--soft`) y tenue en la ayuda y detrás de las pantallas de campaña (`AppShell`), con uno de tres diseños según la sección (círculo, astrolabio para el mundo, runas para combate y secretos). Las tarjetas conservan su propia superficie, así que los datos nunca quedan directamente sobre el fondo. Es una capa estática: Android WebView y webkit2gtk no tienen animación por scroll, y un SVG quieto es barato en celulares de gama baja y OLED. El blur es un solo `filter` sobre dos capas: probarlo en Android de gama baja.
 
 ## Imágenes
 
