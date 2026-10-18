@@ -1,9 +1,10 @@
 import "./Splash.css";
 import { Sigil } from "../components/Sigil";
-import { BookOpenText } from "lucide-react";
+import { Compass, BookOpenText } from "lucide-react";
 import {
   GITHUB_URL,
   PORTFOLIO_URL,
+  SITE_URL,
   GithubIcon,
   PortfolioIcon,
 } from "../components/SiteFooter";
@@ -47,6 +48,16 @@ export function Splash({ onContinue, onHelp }: SplashProps) {
         >
           <BookOpenText size={15} strokeWidth={1.6} />
           {t("footer.help")}
+        </a>
+        <a
+          href={SITE_URL}
+          target="_blank"
+          onClick={openExternal}
+          rel="noopener noreferrer"
+          className="splash__link"
+        >
+          <Compass size={15} strokeWidth={1.6} />
+          {t("splash.web")}
         </a>
         <a
           href={GITHUB_URL}
