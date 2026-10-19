@@ -125,6 +125,7 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - `activo` → alive, `consolidado` → dead en el semáforo.
 - La membresía a facciones se gestiona solo desde la facción (un PJ/NPC puede estar en varias).
 - i18n español/inglés propio (`lib/i18n.ts`), sin librería.
+- **Cielo violeta y círculos mágicos (`styles/aura.css`, `components/Sigil.tsx`):** nítido en el splash y el selector de campañas; difuso (`aura--soft`) y tenue en la ayuda y detrás de las pantallas de campaña (`AppShell`), con uno de tres diseños según la sección (círculo, astrolabio para el mundo, runas para combate y secretos). Las tarjetas conservan su propia superficie, así que los datos nunca quedan directamente sobre el fondo. Es una capa estática: Android WebView y webkit2gtk no tienen animación por scroll, y un SVG quieto es barato en celulares de gama baja y OLED. El blur es un solo `filter` sobre dos capas: probarlo en Android de gama baja. Se puede apagar en los ajustes de la app (escritorio y Android): una marca en `localStorage` (`lib/appearance.ts`) pone `data-aura="off"` en `<html>` y `aura.css` oculta las capas. En Docker no hay engranaje: la env `AURA=off` del cliente la sirve Caddy como `/config.json` y se lee al arrancar (la elección del dispositivo, si existe, gana).
 
 ## Imágenes
 
@@ -152,7 +153,7 @@ Un backend, varias campañas. Cada una con su `vault_path` (subcarpeta de `VAULT
 - **Datos en `os.UserConfigDir()/rolboard/`**: `config.json` (carpetas de vaults y de sincronización), `rolboard.db`, `uploads/`. Las dos carpetas son opcionales y se eligen con un diálogo nativo desde **Ajustes de la app**, el engranaje del selector de campañas (`POST /api/desktop/vaults-root`, `POST /api/desktop/sync-dir`). Cambiar una reconstruye la app en caliente, sin reiniciar. Son ajustes de cada dispositivo, así que no están en los formularios de campaña ni en Docker, que usa `VAULTS_ROOT`. Sin carpeta de vaults, las campañas funcionan solo como dashboard. La app no tiene barra de menú.
 - **Links externos** pasan por `POST /api/desktop/open`, que solo acepta URLs `https` y llama a `runtime.BrowserOpenURL`. El runtime JS de Wails solo se inyecta en `/`, así que falta después de recargar una deep link.
 - **Parches para WebKitGTK (Linux):** las subidas de imágenes mandan el multipart ya serializado a bytes, porque Wails lee los bodies fuera del hilo principal de GTK y crashea con un body que referencia un `File`. Los selects usan `appearance: base-select` para que el desplegable sea HTML y no un menú de GTK.
-- **Aviso de actualización, no auto-update.** La app solo enlaza a un release más nuevo de GitHub; reemplazar un binario en caliente (o un APK) es mucho código y superficie de ataque para poca ganancia.
+- **Aviso de actualización, no auto-update.** La app solo enlaza a la página de descargas del sitio cuando existe un release más nuevo en GitHub; reemplazar un binario en caliente (o un APK) es mucho código y superficie de ataque para poca ganancia.
 - **Empaquetado:** `.exe` sin firmar (compilado desde Linux, sin CGO) y AppImage que usa la `libwebkit2gtk-4.1` del sistema.
 
 ## Sincronización entre dispositivos
