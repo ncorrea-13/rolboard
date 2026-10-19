@@ -9,6 +9,10 @@
 	handle /api/* {
 		reverse_proxy {$BACKEND_HOST:localhost}:8080
 	}
+	handle /config.json {
+		header Content-Type application/json
+		respond `{"aura":"{$AURA:on}"}`
+	}
 	handle {
 		root * /srv
 		file_server

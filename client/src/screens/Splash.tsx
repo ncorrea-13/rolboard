@@ -1,8 +1,10 @@
 import "./Splash.css";
-import { BookOpenText } from "lucide-react";
+import { Sigil } from "../components/Sigil";
+import { Compass, BookOpenText } from "lucide-react";
 import {
   GITHUB_URL,
   PORTFOLIO_URL,
+  SITE_URL,
   GithubIcon,
   PortfolioIcon,
 } from "../components/SiteFooter";
@@ -18,7 +20,8 @@ interface SplashProps {
 export function Splash({ onContinue, onHelp }: SplashProps) {
   const t = useT();
   return (
-    <div className="splash">
+    <div className="splash aura aura--center">
+      <Sigil className="aura__sigil aura__sigil--center" />
       <div className="splash__lang">
         <LanguageToggle />
       </div>
@@ -45,6 +48,16 @@ export function Splash({ onContinue, onHelp }: SplashProps) {
         >
           <BookOpenText size={15} strokeWidth={1.6} />
           {t("footer.help")}
+        </a>
+        <a
+          href={SITE_URL}
+          target="_blank"
+          onClick={openExternal}
+          rel="noopener noreferrer"
+          className="splash__link"
+        >
+          <Compass size={15} strokeWidth={1.6} />
+          {t("splash.web")}
         </a>
         <a
           href={GITHUB_URL}

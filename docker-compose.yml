@@ -21,6 +21,7 @@ services:
     network_mode: "service:rolboard-server"
     environment:
       BACKEND_HOST: localhost
+      AURA: ${AURA:-on}
     depends_on:
       - rolboard-server
     restart: unless-stopped

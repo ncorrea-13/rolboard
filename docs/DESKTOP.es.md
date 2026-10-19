@@ -34,7 +34,7 @@ Ventana de Wails (WebKitGTK / WebView2)
 - Los datos viven en `os.UserConfigDir()/rolboard/` (`~/.config/rolboard` en Linux, `%AppData%\rolboard` en Windows): `config.json`, `rolboard.db`, `uploads/`.
 - `config.json` guarda la carpeta de vaults y la de sincronización, las dos opcionales. Sin carpeta de vaults, las campañas funcionan solo como dashboard.
 - Las dos carpetas se eligen desde **Ajustes de la app** (el engranaje del selector de campañas), que solo aparece en modo local.
-- **Aviso de actualización:** el selector de campañas consulta el último release de GitHub como mucho una vez por día y lo enlaza si es más nuevo que la versión instalada. No descarga nada. La versión se incluye en el cliente al compilar (`VITE_APP_VERSION`, que define el workflow de release en los tags); los builds locales no la tienen y no consultan. En Docker lo ve cualquiera que abra el selector de campañas; CI incluye el último tag que contiene la imagen.
+- **Aviso de actualización:** el selector de campañas consulta el último release de GitHub como mucho una vez por día y, si es más nuevo que la versión instalada, enlaza a la página de descargas del sitio (`rolboard.ncorrea.com.ar/download`). No descarga nada. La versión se incluye en el cliente al compilar (`VITE_APP_VERSION`, que define el workflow de release en los tags); los builds locales no la tienen y no consultan. En Docker lo ve cualquiera que abra el selector de campañas; CI incluye el último tag que contiene la imagen.
 - `cmd/desktop` es una capa fina de Wails sobre `internal/desktop.Runtime`, que maneja la config, la instancia de la app y la sincronización. `server/mobile` envuelve el mismo runtime para Android.
 
 ### Endpoints solo de escritorio

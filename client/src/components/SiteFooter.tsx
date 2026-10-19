@@ -1,10 +1,11 @@
-import { BookOpenText } from "lucide-react";
+import { Compass, BookOpenText } from "lucide-react";
 import "./SiteFooter.css";
 import { useT } from "../lib/i18n";
 import { openExternal } from "../lib/api";
 
 export const GITHUB_URL = "https://github.com/ncorrea-13/rolboard";
 export const PORTFOLIO_URL = "https://ncorrea.com.ar";
+export const SITE_URL = "https://rolboard.ncorrea.com.ar";
 
 export function GithubIcon() {
   return (
@@ -53,6 +54,17 @@ export function SiteFooter({ onHelp }: { onHelp: () => void }) {
         className="site-footer__icon"
       >
         <BookOpenText size={16} strokeWidth={1.6} />
+      </a>
+      <a
+        href={SITE_URL}
+        target="_blank"
+        onClick={openExternal}
+        rel="noopener noreferrer"
+        aria-label={t("footer.web")}
+        title={t("footer.web")}
+        className="site-footer__icon"
+      >
+        <Compass size={16} strokeWidth={1.6} />
       </a>
       <a
         href={GITHUB_URL}

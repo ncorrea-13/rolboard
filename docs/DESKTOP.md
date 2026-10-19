@@ -34,7 +34,7 @@ Wails window (WebKitGTK / WebView2)
 - Data lives in `os.UserConfigDir()/rolboard/` (`~/.config/rolboard` on Linux, `%AppData%\rolboard` on Windows): `config.json`, `rolboard.db`, `uploads/`.
 - `config.json` stores the vaults folder and the sync folder, both optional. Without a vaults folder campaigns work dashboard-only.
 - Both folders are set from **App settings** (the gear on the campaign selector), which only shows in local mode.
-- **Update notice:** the campaign selector checks GitHub's latest release at most once a day and links to it if it's newer than the running version. Nothing is downloaded. The version is baked into the client at build time (`VITE_APP_VERSION`, set by the release workflow on tags); local builds don't have it and skip the check. In Docker everyone who opens the campaign selector sees it; CI bakes in the latest tag the image contains.
+- **Update notice:** the campaign selector checks GitHub's latest release at most once a day and, if it's newer than the running version, links to the website's download page (`rolboard.ncorrea.com.ar/download`). Nothing is downloaded. The version is baked into the client at build time (`VITE_APP_VERSION`, set by the release workflow on tags); local builds don't have it and skip the check. In Docker everyone who opens the campaign selector sees it; CI bakes in the latest tag the image contains.
 - `cmd/desktop` is a thin Wails shell over `internal/desktop.Runtime`, which owns the config, the app instance and the sync. `server/mobile` wraps the same runtime for Android.
 
 ### Desktop-only endpoints

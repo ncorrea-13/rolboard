@@ -56,12 +56,12 @@ More: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 For a single computer, no server or Docker. Everything stays on your machine.
 
-| System  | Download |
-| ------- | -------- |
-| Windows 10 / 11 | [Download `.exe`](https://github.com/ncorrea-13/rolboard/releases/latest) |
+| System            | Download                                                                    |
+| ----------------- | --------------------------------------------------------------------------- |
+| Windows 10 / 11   | [Download `.exe`](https://github.com/ncorrea-13/rolboard/releases/latest)   |
 | Linux x64 (amd64) | [Download AppImage](https://github.com/ncorrea-13/rolboard/releases/latest) |
 
-- **Windows:** unsigned, so SmartScreen warns on first launch: *More info → Run anyway*. Needs WebView2 (bundled with Windows 10/11).
+- **Windows:** unsigned, so SmartScreen warns on first launch: _More info → Run anyway_. Needs WebView2 (bundled with Windows 10/11).
 - **Linux:** needs `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` on Debian/Ubuntu). Then `chmod +x rolboard-linux-amd64-*.AppImage` and run it.
 - No login or access codes: the desktop app is always in local mode.
 - To read an Obsidian vault, open **App settings** (the gear on the campaign selector) and pick the folder that holds your vaults.
@@ -74,11 +74,11 @@ Building from source and how it works: [`docs/DESKTOP.md`](docs/DESKTOP.md).
 
 The same app on your phone or tablet, offline. ARM64 (almost any phone from the last years).
 
-| System | Download |
-| ------ | -------- |
+| System             | Download                                                               |
+| ------------------ | ---------------------------------------------------------------------- |
 | Android 8+ (ARM64) | [Download APK](https://github.com/ncorrea-13/rolboard/releases/latest) |
 
-- Not on Google Play: open the APK and allow installing from that app. **Play Protect** warns about an unknown developer: *More details → Install anyway*.
+- Not on Google Play: open the APK and allow installing from that app. **Play Protect** warns about an unknown developer: _More details → Install anyway_.
 - To update, install the new APK over the old one; your data stays.
 - The vaults folder needs the **All files access** permission; the app asks for it the first time you pick the folder.
 - Syncs with the desktop app through a sync folder, as above.
@@ -125,6 +125,7 @@ services:
     image: ghcr.io/ncorrea-13/rolboard-client:latest
     environment:
       BACKEND_HOST: rolboard-server
+      AURA: ${AURA:-on}
     ports:
       - "${CLIENT_PORT}:80"
     depends_on:
@@ -177,22 +178,23 @@ Open `http://localhost:${CLIENT_PORT}`, log in as admin with the token, create a
 
 ## Configuration
 
-| Variable              | Where  | Description                                                                                                                         |
-| --------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `CLIENT_PORT`         | host   | Host port for the web client                                                                                                        |
-| `DATA_PATH`           | host   | Host folder for the database and uploaded images                                                                                    |
-| `VAULTS_ROOT_HOST`    | host   | Host folder holding every campaign's vault as a subfolder (mounted read-only)                                                       |
-| `ROLBOARD_USER`       | host   | Container user (`uid:gid`). Default `1000:1000`. Rootless Podman: `0` (see [Vault permissions](#vault-permissions))                 |
-| `DB_PATH`             | server | SQLite file path                                                                                                                    |
-| `VAULTS_ROOT`         | server | Vaults mount path                                                                                                                   |
-| `UPLOADS_ROOT`        | server | Image storage path. No default — set it inside the data volume                                                                      |
-| `PORT`                | server | Listen port (the client proxies to `8080`)                                                                                          |
-| `ADMIN_TOKEN_FILE`    | server | File with the admin token (secret). Takes precedence over `ADMIN_TOKEN`                                                             |
-| `ADMIN_TOKEN`         | server | Admin token as plain env var (dev only)                                                                                             |
-| `COOKIE_SECURE`       | server | Set `false` only for local HTTP. Default: secure cookies                                                                            |
-| `LOG_JSON`            | server | Structured JSON logs (`log/slog`). Default: human-readable text                                                                     |
-| `TRUST_PROXY_HEADERS` | server | Trust `CF-Connecting-IP` for rate limiting. Only if every request passes through Cloudflare — otherwise spoofable. Default: `false` |
-| `BACKEND_HOST`        | client | Backend hostname for the `/api` proxy. Default: `localhost`                                                                         |
+| Variable              | Where  | Description                                                                                                                                 |
+| --------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLIENT_PORT`         | host   | Host port for the web client                                                                                                                |
+| `DATA_PATH`           | host   | Host folder for the database and uploaded images                                                                                            |
+| `VAULTS_ROOT_HOST`    | host   | Host folder holding every campaign's vault as a subfolder (mounted read-only)                                                               |
+| `ROLBOARD_USER`       | host   | Container user (`uid:gid`). Default `1000:1000`. Rootless Podman: `0` (see [Vault permissions](#vault-permissions))                         |
+| `DB_PATH`             | server | SQLite file path                                                                                                                            |
+| `VAULTS_ROOT`         | server | Vaults mount path                                                                                                                           |
+| `UPLOADS_ROOT`        | server | Image storage path. No default — set it inside the data volume                                                                              |
+| `PORT`                | server | Listen port (the client proxies to `8080`)                                                                                                  |
+| `ADMIN_TOKEN_FILE`    | server | File with the admin token (secret). Takes precedence over `ADMIN_TOKEN`                                                                     |
+| `ADMIN_TOKEN`         | server | Admin token as plain env var (dev only)                                                                                                     |
+| `COOKIE_SECURE`       | server | Set `false` only for local HTTP. Default: secure cookies                                                                                    |
+| `LOG_JSON`            | server | Structured JSON logs (`log/slog`). Default: human-readable text                                                                             |
+| `TRUST_PROXY_HEADERS` | server | Trust `CF-Connecting-IP` for rate limiting. Only if every request passes through Cloudflare — otherwise spoofable. Default: `false`         |
+| `BACKEND_HOST`        | client | Backend hostname for the `/api` proxy. Default: `localhost`                                                                                 |
+| `AURA`                | client | Violet sky background: `on` (default) or `off` for a plain dark one. The desktop and Android apps have their own switch in the app settings |
 
 ## Development
 
@@ -223,7 +225,6 @@ Personal project, built as a deliberate Go-learning exercise. [`AGENTS.md`](AGEN
 MIT - see [LICENSE](LICENSE) for details.
 
 Logos and icons (`client/public/logo-*.png`, `client/public/favicon.png`, `server/cmd/desktop/build/appicon.png`, `server/cmd/desktop/build/windows/icon.ico`, `android/app/src/main/res/mipmap-*/ic_launcher_foreground.png`) are © Mateo Guareschi, used with permission. They are **not** covered by the MIT license.
-
 
 ---
 

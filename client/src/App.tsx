@@ -25,6 +25,7 @@ import { NewCampaignForm } from "./components/NewCampaignForm";
 import { CampaignSettingsForm } from "./components/CampaignSettingsForm";
 import { CampaignSelector } from "./screens/CampaignSelector";
 import { Splash } from "./screens/Splash";
+import { Sigil } from "./components/Sigil";
 import {
   CampaignDashboard,
   type DashboardSection,
@@ -625,7 +626,8 @@ export default function App() {
   if (helpOpen) {
     return (
       <div className="app">
-        <div className="app__stage">
+        <div className="app__stage aura aura--soft aura--left aura--c3">
+          <Sigil variant="runes" className="aura__sigil aura__sigil--left" />
           <Help key={helpKey} onBack={closeHelp} />
         </div>
         <SiteFooter onHelp={openHelp} />
@@ -647,7 +649,11 @@ export default function App() {
   const ui = (
     <div className="app">
       {route.name === "campaigns" || !activeCampaign ? (
-        <div className="app__stage">
+        <div className="app__stage aura aura--right aura--c2">
+          <Sigil
+            variant="astrolabe"
+            className="aura__sigil aura__sigil--right"
+          />
           <CampaignSelector
             campaigns={campaigns}
             onSelect={selectCampaign}
