@@ -56,12 +56,12 @@ Más: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 Para una sola computadora, sin servidor ni Docker. Todo queda en tu máquina.
 
-| Sistema | Descarga |
-| ------- | -------- |
-| Windows 10 / 11 | [Descargar `.exe`](https://github.com/ncorrea-13/rolboard/releases/latest) |
+| Sistema           | Descarga                                                                     |
+| ----------------- | ---------------------------------------------------------------------------- |
+| Windows 10 / 11   | [Descargar `.exe`](https://github.com/ncorrea-13/rolboard/releases/latest)   |
 | Linux x64 (amd64) | [Descargar AppImage](https://github.com/ncorrea-13/rolboard/releases/latest) |
 
-- **Windows:** no está firmado, así que SmartScreen avisa en el primer arranque: *Más información → Ejecutar de todas formas*. Necesita WebView2 (viene con Windows 10/11).
+- **Windows:** no está firmado, así que SmartScreen avisa en el primer arranque: _Más información → Ejecutar de todas formas_. Necesita WebView2 (viene con Windows 10/11).
 - **Linux:** necesita `libwebkit2gtk-4.1` (`sudo apt install libwebkit2gtk-4.1-0` en Debian/Ubuntu). Después `chmod +x rolboard-linux-amd64-*.AppImage` y ejecutarlo.
 - Sin login ni códigos de acceso: la app de escritorio siempre está en modo local.
 - Para leer un vault de Obsidian, abrir **Ajustes de la app** (el engranaje del selector de campañas) y elegir la carpeta que contiene los vaults.
@@ -74,11 +74,11 @@ Compilar desde el código y cómo funciona: [`docs/DESKTOP.es.md`](docs/DESKTOP.
 
 La misma app en el teléfono o la tablet, sin conexión. ARM64 (casi cualquier teléfono de los últimos años).
 
-| Sistema | Descarga |
-| ------- | -------- |
+| Sistema            | Descarga                                                                |
+| ------------------ | ----------------------------------------------------------------------- |
 | Android 8+ (ARM64) | [Descargar APK](https://github.com/ncorrea-13/rolboard/releases/latest) |
 
-- No está en Google Play: abrir el APK y permitir instalar desde esa app. **Play Protect** avisa que es de un desarrollador desconocido: *Más detalles → Instalar de todas formas*.
+- No está en Google Play: abrir el APK y permitir instalar desde esa app. **Play Protect** avisa que es de un desarrollador desconocido: _Más detalles → Instalar de todas formas_.
 - Para actualizar, instalar el APK nuevo encima del anterior; los datos se conservan.
 - La carpeta de vaults necesita el permiso **Acceso a todos los archivos**; la app lo pide la primera vez que se elige la carpeta.
 - Se sincroniza con la app de escritorio mediante una carpeta de sincronización, como arriba.
@@ -125,6 +125,7 @@ services:
     image: ghcr.io/ncorrea-13/rolboard-client:latest
     environment:
       BACKEND_HOST: rolboard-server
+      AURA: ${AURA:-on}
     ports:
       - "${CLIENT_PORT}:80"
     depends_on:
@@ -177,22 +178,23 @@ Abre `http://localhost:${CLIENT_PORT}`, entra como admin con el token, crea una 
 
 ## Configuración
 
-| Variable              | Dónde    | Descripción                                                                                                                             |
-| --------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `CLIENT_PORT`         | host     | Puerto del host para el cliente web                                                                                                     |
-| `DATA_PATH`           | host     | Carpeta del host para la base y las imágenes subidas                                                                                    |
-| `VAULTS_ROOT_HOST`    | host     | Carpeta del host con el vault de cada campaña como subcarpeta (montada read-only)                                                       |
-| `ROLBOARD_USER`       | host     | Usuario del contenedor (`uid:gid`). Default `1000:1000`. Podman rootless: `0` (ver [Permisos del vault](#permisos-del-vault))           |
-| `DB_PATH`             | servidor | Ruta del archivo SQLite                                                                                                                 |
-| `VAULTS_ROOT`         | servidor | Ruta del mount de vaults                                                                                                                |
-| `UPLOADS_ROOT`        | servidor | Ruta de imágenes. Sin default — ponla dentro del volumen de datos                                                                       |
-| `PORT`                | servidor | Puerto de escucha (el cliente proxea a `8080`)                                                                                          |
-| `ADMIN_TOKEN_FILE`    | servidor | Archivo con el token de admin (secret). Tiene prioridad sobre `ADMIN_TOKEN`                                                             |
-| `ADMIN_TOKEN`         | servidor | Token de admin como env var plana (solo dev)                                                                                            |
-| `COOKIE_SECURE`       | servidor | `false` solo para HTTP local. Default: cookies seguras                                                                                  |
-| `LOG_JSON`            | servidor | Logs estructurados JSON (`log/slog`). Default: texto legible                                                                            |
-| `TRUST_PROXY_HEADERS` | servidor | Confía en `CF-Connecting-IP` para el rate limit. Solo si todo el tráfico pasa por Cloudflare — si no, es falsificable. Default: `false` |
-| `BACKEND_HOST`        | cliente  | Host del backend para el proxy de `/api`. Default: `localhost`                                                                          |
+| Variable              | Dónde    | Descripción                                                                                                                                 |
+| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLIENT_PORT`         | host     | Puerto del host para el cliente web                                                                                                         |
+| `DATA_PATH`           | host     | Carpeta del host para la base y las imágenes subidas                                                                                        |
+| `VAULTS_ROOT_HOST`    | host     | Carpeta del host con el vault de cada campaña como subcarpeta (montada read-only)                                                           |
+| `ROLBOARD_USER`       | host     | Usuario del contenedor (`uid:gid`). Default `1000:1000`. Podman rootless: `0` (ver [Permisos del vault](#permisos-del-vault))               |
+| `DB_PATH`             | servidor | Ruta del archivo SQLite                                                                                                                     |
+| `VAULTS_ROOT`         | servidor | Ruta del mount de vaults                                                                                                                    |
+| `UPLOADS_ROOT`        | servidor | Ruta de imágenes. Sin default — ponla dentro del volumen de datos                                                                           |
+| `PORT`                | servidor | Puerto de escucha (el cliente proxea a `8080`)                                                                                              |
+| `ADMIN_TOKEN_FILE`    | servidor | Archivo con el token de admin (secret). Tiene prioridad sobre `ADMIN_TOKEN`                                                                 |
+| `ADMIN_TOKEN`         | servidor | Token de admin como env var plana (solo dev)                                                                                                |
+| `COOKIE_SECURE`       | servidor | `false` solo para HTTP local. Default: cookies seguras                                                                                      |
+| `LOG_JSON`            | servidor | Logs estructurados JSON (`log/slog`). Default: texto legible                                                                                |
+| `TRUST_PROXY_HEADERS` | servidor | Confía en `CF-Connecting-IP` para el rate limit. Solo si todo el tráfico pasa por Cloudflare — si no, es falsificable. Default: `false`     |
+| `BACKEND_HOST`        | cliente  | Host del backend para el proxy de `/api`. Default: `localhost`                                                                              |
+| `AURA`                | cliente  | Fondo violeta con constelaciones: `on` (default) u `off` para uno liso y oscuro. En escritorio y Android se cambia en los ajustes de la app |
 
 ## Desarrollo
 

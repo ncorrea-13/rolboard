@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Modal } from "./Modal";
 import { FolderField } from "./FolderField";
 import { useT } from "../lib/i18n";
+import { getAura, setAura } from "../lib/appearance";
 import { reportError } from "../lib/notify";
 import {
   loadSettings,
@@ -17,6 +18,7 @@ export function AppSettings({ onClose }: { onClose: () => void }) {
     syncDir: "",
   });
   const [busy, setBusy] = useState(false);
+  const [aura, setAuraState] = useState(getAura);
 
   useEffect(() => {
     loadSettings()
@@ -62,6 +64,20 @@ export function AppSettings({ onClose }: { onClose: () => void }) {
           busy={busy}
           onPick={() => pick("sync-dir")}
         />
+        <div style={{ minWidth: 0 }}>
+          <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              type="checkbox"
+              checked={aura}
+              onChange={(e) => {
+                setAuraState(e.target.checked);
+                setAura(e.target.checked);
+              }}
+            />
+            {t("appSettings.aura")}
+          </label>
+          <div className="npc-edit__hint">{t("appSettings.auraHint")}</div>
+        </div>
       </div>
     </Modal>
   );

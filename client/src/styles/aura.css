@@ -144,3 +144,10 @@
   width: clamp(20rem, 64vw, 46rem);
   opacity: 0.12;
 }
+
+/* App settings: keep the background plain dark */
+[data-aura="off"] .aura::before,
+[data-aura="off"] .aura::after,
+[data-aura="off"] .aura__sigil {
+  display: none;
+}
