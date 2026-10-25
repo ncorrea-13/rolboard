@@ -137,6 +137,12 @@ Una capa por vez, verificando cada paso con `go test ./...` y `go vet ./...` ant
   - `search` (mismos pesos que el cliente web: título, subtítulo, cuerpo; sin tildes ni mayúsculas).
   - Probado con Claude Code real (`--mcp-config`, sin tocar `~/.claude.json`) en el primer corte; el resto está cubierto por tests con la app real y transporte en memoria.
 - **Fase 2 (escritura) hecha:** `create_loose_note`, `update_loose_note` (solo cambia los campos que se pasan), `update_session_prep` (GET + PUT, el resto de la sesión queda igual), `create_npc`, `create_quest`, `create_lore`. Más `list_npc_types` y `list_lore_categories`, porque `npc_kind` es una clave por campaña y no un enum fijo. Las de creación llevan `DestructiveHint: false`; las que reemplazan texto, `true`; un test exige que toda tool de escritura declare el hint (el default del protocolo es `true`).
+- **Fase 3 (socket en desktop) hecha:**
+  - `POST /api/desktop/mcp {"enabled": bool}` abre o cierra el socket (`UserConfigDir/rolboard/mcp.sock`, `0600`), guarda `mcpEnabled` en `config.json` y lo reabre al arrancar. Apagado por default. `GET /api/desktop/settings` devuelve `mcpEnabled`.
+  - El socket solo atiende `/api/` menos `/api/desktop/`; las escrituras programan el push de sync igual que el webview.
+  - `rolboard mcp` (mismo ejecutable) es el puente stdio ↔ socket. Probado de punta a punta en Linux re-ejecutando el binario de test como puente.
+  - **Sin verificar:** Windows (AF_UNIX, permisos por ACL, stdio en el `.exe` de ventana) y Claude Desktop real. `Version` queda en `dev` hasta que `release.yml` pase `-ldflags "-X main.version=..."` (Fase 5).
+  - **Conocido:** si el socket no se puede abrir al arrancar (otra instancia lo tiene), la app sigue con `mcpEnabled: true` pero sin socket; la UI de la Fase 4 debería mostrar el estado real, no solo el flag.
 - **Fuera de la v1 de lectura:** timelines (solo hay eventos), encuentros, items y monedas. Sumarlos es una línea por entidad con `registerEntity`.
 - **Hallazgo:** los modelos con `json.RawMessage` rompen la validación de salida del SDK, que infiere un schema de array. Son solo tres: `NPC`, `PlayerCharacter` y `EncounterParticipant` (`attributes`, `skills`). Sus `get_*` devuelven `any`; el resto de los modelos puede usarse como salida tipada.
 - **HTTPS probado:** test con servidor TLS y cookies `Secure` (`TestClientLoginOverHTTPSWithSecureCookie`): el login funciona y la cookie se reutiliza. Falta probar contra `tailscale serve` real.
