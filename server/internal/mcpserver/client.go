@@ -1,0 +1,127 @@
+// Package mcpserver exposes a Rolboard campaign to MCP clients over stdio,
+// acting as one more client of the REST API.
+package mcpserver
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/cookiejar"
+	"strings"
+	"sync"
+	"time"
+)
+
+// Config selects how the API is reached.
+type Config struct {
+	BaseURL    string // e.g. https://host.tailnet.ts.net
+	CampaignID int64  // campaign to log into
+	AccessCode string
+	Version    string
+}
+
+type apiClient struct {
+	http *http.Client
+	cfg  Config
+
+	loginMu sync.Mutex
+}
+
+func newAPIClient(cfg Config) (*apiClient, error) {
+	if cfg.BaseURL == "" || cfg.CampaignID == 0 || cfg.AccessCode == "" {
+		return nil, fmt.Errorf("faltan ROLBOARD_URL, ROLBOARD_CAMPAIGN o el access code")
+	}
+	jar, err := cookiejar.New(nil)
+	if err != nil {
+		return nil, err
+	}
+	cfg.BaseURL = strings.TrimRight(cfg.BaseURL, "/")
+	return &apiClient{
+		http: &http.Client{Jar: jar, Timeout: 15 * time.Second},
+		cfg:  cfg,
+	}, nil
+}
+
+// apiError is a non-2xx response from the API.
+type apiError struct {
+	Status int
+	Code   string
+	Text   string
+}
+
+func (e *apiError) Error() string {
+	if e.Code != "" {
+		return fmt.Sprintf("rolboard API %d %s", e.Status, e.Code)
+	}
+	return fmt.Sprintf("rolboard API %d: %s", e.Status, e.Text)
+}
+
+// do sends a JSON request and decodes the response into out (nil to skip).
+// On 401 it logs in and retries once; it never loops, because the login
+// endpoint is rate limited.
+func (c *apiClient) do(ctx context.Context, method, path string, in, out any) error {
+	err := c.send(ctx, method, path, in, out)
+	var apiErr *apiError
+	if errors.As(err, &apiErr) && apiErr.Status == http.StatusUnauthorized {
+		if err := c.login(ctx); err != nil {
+			return err
+		}
+		return c.send(ctx, method, path, in, out)
+	}
+	return err
+}
+
+func (c *apiClient) send(ctx context.Context, method, path string, in, out any) error {
+	var body io.Reader
+	if in != nil {
+		data, err := json.Marshal(in)
+		if err != nil {
+			return err
+		}
+		body = bytes.NewReader(data)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, c.cfg.BaseURL+path, body)
+	if err != nil {
+		return err
+	}
+	if in != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		raw, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		apiErr := &apiError{Status: resp.StatusCode, Text: strings.TrimSpace(string(raw))}
+		var payload struct {
+			Code string `json:"code"`
+		}
+		if json.Unmarshal(raw, &payload) == nil {
+			apiErr.Code = payload.Code
+		}
+		return apiErr
+	}
+	if out == nil || resp.StatusCode == http.StatusNoContent {
+		return nil
+	}
+	return json.NewDecoder(resp.Body).Decode(out)
+}
+
+// login stores the campaign session cookie in the client's jar. The access
+// code is never logged or included in errors.
+func (c *apiClient) login(ctx context.Context) error {
+	c.loginMu.Lock()
+	defer c.loginMu.Unlock()
+	path := fmt.Sprintf("/api/campaigns/%d/login", c.cfg.CampaignID)
+	if err := c.send(ctx, http.MethodPost, path, map[string]string{"code": c.cfg.AccessCode}, nil); err != nil {
+		return fmt.Errorf("login: %w", err)
+	}
+	return nil
+}
