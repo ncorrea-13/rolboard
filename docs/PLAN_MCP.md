@@ -143,6 +143,12 @@ Una capa por vez, verificando cada paso con `go test ./...` y `go vet ./...` ant
   - `rolboard mcp` (mismo ejecutable) es el puente stdio ↔ socket. Probado de punta a punta en Linux re-ejecutando el binario de test como puente.
   - **Sin verificar:** Windows (AF_UNIX, permisos por ACL, stdio en el `.exe` de ventana) y Claude Desktop real. `Version` queda en `dev` hasta que `release.yml` pase `-ldflags "-X main.version=..."` (Fase 5).
   - **Conocido:** si el socket no se puede abrir al arrancar (otra instancia lo tiene), la app sigue con `mcpEnabled: true` pero sin socket; la UI de la Fase 4 debería mostrar el estado real, no solo el flag.
+- **Fase 4 (UI en Ajustes de la app) hecha, solo desktop:**
+  - Sección "Agentes de IA" en `AppSettings`: toggle del socket y una fila por cliente (Claude Desktop, Antigravity, Codex) con estado (no instalado / conectado) y botón Conectar/Reconectar. Antes de escribir pide confirmación; el cliente tiene que estar instalado y la conexión activada.
+  - `GET /api/desktop/mcp-clients` y `POST /api/desktop/mcp-clients/connect {"id"}`. No existen en el socket (los tests lo exigen: un agente no puede reescribir configs de otros clientes).
+  - Al escribir: respeta symlinks (dotfiles), no toca claves ajenas, conserva permisos y deja `<archivo>.rolboard.bak` con el **original**, sin pisarlo en reconexiones. El JSON queda con claves ordenadas alfabéticamente. Codex se edita como texto (límite documentado en `mergeCodexServer`).
+  - **Sin verificar:** las rutas de config de cada cliente salen de su documentación, no de haberlos instalado (Claude Desktop en Linux no tiene build oficial confirmada; Antigravity 2.0 no se probó). Windows tampoco.
+  - **No hay botón de desconectar**; queda para si hace falta (borrar la entrada a mano o restaurar el `.rolboard.bak`).
 - **Fuera de la v1 de lectura:** timelines (solo hay eventos), encuentros, items y monedas. Sumarlos es una línea por entidad con `registerEntity`.
 - **Hallazgo:** los modelos con `json.RawMessage` rompen la validación de salida del SDK, que infiere un schema de array. Son solo tres: `NPC`, `PlayerCharacter` y `EncounterParticipant` (`attributes`, `skills`). Sus `get_*` devuelven `any`; el resto de los modelos puede usarse como salida tipada.
 - **HTTPS probado:** test con servidor TLS y cookies `Secure` (`TestClientLoginOverHTTPSWithSecureCookie`): el login funciona y la cookie se reutiliza. Falta probar contra `tailscale serve` real.
