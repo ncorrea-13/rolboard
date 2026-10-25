@@ -104,6 +104,13 @@ type secretSummary struct {
 	Status string `json:"status"`
 }
 
+// typeSummary is shared by npc types and lore categories.
+type typeSummary struct {
+	ID    int64  `json:"id"`
+	Key   string `json:"key"`
+	Label string `json:"label"`
+}
+
 type timelineEventSummary struct {
 	ID         int64  `json:"id"`
 	TimelineID int64  `json:"timeline_id"`
@@ -111,13 +118,12 @@ type timelineEventSummary struct {
 	DateLabel  string `json:"date_label"`
 }
 
-// registerEntity adds list_<plural> and get_<singular> for one entity.
-// listPath and getPath take the campaign ID and the entity ID respectively.
-// summarize returns false to leave an item out of the list.
-func registerEntity[T, S any](s *mcp.Server, api *apiClient, singular, plural, listPath, getPath string, summarize func(T) (S, bool)) {
+// registerList adds list_<name> for one entity type. listPath takes the
+// campaign ID; summarize returns false to leave an item out.
+func registerList[T, S any](s *mcp.Server, api *apiClient, name, description, listPath string, summarize func(T) (S, bool)) {
 	mcp.AddTool(s, &mcp.Tool{
-		Name:        "list_" + plural,
-		Description: fmt.Sprintf("List the %s of a campaign (summary). Use get_%s for the full record.", plural, singular),
+		Name:        "list_" + name,
+		Description: description,
 		Annotations: readOnly,
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in campaignArgs) (*mcp.CallToolResult, list[S], error) {
 		var all []T
@@ -132,6 +138,14 @@ func registerEntity[T, S any](s *mcp.Server, api *apiClient, singular, plural, l
 		}
 		return nil, out, nil
 	})
+}
+
+// registerEntity adds list_<plural> and get_<singular> for one entity.
+// listPath and getPath take the campaign ID and the entity ID respectively.
+func registerEntity[T, S any](s *mcp.Server, api *apiClient, singular, plural, listPath, getPath string, summarize func(T) (S, bool)) {
+	registerList(s, api, plural,
+		fmt.Sprintf("List the %s of a campaign (summary). Use get_%s for the full record.", plural, singular),
+		listPath, summarize)
 
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "get_" + singular,
@@ -209,6 +223,19 @@ func registerReadTools(s *mcp.Server, api *apiClient) {
 	registerEntity(s, api, "timeline_event", "timeline_events", "/api/campaigns/%d/timeline-events", "/api/timeline-events/%d",
 		func(e models.TimelineEvent) (timelineEventSummary, bool) {
 			return timelineEventSummary{ID: e.ID, TimelineID: e.TimelineID, Title: e.Title, DateLabel: e.DateLabel}, true
+		})
+
+	registerList(s, api, "npc_types",
+		"List the NPC types of a campaign. The key is the npc_kind that create_npc needs.",
+		"/api/campaigns/%d/npc-types",
+		func(t models.NPCType) (typeSummary, bool) {
+			return typeSummary{ID: t.ID, Key: t.Key, Label: t.Label}, true
+		})
+	registerList(s, api, "lore_categories",
+		"List the lore categories of a campaign. Use the id as category_id in create_lore.",
+		"/api/campaigns/%d/lore-categories",
+		func(c models.LoreCategory) (typeSummary, bool) {
+			return typeSummary{ID: c.ID, Key: c.Key, Label: c.Label}, true
 		})
 
 	mcp.AddTool(s, &mcp.Tool{
