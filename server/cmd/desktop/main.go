@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"os/signal"
 	"regexp"
 	"strings"
 	"sync"
@@ -24,6 +25,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/ncorrea-13/rolboard/server/internal/desktop"
+	"github.com/ncorrea-13/rolboard/server/internal/mcpserver"
 )
 
 //go:embed all:frontend
@@ -33,6 +35,9 @@ var assets embed.FS
 var icon []byte
 
 const pushDelay = 30 * time.Second
+
+// Set at build time with -ldflags "-X main.version=vX.Y.Z".
+var version = "dev"
 
 type desktopApp struct {
 	ctx  context.Context
@@ -54,6 +59,10 @@ type settings struct {
 }
 
 func main() {
+	// `rolboard mcp` is what MCP clients launch: it never opens a window.
+	if len(os.Args) > 1 && os.Args[1] == "mcp" {
+		runMCP()
+	}
 	dist, err := fs.Sub(assets, "frontend/dist")
 	if err != nil {
 		slog.Error("error leyendo el frontend embebido", "err", err)
@@ -79,6 +88,25 @@ func main() {
 		slog.Error("error en wails", "err", err)
 		os.Exit(1)
 	}
+}
+
+// runMCP is the bridge between an MCP client and the running app: it speaks
+// MCP on stdio and forwards to the app's socket. stdout belongs to the
+// protocol, so anything it logs goes to stderr (slog's default).
+func runMCP() {
+	dir, err := desktop.Dir()
+	if err != nil {
+		slog.Error("error resolviendo el directorio de config", "err", err)
+		os.Exit(1)
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	err = mcpserver.Run(ctx, mcpserver.Config{Socket: desktop.SocketPath(dir), Version: version})
+	if err != nil {
+		slog.Error("mcp", "err", err)
+		os.Exit(1)
+	}
+	os.Exit(0)
 }
 
 func (d *desktopApp) startup(ctx context.Context) {

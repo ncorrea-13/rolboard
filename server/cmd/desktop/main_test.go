@@ -1,15 +1,20 @@
 package main
 
 import (
+	"bufio"
 	"context"
 	"errors"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ncorrea-13/rolboard/server/internal/desktop"
 )
@@ -111,5 +116,84 @@ func TestMCPToggleOpensAndClosesTheSocket(t *testing.T) {
 	}
 	if rec := post(`not json`); rec.Code != http.StatusBadRequest {
 		t.Errorf("bad body: got %d, want 400", rec.Code)
+	}
+}
+
+// TestMCPBridgeHelper is not a test: it is the `rolboard mcp` process the
+// test below launches, re-executing this test binary.
+func TestMCPBridgeHelper(t *testing.T) {
+	if os.Getenv("ROLBOARD_TEST_MCP_BRIDGE") != "1" {
+		t.Skip("helper process")
+	}
+	runMCP()
+}
+
+// bridgeListCampaigns runs the bridge as an MCP client would (stdio, JSON-RPC)
+// and returns the list_campaigns response line plus the bridge's exit error.
+func bridgeListCampaigns(t *testing.T, configHome string) (string, error) {
+	t.Helper()
+	cmd := exec.Command(os.Args[0], "-test.run=^TestMCPBridgeHelper$")
+	cmd.Env = append(os.Environ(), "ROLBOARD_TEST_MCP_BRIDGE=1", "XDG_CONFIG_HOME="+configHome)
+	in, err := cmd.StdinPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	out, err := cmd.StdoutPipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := cmd.Start(); err != nil {
+		t.Fatal(err)
+	}
+	timer := time.AfterFunc(20*time.Second, func() { _ = cmd.Process.Kill() })
+	defer timer.Stop()
+
+	for _, msg := range []string{
+		`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"test","version":"0"}}}`,
+		`{"jsonrpc":"2.0","method":"notifications/initialized"}`,
+		`{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"list_campaigns","arguments":{}}}`,
+	} {
+		if _, err := io.WriteString(in, msg+"\n"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var response string
+	sc := bufio.NewScanner(out)
+	sc.Buffer(make([]byte, 1<<20), 1<<20)
+	for sc.Scan() {
+		if strings.Contains(sc.Text(), `"id":2`) {
+			response = sc.Text()
+			break
+		}
+	}
+	_ = in.Close() // the client going away must end the bridge cleanly
+	return response, cmd.Wait()
+}
+
+func TestMCPBridgeTalksToTheRunningApp(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("the helper finds the config dir through XDG_CONFIG_HOME")
+	}
+	d := startedApp(t)
+	home := filepath.Dir(d.dir)
+
+	// Agents not enabled: the tool must say so instead of failing obscurely.
+	resp, err := bridgeListCampaigns(t, home)
+	if err != nil {
+		t.Errorf("the bridge should exit cleanly when the client closes stdin: %v", err)
+	}
+	if !strings.Contains(resp, `"isError":true`) || !strings.Contains(resp, "no est") {
+		t.Errorf("expected the app-closed message, got %s", resp)
+	}
+
+	if err := d.setMCP(true); err != nil {
+		t.Fatal(err)
+	}
+	resp, err = bridgeListCampaigns(t, home)
+	if err != nil {
+		t.Errorf("the bridge should exit cleanly when the client closes stdin: %v", err)
+	}
+	if strings.Contains(resp, `"isError":true`) || !strings.Contains(resp, `"items"`) {
+		t.Errorf("expected the campaign list through the socket, got %s", resp)
 	}
 }
