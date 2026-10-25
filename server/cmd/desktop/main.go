@@ -50,6 +50,8 @@ type desktopApp struct {
 
 	mcpMu   sync.Mutex
 	mcpStop func() error // non-nil while the MCP socket is open
+
+	clientsFn func() ([]desktop.Client, error) // nil means desktop.Clients; tests replace it
 }
 
 type settings struct {
@@ -175,6 +177,68 @@ func (d *desktopApp) setMCPEnabled(w http.ResponseWriter, r *http.Request) {
 	d.writeSettings(w)
 }
 
+func (d *desktopApp) loadClients() ([]desktop.Client, error) {
+	if d.clientsFn != nil {
+		return d.clientsFn()
+	}
+	return desktop.Clients()
+}
+
+// writeClients answers with the MCP clients found on this computer and
+// whether each one already has Rolboard in its config.
+func (d *desktopApp) writeClients(w http.ResponseWriter) {
+	clients, err := d.loadClients()
+	if err != nil {
+		slog.Error("error buscando los clientes MCP", "err", err)
+		http.Error(w, "Error listing MCP clients", http.StatusInternalServerError)
+		return
+	}
+	statuses := make([]desktop.ClientStatus, 0, len(clients))
+	for _, c := range clients {
+		statuses = append(statuses, c.Status())
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(statuses)
+}
+
+// connectClient writes the Rolboard entry into one client's config.
+func (d *desktopApp) connectClient(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		ID string `json:"id"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&payload); err != nil {
+		http.Error(w, "Invalid body", http.StatusBadRequest)
+		return
+	}
+	clients, err := d.loadClients()
+	if err != nil {
+		slog.Error("error buscando los clientes MCP", "err", err)
+		http.Error(w, "Error listing MCP clients", http.StatusInternalServerError)
+		return
+	}
+	client, err := desktop.FindClient(clients, payload.ID)
+	if err != nil {
+		http.Error(w, "Unknown client", http.StatusNotFound)
+		return
+	}
+	exe, err := desktop.SelfExecutable()
+	if err != nil {
+		slog.Error("error resolviendo el ejecutable", "err", err)
+		http.Error(w, "Error resolving the executable", http.StatusInternalServerError)
+		return
+	}
+	if err := client.Connect(exe); err != nil {
+		if errors.Is(err, desktop.ErrClientNotInstalled) {
+			http.Error(w, "Client not installed", http.StatusConflict)
+			return
+		}
+		slog.Error("error conectando el cliente MCP", "client", client.ID, "err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	d.writeClients(w)
+}
+
 func (d *desktopApp) shutdown(ctx context.Context) {
 	_ = d.setMCP(false)
 	rt := d.rt.Load()
@@ -222,6 +286,12 @@ func (d *desktopApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/mcp":
 		d.setMCPEnabled(w, r)
+		return
+	case r.Method == http.MethodGet && r.URL.Path == "/api/desktop/mcp-clients":
+		d.writeClients(w)
+		return
+	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/mcp-clients/connect":
+		d.connectClient(w, r)
 		return
 	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/vaults-root":
 		d.pickFolder(w, "Elegí la carpeta donde están tus vaults de Obsidian", func(rt *desktop.Runtime, path string) error {

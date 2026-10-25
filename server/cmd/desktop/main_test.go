@@ -197,3 +197,53 @@ func TestMCPBridgeTalksToTheRunningApp(t *testing.T) {
 		t.Errorf("expected the campaign list through the socket, got %s", resp)
 	}
 }
+
+func TestConnectMCPClients(t *testing.T) {
+	cfg, home := t.TempDir(), t.TempDir()
+	d := &desktopApp{clientsFn: func() ([]desktop.Client, error) { return desktop.ClientsAt(cfg, home), nil }}
+	do := func(method, path, body string) *httptest.ResponseRecorder {
+		rec := httptest.NewRecorder()
+		d.ServeHTTP(rec, httptest.NewRequest(method, path, strings.NewReader(body)))
+		return rec
+	}
+
+	list := do(http.MethodGet, "/api/desktop/mcp-clients", "")
+	if list.Code != http.StatusOK || !strings.Contains(list.Body.String(), `"id":"codex","label":"Codex","installed":false,"connected":false`) {
+		t.Fatalf("list: %d %s", list.Code, list.Body.String())
+	}
+
+	for _, c := range []struct {
+		body string
+		want int
+	}{
+		{`not json`, http.StatusBadRequest},
+		{`{"id":"nope"}`, http.StatusNotFound},
+		{`{"id":"claude-desktop"}`, http.StatusConflict}, // not installed
+	} {
+		if rec := do(http.MethodPost, "/api/desktop/mcp-clients/connect", c.body); rec.Code != c.want {
+			t.Errorf("%s: got %d, want %d", c.body, rec.Code, c.want)
+		}
+	}
+
+	if err := os.MkdirAll(filepath.Join(cfg, "Claude"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	rec := do(http.MethodPost, "/api/desktop/mcp-clients/connect", `{"id":"claude-desktop"}`)
+	if rec.Code != http.StatusOK || !strings.Contains(rec.Body.String(), `"id":"claude-desktop","label":"Claude Desktop","installed":true,"connected":true`) {
+		t.Fatalf("connect: %d %s", rec.Code, rec.Body.String())
+	}
+	written, err := os.ReadFile(filepath.Join(cfg, "Claude", "claude_desktop_config.json"))
+	if err != nil || !strings.Contains(string(written), `"mcp"`) {
+		t.Errorf("the config should launch `<exe> mcp`: %s %v", written, err)
+	}
+}
+
+func TestMCPClientEndpointsAreNotOnTheSocket(t *testing.T) {
+	d := startedApp(t)
+	if err := d.setMCP(true); err != nil {
+		t.Fatal(err)
+	}
+	if got := socketGet(t, d, "/api/desktop/mcp-clients"); got != http.StatusNotFound {
+		t.Errorf("an agent must not be able to rewrite client configs, got %d", got)
+	}
+}
