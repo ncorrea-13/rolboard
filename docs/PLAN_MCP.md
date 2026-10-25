@@ -181,7 +181,12 @@ Una capa por vez, verificando cada paso con `go test ./...` y `go vet ./...` ant
 
 ## Decisiones abiertas
 
-- **Binario en desktop:** subcomando `rolboard mcp` o `rolboard-mcp` aparte. No se decide todavía: lo define el spike de la Fase 0 (stdio en el `.exe` GUI de Windows).
+- **Un solo ejecutable para el usuario no técnico.** Una sola descarga y nada que mantener a mano.
+  - **Propuesta:** `rolboard mcp` es el mismo `.exe`/AppImage que la app, lanzado por el cliente MCP. Hace de puente stdio ↔ socket hacia la app abierta (que corre el servidor en un hilo). No hay un segundo archivo ni un binario embebido. `rolboard-mcp` aparte queda solo para quien usa Docker en la tailnet.
+  - **Por qué hay un segundo proceso:** con stdio el cliente lanza el proceso y habla con su stdin/stdout; no puede engancharse a un hilo de la app ya abierta.
+  - **Ruta que cambia al actualizar:** el nombre del `.exe` lleva la versión (`rolboard-windows-amd64-vX.Y.Z.exe`) y en una AppImage la ruta de montaje cambia en cada ejecución. Al arrancar, la app revisa la entrada `rolboard` de la config del cliente y, si apunta a otra ruta, la corrige (solo si el usuario ya conectó ese cliente). Usar `$APPIMAGE` en Linux.
+  - **Riesgo sin verificar:** stdio en el `.exe` de Wails (subsistema de ventana) en Windows. Si falla, el plan B es un `rolboard-mcp` de consola copiado por la app a una ruta fija; solo en ese caso.
+  - **Alternativa descartada por ahora:** servidor MCP por HTTP en un hilo, sin proceso extra. Reabre un puerto en localhost (lo que `DECISIONS.md` cerró) y no está verificado que la config local de Claude Desktop acepte una URL.
 
 ## Esqueleto
 
