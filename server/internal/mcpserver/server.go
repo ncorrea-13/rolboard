@@ -21,5 +21,6 @@ func newServer(api *apiClient, version string) *mcp.Server {
 	s := mcp.NewServer(&mcp.Implementation{Name: "rolboard", Version: version}, nil)
 	registerReadTools(s, api)
 	registerSearch(s, api)
+	registerWriteTools(s, api)
 	return s
 }
