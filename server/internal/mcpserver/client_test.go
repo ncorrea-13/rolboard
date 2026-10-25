@@ -174,7 +174,7 @@ func TestClientOverSocketNeedsNoLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	srv := &http.Server{Handler: handler}
-	go srv.Serve(ln)
+	go func() { _ = srv.Serve(ln) }()
 	t.Cleanup(func() {
 		_ = srv.Close()
 		_ = closer.Close()

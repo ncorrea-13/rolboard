@@ -83,7 +83,7 @@ func socketGet(t *testing.T, d *desktopApp, path string) int {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	return resp.StatusCode
 }
 

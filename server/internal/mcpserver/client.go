@@ -64,7 +64,7 @@ func newAPIClient(cfg Config) (*apiClient, error) {
 }
 
 // errAppClosed is what a tool reports when nothing listens on the socket.
-var errAppClosed = errors.New("Rolboard no está abierto, o no tiene activada la conexión de agentes (Ajustes de la app)")
+var errAppClosed = errors.New("la app de Rolboard no está abierta, o no tiene activada la conexión de agentes (Ajustes de la app)")
 
 // apiError is a non-2xx response from the API.
 type apiError struct {
@@ -119,7 +119,7 @@ func (c *apiClient) send(ctx context.Context, method, path string, in, out any) 
 		}
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 400 {
 		raw, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))

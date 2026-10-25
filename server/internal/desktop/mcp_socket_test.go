@@ -74,7 +74,7 @@ func TestListenSocketServesAndCleansUp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusTeapot {
 		t.Errorf("unexpected status %d", resp.StatusCode)
 	}
@@ -106,7 +106,7 @@ func TestListenSocketReplacesAStaleSocketButNotALiveOne(t *testing.T) {
 		t.Fatal(err)
 	}
 	stale.(*net.UnixListener).SetUnlinkOnClose(false)
-	stale.Close()
+	_ = stale.Close()
 	if _, err := os.Stat(path); err != nil {
 		t.Fatalf("test setup: stale socket file missing: %v", err)
 	}
@@ -115,7 +115,7 @@ func TestListenSocketReplacesAStaleSocketButNotALiveOne(t *testing.T) {
 	if err != nil {
 		t.Fatalf("a stale socket should be replaced: %v", err)
 	}
-	defer stop()
+	defer func() { _ = stop() }()
 
 	if _, err := ListenSocket(path, h); !errors.Is(err, ErrSocketInUse) {
 		t.Errorf("a live socket must not be taken over, got %v", err)
