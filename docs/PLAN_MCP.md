@@ -136,6 +136,7 @@ Una capa por vez, verificando cada paso con `go test ./...` y `go vet ./...` ant
   - `get_appearances` (NPC / personaje jugador);
   - `search` (mismos pesos que el cliente web: título, subtítulo, cuerpo; sin tildes ni mayúsculas).
   - Probado con Claude Code real (`--mcp-config`, sin tocar `~/.claude.json`) en el primer corte; el resto está cubierto por tests con la app real y transporte en memoria.
+- **Fase 2 (escritura) hecha:** `create_loose_note`, `update_loose_note` (solo cambia los campos que se pasan), `update_session_prep` (GET + PUT, el resto de la sesión queda igual), `create_npc`, `create_quest`, `create_lore`. Más `list_npc_types` y `list_lore_categories`, porque `npc_kind` es una clave por campaña y no un enum fijo. Las de creación llevan `DestructiveHint: false`; las que reemplazan texto, `true`; un test exige que toda tool de escritura declare el hint (el default del protocolo es `true`).
 - **Fuera de la v1 de lectura:** timelines (solo hay eventos), encuentros, items y monedas. Sumarlos es una línea por entidad con `registerEntity`.
 - **Hallazgo:** los modelos con `json.RawMessage` rompen la validación de salida del SDK, que infiere un schema de array. Son solo tres: `NPC`, `PlayerCharacter` y `EncounterParticipant` (`attributes`, `skills`). Sus `get_*` devuelven `any`; el resto de los modelos puede usarse como salida tipada.
 - **HTTPS probado:** test con servidor TLS y cookies `Secure` (`TestClientLoginOverHTTPSWithSecureCookie`): el login funciona y la cookie se reutiliza. Falta probar contra `tailscale serve` real.
