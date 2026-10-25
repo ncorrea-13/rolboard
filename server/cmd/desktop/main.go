@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -41,11 +42,15 @@ type desktopApp struct {
 
 	pushMu    sync.Mutex
 	pushTimer *time.Timer
+
+	mcpMu   sync.Mutex
+	mcpStop func() error // non-nil while the MCP socket is open
 }
 
 type settings struct {
 	VaultsRoot string `json:"vaultsRoot"`
 	SyncDir    string `json:"syncDir"`
+	MCPEnabled bool   `json:"mcpEnabled"`
 }
 
 func main() {
@@ -84,9 +89,66 @@ func (d *desktopApp) startup(ctx context.Context) {
 		return
 	}
 	d.rt.Store(rt)
+	if rt.Settings().MCPEnabled {
+		if err := d.setMCP(true); err != nil {
+			slog.Warn("no se pudo abrir el socket de MCP", "err", err)
+		}
+	}
+}
+
+// setMCP opens or closes the socket MCP clients use to reach the app.
+func (d *desktopApp) setMCP(enabled bool) error {
+	d.mcpMu.Lock()
+	defer d.mcpMu.Unlock()
+	if enabled == (d.mcpStop != nil) {
+		return nil
+	}
+	if !enabled {
+		err := d.mcpStop()
+		d.mcpStop = nil
+		return err
+	}
+	h := desktop.MCPHandler(http.HandlerFunc(d.serveAPI), d.schedulePush)
+	stop, err := desktop.ListenSocket(desktop.SocketPath(d.dir), h)
+	if err != nil {
+		return err
+	}
+	d.mcpStop = stop
+	return nil
+}
+
+func (d *desktopApp) setMCPEnabled(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		Enabled bool `json:"enabled"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&payload); err != nil {
+		http.Error(w, "Invalid body", http.StatusBadRequest)
+		return
+	}
+	rt := d.rt.Load()
+	if rt == nil {
+		http.Error(w, "Starting", http.StatusServiceUnavailable)
+		return
+	}
+	if err := d.setMCP(payload.Enabled); err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, desktop.ErrSocketInUse) {
+			status = http.StatusConflict
+		}
+		slog.Error("error cambiando el socket de MCP", "err", err)
+		http.Error(w, err.Error(), status)
+		return
+	}
+	if err := rt.SetMCPEnabled(payload.Enabled); err != nil {
+		_ = d.setMCP(!payload.Enabled)
+		http.Error(w, "Error saving settings", http.StatusInternalServerError)
+		return
+	}
+	d.writeSettings(w)
 }
 
 func (d *desktopApp) shutdown(ctx context.Context) {
+	_ = d.setMCP(false)
 	rt := d.rt.Load()
 	if rt == nil {
 		return
@@ -130,6 +192,9 @@ func (d *desktopApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodGet && r.URL.Path == "/api/desktop/settings":
 		d.writeSettings(w)
 		return
+	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/mcp":
+		d.setMCPEnabled(w, r)
+		return
 	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/vaults-root":
 		d.pickFolder(w, "Elegí la carpeta donde están tus vaults de Obsidian", func(rt *desktop.Runtime, path string) error {
 			return rt.SetVaultsRoot(path)
@@ -144,15 +209,20 @@ func (d *desktopApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.ServeFileFS(w, r, d.dist, "index.html")
 		return
 	}
+	d.serveAPI(w, r)
+	if r.Method != http.MethodGet {
+		d.schedulePush()
+	}
+}
+
+// serveAPI hands a request to the running app, shared by the webview and the MCP socket.
+func (d *desktopApp) serveAPI(w http.ResponseWriter, r *http.Request) {
 	rt := d.rt.Load()
 	if rt == nil {
 		http.Error(w, "Starting", http.StatusServiceUnavailable)
 		return
 	}
 	rt.ServeHTTP(w, r)
-	if r.Method != http.MethodGet {
-		d.schedulePush()
-	}
 }
 
 func (d *desktopApp) openURL(w http.ResponseWriter, r *http.Request) {
@@ -233,7 +303,7 @@ func (d *desktopApp) writeSettings(w http.ResponseWriter) {
 	}
 	cfg := rt.Settings()
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(settings{VaultsRoot: cfg.VaultsRoot, SyncDir: cfg.SyncDir})
+	_ = json.NewEncoder(w).Encode(settings{VaultsRoot: cfg.VaultsRoot, SyncDir: cfg.SyncDir, MCPEnabled: cfg.MCPEnabled})
 }
 
 func (d *desktopApp) pickFolder(w http.ResponseWriter, title string, apply func(*desktop.Runtime, string) error) {
