@@ -2,9 +2,12 @@ package mcpserver
 
 import (
 	"context"
+	"errors"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -140,5 +143,63 @@ func TestClientLoginOverHTTPSWithSecureCookie(t *testing.T) {
 	// The second call must reuse the Secure cookie from the jar, not log in again.
 	if err := c.send(context.Background(), http.MethodGet, path, nil, nil); err != nil {
 		t.Errorf("session cookie not reused: %v", err)
+	}
+}
+
+// socketPath returns a short socket path: unix socket paths are limited to
+// about 100 bytes, and t.TempDir() can exceed that.
+func socketPath(t *testing.T) string {
+	t.Helper()
+	dir, err := os.MkdirTemp("", "rb")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
+	return filepath.Join(dir, "mcp.sock")
+}
+
+func TestClientOverSocketNeedsNoLogin(t *testing.T) {
+	dir := t.TempDir()
+	handler, closer, err := app.New(app.Config{
+		DBPath:      filepath.Join(dir, "rolboard.db"),
+		UploadsRoot: filepath.Join(dir, "uploads"),
+		LocalMode:   true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := socketPath(t)
+	ln, err := net.Listen("unix", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := &http.Server{Handler: handler}
+	go srv.Serve(ln)
+	t.Cleanup(func() {
+		_ = srv.Close()
+		_ = closer.Close()
+	})
+
+	c, err := newAPIClient(Config{Socket: path})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var campaign models.Campaign
+	if err := c.do(context.Background(), http.MethodPost, "/api/campaigns", map[string]string{"name": "Local", "system": "dnd5e"}, &campaign); err != nil {
+		t.Fatalf("local mode should accept the request without a login: %v", err)
+	}
+	if campaign.Name != "Local" {
+		t.Errorf("unexpected campaign: %+v", campaign)
+	}
+}
+
+func TestClientOverSocketReportsAClosedApp(t *testing.T) {
+	c, err := newAPIClient(Config{Socket: socketPath(t)}) // nothing listens there
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = c.do(context.Background(), http.MethodGet, "/api/campaigns", nil, nil)
+	if !errors.Is(err, errAppClosed) {
+		t.Errorf("expected errAppClosed, got %v", err)
 	}
 }
