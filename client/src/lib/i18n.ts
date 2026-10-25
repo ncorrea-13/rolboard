@@ -58,6 +58,17 @@ const dict = {
     "appSettings.title": "Ajustes de la app",
     "appSettings.aura": "Fondo violeta con constelaciones",
     "appSettings.auraHint": "Desactivalo para dejar el fondo liso y oscuro.",
+    "agents.enable": "Permitir que agentes de IA se conecten",
+    "agents.enableHint":
+      "Deja que Claude Desktop, Codex o Antigravity lean y escriban tu campaña mientras Rolboard esté abierto. Solo funciona en esta computadora.",
+    "agents.connect": "Conectar",
+    "agents.reconnect": "Reconectar",
+    "agents.connected": "Conectado",
+    "agents.notInstalled": "No instalado",
+    "agents.restartHint":
+      "Después de conectar, reiniciá el programa para que tome el cambio.",
+    "agents.confirm":
+      "Rolboard se va a agregar a la configuración de {client}. Antes se guarda una copia del archivo original. ¿Seguimos?",
     "update.available": "Hay una versión nueva:",
     "vaultsRoot.change": "Cambiar",
     "vaultsRoot.pick": "Elegir carpeta",
@@ -590,6 +601,8 @@ const dict = {
     "toast.errorExporting": "Error exportando la campaña",
     "toast.errorVaultsRoot": "Error cambiando la carpeta de vaults",
     "toast.errorSyncDir": "Error cambiando la carpeta de sincronización",
+    "toast.errorAgents": "Error cambiando la conexión de agentes",
+    "toast.errorConnectClient": "Error conectando con el programa",
     "toast.vaultsRootPermission":
       "Da a Rolboard acceso a todos los archivos y vuelve a elegir la carpeta",
     "toast.errorLoading": "No se pudieron cargar los datos",
@@ -804,6 +817,17 @@ const dict = {
     "appSettings.title": "App settings",
     "appSettings.aura": "Violet sky background",
     "appSettings.auraHint": "Turn it off for a plain dark background.",
+    "agents.enable": "Let AI agents connect",
+    "agents.enableHint":
+      "Lets Claude Desktop, Codex or Antigravity read and write your campaign while Rolboard is open. It only works on this computer.",
+    "agents.connect": "Connect",
+    "agents.reconnect": "Reconnect",
+    "agents.connected": "Connected",
+    "agents.notInstalled": "Not installed",
+    "agents.restartHint":
+      "After connecting, restart the program for the change to take effect.",
+    "agents.confirm":
+      "Rolboard will add itself to {client}'s configuration. A copy of the original file is saved first. Continue?",
     "update.available": "A new version is available:",
     "vaultsRoot.change": "Change",
     "vaultsRoot.pick": "Choose folder",
@@ -1335,6 +1359,8 @@ const dict = {
     "toast.errorExporting": "Error exporting the campaign",
     "toast.errorVaultsRoot": "Error changing the vaults folder",
     "toast.errorSyncDir": "Error changing the sync folder",
+    "toast.errorAgents": "Error changing the agents connection",
+    "toast.errorConnectClient": "Error connecting to the program",
     "toast.vaultsRootPermission":
       "Give Rolboard access to all files and choose the folder again",
     "toast.errorLoading": "Couldn't load data",

@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Modal } from "./Modal";
 import { FolderField } from "./FolderField";
+import { AgentsSettings } from "./AgentsSettings";
 import { useT } from "../lib/i18n";
 import { getAura, setAura } from "../lib/appearance";
 import { reportError } from "../lib/notify";
+import { currentMode } from "../lib/appMode";
 import {
   loadSettings,
   pickFolder,
@@ -78,6 +80,12 @@ export function AppSettings({ onClose }: { onClose: () => void }) {
           </label>
           <div className="npc-edit__hint">{t("appSettings.auraHint")}</div>
         </div>
+        {currentMode() === "desktop" && (
+          <AgentsSettings
+            enabled={Boolean(settings.mcpEnabled)}
+            onChange={setSettings}
+          />
+        )}
       </div>
     </Modal>
   );
