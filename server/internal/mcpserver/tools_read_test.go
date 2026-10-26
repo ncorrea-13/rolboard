@@ -112,8 +112,8 @@ func TestEveryListToolWorksOnAnEmptyCampaign(t *testing.T) {
 			t.Errorf("%s: %+v", tool.Name, res.Content)
 		}
 	}
-	if lists != 17 {
-		t.Errorf("expected 17 list tools, got %d", lists)
+	if lists != 18 {
+		t.Errorf("expected 18 list tools, got %d", lists)
 	}
 }
 

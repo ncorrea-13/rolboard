@@ -110,6 +110,11 @@ type typeSummary struct {
 	Label string `json:"label"`
 }
 
+type timelineSummary struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
 type timelineEventSummary struct {
 	ID         int64  `json:"id"`
 	TimelineID int64  `json:"timeline_id"`
@@ -231,6 +236,12 @@ func registerReadTools(s *mcp.Server, api *apiClient) {
 			return timelineEventSummary{ID: e.ID, TimelineID: e.TimelineID, Title: e.Title, DateLabel: e.DateLabel}, true
 		})
 
+	registerList(s, api, "timelines",
+		"List the timelines of a campaign. Use the id as timeline_id in create_timeline_event.",
+		"/api/campaigns/%d/timelines",
+		func(t models.Timeline) (timelineSummary, bool) {
+			return timelineSummary{ID: t.ID, Name: t.Name}, true
+		})
 	registerList(s, api, "npc_types",
 		"List the NPC types of a campaign. The key is the npc_kind that create_npc needs.",
 		"/api/campaigns/%d/npc-types",
