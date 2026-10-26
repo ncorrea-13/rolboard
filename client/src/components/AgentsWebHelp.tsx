@@ -9,7 +9,6 @@ import {
 import { useT } from "../lib/i18n";
 import "./AgentsWebHelp.css";
 
-/** Copy-paste config to connect a client on this computer to this campaign. */
 export function AgentsWebHelp({ campaignId }: { campaignId: string | number }) {
   const t = useT();
   const [client, setClient] = useState<WebClientId>("claude-code");
@@ -22,9 +21,7 @@ export function AgentsWebHelp({ campaignId }: { campaignId: string | number }) {
       await navigator.clipboard.writeText(text);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
-    } catch {
-      // The snippet stays selectable, so copying by hand still works.
-    }
+    } catch {}
   }
 
   return (

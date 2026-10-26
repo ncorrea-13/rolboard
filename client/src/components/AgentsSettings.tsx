@@ -11,7 +11,6 @@ import {
 } from "../lib/agents";
 import type { LocalSettings } from "../lib/localSettings";
 
-/** Desktop only: lets AI apps on this computer reach the campaign. */
 export function AgentsSettings({
   enabled,
   onChange,

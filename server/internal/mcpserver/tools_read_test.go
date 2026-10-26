@@ -9,7 +9,6 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-// connect wires a real MCP client to the server over in-memory transports.
 func connect(t *testing.T, api *apiClient) *mcp.ClientSession {
 	t.Helper()
 	ctx := context.Background()
@@ -54,7 +53,6 @@ func TestNPCRoundTrip(t *testing.T) {
 	var created struct {
 		ID int64 `json:"id"`
 	}
-	// No write tool exists yet: seed through the API, like the dashboard does.
 	body := map[string]any{"name": "Kaladin", "npc_kind": "npc", "detail_level": "full", "status": "vivo"}
 	if err := api.do(ctx, http.MethodPost, "/api/campaigns/"+itoa(id)+"/npcs", body, &created); err != nil {
 		t.Fatal(err)

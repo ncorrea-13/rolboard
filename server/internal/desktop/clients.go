@@ -19,7 +19,6 @@ var (
 	ErrClientNotInstalled = errors.New("MCP client is not installed")
 )
 
-// Client is an app that can talk MCP and keeps its servers in a config file.
 type Client struct {
 	ID    string
 	Label string
@@ -30,7 +29,6 @@ type Client struct {
 	opencode   bool   // JSON file with "mcp" entries shaped {type, command[]}
 }
 
-// ClientStatus is what the settings screen shows for one client.
 type ClientStatus struct {
 	ID        string `json:"id"`
 	Label     string `json:"label"`
@@ -38,7 +36,6 @@ type ClientStatus struct {
 	Connected bool   `json:"connected"`
 }
 
-// Clients lists the supported MCP clients with their config in the real user dirs.
 func Clients() ([]Client, error) {
 	cfg, err := os.UserConfigDir()
 	if err != nil {
@@ -51,7 +48,6 @@ func Clients() ([]Client, error) {
 	return ClientsAt(cfg, home), nil
 }
 
-// ClientsAt is Clients with the user config and home dirs given, for tests.
 // The paths come from each client's docs and are not verified on every OS.
 func ClientsAt(configDir, home string) []Client {
 	return []Client{
@@ -86,7 +82,6 @@ func ClientsAt(configDir, home string) []Client {
 	}
 }
 
-// FindClient returns the client with that ID.
 func FindClient(clients []Client, id string) (Client, error) {
 	for _, c := range clients {
 		if c.ID == id {
@@ -96,7 +91,6 @@ func FindClient(clients []Client, id string) (Client, error) {
 	return Client{}, ErrUnknownClient
 }
 
-// Status reports whether the client is installed and already has the entry.
 func (c Client) Status() ClientStatus {
 	st := ClientStatus{ID: c.ID, Label: c.Label}
 	if info, err := os.Stat(c.detectDir); err == nil && info.IsDir() {
@@ -138,7 +132,6 @@ func (c Client) Connect(exe string) error {
 	return mergeMCPServer(c.configPath, c.serversKey(), serverName, map[string]any{"command": exe, "args": []string{"mcp"}})
 }
 
-// serversKey is the top-level key that holds the MCP servers in a JSON config.
 func (c Client) serversKey() string {
 	if c.opencode {
 		return "mcp"
@@ -193,7 +186,6 @@ func mergeMCPServer(path, key, name string, entry any) error {
 	return writeConfig(path, raw, append(out, '\n'), perm)
 }
 
-// codexHasServer reports whether the TOML text has a [mcp_servers.<name>] table.
 func codexHasServer(text, name string) bool {
 	header := "[mcp_servers." + name + "]"
 	for _, line := range strings.Split(text, "\n") {

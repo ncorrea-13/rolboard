@@ -64,7 +64,6 @@ type updateShopArgs struct {
 	Prices     []priceArg `json:"prices,omitempty" jsonschema:"prices of this shop; empty means it uses the catalog price. They replace the current ones"`
 }
 
-// inventoryPath returns the API path of an owner's inventory.
 func inventoryPath(kind string, ownerID int64) (string, error) {
 	switch kind {
 	case "npc":

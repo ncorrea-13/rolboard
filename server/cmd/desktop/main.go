@@ -126,7 +126,6 @@ func (d *desktopApp) startup(ctx context.Context) {
 	}
 }
 
-// setMCP opens or closes the socket MCP clients use to reach the app.
 func (d *desktopApp) setMCP(enabled bool) error {
 	d.mcpMu.Lock()
 	defer d.mcpMu.Unlock()
@@ -184,8 +183,6 @@ func (d *desktopApp) loadClients() ([]desktop.Client, error) {
 	return desktop.Clients()
 }
 
-// writeClients answers with the MCP clients found on this computer and
-// whether each one already has Rolboard in its config.
 func (d *desktopApp) writeClients(w http.ResponseWriter) {
 	clients, err := d.loadClients()
 	if err != nil {
@@ -201,7 +198,6 @@ func (d *desktopApp) writeClients(w http.ResponseWriter) {
 	_ = json.NewEncoder(w).Encode(statuses)
 }
 
-// connectClient writes the Rolboard entry into one client's config.
 func (d *desktopApp) connectClient(w http.ResponseWriter, r *http.Request) {
 	var payload struct {
 		ID string `json:"id"`
@@ -313,7 +309,6 @@ func (d *desktopApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// serveAPI hands a request to the running app, shared by the webview and the MCP socket.
 func (d *desktopApp) serveAPI(w http.ResponseWriter, r *http.Request) {
 	rt := d.rt.Load()
 	if rt == nil {

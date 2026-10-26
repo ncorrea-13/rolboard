@@ -25,7 +25,6 @@ func DBPath(dir string) string {
 	return filepath.Join(dir, "rolboard.db")
 }
 
-// SocketPath is where the app listens for MCP clients while agents are enabled.
 func SocketPath(dir string) string {
 	return filepath.Join(dir, "mcp.sock")
 }

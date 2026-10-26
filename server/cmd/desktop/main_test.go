@@ -177,7 +177,6 @@ func TestMCPBridgeTalksToTheRunningApp(t *testing.T) {
 	d := startedApp(t)
 	home := filepath.Dir(d.dir)
 
-	// Agents not enabled: the tool must say so instead of failing obscurely.
 	resp, err := bridgeListCampaigns(t, home)
 	if err != nil {
 		t.Errorf("the bridge should exit cleanly when the client closes stdin: %v", err)

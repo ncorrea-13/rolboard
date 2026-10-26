@@ -9,7 +9,6 @@ import (
 	"strings"
 )
 
-// CodePath is where Login keeps the access code of one campaign.
 func CodePath(campaign int64) (string, error) {
 	dir, err := os.UserConfigDir()
 	if err != nil {
@@ -18,7 +17,6 @@ func CodePath(campaign int64) (string, error) {
 	return filepath.Join(dir, "rolboard", "mcp-"+strconv.FormatInt(campaign, 10)+".code"), nil
 }
 
-// ReadCode returns the access code saved at path.
 func ReadCode(path string) (string, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {

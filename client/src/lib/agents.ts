@@ -1,7 +1,6 @@
 import { apiFetch } from "./api";
 import type { LocalSettings } from "./localSettings";
 
-/** An MCP client (Claude Desktop, Codex...) Rolboard can add itself to. */
 export interface McpClient {
   id: string;
   label: string;
@@ -54,7 +53,6 @@ export const WEB_CLIENT_FILES: Record<WebClientId, string[]> = {
   antigravity: ["~/.gemini/config/mcp_config.json"],
 };
 
-/** Saves the campaign's access code on this computer; asks for it with no echo. */
 export function webLoginCommand(
   url: string,
   campaignId: string | number,

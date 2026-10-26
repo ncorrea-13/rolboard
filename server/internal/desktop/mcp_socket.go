@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-// ErrSocketInUse means another running instance already owns the socket.
 var ErrSocketInUse = errors.New("another Rolboard instance is already listening on the MCP socket")
 
 // MCPHandler is what MCP clients may reach through the socket: the API, not

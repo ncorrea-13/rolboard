@@ -30,7 +30,6 @@ type searchHit struct {
 	Subtitle string `json:"subtitle,omitempty"`
 }
 
-// doc is what search looks at for one entity.
 type doc struct {
 	hit  searchHit
 	body string
@@ -106,7 +105,6 @@ func rank(docs []doc, query string) []searchHit {
 	return hits
 }
 
-// loader accumulates docs from several lists and stops at the first error.
 type loader struct {
 	ctx  context.Context
 	api  *apiClient
@@ -114,8 +112,6 @@ type loader struct {
 	err  error
 }
 
-// load fetches one list and turns each item into a doc; conv returns false to
-// skip an item.
 func load[T any](l *loader, path string, conv func(T) (doc, bool)) {
 	if l.err != nil {
 		return

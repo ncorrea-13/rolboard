@@ -4,7 +4,6 @@
   padding-top: 16px;
 }
 
-/* The agents list sits to the right of the other settings. */
 .app-settings--agents {
   grid-template-columns: minmax(0, 1fr) minmax(0, 280px);
   align-items: start;

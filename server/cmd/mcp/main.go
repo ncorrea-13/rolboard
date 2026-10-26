@@ -61,8 +61,6 @@ func main() {
 	}
 }
 
-// login asks for the access code with no echo, like sudo, and saves it only
-// if the server accepts it.
 func login(args []string) {
 	flags := flag.NewFlagSet("login", flag.ExitOnError)
 	url := flags.String("url", os.Getenv("ROLBOARD_URL"), "dirección del servidor")
@@ -101,7 +99,6 @@ func envCampaign() int64 {
 	return n
 }
 
-// envCampaignOr0 is the default of --campaign: unset is fine there.
 func envCampaignOr0() int64 {
 	n, _ := strconv.ParseInt(os.Getenv("ROLBOARD_CAMPAIGN"), 10, 64)
 	return n

@@ -104,7 +104,6 @@ type secretSummary struct {
 	Status string `json:"status"`
 }
 
-// typeSummary is shared by npc types and lore categories.
 type typeSummary struct {
 	ID    int64  `json:"id"`
 	Key   string `json:"key"`
