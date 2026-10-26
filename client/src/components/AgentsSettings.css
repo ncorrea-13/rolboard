@@ -6,8 +6,9 @@
 
 .agents-list__row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 4px 10px;
   padding: 4px 4px 4px 12px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
@@ -15,8 +16,9 @@
 }
 
 .agents-list__name {
-  flex: 1;
+  flex: 1 1 120px;
   min-width: 0;
+  overflow-wrap: anywhere;
   color: var(--text-body);
 }
 
@@ -27,5 +29,7 @@
 
 .agents-list__btn {
   flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
   min-height: 0;
 }
