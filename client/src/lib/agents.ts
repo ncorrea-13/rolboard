@@ -54,10 +54,18 @@ export const WEB_CLIENT_FILES: Record<WebClientId, string[]> = {
   antigravity: ["~/.gemini/config/mcp_config.json"],
 };
 
+/** Saves the campaign's access code on this computer; asks for it with no echo. */
+export function webLoginCommand(
+  url: string,
+  campaignId: string | number,
+): string {
+  return `/path/to/rolboard-mcp login --url ${url} --campaign ${campaignId}`;
+}
+
 /**
  * The command or config that makes a client launch rolboard-mcp for one
  * campaign. Commands are one line so they work in any shell. Paths are
- * placeholders: the user knows where the binary and the code file are.
+ * a placeholder: the user knows where the binary is.
  */
 export function webSnippet(
   id: WebClientId,
@@ -69,7 +77,6 @@ export function webSnippet(
   const env = {
     ROLBOARD_URL: url,
     ROLBOARD_CAMPAIGN: String(campaignId),
-    ROLBOARD_CODE_FILE: "/path/to/access-code.txt",
   };
   const flags = (flag: string) =>
     Object.entries(env)

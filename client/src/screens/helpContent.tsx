@@ -49,13 +49,11 @@ const EN_TABLE = `| Era | Event |
 const ES_MCP_WEB = `claude mcp add --scope user rolboard \\
   -e ROLBOARD_URL=https://mi-servidor \\
   -e ROLBOARD_CAMPAIGN=3 \\
-  -e ROLBOARD_CODE_FILE=$HOME/.rolboard-codigo \\
   -- /ruta/a/rolboard-mcp`;
 
 const EN_MCP_WEB = `claude mcp add --scope user rolboard \\
   -e ROLBOARD_URL=https://my-server \\
   -e ROLBOARD_CAMPAIGN=3 \\
-  -e ROLBOARD_CODE_FILE=$HOME/.rolboard-code \\
   -- /path/to/rolboard-mcp`;
 
 const es: HelpPage[] = [
@@ -986,33 +984,35 @@ const es: HelpPage[] = [
             <p>
               El asistente corre en tu computadora y se conecta al servidor con
               un programa chico, <code>rolboard-mcp</code>. Descárgalo de la
-              página de <em>Releases</em> del repositorio en GitHub y
-              necesitarás tres datos:
+              página de <em>Releases</em> del repositorio en GitHub y sigue
+              estos pasos:
             </p>
-            <ul>
+            <ol>
               <li>
-                <code>ROLBOARD_URL</code>: la dirección del servidor, la misma
-                que usas en el navegador.
+                En una terminal, ejecuta una vez{" "}
+                <code>
+                  rolboard-mcp login --url https://mi-servidor --campaign 3
+                </code>
+                . Te pide el código de acceso sin mostrarlo, comprueba que el
+                servidor lo acepte y lo guarda en tu carpeta de configuración,
+                legible solo por tu usuario.
               </li>
               <li>
-                <code>ROLBOARD_CAMPAIGN</code>: el número de la campaña. Es el
-                que aparece en la dirección tras <code>/c/</code>.
+                Conecta el cliente que uses. En los ajustes de la campaña, el
+                bloque <em>Conectar un agente de IA</em> arma el comando o la
+                configuración de cada uno. A mano, con Claude Code:
               </li>
-              <li>
-                <code>ROLBOARD_CODE_FILE</code>: un archivo de texto con el
-                código de acceso de esa campaña, y nada más.
-              </li>
-            </ul>
-            <p>Ejemplo con Claude Code:</p>
+            </ol>
             <Code>{ES_MCP_WEB}</Code>
             <p>
-              Cada campaña tiene su propio código, así que una conexión da
-              acceso a una sola campaña. Para otra, repite el comando con su
-              número y su archivo.
+              <code>ROLBOARD_CAMPAIGN</code> es el número de la campaña, el que
+              aparece en la dirección tras <code>/c/</code>. Cada campaña tiene
+              su propio código, así que una conexión da acceso a una sola. Para
+              otra, repite los pasos con su número.
             </p>
-            <Callout kind="warning" title="Protege el archivo del código">
-              Quien lo lea puede entrar a la campaña. Déjalo solo para tu
-              usuario (<code>chmod 600</code>).
+            <Callout kind="warning" title="El código queda en tu equipo">
+              Quien pueda leer ese archivo entra a la campaña. Si cambias el
+              código de la campaña, vuelve a ejecutar <code>login</code>.
             </Callout>
           </>
         ),
@@ -1957,33 +1957,35 @@ const en: HelpPage[] = [
             <p>
               The assistant runs on your computer and reaches the server through
               a small program, <code>rolboard-mcp</code>. Download it from the
-              repository's <em>Releases</em> page on GitHub. You'll need three
-              values:
+              repository's <em>Releases</em> page on GitHub and follow these
+              steps:
             </p>
-            <ul>
+            <ol>
               <li>
-                <code>ROLBOARD_URL</code>: the server address, the same one you
-                use in the browser.
+                In a terminal, run{" "}
+                <code>
+                  rolboard-mcp login --url https://my-server --campaign 3
+                </code>{" "}
+                once. It asks for the access code without showing it, checks
+                that the server accepts it and saves it in your config folder,
+                readable only by your user.
               </li>
               <li>
-                <code>ROLBOARD_CAMPAIGN</code>: the campaign number. It's the
-                one in the address after <code>/c/</code>.
+                Connect the client you use. In the campaign settings, the{" "}
+                <em>Connect an AI agent</em> block builds the command or the
+                configuration for each one. By hand, with Claude Code:
               </li>
-              <li>
-                <code>ROLBOARD_CODE_FILE</code>: a text file with that
-                campaign's access code and nothing else.
-              </li>
-            </ul>
-            <p>Example with Claude Code:</p>
+            </ol>
             <Code>{EN_MCP_WEB}</Code>
             <p>
-              Each campaign has its own code, so one connection reaches a single
-              campaign. For another one, repeat the command with its number and
-              its file.
+              <code>ROLBOARD_CAMPAIGN</code> is the campaign number, the one in
+              the address after <code>/c/</code>. Each campaign has its own
+              code, so one connection reaches a single campaign. For another
+              one, repeat the steps with its number.
             </p>
-            <Callout kind="warning" title="Protect the code file">
-              Anyone who can read it can enter the campaign. Keep it readable
-              only by your user (<code>chmod 600</code>).
+            <Callout kind="warning" title="The code stays on your machine">
+              Anyone who can read that file can enter the campaign. If you
+              change the campaign's code, run <code>login</code> again.
             </Callout>
           </>
         ),

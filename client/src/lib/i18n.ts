@@ -92,7 +92,10 @@ const dict = {
     "campaignSettings.accessCodeSaved": "Código actualizado",
     "agentsWeb.title": "Conectar un agente de IA",
     "agentsWeb.hint":
-      "Corre en tu computadora con el programa rolboard-mcp y entra con el código de acceso de esta campaña, guardado en un archivo de texto. Reemplaza las rutas de ejemplo.",
+      "Corre en tu computadora con el programa rolboard-mcp. Reemplaza /path/to/ por la ubicación donde lo descargaste.",
+    "agentsWeb.step1":
+      "1. Una vez, en una terminal. Te pide el código de acceso de esta campaña sin mostrarlo y lo guarda en tu equipo:",
+    "agentsWeb.step2": "2. Conecta el cliente:",
     "agentsWeb.client": "Cliente",
     "agentsWeb.copy": "Copiar",
     "agentsWeb.copied": "Copiado",
@@ -860,7 +863,10 @@ const dict = {
     "campaignSettings.accessCodeSaved": "Code updated",
     "agentsWeb.title": "Connect an AI agent",
     "agentsWeb.hint":
-      "It runs on your computer with the rolboard-mcp program and signs in with this campaign's access code, kept in a text file. Replace the example paths.",
+      "It runs on your computer with the rolboard-mcp program. Replace /path/to/ with where you downloaded it.",
+    "agentsWeb.step1":
+      "1. Once, in a terminal. It asks for this campaign's access code without showing it and saves it on your computer:",
+    "agentsWeb.step2": "2. Connect the client:",
     "agentsWeb.client": "Client",
     "agentsWeb.copy": "Copy",
     "agentsWeb.copied": "Copied",

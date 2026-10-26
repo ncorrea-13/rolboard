@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { WEB_CLIENTS, webSnippet } from "./agents";
+import { WEB_CLIENTS, webLoginCommand, webSnippet } from "./agents";
 
 describe("webSnippet", () => {
   it("names the server after the campaign and carries the three variables", () => {
@@ -8,7 +8,6 @@ describe("webSnippet", () => {
       expect(text).toContain("rolboard-7");
       expect(text).toContain("https://box.tail.ts.net");
       expect(text).toContain("ROLBOARD_CAMPAIGN");
-      expect(text).toContain("ROLBOARD_CODE_FILE");
     }
   });
 
@@ -26,15 +25,21 @@ describe("webSnippet", () => {
 
   it("puts the env flags before the -- of the command clients", () => {
     expect(webSnippet("codex", "https://x", 3)).toBe(
-      "codex mcp add rolboard-3 --env ROLBOARD_URL=https://x --env ROLBOARD_CAMPAIGN=3 --env ROLBOARD_CODE_FILE=/path/to/access-code.txt -- /path/to/rolboard-mcp",
+      "codex mcp add rolboard-3 --env ROLBOARD_URL=https://x --env ROLBOARD_CAMPAIGN=3 -- /path/to/rolboard-mcp",
     );
     expect(webSnippet("claude-code", "https://x", 3)).toMatch(
       /^claude mcp add --scope user rolboard-3 -e .* -- \/path\/to\/rolboard-mcp$/,
     );
   });
 
-  it("never asks for the access code itself", () => {
+  it("logs in with the same server and campaign the snippets use", () => {
+    expect(webLoginCommand("https://x", 3)).toBe(
+      "/path/to/rolboard-mcp login --url https://x --campaign 3",
+    );
+  });
+
+  it("never carries the access code or a file for it", () => {
     for (const { id } of WEB_CLIENTS)
-      expect(webSnippet(id, "https://x", 3)).not.toMatch(/ACCESS_CODE\b/);
+      expect(webSnippet(id, "https://x", 3)).not.toMatch(/CODE/);
   });
 });

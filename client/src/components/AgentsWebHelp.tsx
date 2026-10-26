@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   WEB_CLIENTS,
   WEB_CLIENT_FILES,
+  webLoginCommand,
   webSnippet,
   type WebClientId,
 } from "../lib/agents";
@@ -30,6 +31,11 @@ export function AgentsWebHelp({ campaignId }: { campaignId: string | number }) {
     <details className="agents-web">
       <summary className="label">{t("agentsWeb.title")}</summary>
       <p className="npc-edit__hint">{t("agentsWeb.hint")}</p>
+      <div className="npc-edit__hint">{t("agentsWeb.step1")}</div>
+      <pre className="agents-web__code">
+        <code>{webLoginCommand(window.location.origin, campaignId)}</code>
+      </pre>
+      <div className="npc-edit__hint">{t("agentsWeb.step2")}</div>
       <select
         className="npc-edit__input"
         value={client}
