@@ -1,0 +1,37 @@
+.agents-web {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--accent-teal) 7%, var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--accent-teal) 35%, var(--border));
+  border-radius: 8px;
+}
+
+.agents-web > * {
+  min-width: 0;
+}
+
+.agents-web summary {
+  cursor: pointer;
+}
+
+.agents-web__code {
+  margin: 0;
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.agents-web__file {
+  display: block;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.agents-web .btn {
+  justify-self: start;
+}

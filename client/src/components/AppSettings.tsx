@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Modal } from "./Modal";
+import "./AppSettings.css";
 import { FolderField } from "./FolderField";
+import { AgentsSettings } from "./AgentsSettings";
 import { useT } from "../lib/i18n";
 import { getAura, setAura } from "../lib/appearance";
 import { reportError } from "../lib/notify";
+import { currentMode } from "../lib/appMode";
 import {
   loadSettings,
   pickFolder,
@@ -47,9 +50,18 @@ export function AppSettings({ onClose }: { onClose: () => void }) {
     }
   }
 
+  const agentsOpen =
+    currentMode() === "desktop" && Boolean(settings.mcpEnabled);
+
   return (
-    <Modal title={t("appSettings.title")} onClose={onClose}>
-      <div style={{ display: "grid", gap: 18, paddingTop: 16 }}>
+    <Modal
+      title={t("appSettings.title")}
+      onClose={onClose}
+      size={agentsOpen ? "sheet" : undefined}
+    >
+      <div
+        className={`app-settings${agentsOpen ? " app-settings--agents" : ""}`}
+      >
         <FolderField
           label={t("vaultsRoot.label")}
           hint={t("vaultsRoot.hint")}
@@ -78,6 +90,12 @@ export function AppSettings({ onClose }: { onClose: () => void }) {
           </label>
           <div className="npc-edit__hint">{t("appSettings.auraHint")}</div>
         </div>
+        {currentMode() === "desktop" && (
+          <AgentsSettings
+            enabled={Boolean(settings.mcpEnabled)}
+            onChange={setSettings}
+          />
+        )}
       </div>
     </Modal>
   );

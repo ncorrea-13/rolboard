@@ -4,7 +4,7 @@
 
 Native build of Rolboard for a single computer, next to the Docker deployment. Same repository, services, handlers and vault indexer; only the entrypoint changes. The Android app shares the same runtime: [`ANDROID.md`](ANDROID.md). The reasoning behind each choice is in [`DECISIONS.md`](DECISIONS.md#desktop-app).
 
-Status: Linux tested; Windows cross-compiled but not yet run on a real machine; macOS not distributed.
+Status: Linux and Windows tested; macOS not distributed. The MCP socket and the `rolboard mcp` bridge are tested on Linux only (see [AI agents](#ai-agents-mcp)).
 
 ---
 
@@ -18,6 +18,7 @@ Status: Linux tested; Windows cross-compiled but not yet run on a real machine; 
 | Network | Caddy + HTTP on `:8080` | none: the webview talks to the router in-process |
 | Auth | admin token + per-campaign codes | off (local mode) |
 | Distribution | GHCR images | GitHub Release: `.exe` and AppImage |
+| AI agents | `rolboard-mcp` over HTTPS | unix socket + `rolboard mcp` |
 
 ## How it runs
 
@@ -47,6 +48,9 @@ POST /api/desktop/vaults-root   opens the native folder dialog; 200 with the set
 POST /api/desktop/sync-dir      same, for the sync folder
 POST /api/desktop/open          {"url": "https://..."}  opens it in the default browser; https only
 POST /api/desktop/save-export   {"campaignId": "N"}  builds the campaign export and opens the native save dialog; 200 {"path"} or 204 if cancelled
+POST /api/desktop/mcp           {"enabled": bool}  opens or closes the MCP socket and saves `mcpEnabled`
+GET  /api/desktop/mcp-clients   the supported AI clients with their state (installed, connected)
+POST /api/desktop/mcp-clients/connect  {"id": "..."}  adds the `rolboard` entry to that client's config
 ```
 
 Changing a folder saves `config.json` and rebuilds the app in place (new `app.New`, handler swap, old DB closed): no restart.
@@ -72,12 +76,24 @@ Optional. Pick a **sync folder** that some external tool keeps in sync (Syncthin
 
 Meant for one device at a time; merging changes made on two devices at once is out of scope.
 
+## AI agents (MCP)
+
+Optional, off by default. **App settings → Let AI agents connect** opens `mcp.sock` in the data folder (`0600`) and saves `mcpEnabled` in `config.json`; it reopens on the next start.
+
+- The socket uses its own handler: only `/api/` is served and `/api/desktop/*` answers `404`, so an agent can't use the desktop-only endpoints above. Non-GET requests schedule the sync push like the webview's.
+- `rolboard mcp` (the same executable) is what the AI client launches. It runs before Wails starts, never opens a window and relays stdio to the socket. If the app is closed or the switch is off it answers with a clear error. Logs go to stderr: stdout belongs to the protocol.
+- The **Connect** button of each client (Claude Desktop, Claude Code, OpenCode, Codex, Antigravity) merges a `rolboard` entry into its config file. Only clients that are installed can be connected; **Reconnect** rewrites the path after the app moved or was updated (`$APPIMAGE` is used on Linux).
+- The build version comes from `-ldflags "-X main.version=..."`, which the release workflow sets.
+- Not verified on Windows: `AF_UNIX`, file permissions (ACL, not `0600`) and stdio in the windowed `.exe`.
+
+Guide for users and per-client config files: [`MCP.md`](MCP.md).
+
 ## Layout
 
 ```
 server/cmd/desktop/
 ├── main.go             Wails setup, startup, desktop endpoints
-├── main_test.go        /api/desktop/open rejects non-https URLs
+├── main_test.go        /api/desktop/open rejects non-https URLs; the MCP socket and its handler
 ├── wails.json          frontend install/build commands
 ├── frontend/           client/dist is copied here at build time (git-ignored, .gitkeep only)
 └── build/
@@ -85,7 +101,8 @@ server/cmd/desktop/
     └── windows/        icon.ico, manifest, version info for the .exe
 ```
 
-- `server/internal/desktop/`: `config.json`, data paths and `Runtime` (app lifecycle, settings, sync).
+- `server/internal/desktop/`: `config.json`, data paths, `Runtime` (app lifecycle, settings, sync) and the AI clients' config files (`clients.go`).
+- `server/internal/mcpserver/`: the MCP tools, the API client and the socket bridge.
 - `server/internal/snapshot/`: export, import, conflict copy and upload copy for the sync folder.
 
 ## Build from source
@@ -112,10 +129,10 @@ The AppImage is packaged with `appimagetool` 1.9.1; the steps are in [`.github/w
 
 `.github/workflows/release.yml`, `desktop` job on `ubuntu-latest` (the `android` job runs after it, see [`ANDROID.md`](ANDROID.md#release)):
 
-- **Tag `v*`:** builds both targets and creates a **draft** GitHub Release with `rolboard-windows-amd64-vX.Y.Z.exe` and `rolboard-linux-amd64-vX.Y.Z.AppImage`. Review the notes and publish it by hand.
+- **Tag `v*`:** builds both targets and creates a **draft** GitHub Release with `rolboard-windows-amd64-vX.Y.Z.exe` and `rolboard-linux-amd64-vX.Y.Z.AppImage`, plus `rolboard-mcp-linux-amd64-vX.Y.Z` and `rolboard-mcp-windows-amd64-vX.Y.Z.exe` for Docker users ([`MCP.md`](MCP.md)). Review the notes and publish it by hand.
 - **Manual run:** builds both and uploads them as a workflow artifact, no release.
 
-The version also goes into `wails.json` (`info.productVersion`), so the `.exe` shows it in its file properties; manual runs use `dev-<sha>` in the file names and `0.0.0` as product version. The Wails CLI version is read from `go.mod`, so Dependabot bumps keep it in sync. The README links to the latest release page and the landing page reads the asset URLs from the GitHub API, so keep the `windows-amd64` / `linux-amd64` parts of the names. Third-party actions are pinned by SHA and `appimagetool` is checked against its SHA-256.
+The version also goes into `wails.json` (`info.productVersion`), so the `.exe` shows it in its file properties; manual runs use `dev-<sha>` in the file names and `0.0.0` as product version. The Wails CLI version is read from `go.mod`, so Dependabot bumps keep it in sync. The README links to the latest release page and the landing page reads the asset URLs from the GitHub API, so keep the `windows-amd64` / `linux-amd64` parts of the names (the `rolboard-mcp-*` assets must not match the desktop patterns, which are anchored at `rolboard-windows` / `rolboard-linux`). Third-party actions are pinned by SHA and `appimagetool` is checked against its SHA-256.
 
 ## Known limitations
 

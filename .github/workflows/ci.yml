@@ -25,6 +25,9 @@ jobs:
       - name: Build
         run: cd server && go build ./...
 
+      - name: Build rolboard-mcp (Windows)
+        run: cd server && GOOS=windows GOARCH=amd64 go build -o /dev/null ./cmd/mcp
+
       - name: Lint
         uses: golangci/golangci-lint-action@v9
         with:

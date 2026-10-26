@@ -56,6 +56,13 @@ func (r *Runtime) Settings() Config {
 	return r.cfg
 }
 
+func (r *Runtime) SetMCPEnabled(enabled bool) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.cfg.MCPEnabled = enabled
+	return Save(r.dir, r.cfg)
+}
+
 func (r *Runtime) SetVaultsRoot(path string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()

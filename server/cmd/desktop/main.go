@@ -4,12 +4,14 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"io/fs"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"os/signal"
 	"regexp"
 	"strings"
 	"sync"
@@ -23,6 +25,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
 	"github.com/ncorrea-13/rolboard/server/internal/desktop"
+	"github.com/ncorrea-13/rolboard/server/internal/mcpserver"
 )
 
 //go:embed all:frontend
@@ -33,6 +36,9 @@ var icon []byte
 
 const pushDelay = 30 * time.Second
 
+// Set at build time with -ldflags "-X main.version=vX.Y.Z".
+var version = "dev"
+
 type desktopApp struct {
 	ctx  context.Context
 	dir  string
@@ -41,14 +47,24 @@ type desktopApp struct {
 
 	pushMu    sync.Mutex
 	pushTimer *time.Timer
+
+	mcpMu   sync.Mutex
+	mcpStop func() error // non-nil while the MCP socket is open
+
+	clientsFn func() ([]desktop.Client, error) // nil means desktop.Clients; tests replace it
 }
 
 type settings struct {
 	VaultsRoot string `json:"vaultsRoot"`
 	SyncDir    string `json:"syncDir"`
+	MCPEnabled bool   `json:"mcpEnabled"`
 }
 
 func main() {
+	// `rolboard mcp` is what MCP clients launch: it never opens a window.
+	if len(os.Args) > 1 && os.Args[1] == "mcp" {
+		runMCP()
+	}
 	dist, err := fs.Sub(assets, "frontend/dist")
 	if err != nil {
 		slog.Error("error leyendo el frontend embebido", "err", err)
@@ -76,6 +92,25 @@ func main() {
 	}
 }
 
+// runMCP is the bridge between an MCP client and the running app: it speaks
+// MCP on stdio and forwards to the app's socket. stdout belongs to the
+// protocol, so anything it logs goes to stderr (slog's default).
+func runMCP() {
+	dir, err := desktop.Dir()
+	if err != nil {
+		slog.Error("error resolviendo el directorio de config", "err", err)
+		os.Exit(1)
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	err = mcpserver.Run(ctx, mcpserver.Config{Socket: desktop.SocketPath(dir), Version: version})
+	if err != nil {
+		slog.Error("mcp", "err", err)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
+
 func (d *desktopApp) startup(ctx context.Context) {
 	d.ctx = ctx
 	rt, err := desktop.Start(ctx, d.dir)
@@ -84,9 +119,124 @@ func (d *desktopApp) startup(ctx context.Context) {
 		return
 	}
 	d.rt.Store(rt)
+	if rt.Settings().MCPEnabled {
+		if err := d.setMCP(true); err != nil {
+			slog.Warn("no se pudo abrir el socket de MCP", "err", err)
+		}
+	}
+}
+
+func (d *desktopApp) setMCP(enabled bool) error {
+	d.mcpMu.Lock()
+	defer d.mcpMu.Unlock()
+	if enabled == (d.mcpStop != nil) {
+		return nil
+	}
+	if !enabled {
+		err := d.mcpStop()
+		d.mcpStop = nil
+		return err
+	}
+	h := desktop.MCPHandler(http.HandlerFunc(d.serveAPI), d.schedulePush)
+	stop, err := desktop.ListenSocket(desktop.SocketPath(d.dir), h)
+	if err != nil {
+		return err
+	}
+	d.mcpStop = stop
+	return nil
+}
+
+func (d *desktopApp) setMCPEnabled(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		Enabled bool `json:"enabled"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&payload); err != nil {
+		http.Error(w, "Invalid body", http.StatusBadRequest)
+		return
+	}
+	rt := d.rt.Load()
+	if rt == nil {
+		http.Error(w, "Starting", http.StatusServiceUnavailable)
+		return
+	}
+	if err := d.setMCP(payload.Enabled); err != nil {
+		status := http.StatusInternalServerError
+		if errors.Is(err, desktop.ErrSocketInUse) {
+			status = http.StatusConflict
+		}
+		slog.Error("error cambiando el socket de MCP", "err", err)
+		http.Error(w, err.Error(), status)
+		return
+	}
+	if err := rt.SetMCPEnabled(payload.Enabled); err != nil {
+		_ = d.setMCP(!payload.Enabled)
+		http.Error(w, "Error saving settings", http.StatusInternalServerError)
+		return
+	}
+	d.writeSettings(w)
+}
+
+func (d *desktopApp) loadClients() ([]desktop.Client, error) {
+	if d.clientsFn != nil {
+		return d.clientsFn()
+	}
+	return desktop.Clients()
+}
+
+func (d *desktopApp) writeClients(w http.ResponseWriter) {
+	clients, err := d.loadClients()
+	if err != nil {
+		slog.Error("error buscando los clientes MCP", "err", err)
+		http.Error(w, "Error listing MCP clients", http.StatusInternalServerError)
+		return
+	}
+	statuses := make([]desktop.ClientStatus, 0, len(clients))
+	for _, c := range clients {
+		statuses = append(statuses, c.Status())
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(statuses)
+}
+
+func (d *desktopApp) connectClient(w http.ResponseWriter, r *http.Request) {
+	var payload struct {
+		ID string `json:"id"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4096)).Decode(&payload); err != nil {
+		http.Error(w, "Invalid body", http.StatusBadRequest)
+		return
+	}
+	clients, err := d.loadClients()
+	if err != nil {
+		slog.Error("error buscando los clientes MCP", "err", err)
+		http.Error(w, "Error listing MCP clients", http.StatusInternalServerError)
+		return
+	}
+	client, err := desktop.FindClient(clients, payload.ID)
+	if err != nil {
+		http.Error(w, "Unknown client", http.StatusNotFound)
+		return
+	}
+	exe, err := desktop.SelfExecutable()
+	if err != nil {
+		slog.Error("error resolviendo el ejecutable", "err", err)
+		http.Error(w, "Error resolving the executable", http.StatusInternalServerError)
+		return
+	}
+	if err := client.Connect(exe); err != nil {
+		if errors.Is(err, desktop.ErrClientNotInstalled) {
+			http.Error(w, "Client not installed", http.StatusConflict)
+			return
+		}
+		slog.Error("error conectando el cliente MCP", "client", client.ID, "err", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	d.writeClients(w)
 }
 
 func (d *desktopApp) shutdown(ctx context.Context) {
+	_ = d.setMCP(false)
 	rt := d.rt.Load()
 	if rt == nil {
 		return
@@ -130,6 +280,15 @@ func (d *desktopApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodGet && r.URL.Path == "/api/desktop/settings":
 		d.writeSettings(w)
 		return
+	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/mcp":
+		d.setMCPEnabled(w, r)
+		return
+	case r.Method == http.MethodGet && r.URL.Path == "/api/desktop/mcp-clients":
+		d.writeClients(w)
+		return
+	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/mcp-clients/connect":
+		d.connectClient(w, r)
+		return
 	case r.Method == http.MethodPost && r.URL.Path == "/api/desktop/vaults-root":
 		d.pickFolder(w, "Elegí la carpeta donde están tus vaults de Obsidian", func(rt *desktop.Runtime, path string) error {
 			return rt.SetVaultsRoot(path)
@@ -144,15 +303,19 @@ func (d *desktopApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.ServeFileFS(w, r, d.dist, "index.html")
 		return
 	}
+	d.serveAPI(w, r)
+	if r.Method != http.MethodGet {
+		d.schedulePush()
+	}
+}
+
+func (d *desktopApp) serveAPI(w http.ResponseWriter, r *http.Request) {
 	rt := d.rt.Load()
 	if rt == nil {
 		http.Error(w, "Starting", http.StatusServiceUnavailable)
 		return
 	}
 	rt.ServeHTTP(w, r)
-	if r.Method != http.MethodGet {
-		d.schedulePush()
-	}
 }
 
 func (d *desktopApp) openURL(w http.ResponseWriter, r *http.Request) {
@@ -233,7 +396,7 @@ func (d *desktopApp) writeSettings(w http.ResponseWriter) {
 	}
 	cfg := rt.Settings()
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(settings{VaultsRoot: cfg.VaultsRoot, SyncDir: cfg.SyncDir})
+	_ = json.NewEncoder(w).Encode(settings{VaultsRoot: cfg.VaultsRoot, SyncDir: cfg.SyncDir, MCPEnabled: cfg.MCPEnabled})
 }
 
 func (d *desktopApp) pickFolder(w http.ResponseWriter, title string, apply func(*desktop.Runtime, string) error) {

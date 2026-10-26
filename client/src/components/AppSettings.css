@@ -1,0 +1,26 @@
+.app-settings {
+  display: grid;
+  gap: 18px;
+  padding-top: 16px;
+}
+
+.app-settings--agents {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 280px);
+  align-items: start;
+}
+
+.app-settings--agents .agents-list {
+  grid-column: 2;
+  grid-row: 1 / span 4;
+}
+
+@media (max-width: 720px) {
+  .app-settings--agents {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-settings--agents .agents-list {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}

@@ -36,6 +36,7 @@ Started as a move away from Obsidian, for faster management, while still includi
 - **Combat tracker:** fast / slow phases, initiative, HP with damage and healing, rounds, and "who's next".
 - **Search:** one palette across the whole campaign (`Ctrl` + `K`).
 - **Images:** one image per NPC, player, location, faction, item, arc, lore entry and quest.
+- **AI agents:** connect Claude Code, Claude Desktop, OpenCode, Codex or Antigravity to read the campaign and capture ideas, with no API keys.
 - **Obsidian:** frontmatter indexer, open-in-Obsidian links and rendered notes.
 - **Safety net:** a trash with restore, and Markdown with Obsidian-style callouts and tables.
 - **Everywhere:** Spanish and English, and a multi-page in-app help that adapts to the server, desktop or Android version.
@@ -84,6 +85,16 @@ The same app on your phone or tablet, offline. ARM64 (almost any phone from the 
 - Syncs with the desktop app through a sync folder, as above.
 
 Building from source and how it works: [`docs/ANDROID.md`](docs/ANDROID.md).
+
+## AI agents
+
+An AI assistant on your computer (Claude Code, Claude Desktop, OpenCode, Codex or Antigravity) can read a campaign, and create and edit its notes, NPCs, quests, lore, items and more, through MCP. No API keys or OAuth: it keeps using your own account with its provider. It cannot delete anything.
+
+- **Desktop app:** turn on **Let AI agents connect** in **App settings** and press **Connect** next to your client.
+- **Docker:** download `rolboard-mcp` from the release, run `rolboard-mcp login` once to save the campaign's access code, then copy the command from the campaign settings (**Connect an AI agent**).
+- Not available on Android.
+
+Step by step and per-client files: [`docs/MCP.md`](docs/MCP.md).
 
 ## Quick start (Docker)
 
@@ -213,7 +224,7 @@ REST + JSON under `/api`. Full list: [`docs/API.md`](docs/API.md).
 
 ## Project Structure
 
-`server/` (Go), `client/` (React/TS) and `android/` (Gradle project). Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+`server/` (Go), `client/` (React/TS) and `android/` (Gradle project). `rolboard-mcp` is built from `server/cmd/mcp`. Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). AI agents: [`docs/MCP.md`](docs/MCP.md).
 Reasoning behind each scope call: [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ## About

@@ -9,6 +9,7 @@ import {
 } from "../lib/api";
 import { useT } from "../lib/i18n";
 import { reportError } from "../lib/notify";
+import { AgentsWebHelp } from "./AgentsWebHelp";
 
 interface CampaignSettingsFormProps {
   campaign: Campaign;
@@ -252,6 +253,15 @@ export function CampaignSettingsForm({
               {t("campaignSettings.accessCodeSave")}
             </button>
           </div>
+
+          <hr
+            style={{
+              margin: "16px 0",
+              border: "none",
+              borderTop: "1px solid var(--border-subtle)",
+            }}
+          />
+          <AgentsWebHelp campaignId={campaign.id} />
         </>
       )}
     </>

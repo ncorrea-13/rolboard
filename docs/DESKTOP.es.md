@@ -4,7 +4,7 @@
 
 Build nativo de Rolboard para una sola computadora, junto al despliegue con Docker. Mismo repositorio, servicios, handlers e indexador del vault; solo cambia el entrypoint. La app de Android comparte el mismo runtime: [`ANDROID.es.md`](ANDROID.es.md). El porqué de cada decisión está en [`DECISIONS.es.md`](DECISIONS.es.md#app-de-escritorio).
 
-Estado: probado en Linux; Windows compila (cross-compile) pero todavía no se ejecutó en una máquina real; macOS no se distribuye.
+Estado: probado en Linux y Windows; macOS no se distribuye. El socket MCP y el puente `rolboard mcp` están probados solo en Linux (ver [Agentes de IA](#agentes-de-ia-mcp)).
 
 ---
 
@@ -18,6 +18,7 @@ Estado: probado en Linux; Windows compila (cross-compile) pero todavía no se ej
 | Red | Caddy + HTTP en `:8080` | ninguna: el webview habla con el router dentro del proceso |
 | Auth | token de admin + códigos por campaña | desactivada (modo local) |
 | Distribución | imágenes en GHCR | GitHub Release: `.exe` y AppImage |
+| Agentes de IA | `rolboard-mcp` por HTTPS | unix socket + `rolboard mcp` |
 
 ## Cómo funciona
 
@@ -47,6 +48,9 @@ POST /api/desktop/vaults-root   abre el diálogo nativo de carpetas; 200 con los
 POST /api/desktop/sync-dir      lo mismo, para la carpeta de sincronización
 POST /api/desktop/open          {"url": "https://..."}  la abre en el browser predeterminado; solo https
 POST /api/desktop/save-export   {"campaignId": "N"}  arma el export de la campaña y abre el diálogo nativo de guardado; 200 {"path"} o 204 si se cancela
+POST /api/desktop/mcp           {"enabled": bool}  abre o cierra el socket MCP y guarda `mcpEnabled`
+GET  /api/desktop/mcp-clients   los clientes de IA soportados con su estado (instalado, conectado)
+POST /api/desktop/mcp-clients/connect  {"id": "..."}  agrega la entrada `rolboard` a la config de ese cliente
 ```
 
 Cambiar una carpeta guarda `config.json` y reconstruye la app en caliente (nuevo `app.New`, cambio de handler, se cierra la DB anterior): no hace falta reiniciar.
@@ -72,12 +76,24 @@ Opcional. Se elige una **carpeta de sincronización** que alguna herramienta ext
 
 Pensado para usar un dispositivo por vez; mezclar cambios hechos en dos dispositivos a la vez queda fuera de alcance.
 
+## Agentes de IA (MCP)
+
+Opcional, apagado por defecto. **Ajustes de la app → Permitir que agentes de IA se conecten** abre `mcp.sock` en la carpeta de datos (`0600`) y guarda `mcpEnabled` en `config.json`; se reabre en el próximo arranque.
+
+- El socket usa su propio handler: solo sirve `/api/` y `/api/desktop/*` responde `404`, así que un agente no puede usar los endpoints exclusivos de escritorio de arriba. Los requests que no son GET programan el push de sincronización igual que el webview.
+- `rolboard mcp` (el mismo ejecutable) es lo que lanza el cliente de IA. Corre antes de que arranque Wails, nunca abre una ventana y retransmite stdio hacia el socket. Si la app está cerrada o el interruptor apagado, responde con un error claro. Los logs van a stderr: stdout es del protocolo.
+- El botón **Conectar** de cada cliente (Claude Desktop, Claude Code, OpenCode, Codex, Antigravity) mezcla una entrada `rolboard` en su archivo de config. Solo se conectan los clientes instalados; **Reconectar** reescribe la ruta tras mover o actualizar la app (en Linux se usa `$APPIMAGE`).
+- La versión del build sale de `-ldflags "-X main.version=..."`, que fija el workflow de release.
+- Sin verificar en Windows: `AF_UNIX`, permisos del archivo (ACL, no `0600`) y stdio en el `.exe` de ventana.
+
+Guía para usuarios y archivos de config de cada cliente: [`MCP.es.md`](MCP.es.md).
+
 ## Estructura
 
 ```
 server/cmd/desktop/
 ├── main.go             setup de Wails, arranque, endpoints de escritorio
-├── main_test.go        /api/desktop/open rechaza URLs que no son https
+├── main_test.go        /api/desktop/open rechaza URLs que no son https; el socket MCP y su handler
 ├── wails.json          comandos de install/build del frontend
 ├── frontend/           client/dist se copia acá al compilar (ignorado en git, solo .gitkeep)
 └── build/
@@ -86,6 +102,7 @@ server/cmd/desktop/
 ```
 
 - `server/internal/desktop/`: `config.json`, rutas de datos y `Runtime` (ciclo de vida de la app, ajustes, sincronización).
+- `server/internal/mcpserver/`: las tools MCP, el cliente de la API y el puente al socket.
 - `server/internal/snapshot/`: exportar, importar, copia de conflicto y copia de imágenes para la carpeta de sincronización.
 
 ## Compilar desde el código
@@ -112,10 +129,10 @@ El AppImage se arma con `appimagetool` 1.9.1; los pasos están en [`.github/work
 
 `.github/workflows/release.yml`, job `desktop` en `ubuntu-latest` (el job `android` corre después, ver [`ANDROID.es.md`](ANDROID.es.md#release)):
 
-- **Tag `v*`:** compila los dos targets y crea un GitHub Release **en borrador** con `rolboard-windows-amd64-vX.Y.Z.exe` y `rolboard-linux-amd64-vX.Y.Z.AppImage`. Las notas se revisan y se publica a mano.
+- **Tag `v*`:** compila los dos targets y crea un GitHub Release **en borrador** con `rolboard-windows-amd64-vX.Y.Z.exe` y `rolboard-linux-amd64-vX.Y.Z.AppImage`, más `rolboard-mcp-linux-amd64-vX.Y.Z` y `rolboard-mcp-windows-amd64-vX.Y.Z.exe` para quien usa Docker ([`MCP.es.md`](MCP.es.md)). Las notas se revisan y se publica a mano.
 - **Ejecución manual:** compila los dos y los sube como artifact del workflow, sin release.
 
-La versión también se escribe en `wails.json` (`info.productVersion`), así que el `.exe` la muestra en sus propiedades; las ejecuciones manuales usan `dev-<sha>` en los nombres y `0.0.0` como versión de producto. La versión del CLI de Wails se lee de `go.mod`, así que los bumps de Dependabot la mantienen al día. El README enlaza a la página del último release y la landing lee las URLs de los assets desde la API de GitHub, así que hay que mantener las partes `windows-amd64` / `linux-amd64` de los nombres. Las acciones de terceros están fijadas por SHA y `appimagetool` se verifica contra su SHA-256.
+La versión también se escribe en `wails.json` (`info.productVersion`), así que el `.exe` la muestra en sus propiedades; las ejecuciones manuales usan `dev-<sha>` en los nombres y `0.0.0` como versión de producto. La versión del CLI de Wails se lee de `go.mod`, así que los bumps de Dependabot la mantienen al día. El README enlaza a la página del último release y la landing lee las URLs de los assets desde la API de GitHub, así que hay que mantener las partes `windows-amd64` / `linux-amd64` de los nombres (los assets `rolboard-mcp-*` no deben coincidir con los patrones de escritorio, que están anclados en `rolboard-windows` / `rolboard-linux`). Las acciones de terceros están fijadas por SHA y `appimagetool` se verifica contra su SHA-256.
 
 ## Limitaciones conocidas
 
