@@ -112,8 +112,8 @@ func TestEveryListToolWorksOnAnEmptyCampaign(t *testing.T) {
 			t.Errorf("%s: %+v", tool.Name, res.Content)
 		}
 	}
-	if lists != 16 {
-		t.Errorf("expected 16 list tools, got %d", lists)
+	if lists != 17 {
+		t.Errorf("expected 17 list tools, got %d", lists)
 	}
 }
 
@@ -145,8 +145,8 @@ func TestEveryGetToolReachesItsHandler(t *testing.T) {
 			t.Errorf("%s hits a route that does not exist: %s", tool.Name, text)
 		}
 	}
-	if gets != 13 {
-		t.Errorf("expected 13 get tools, got %d", gets)
+	if gets != 14 {
+		t.Errorf("expected 14 get tools, got %d", gets)
 	}
 }
 
@@ -250,5 +250,35 @@ func TestConnectionStaysInItsCampaign(t *testing.T) {
 	}
 	if text := errorText(t, call(t, s, "get_npc", map[string]any{"id": npc.ID})); !strings.Contains(text, "401") {
 		t.Errorf("get_npc of another campaign: %q", text)
+	}
+}
+
+func TestSearchFindsItemsAndEncountersAndGetEncounterHasParticipants(t *testing.T) {
+	api, id := newTestClient(t)
+	ctx := context.Background()
+	base := "/api/campaigns/" + itoa(id)
+	if err := api.do(ctx, http.MethodPost, base+"/items", map[string]any{"name": "Daga rúnica"}, nil); err != nil {
+		t.Fatal(err)
+	}
+	var enc struct {
+		ID int64 `json:"id"`
+	}
+	if err := api.do(ctx, http.MethodPost, base+"/encounters", map[string]any{"name": "Emboscada", "status": "planificado"}, &enc); err != nil {
+		t.Fatal(err)
+	}
+	if err := api.do(ctx, http.MethodPost, "/api/encounters/"+itoa(enc.ID)+"/participants", map[string]any{"display_name": "Goblin"}, nil); err != nil {
+		t.Fatal(err)
+	}
+	s := connect(t, api)
+
+	for query, kind := range map[string]string{"daga": "item", "emboscada": "encounter"} {
+		hits := structured(t, call(t, s, "search", map[string]any{"campaign_id": id, "query": query}))["items"].([]any)
+		if len(hits) != 1 || hits[0].(map[string]any)["kind"] != kind {
+			t.Errorf("search %q: %v", query, hits)
+		}
+	}
+	got := structured(t, call(t, s, "get_encounter", map[string]any{"id": enc.ID}))
+	if parts := got["participants"].([]any); len(parts) != 1 {
+		t.Errorf("get_encounter: %v", got)
 	}
 }

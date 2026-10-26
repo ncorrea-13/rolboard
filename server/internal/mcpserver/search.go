@@ -173,13 +173,19 @@ func loadDocs(ctx context.Context, api *apiClient, id int64) ([]doc, error) {
 	load(l, path("/api/campaigns/%d/timeline-events"), func(e models.TimelineEvent) (doc, bool) {
 		return doc{searchHit{"timeline_event", e.ID, e.Title, e.DateLabel}, e.Description}, true
 	})
+	load(l, path("/api/campaigns/%d/items"), func(i models.Item) (doc, bool) {
+		return doc{searchHit{"item", i.ID, i.Name, join(i.Category, i.Rarity)}, join(i.Description, i.Effect)}, true
+	})
+	load(l, path("/api/campaigns/%d/encounters"), func(e models.Encounter) (doc, bool) {
+		return doc{searchHit{"encounter", e.ID, e.Name, e.Status}, ""}, true
+	})
 	return l.docs, l.err
 }
 
 func registerSearch(s *mcp.Server, api *apiClient) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "search",
-		Description: "Search a campaign by text across NPCs, player characters, locations, groups, arcs, quests, sessions, lore, secrets, loose notes and timeline events. Matches words, not meaning. Ranked: title first, then subtitle, then body.",
+		Description: "Search a campaign by text across NPCs, player characters, locations, groups, arcs, quests, sessions, lore, secrets, loose notes, timeline events, items and encounters. Matches words, not meaning. Ranked: title first, then subtitle, then body.",
 		Annotations: readOnly,
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in searchArgs) (*mcp.CallToolResult, list[searchHit], error) {
 		docs, err := loadDocs(ctx, api, in.CampaignID)
