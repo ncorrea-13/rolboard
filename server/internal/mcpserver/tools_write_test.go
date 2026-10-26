@@ -15,7 +15,7 @@ import (
 func structured(t *testing.T, res *mcp.CallToolResult) map[string]any {
 	t.Helper()
 	if res.IsError {
-		t.Fatalf("tool error: %+v", res.Content)
+		t.Fatalf("tool error: %v", res.Content[0].(*mcp.TextContent).Text)
 	}
 	m, ok := res.StructuredContent.(map[string]any)
 	if !ok {
@@ -42,7 +42,7 @@ func TestWriteToolsAreAnnotated(t *testing.T) {
 	}
 	writes := 0
 	for _, tool := range tools.Tools {
-		isWrite := strings.HasPrefix(tool.Name, "create_") || strings.HasPrefix(tool.Name, "update_")
+		isWrite := strings.HasPrefix(tool.Name, "create_") || strings.HasPrefix(tool.Name, "update_") || strings.HasPrefix(tool.Name, "link_")
 		for _, banned := range []string{"delete", "remove", "reindex", "restore", "image"} {
 			if strings.Contains(tool.Name, banned) {
 				t.Errorf("%s: agents can't delete, restore, reindex or touch images", tool.Name)
@@ -58,8 +58,8 @@ func TestWriteToolsAreAnnotated(t *testing.T) {
 			}
 		}
 	}
-	if writes != 31 {
-		t.Errorf("expected 31 write tools, got %d", writes)
+	if writes != 38 {
+		t.Errorf("expected 38 write tools, got %d", writes)
 	}
 }
 
@@ -373,4 +373,41 @@ func TestWriteToolsRejectReferencesToAnotherCampaign(t *testing.T) {
 	if text := errorText(t, call(t, s, "create_location", map[string]any{"campaign_id": other.ID, "name": "Hijack", "location_type": "city"})); !strings.Contains(text, "can only use campaign") {
 		t.Errorf("create_location in a foreign campaign: %s", text)
 	}
+}
+
+func TestLinkToolsAddLinksAndKeepThemInTheCampaign(t *testing.T) {
+	api, cid := newTestClient(t)
+	s := connect(t, api)
+	camp := map[string]any{"campaign_id": cid}
+	kind := call2(t, s, "list_npc_types", camp)["items"].([]any)[0].(map[string]any)["key"]
+	npc := call2(t, s, "create_npc", map[string]any{"campaign_id": cid, "name": "Syl", "npc_kind": kind})
+	other := call2(t, s, "create_npc", map[string]any{"campaign_id": cid, "name": "Kal", "npc_kind": kind})
+	pc := call2(t, s, "create_player_character", map[string]any{"campaign_id": cid, "character_name": "Dal", "player_name": "Ana"})
+	quest := call2(t, s, "create_quest", map[string]any{"campaign_id": cid, "title": "Misión"})
+	group := call2(t, s, "create_group", map[string]any{"campaign_id": cid, "name": "Gremio"})
+	session := call2(t, s, "create_session", map[string]any{"campaign_id": cid, "session_number": 1, "title": "Inicio", "date": "2026-02-01"})
+
+	count := func(res *mcp.CallToolResult) int {
+		t.Helper()
+		return len(structured(t, res)["items"].([]any))
+	}
+	steps := []struct {
+		tool string
+		args map[string]any
+	}{
+		{"link_session_npc", map[string]any{"session_id": id(session), "npc_id": id(npc)}},
+		{"link_session_quest", map[string]any{"session_id": id(session), "quest_id": id(quest)}},
+		{"link_group_npc", map[string]any{"group_id": id(group), "npc_id": id(npc)}},
+		{"link_group_pc", map[string]any{"group_id": id(group), "pc_id": id(pc)}},
+		{"link_npc_npc", map[string]any{"npc_id": id(npc), "to_npc_id": id(other), "role": "mentor"}},
+		{"link_npc_player", map[string]any{"npc_id": id(npc), "pc_id": id(pc), "role": "rival"}},
+		{"link_quest_npc", map[string]any{"quest_id": id(quest), "npc_id": id(npc), "role": "cliente"}},
+	}
+	for _, st := range steps {
+		if n := count(call(t, s, st.tool, st.args)); n != 1 {
+			t.Errorf("%s: expected the one link back, got %d", st.tool, n)
+		}
+	}
+	errorText(t, call(t, s, "link_npc_npc", map[string]any{"npc_id": id(npc), "to_npc_id": id(other), "role": ""}))
+	errorText(t, call(t, s, "link_session_npc", map[string]any{"session_id": id(session), "npc_id": 999999}))
 }

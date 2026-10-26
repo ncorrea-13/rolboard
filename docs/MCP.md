@@ -22,12 +22,13 @@ It reads everything in the campaign's database and writes with limits: it can cr
 **Writes**
 
 - **Create:** `create_loose_note`, `create_npc`, `create_player_character`, `create_quest`, `create_lore`, `create_arc`, `create_session`, `create_location`, `create_group`, `create_secret`, `create_timeline_event`, `create_item`, `create_encounter`, `create_encounter_participant`.
-- **Edit:** `update_loose_note`, `update_npc`, `update_player_character`, `update_quest`, `update_lore`, `update_arc`, `update_session`, `update_session_prep`, `update_location`, `update_group`, `update_secret`, `update_timeline_event`, `update_item`, `update_encounter`, `update_encounter_participant`. Only the fields you pass change; a text field you pass replaces the old text, so the assistant reads it first to append.
+- **Edit:** `update_loose_note`, `update_npc`, `update_player_character`, `update_quest`, `update_lore`, `update_arc`, `update_session`, `update_session_prep`, `update_location`, `update_group`, `update_secret`, `update_timeline_event`, `update_item`, `update_encounter`, `update_encounter_participant`. Only the fields you pass change; a text field you pass replaces the old text (an empty string empties it), so the assistant reads it first to append. A reference such as a location, an arc or a leader can be set or changed but not cleared.
+- **Links:** `link_session_npc`, `link_session_quest`, `link_group_npc`, `link_group_pc`, `link_npc_npc` (a directed relation with a role), `link_npc_player` and `link_quest_npc` (with a role). Each returns the list it belongs to.
 - **Inventories and shops:** `update_inventory_item` and `update_shop_item` put an item in or change its quantity, notes or prices.
 
 What it cannot do:
 
-- **No delete tool exists.** An assistant cannot remove anything, take an item out of an inventory or a shop, or clear a field. It also cannot restore the trash, reindex the vault or touch images.
+- **No delete tool exists.** An assistant cannot remove anything, take an item out of an inventory or a shop, or unlink anything. It also cannot restore the trash, reindex the vault or touch images.
 - **Secrets are readable.** Whatever the assistant reads travels to the AI service you use. If you don't want a secret to leave your machine, don't connect that client.
 - **One campaign.** With an access code (Docker) the connection reaches only that campaign: the client refuses any other `campaign_id`, and the server checks every reference in a request (a location, an NPC, an item...) against the campaign of the session. The desktop app is in local mode and reaches all your campaigns.
 - Entities created from the assistant live only in the database: they have no note in the Obsidian vault, and a vault note with the same name creates another one on the next reindex.

@@ -134,7 +134,7 @@ type createSessionArgs struct {
 	SessionNumber int64  `json:"session_number" jsonschema:"must be free among the active sessions"`
 	SessionType   string `json:"session_type,omitempty" jsonschema:"session, interlude, planning or oneshot; default session"`
 	Title         string `json:"title"`
-	Date          string `json:"date,omitempty" jsonschema:"YYYY-MM-DD"`
+	Date          string `json:"date,omitempty" jsonschema:"YYYY-MM-DD; required unless planned"`
 	Planned       bool   `json:"planned,omitempty" jsonschema:"true for a session not played yet"`
 	Summary       string `json:"summary,omitempty"`
 	PrepNotes     string `json:"prep_notes,omitempty"`
@@ -245,7 +245,7 @@ type updateTimelineEventArgs struct {
 type createPlayerCharacterArgs struct {
 	campaignScoped
 	CharacterName string `json:"character_name"`
-	PlayerName    string `json:"player_name,omitempty"`
+	PlayerName    string `json:"player_name"`
 	Race          string `json:"race,omitempty"`
 	Class         string `json:"class,omitempty"`
 	Status        string `json:"status,omitempty" jsonschema:"vivo, muerto, desaparecido or activo; default activo"`

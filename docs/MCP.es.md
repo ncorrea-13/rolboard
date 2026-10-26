@@ -22,12 +22,13 @@ Lee todo lo que hay en la base de la campaña y escribe con límites: puede crea
 **Escribe**
 
 - **Crear:** `create_loose_note`, `create_npc`, `create_player_character`, `create_quest`, `create_lore`, `create_arc`, `create_session`, `create_location`, `create_group`, `create_secret`, `create_timeline_event`, `create_item`, `create_encounter`, `create_encounter_participant`.
-- **Editar:** `update_loose_note`, `update_npc`, `update_player_character`, `update_quest`, `update_lore`, `update_arc`, `update_session`, `update_session_prep`, `update_location`, `update_group`, `update_secret`, `update_timeline_event`, `update_item`, `update_encounter`, `update_encounter_participant`. Solo cambian los campos que se pasan; un campo de texto que se pasa reemplaza al anterior, así que el asistente lo lee antes para agregar.
+- **Editar:** `update_loose_note`, `update_npc`, `update_player_character`, `update_quest`, `update_lore`, `update_arc`, `update_session`, `update_session_prep`, `update_location`, `update_group`, `update_secret`, `update_timeline_event`, `update_item`, `update_encounter`, `update_encounter_participant`. Solo cambian los campos que se pasan; un campo de texto que se pasa reemplaza al anterior (una cadena vacía lo vacía), así que el asistente lo lee antes para agregar. Una referencia como una locación, un arco o un líder se puede poner o cambiar, pero no quitar.
+- **Vínculos:** `link_session_npc`, `link_session_quest`, `link_group_npc`, `link_group_pc`, `link_npc_npc` (una relación dirigida con un rol), `link_npc_player` y `link_quest_npc` (con un rol). Cada una devuelve la lista a la que pertenece.
 - **Inventarios y tiendas:** `update_inventory_item` y `update_shop_item` ponen un objeto o cambian su cantidad, notas o precios.
 
 Lo que no puede hacer:
 
-- **No existe ninguna herramienta para borrar.** Un asistente no puede eliminar nada, sacar un objeto de un inventario o de una tienda, ni vaciar un campo. Tampoco restaura la papelera, reindexa el vault ni toca imágenes.
+- **No existe ninguna herramienta para borrar.** Un asistente no puede eliminar nada, sacar un objeto de un inventario o de una tienda, ni quitar ningún vínculo. Tampoco restaura la papelera, reindexa el vault ni toca imágenes.
 - **Los secretos se pueden leer.** Todo lo que el asistente lee viaja al servicio de IA que uses. Si no quieres que un secreto salga de tu equipo, no conectes ese cliente.
 - **Una sola campaña.** Con un código de acceso (Docker) la conexión llega solo a esa campaña: el cliente rechaza cualquier otro `campaign_id` y el servidor comprueba cada referencia de un request (una locación, un NPC, un objeto...) contra la campaña de la sesión. La app de escritorio está en modo local y llega a todas tus campañas.
 - Lo que se crea desde el asistente vive solo en la base: no tiene nota en el vault de Obsidian, y una nota del vault con el mismo nombre crea otra entidad en el próximo reindex.
