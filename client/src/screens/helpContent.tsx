@@ -911,8 +911,9 @@ const es: HelpPage[] = [
             </p>
             <p>
               Leen casi todo, secretos incluidos. Escriben poco: crean notas
-              sueltas, NPCs, quests y entradas de lore, y editan la preparación
-              de una sesión. No borran nada.
+              sueltas, NPCs, quests, entradas de lore y objetos, reparten
+              objetos en inventarios y tiendas, y editan la preparación de una
+              sesión. No borran nada.
             </p>
             <Callout
               kind="warning"
@@ -1854,8 +1855,9 @@ const en: HelpPage[] = [
             </p>
             <p>
               They read almost everything, secrets included. They write little:
-              they create loose notes, NPCs, quests and lore entries, and edit a
-              session's prep. They never delete anything.
+              they create loose notes, NPCs, quests, lore entries and items, put
+              items in inventories and shops, and edit a session's prep. They
+              never delete anything.
             </p>
             <Callout
               kind="warning"

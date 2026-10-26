@@ -14,13 +14,13 @@ Lee casi todo y escribe muy poco.
 
 | Lee | Escribe |
 |---|---|
-| `list_campaigns`, `list_npcs`, `list_player_characters`, `list_sessions`, `list_arcs`, `list_quests`, `list_locations`, `list_groups`, `list_lore_entries`, `list_loose_notes`, `list_secrets`, `list_timeline_events`, `list_npc_types`, `list_lore_categories` | `create_loose_note`, `update_loose_note` |
-| `get_npc`, `get_player_character`, `get_session`, `get_arc`, `get_quest`, `get_location`, `get_group`, `get_lore_entry`, `get_loose_note`, `get_secret`, `get_timeline_event` | `update_session_prep` (reemplaza las notas de preparación de una sesión) |
-| `get_appearances` (sesiones, quests y lore donde aparece un NPC o personaje), `search` (búsqueda ordenada por relevancia en toda la campaña) | `create_npc`, `create_quest`, `create_lore` |
+| `list_campaigns`, `list_npcs`, `list_player_characters`, `list_sessions`, `list_arcs`, `list_quests`, `list_locations`, `list_groups`, `list_lore_entries`, `list_loose_notes`, `list_secrets`, `list_timeline_events`, `list_npc_types`, `list_lore_categories`, `list_items`, `list_currencies` | `create_loose_note`, `update_loose_note` |
+| `get_npc`, `get_player_character`, `get_session`, `get_arc`, `get_quest`, `get_location`, `get_group`, `get_lore_entry`, `get_loose_note`, `get_secret`, `get_timeline_event`, `get_item` | `update_session_prep` (reemplaza las notas de preparación de una sesión) |
+| `get_appearances` (sesiones, quests y lore donde aparece un NPC o personaje), `search` (búsqueda ordenada por relevancia en toda la campaña), `get_item_owners` (quién tiene un objeto), `get_inventory` (qué lleva un NPC o personaje), `get_shop` (qué vende una locación) | `create_npc`, `create_quest`, `create_lore`, `create_item`, `update_inventory_item` (poner un objeto en un inventario o cambiar su cantidad), `update_shop_item` (surtir una tienda o cambiar sus precios) |
 
 - **No existe ninguna herramienta para borrar.** Un asistente no puede eliminar nada.
 - **Los secretos se pueden leer.** Todo lo que el asistente lee viaja al servicio de IA que uses. Si no quieres que un secreto salga de tu equipo, no conectes ese cliente.
-- Los encuentros, objetos y monedas todavía no se exponen.
+- Los encuentros todavía no se exponen. Los inventarios y las tiendas se pueden llenar pero no vaciar: no hay forma de quitar un objeto.
 
 ## App de escritorio
 

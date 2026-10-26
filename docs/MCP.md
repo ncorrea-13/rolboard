@@ -14,13 +14,13 @@ It reads almost everything and writes very little.
 
 | Reads | Writes |
 |---|---|
-| `list_campaigns`, `list_npcs`, `list_player_characters`, `list_sessions`, `list_arcs`, `list_quests`, `list_locations`, `list_groups`, `list_lore_entries`, `list_loose_notes`, `list_secrets`, `list_timeline_events`, `list_npc_types`, `list_lore_categories` | `create_loose_note`, `update_loose_note` |
-| `get_npc`, `get_player_character`, `get_session`, `get_arc`, `get_quest`, `get_location`, `get_group`, `get_lore_entry`, `get_loose_note`, `get_secret`, `get_timeline_event` | `update_session_prep` (replaces the prep notes of one session) |
-| `get_appearances` (sessions, quests and lore where an NPC or character shows up), `search` (ranked search across the campaign) | `create_npc`, `create_quest`, `create_lore` |
+| `list_campaigns`, `list_npcs`, `list_player_characters`, `list_sessions`, `list_arcs`, `list_quests`, `list_locations`, `list_groups`, `list_lore_entries`, `list_loose_notes`, `list_secrets`, `list_timeline_events`, `list_npc_types`, `list_lore_categories`, `list_items`, `list_currencies` | `create_loose_note`, `update_loose_note` |
+| `get_npc`, `get_player_character`, `get_session`, `get_arc`, `get_quest`, `get_location`, `get_group`, `get_lore_entry`, `get_loose_note`, `get_secret`, `get_timeline_event`, `get_item` | `update_session_prep` (replaces the prep notes of one session) |
+| `get_appearances` (sessions, quests and lore where an NPC or character shows up), `search` (ranked search across the campaign), `get_item_owners` (who holds an item), `get_inventory` (what an NPC or character carries), `get_shop` (what a location sells) | `create_npc`, `create_quest`, `create_lore`, `create_item`, `update_inventory_item` (put an item in an inventory or change its quantity), `update_shop_item` (stock a shop or change its prices) |
 
 - **No delete tool exists.** An assistant cannot remove anything.
 - **Secrets are readable.** Whatever the assistant reads travels to the AI service you use. If you don't want a secret to leave your machine, don't connect that client.
-- Encounters, items and currencies are not exposed yet.
+- Encounters are not exposed yet. Inventories and shops can be filled but not emptied: there is no way to remove an item.
 
 ## Desktop app
 
