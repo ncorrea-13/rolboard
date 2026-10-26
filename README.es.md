@@ -36,6 +36,7 @@ Este proyecto surgió como un traspaso de utilizar Obsidian pero para una gesti�
 - **Tracker de combate:** fases rápido / lento, iniciativa, HP con daño y curación, rondas y "a quién le toca".
 - **Búsqueda:** una paleta para toda la campaña (`Ctrl` + `K`).
 - **Imágenes:** una imagen por NPC, jugador, locación, facción, objeto, arco, entrada de lore y quest.
+- **Agentes de IA:** conectá Claude Code, Claude Desktop, OpenCode, Codex o Antigravity para leer la campaña y anotar ideas, sin claves de API.
 - **Obsidian:** indexador de frontmatter, enlaces para abrir en Obsidian y notas renderizadas.
 - **Red de seguridad:** una papelera con restauración, y Markdown con avisos al estilo Obsidian y tablas.
 - **En todos lados:** español e inglés, y una ayuda de varias páginas dentro de la app que se adapta a la versión de servidor, de escritorio o de Android.
@@ -84,6 +85,16 @@ La misma app en el teléfono o la tablet, sin conexión. ARM64 (casi cualquier t
 - Se sincroniza con la app de escritorio mediante una carpeta de sincronización, como arriba.
 
 Compilar desde el código y cómo funciona: [`docs/ANDROID.es.md`](docs/ANDROID.es.md).
+
+## Agentes de IA
+
+Un asistente de IA en tu computadora (Claude Code, Claude Desktop, OpenCode, Codex o Antigravity) puede leer una campaña y anotar notas, NPCs, quests, lore y preparación de sesiones por MCP. Sin claves de API ni OAuth: sigue usando tu propia cuenta con su proveedor. No puede borrar nada.
+
+- **App de escritorio:** activá **Permitir que agentes de IA se conecten** en **Ajustes de la app** y pulsá **Conectar** junto a tu cliente.
+- **Docker:** descargá `rolboard-mcp` del release, ejecutá `rolboard-mcp login` una vez para guardar el código de acceso de la campaña y copiá el comando de los ajustes de la campaña (**Conectar un agente de IA**).
+- No disponible en Android.
+
+Paso a paso y archivos de cada cliente: [`docs/MCP.es.md`](docs/MCP.es.md).
 
 ## Inicio rápido (Docker)
 
@@ -213,8 +224,8 @@ REST + JSON bajo `/api`. Lista completa: [`docs/API.md`](docs/API.md).
 
 ## Estructura del Proyecto
 
-`server/` (Go), `client/` (React/TS) y `android/` (proyecto Gradle). Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
-Razonamiento detrás de cada decisión de alcance: [`docs/DECISIONS.md`](docs/DECISIONS.md).
+`server/` (Go), `client/` (React/TS) y `android/` (proyecto Gradle). `rolboard-mcp` se compila desde `server/cmd/mcp`. Layout: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+Razonamiento detrás de cada decisión de alcance: [`docs/DECISIONS.md`](docs/DECISIONS.md). Agentes de IA: [`docs/MCP.es.md`](docs/MCP.es.md).
 
 ## Sobre el proyecto
 
