@@ -21,12 +21,14 @@ SPA y API comparten origen (Caddy sirve ambas). Cualquier archivo que sirva la a
 rolboard/
 ├── server/
 │   ├── cmd/server/         entrypoint de Docker: env vars, servidor HTTP, graceful shutdown
-│   ├── cmd/desktop/        entrypoint de escritorio (Wails): webview, endpoints de escritorio
+│   ├── cmd/desktop/        entrypoint de escritorio (Wails): webview, endpoints de escritorio, subcomando `mcp`
+│   ├── cmd/mcp/            `rolboard-mcp`: servidor MCP independiente para Docker (login, stdio)
 │   ├── mobile/             entrypoint de Android (gomobile): Start, Request, ajustes, sincronización
 │   └── internal/
 │       ├── app/            wiring: DB, migraciones, repositorios, servicios, router
 │       ├── desktop/        runtime de modo local (escritorio y Android): config.json, ciclo de vida, sincronización
 │       ├── snapshot/       carpeta de sincronización: exportar, importar, copia de conflicto
+│       ├── mcpserver/      tools MCP y cliente HTTP de la API (TCP o unix socket), guardado del código
 │       ├── handlers/       HTTP: router, auth middleware, rate limit, payloads
 │       ├── service/        lógica de negocio, manejo de archivos
 │       ├── repository/     SQL crudo sobre database/sql + migraciones embebidas
@@ -75,7 +77,18 @@ Capas del backend: `handlers → service → repository`. El handler solo traduc
 - El proxy de Caddy apunta a `{BACKEND_HOST}:8080`; el backend tiene que escuchar en `8080`.
 - Escritorio: `server/cmd/desktop` arma el mismo router dentro de una app Wails, sin red ni Caddy. Detalle: [`DESKTOP.es.md`](./DESKTOP.es.md).
 - Android: `server/mobile` se compila con gomobile dentro de un APK cuyo `WebView` llega al router dentro del proceso. Detalle: [`ANDROID.es.md`](./ANDROID.es.md).
-- Release (`.github/workflows/release.yml`): con un tag `v*`, un GitHub Release en borrador con el `.exe`, el AppImage y el APK firmado.
+- Release (`.github/workflows/release.yml`): con un tag `v*`, un GitHub Release en borrador con el `.exe`, el AppImage, el APK firmado y `rolboard-mcp` (Linux y Windows).
+- Agentes de IA: `server/internal/mcpserver` es un cliente más de la API REST, por unix socket (escritorio) o HTTPS (Docker). Detalle: [`MCP.es.md`](./MCP.es.md).
+
+## Agentes de IA (MCP)
+
+```
+Cliente de IA ──stdio──► rolboard mcp / rolboard-mcp ──► internal/mcpserver (tools)
+                                                           ├── unix socket mcp.sock ──► app de escritorio (modo local)
+                                                           └── HTTPS + cookie de campaña ──► servidor Docker
+```
+
+El proceso MCP nunca toca la base: llama a `/api` como el frontend, así que la auth y el borrado lógico le aplican. Configuración: [`MCP.es.md`](./MCP.es.md). Razones: [`DECISIONS.es.md`](./DECISIONS.es.md#agentes-de-ia-mcp).
 
 ## Vault de Obsidian
 

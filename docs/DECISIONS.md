@@ -30,7 +30,7 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 
 - Per-campaign access code (bcrypt), session in an `HttpOnly` cookie with the token hash in `auth_sessions`.
 - Instance admin token, preferably as a secret (`ADMIN_TOKEN_FILE`). Its session lives in memory: restarting the server forces a re-login, and that's fine.
-- `SameSite=Lax` is the CSRF protection. Don't relax it.
+- `SameSite=Strict` is the CSRF protection. Don't relax it.
 - `GET /api/campaigns` is public but trimmed (`id, name, system, status`): the selection screen needs it before there's a session, and it must not leak `vault_path`.
 
 ## Obsidian vault: source of the prose, not of everything
@@ -177,3 +177,15 @@ One backend, several campaigns. Each with its own `vault_path` (subfolder of `VA
 - **Signed with its own key**, not a public debug key: the signature is what proves an update comes from the project, and the app holds "All files access". Two secrets: the keystore in base64 and one password; the alias is fixed.
 - **Application ID `io.github.ncorrea_13.rolboard`:** a domain tied to the GitHub account that publishes it. Hyphens aren't allowed in IDs, hence the underscore. It can never change without becoming a different app.
 - **APK on GitHub Releases, not Google Play**, for now.
+
+## AI agents (MCP)
+
+- **MCP over stdio, one more client of the REST API.** The assistant launches a local process that speaks MCP on stdin/stdout and calls the same `/api` the frontend uses. It doesn't import `internal/service` or open the database, so auth, validation and soft delete apply to it unchanged. SDK: `github.com/modelcontextprotocol/go-sdk`.
+- **No API keys, no OAuth.** The assistant keeps using the user's own account with its provider. OAuth would only make sense with a public HTTP MCP endpoint, which would put the instance on the internet. That also rules out ChatGPT (calls from OpenAI's cloud) and the Gemini desktop app (no MCP of its own). Android has no MCP client.
+- **Desktop: a unix socket, not SQLite and not a port.** Another process writing the database would bypass the `dirty` flag of `Runtime`, so the next `Pull` could replace the local DB with another device's snapshot and lose the writes. A `localhost` port would reopen the DNS rebinding and CSRF surface that "No network" closed. The socket (`mcp.sock`, `0600`, in the data folder) serves only `/api/`: `/api/desktop/*` answers `404`, so an agent can't open dialogs or rewrite other clients' configs. Writes schedule the sync push like the webview's.
+- **Off by default.** In local mode every request is admin, so the user turns the socket on in **App settings** (`mcpEnabled` in `config.json`). The app has to be open; with it closed the assistant gets a clear error.
+- **One executable for non-technical users.** The client launches the app's own executable as `rolboard mcp`, a stdio bridge to the socket that runs before Wails starts. The connect button points the client at that path (`$APPIMAGE` on Linux, since the mount path changes on every run) and **Reconnect** fixes it after a move or update.
+- **Docker: `rolboard-mcp` with the campaign's access code**, not the admin token. The code limits the agent to one campaign; the admin token would also expose every campaign, access-code changes and the admin routes. Cost: one entry per campaign. It's a separate small binary (no CGO) shipped in the release, not part of the server image.
+- **The access code is typed once with `rolboard-mcp login`**, hidden like `sudo`, checked against the server and saved to `<UserConfigDir>/rolboard/mcp-<campaign>.code` (`0600`). It never goes into the client's config file, a command line or a log, and the assistant never sees it. Plain text with SSH-key protection is the accepted trade-off: the alternative was depending on an external credential manager. On Windows the mode isn't enforced; the profile folder's ACL protects it. Campaign logins are rate limited to 5 per minute, so the client logs in once and retries a `401` only once.
+- **Reads almost everything, writes little.** `list_*` return summaries and `get_*` the detail, so a campaign with hundreds of NPCs doesn't fill the model's context. Writes are `create_loose_note`, `update_loose_note`, `update_session_prep`, `create_npc`, `create_quest` and `create_lore`; every write tool declares its destructive hint. **There is no delete tool.** Secrets are readable on purpose: the only user is the DM, and what the assistant reads goes to its provider.
+- **Config files are edited only from the desktop button**, with confirmation, a `<file>.rolboard.bak` of the original (first time only), symlinks followed and every other key kept. Codex's TOML is edited as text, to avoid a dependency. A JSONC `opencode.json` is refused instead of rewritten without its comments.

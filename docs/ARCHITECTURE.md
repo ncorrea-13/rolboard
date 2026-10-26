@@ -21,12 +21,14 @@ SPA and API share an origin (Caddy serves both). Any file the app serves runs wi
 rolboard/
 ├── server/
 │   ├── cmd/server/         Docker entrypoint: env vars, HTTP server, graceful shutdown
-│   ├── cmd/desktop/        desktop entrypoint (Wails): webview, desktop endpoints
+│   ├── cmd/desktop/        desktop entrypoint (Wails): webview, desktop endpoints, `mcp` subcommand
+│   ├── cmd/mcp/            `rolboard-mcp`: standalone MCP server for Docker (login, stdio)
 │   ├── mobile/             Android entrypoint (gomobile): Start, Request, settings, sync
 │   └── internal/
 │       ├── app/            wiring: DB, migrations, repositories, services, router
 │       ├── desktop/        local-mode runtime (desktop and Android): config.json, app lifecycle, sync
 │       ├── snapshot/       sync folder: export, import, conflict copy
+│       ├── mcpserver/      MCP tools and the HTTP client of the API (TCP or unix socket), login store
 │       ├── handlers/       HTTP: router, auth middleware, rate limit, payloads
 │       ├── service/        business logic, file handling
 │       ├── repository/     raw SQL over database/sql + embedded migrations
@@ -75,7 +77,18 @@ Backend layers: `handlers → service → repository`. The handler only translat
 - Caddy's proxy points at `{BACKEND_HOST}:8080`; the backend must listen on `8080`.
 - Desktop: `server/cmd/desktop` builds the same router into a Wails app, with no network or Caddy. Details: [`DESKTOP.md`](./DESKTOP.md).
 - Android: `server/mobile` is bound with gomobile into an APK whose `WebView` reaches the router in-process. Details: [`ANDROID.md`](./ANDROID.md).
-- Release (`.github/workflows/release.yml`): on a `v*` tag, a draft GitHub Release with the `.exe`, the AppImage and the signed APK.
+- Release (`.github/workflows/release.yml`): on a `v*` tag, a draft GitHub Release with the `.exe`, the AppImage, the signed APK and `rolboard-mcp` (Linux and Windows).
+- AI agents: `server/internal/mcpserver` is one more client of the REST API, over a unix socket (desktop) or HTTPS (Docker). Details: [`MCP.md`](./MCP.md).
+
+## AI agents (MCP)
+
+```
+AI client ──stdio──► rolboard mcp / rolboard-mcp ──► internal/mcpserver (tools)
+                                                         ├── unix socket mcp.sock ──► desktop app (local mode)
+                                                         └── HTTPS + campaign cookie ──► Docker server
+```
+
+The MCP process never touches the database: it calls `/api` like the frontend does, so auth and soft delete apply. Setup: [`MCP.md`](./MCP.md). Reasoning: [`DECISIONS.md`](./DECISIONS.md#ai-agents-mcp).
 
 ## Obsidian vault
 
