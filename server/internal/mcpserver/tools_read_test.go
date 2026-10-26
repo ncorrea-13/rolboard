@@ -111,8 +111,8 @@ func TestEveryListToolWorksOnAnEmptyCampaign(t *testing.T) {
 			t.Errorf("%s: %+v", tool.Name, res.Content)
 		}
 	}
-	if lists != 14 {
-		t.Errorf("expected 14 list tools, got %d", lists)
+	if lists != 16 {
+		t.Errorf("expected 16 list tools, got %d", lists)
 	}
 }
 
@@ -126,8 +126,9 @@ func TestEveryGetToolReachesItsHandler(t *testing.T) {
 	}
 	gets := 0
 	for _, tool := range tools.Tools {
-		// get_appearances takes a kind as well and has its own test.
-		if !strings.HasPrefix(tool.Name, "get_") || tool.Name == "get_appearances" {
+		// These take more than an ID and have their own tests.
+		own := tool.Name == "get_appearances" || tool.Name == "get_inventory" || tool.Name == "get_shop"
+		if !strings.HasPrefix(tool.Name, "get_") || own {
 			continue
 		}
 		gets++
@@ -143,8 +144,8 @@ func TestEveryGetToolReachesItsHandler(t *testing.T) {
 			t.Errorf("%s hits a route that does not exist: %s", tool.Name, text)
 		}
 	}
-	if gets != 11 {
-		t.Errorf("expected 11 get tools, got %d", gets)
+	if gets != 13 {
+		t.Errorf("expected 13 get tools, got %d", gets)
 	}
 }
 

@@ -22,5 +22,6 @@ func newServer(api *apiClient, version string) *mcp.Server {
 	registerReadTools(s, api)
 	registerSearch(s, api)
 	registerWriteTools(s, api)
+	registerItemTools(s, api)
 	return s
 }

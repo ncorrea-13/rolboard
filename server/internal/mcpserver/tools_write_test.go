@@ -50,8 +50,8 @@ func TestWriteToolsAreAnnotated(t *testing.T) {
 			}
 		}
 	}
-	if writes != 6 {
-		t.Errorf("expected 6 write tools, got %d", writes)
+	if writes != 9 {
+		t.Errorf("expected 9 write tools, got %d", writes)
 	}
 }
 
@@ -132,4 +132,70 @@ func TestCreateQuestAndLore(t *testing.T) {
 		t.Errorf("unexpected lore: %v", lore)
 	}
 	errorText(t, call(t, s, "create_lore", map[string]any{"campaign_id": id, "title": "  "}))
+}
+
+func TestItemsInventoryAndShop(t *testing.T) {
+	api, id := newTestClient(t)
+	s := connect(t, api)
+
+	currencies := structured(t, call(t, s, "list_currencies", map[string]any{"campaign_id": id}))["items"].([]any)
+	if len(currencies) != 0 {
+		t.Fatalf("a new campaign has no currencies: %v", currencies)
+	}
+	var currency struct {
+		ID int64 `json:"id"`
+	}
+	if err := api.do(context.Background(), http.MethodPost, "/api/campaigns/"+itoa(id)+"/currencies", map[string]any{"name": "Oro", "symbol": "po", "is_base": true}, &currency); err != nil {
+		t.Fatal(err)
+	}
+
+	item := structured(t, call(t, s, "create_item", map[string]any{
+		"campaign_id": id, "name": "Espada corta", "category": "arma", "rarity": "común",
+		"prices": []any{map[string]any{"currency_id": currency.ID, "amount": 10}},
+	}))
+	itemID := item["id"].(float64)
+	if prices := item["prices"].([]any); len(prices) != 1 {
+		t.Errorf("price not saved: %v", item)
+	}
+	errorText(t, call(t, s, "create_item", map[string]any{"campaign_id": id, "name": " "}))
+
+	var npc struct {
+		ID int64 `json:"id"`
+	}
+	kind := structured(t, call(t, s, "list_npc_types", map[string]any{"campaign_id": id}))["items"].([]any)[0].(map[string]any)["key"]
+	if err := api.do(context.Background(), http.MethodPost, "/api/campaigns/"+itoa(id)+"/npcs", map[string]any{"name": "Syl", "npc_kind": kind, "detail_level": "minor", "status": "vivo"}, &npc); err != nil {
+		t.Fatal(err)
+	}
+
+	inv := structured(t, call(t, s, "update_inventory_item", map[string]any{"kind": "npc", "owner_id": npc.ID, "item_id": itemID, "quantity": 3, "notes": "oxidada"}))
+	entries := inv["items"].([]any)
+	if len(entries) != 1 || entries[0].(map[string]any)["quantity"] != float64(3) {
+		t.Errorf("unexpected inventory: %v", inv)
+	}
+	errorText(t, call(t, s, "update_inventory_item", map[string]any{"kind": "npc", "owner_id": npc.ID, "item_id": itemID, "quantity": 0}))
+	errorText(t, call(t, s, "update_inventory_item", map[string]any{"kind": "dragon", "owner_id": npc.ID, "item_id": itemID, "quantity": 1}))
+
+	if got := structured(t, call(t, s, "get_inventory", map[string]any{"kind": "npc", "owner_id": npc.ID}))["items"].([]any); len(got) != 1 {
+		t.Errorf("get_inventory: %v", got)
+	}
+	if got := structured(t, call(t, s, "get_item_owners", map[string]any{"id": itemID}))["items"].([]any); len(got) != 1 {
+		t.Errorf("get_item_owners: %v", got)
+	}
+
+	var loc struct {
+		ID int64 `json:"id"`
+	}
+	if err := api.do(context.Background(), http.MethodPost, "/api/campaigns/"+itoa(id)+"/locations", map[string]any{"name": "Herrería", "location_type": "city"}, &loc); err != nil {
+		t.Fatal(err)
+	}
+	shop := structured(t, call(t, s, "update_shop_item", map[string]any{
+		"location_id": loc.ID, "item_id": itemID, "notes": "oferta",
+		"prices": []any{map[string]any{"currency_id": currency.ID, "amount": 8}},
+	}))
+	if len(shop["items"].([]any)) != 1 {
+		t.Errorf("unexpected shop: %v", shop)
+	}
+	if got := structured(t, call(t, s, "get_shop", map[string]any{"location_id": loc.ID}))["items"].([]any); len(got) != 1 {
+		t.Errorf("get_shop: %v", got)
+	}
 }
