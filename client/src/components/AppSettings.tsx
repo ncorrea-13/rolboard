@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Modal } from "./Modal";
+import "./AppSettings.css";
 import { FolderField } from "./FolderField";
 import { AgentsSettings } from "./AgentsSettings";
 import { useT } from "../lib/i18n";
@@ -49,9 +50,18 @@ export function AppSettings({ onClose }: { onClose: () => void }) {
     }
   }
 
+  const agentsOpen =
+    currentMode() === "desktop" && Boolean(settings.mcpEnabled);
+
   return (
-    <Modal title={t("appSettings.title")} onClose={onClose}>
-      <div style={{ display: "grid", gap: 18, paddingTop: 16 }}>
+    <Modal
+      title={t("appSettings.title")}
+      onClose={onClose}
+      size={agentsOpen ? "sheet" : undefined}
+    >
+      <div
+        className={`app-settings${agentsOpen ? " app-settings--agents" : ""}`}
+      >
         <FolderField
           label={t("vaultsRoot.label")}
           hint={t("vaultsRoot.hint")}

@@ -59,17 +59,19 @@ export function AgentsSettings({
   }
 
   return (
-    <div style={{ minWidth: 0 }}>
-      <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <input
-          type="checkbox"
-          checked={enabled}
-          disabled={busy}
-          onChange={(e) => void toggle(e.target.checked)}
-        />
-        {t("agents.enable")}
-      </label>
-      <div className="npc-edit__hint">{t("agents.enableHint")}</div>
+    <>
+      <div style={{ minWidth: 0 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <input
+            type="checkbox"
+            checked={enabled}
+            disabled={busy}
+            onChange={(e) => void toggle(e.target.checked)}
+          />
+          {t("agents.enable")}
+        </label>
+        <div className="npc-edit__hint">{t("agents.enableHint")}</div>
+      </div>
       {enabled && (
         <div className="agents-list">
           {clients.map((c) => (
@@ -95,6 +97,6 @@ export function AgentsSettings({
           <div className="npc-edit__hint">{t("agents.restartHint")}</div>
         </div>
       )}
-    </div>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 .agents-list {
   display: grid;
   gap: 6px;
-  margin-top: 10px;
+  align-content: start;
 }
 
 .agents-list__row {
