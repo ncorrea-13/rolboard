@@ -46,6 +46,18 @@ const EN_TABLE = `| Era | Event |
 | Year 0 | The lighthouse is lit |
 | Year 120 | The first keeper vanishes |`;
 
+const ES_MCP_WEB = `claude mcp add rolboard \\
+  -e ROLBOARD_URL=https://mi-servidor \\
+  -e ROLBOARD_CAMPAIGN=3 \\
+  -e ROLBOARD_CODE_FILE=$HOME/.rolboard-codigo \\
+  -- /ruta/a/rolboard-mcp`;
+
+const EN_MCP_WEB = `claude mcp add rolboard \\
+  -e ROLBOARD_URL=https://my-server \\
+  -e ROLBOARD_CAMPAIGN=3 \\
+  -e ROLBOARD_CODE_FILE=$HOME/.rolboard-code \\
+  -- /path/to/rolboard-mcp`;
+
 const es: HelpPage[] = [
   {
     id: "inicio",
@@ -882,6 +894,119 @@ const es: HelpPage[] = [
               </p>
             }
           />
+        ),
+      },
+    ],
+  },
+  {
+    id: "agentes",
+    title: "Agentes de IA",
+    summary: "Conecta Claude, OpenCode, Codex o Antigravity a tu campaña.",
+    sections: [
+      {
+        id: "agentes-que-es",
+        title: "Qué permite",
+        modes: ["web", "desktop"],
+        body: (
+          <>
+            <p>
+              Rolboard puede hablar con asistentes de IA que soportan MCP:
+              Claude (Desktop y Code), OpenCode, Codex y Antigravity. Con eso
+              les puedes pedir que busquen en tu campaña, resuman una sesión o
+              te ayuden a preparar la siguiente.
+            </p>
+            <p>
+              Leen casi todo, secretos incluidos. Escriben poco: crean notas
+              sueltas, NPCs, misiones y entradas de lore, y editan la
+              preparación de una sesión. No borran nada.
+            </p>
+            <Callout
+              kind="warning"
+              title="Lo que el asistente ve, lo ve su proveedor"
+            >
+              Lo que el asistente lee de tu campaña viaja al servicio de IA que
+              uses. Si no quieres que un secreto salga de tu máquina, no
+              conectes ese cliente.
+            </Callout>
+          </>
+        ),
+      },
+      {
+        id: "agentes-escritorio",
+        title: "Desde la app de escritorio",
+        modes: ["desktop"],
+        body: (
+          <>
+            <ol>
+              <li>
+                Abre <em>Ajustes de la app</em> y busca la sección{" "}
+                <em>Agentes de IA</em>.
+              </li>
+              <li>Activa la conexión de agentes.</li>
+              <li>
+                Pulsa <em>Conectar</em> en el cliente que uses. Solo aparecen
+                como disponibles los que están instalados.
+              </li>
+              <li>Reinicia el cliente para que lea la configuración nueva.</li>
+            </ol>
+            <p>
+              La app tiene que estar abierta mientras el asistente trabaja: la
+              conexión pasa por un socket local de tu usuario, sin red y sin
+              claves.
+            </p>
+            <Callout
+              kind="warning"
+              title="Cierra Claude Code antes de conectar"
+            >
+              Claude Code reescribe su archivo de configuración mientras corre,
+              y podría pisar el cambio. Si tu configuración de OpenCode tiene
+              comentarios, la app no la toca y te lo avisa.
+            </Callout>
+            <p>
+              Si mueves o actualizas la app y cambia su ubicación, vuelve a
+              pulsar <em>Conectar</em>.
+            </p>
+          </>
+        ),
+      },
+      {
+        id: "agentes-web",
+        title: "Desde un servidor (web)",
+        modes: ["web"],
+        body: (
+          <>
+            <p>
+              El asistente corre en tu computadora y se conecta al servidor con
+              un programa chico, <code>rolboard-mcp</code>. Descárgalo de la
+              página de <em>Releases</em> del repositorio en GitHub y
+              necesitarás tres datos:
+            </p>
+            <ul>
+              <li>
+                <code>ROLBOARD_URL</code>: la dirección del servidor, la misma
+                que usas en el navegador.
+              </li>
+              <li>
+                <code>ROLBOARD_CAMPAIGN</code>: el número de la campaña. Es el
+                que aparece en la dirección tras <code>/c/</code>.
+              </li>
+              <li>
+                <code>ROLBOARD_CODE_FILE</code>: un archivo de texto con el
+                código de acceso de esa campaña, y nada más.
+              </li>
+            </ul>
+            <p>Ejemplo con Claude Code:</p>
+            <Code>{ES_MCP_WEB}</Code>
+            <p>
+              Cada campaña tiene su propio código, así que una conexión da
+              acceso a una sola campaña. Para otra, repite el comando con su
+              número y su archivo.
+            </p>
+            <Callout kind="warning" title="Protege el archivo del código">
+              Quien lo lea puede entrar a la campaña. Déjalo solo para tu
+              usuario (<code>chmod 600</code>).
+            </Callout>
+          </>
         ),
       },
     ],
@@ -1734,6 +1859,116 @@ const en: HelpPage[] = [
               </p>
             }
           />
+        ),
+      },
+    ],
+  },
+  {
+    id: "agents",
+    title: "AI agents",
+    summary: "Connect Claude, OpenCode, Codex or Antigravity to your campaign.",
+    sections: [
+      {
+        id: "agents-what",
+        title: "What it allows",
+        modes: ["web", "desktop"],
+        body: (
+          <>
+            <p>
+              Rolboard can talk to AI assistants that support MCP: Claude
+              (Desktop and Code), OpenCode, Codex and Antigravity. You can ask
+              them to search your campaign, summarise a session or help you
+              prepare the next one.
+            </p>
+            <p>
+              They read almost everything, secrets included. They write little:
+              they create loose notes, NPCs, quests and lore entries, and edit a
+              session's prep. They never delete anything.
+            </p>
+            <Callout
+              kind="warning"
+              title="What the assistant sees, its provider sees"
+            >
+              Whatever the assistant reads from your campaign travels to the AI
+              service you use. If you don't want a secret to leave your machine,
+              don't connect that client.
+            </Callout>
+          </>
+        ),
+      },
+      {
+        id: "agents-desktop",
+        title: "From the desktop app",
+        modes: ["desktop"],
+        body: (
+          <>
+            <ol>
+              <li>
+                Open <em>App settings</em> and find the <em>AI agents</em>{" "}
+                section.
+              </li>
+              <li>Turn the agent connection on.</li>
+              <li>
+                Press <em>Connect</em> on the client you use. Only installed
+                clients are available.
+              </li>
+              <li>Restart the client so it reads the new configuration.</li>
+            </ol>
+            <p>
+              The app has to be open while the assistant works: the connection
+              goes through a local socket owned by your user, with no network
+              and no keys.
+            </p>
+            <Callout kind="warning" title="Close Claude Code before connecting">
+              Claude Code rewrites its configuration file while it runs and
+              could overwrite the change. If your OpenCode configuration has
+              comments, the app leaves it alone and tells you.
+            </Callout>
+            <p>
+              If you move or update the app and its location changes, press{" "}
+              <em>Connect</em> again.
+            </p>
+          </>
+        ),
+      },
+      {
+        id: "agents-web",
+        title: "From a server (web)",
+        modes: ["web"],
+        body: (
+          <>
+            <p>
+              The assistant runs on your computer and reaches the server through
+              a small program, <code>rolboard-mcp</code>. Download it from the
+              repository's <em>Releases</em> page on GitHub. You'll need three
+              values:
+            </p>
+            <ul>
+              <li>
+                <code>ROLBOARD_URL</code>: the server address, the same one you
+                use in the browser.
+              </li>
+              <li>
+                <code>ROLBOARD_CAMPAIGN</code>: the campaign number. It's the
+                one in the address after <code>/c/</code>.
+              </li>
+              <li>
+                <code>ROLBOARD_CODE_FILE</code>: a text file with that
+                campaign's access code and nothing else.
+              </li>
+            </ul>
+            <p>Example with Claude Code:</p>
+            <Code>{EN_MCP_WEB}</Code>
+            <p>
+              Each campaign has its own code, so one connection reaches a single
+              campaign. For another one, repeat the command with its number and
+              its file.
+            </p>
+            <Callout kind="warning" title="Protect the code file">
+              Anyone who can read it can enter the campaign. Keep it readable
+              only by your user (<code>chmod 600</code>).
+            </Callout>
+          </>
         ),
       },
     ],
