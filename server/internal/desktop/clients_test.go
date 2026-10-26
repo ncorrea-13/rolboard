@@ -31,7 +31,7 @@ func read(t *testing.T, path string) string {
 
 func TestMergeMCPServerCreatesTheFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "new", "cfg.json")
-	if err := mergeMCPServer(path, "rolboard", map[string]any{"command": "/x/rolboard", "args": []string{"mcp"}}); err != nil {
+	if err := mergeMCPServer(path, "mcpServers", "rolboard", map[string]any{"command": "/x/rolboard", "args": []string{"mcp"}}); err != nil {
 		t.Fatal(err)
 	}
 	var doc struct {
@@ -58,7 +58,7 @@ func TestMergeMCPServerKeepsEverythingElse(t *testing.T) {
     "rolboard": {"command": "/old/rolboard", "args": ["mcp"]}
   }
 }`)
-	if err := mergeMCPServer(path, "rolboard", map[string]any{"command": "/new/rolboard", "args": []string{"mcp"}}); err != nil {
+	if err := mergeMCPServer(path, "mcpServers", "rolboard", map[string]any{"command": "/new/rolboard", "args": []string{"mcp"}}); err != nil {
 		t.Fatal(err)
 	}
 	got := read(t, path)
@@ -78,7 +78,7 @@ func TestMergeMCPServerKeepsEverythingElse(t *testing.T) {
 func TestMergeMCPServerRefusesInvalidJSONAndLeavesTheFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "cfg.json")
 	write(t, path, `{ this is not json`)
-	if err := mergeMCPServer(path, "rolboard", map[string]any{"command": "x"}); err == nil {
+	if err := mergeMCPServer(path, "mcpServers", "rolboard", map[string]any{"command": "x"}); err == nil {
 		t.Fatal("expected an error")
 	}
 	if got := read(t, path); got != `{ this is not json` {
@@ -92,7 +92,7 @@ func TestMergeKeepsTheFirstBackupAndThePermissions(t *testing.T) {
 	write(t, path, original)
 
 	for i := 0; i < 2; i++ {
-		if err := mergeMCPServer(path, "rolboard", map[string]any{"command": "x"}); err != nil {
+		if err := mergeMCPServer(path, "mcpServers", "rolboard", map[string]any{"command": "x"}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -117,7 +117,7 @@ func TestMergeWritesThroughASymlink(t *testing.T) {
 	if err := os.Symlink(target, link); err != nil {
 		t.Fatal(err)
 	}
-	if err := mergeMCPServer(link, "rolboard", map[string]any{"command": "x"}); err != nil {
+	if err := mergeMCPServer(link, "mcpServers", "rolboard", map[string]any{"command": "x"}); err != nil {
 		t.Fatal(err)
 	}
 	if info, err := os.Lstat(link); err != nil || info.Mode()&os.ModeSymlink == 0 {
@@ -230,5 +230,47 @@ func TestClaudeCodeKeepsItsOwnConfig(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Errorf("missing %s in:\n%s", want, got)
 		}
+	}
+}
+
+func TestOpenCodeGetsItsOwnEntryShape(t *testing.T) {
+	cfg, home := t.TempDir(), t.TempDir()
+	path := filepath.Join(home, ".config", "opencode", "opencode.json")
+	write(t, path, `{"$schema": "https://opencode.ai/config.json", "mcp": {"other": {"type": "remote", "url": "https://x"}}}`)
+	oc, err := FindClient(ClientsAt(cfg, home), "opencode")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st := oc.Status(); !st.Installed || st.Connected {
+		t.Fatalf("before connect: %+v", st)
+	}
+	if err := oc.Connect("/x/rolboard"); err != nil {
+		t.Fatal(err)
+	}
+	if st := oc.Status(); !st.Connected {
+		t.Errorf("not connected after Connect: %+v", st)
+	}
+	got := read(t, path)
+	for _, want := range []string{`"$schema"`, `"other"`, `"type": "local"`, `"/x/rolboard"`, `"enabled": true`} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %s in:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "mcpServers") || strings.Contains(got, `"args"`) {
+		t.Errorf("Claude-style entry leaked into OpenCode config:\n%s", got)
+	}
+}
+
+func TestOpenCodeRefusesAConfigWithComments(t *testing.T) {
+	cfg, home := t.TempDir(), t.TempDir()
+	path := filepath.Join(home, ".config", "opencode", "opencode.json")
+	orig := "{\n  // my setup\n  \"theme\": \"dark\"\n}\n"
+	write(t, path, orig)
+	oc, _ := FindClient(ClientsAt(cfg, home), "opencode")
+	if err := oc.Connect("/x/rolboard"); err == nil {
+		t.Fatal("expected an error for a JSONC file")
+	}
+	if got := read(t, path); got != orig {
+		t.Errorf("file was modified:\n%s", got)
 	}
 }

@@ -27,6 +27,7 @@ type Client struct {
 	configPath string // file that lists the MCP servers
 	detectDir  string // exists when the client is installed
 	toml       bool   // config.toml instead of a JSON file with mcpServers
+	opencode   bool   // JSON file with "mcp" entries shaped {type, command[]}
 }
 
 // ClientStatus is what the settings screen shows for one client.
@@ -70,6 +71,13 @@ func ClientsAt(configDir, home string) []Client {
 			detectDir:  filepath.Join(home, ".gemini"),
 		},
 		{
+			// OpenCode keeps its config under ~/.config on every OS.
+			ID: "opencode", Label: "OpenCode",
+			configPath: filepath.Join(home, ".config", "opencode", "opencode.json"),
+			detectDir:  filepath.Join(home, ".config", "opencode"),
+			opencode:   true,
+		},
+		{
 			ID: "codex", Label: "Codex",
 			configPath: filepath.Join(home, ".codex", "config.toml"),
 			detectDir:  filepath.Join(home, ".codex"),
@@ -102,11 +110,13 @@ func (c Client) Status() ClientStatus {
 		st.Connected = codexHasServer(string(raw), serverName)
 		return st
 	}
-	var doc struct {
-		Servers map[string]json.RawMessage `json:"mcpServers"`
+	var doc map[string]json.RawMessage
+	if json.Unmarshal(raw, &doc) != nil {
+		return st
 	}
-	if json.Unmarshal(raw, &doc) == nil {
-		_, st.Connected = doc.Servers[serverName]
+	var servers map[string]json.RawMessage
+	if json.Unmarshal(doc[c.serversKey()], &servers) == nil {
+		_, st.Connected = servers[serverName]
 	}
 	return st
 }
@@ -120,7 +130,20 @@ func (c Client) Connect(exe string) error {
 	if c.toml {
 		return mergeCodexServer(c.configPath, serverName, exe)
 	}
-	return mergeMCPServer(c.configPath, serverName, map[string]any{"command": exe, "args": []string{"mcp"}})
+	if c.opencode {
+		return mergeMCPServer(c.configPath, c.serversKey(), serverName, map[string]any{
+			"type": "local", "command": []string{exe, "mcp"}, "enabled": true,
+		})
+	}
+	return mergeMCPServer(c.configPath, c.serversKey(), serverName, map[string]any{"command": exe, "args": []string{"mcp"}})
+}
+
+// serversKey is the top-level key that holds the MCP servers in a JSON config.
+func (c Client) serversKey() string {
+	if c.opencode {
+		return "mcp"
+	}
+	return "mcpServers"
 }
 
 // SelfExecutable is the path to launch this app again, for the client's
@@ -134,9 +157,13 @@ func SelfExecutable() (string, error) {
 	return os.Executable()
 }
 
-// mergeMCPServer sets mcpServers[name] in a JSON config, keeping every other
+// mergeMCPServer sets doc[key][name] in a JSON config, keeping every other
 // key exactly as it was. Key order is not preserved.
-func mergeMCPServer(path, name string, entry any) error {
+//
+// shortcut: plain JSON, so an OpenCode opencode.json with comments is refused
+// ("is not valid JSON") instead of rewritten; upgrade to a JSONC parser if
+// that turns out to be common.
+func mergeMCPServer(path, key, name string, entry any) error {
 	path, raw, perm, err := readConfig(path)
 	if err != nil {
 		return err
@@ -148,15 +175,15 @@ func mergeMCPServer(path, name string, entry any) error {
 		}
 	}
 	servers := map[string]json.RawMessage{}
-	if v, ok := doc["mcpServers"]; ok {
+	if v, ok := doc[key]; ok {
 		if err := json.Unmarshal(v, &servers); err != nil {
-			return fmt.Errorf("mcpServers in %s is not an object: %w", path, err)
+			return fmt.Errorf("%s in %s is not an object: %w", key, path, err)
 		}
 	}
 	if servers[name], err = json.Marshal(entry); err != nil {
 		return err
 	}
-	if doc["mcpServers"], err = json.Marshal(servers); err != nil {
+	if doc[key], err = json.Marshal(servers); err != nil {
 		return err
 	}
 	out, err := json.MarshalIndent(doc, "", "  ")
