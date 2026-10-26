@@ -240,7 +240,6 @@ func TestConnectionStaysInItsCampaign(t *testing.T) {
 			t.Errorf("%s: unexpected error %q", tool, text)
 		}
 	}
-	// An ID from the other campaign is refused by the server, not by the client.
 	var npc struct {
 		ID int64 `json:"id"`
 	}

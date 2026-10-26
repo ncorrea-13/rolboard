@@ -50,7 +50,6 @@ func (a *api) do(method, path string, body any) (int, []byte) {
 	return resp.StatusCode, out
 }
 
-// create posts a body and returns the ID of the created entity.
 func (a *api) create(path string, body any) int64 {
 	a.t.Helper()
 	status, out := a.do(http.MethodPost, path, body)
@@ -71,7 +70,6 @@ func newClient(t *testing.T, url string) *api {
 	return &api{t: t, url: url, c: &http.Client{Jar: jar}}
 }
 
-// world holds the IDs of one campaign's entities.
 type world struct {
 	campaign, arc, session, location, npc, pc, quest, group, lore, secret int64
 	note, timeline, event, item, currency, encounter, participant         int64
@@ -99,7 +97,6 @@ func seed(t *testing.T, admin *api, name, code string, n int) world {
 		t.Fatalf("npc types: %d %s", status, out)
 	}
 	w.npcKind = types[0].Key
-	// A type that only exists in this campaign.
 	admin.create(p+"/npc-types", map[string]string{"label": "Only " + name, "color": "#112233"})
 	status, out = admin.do(http.MethodGet, p+"/npc-types", nil)
 	if status != http.StatusOK || json.Unmarshal(out, &types) != nil {
@@ -123,9 +120,6 @@ func seed(t *testing.T, admin *api, name, code string, n int) world {
 	return w
 }
 
-// TestCampaignSessionCannotReachAnotherCampaign logs into campaign A only
-// and tries to read, change or link everything that belongs to campaign B.
-// This is what keeps an AI agent connected to one campaign inside it.
 func TestCampaignSessionCannotReachAnotherCampaign(t *testing.T) {
 	dir := t.TempDir()
 	handler, closer, err := New(Config{

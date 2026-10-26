@@ -30,8 +30,6 @@ func takeID(m map[string]json.RawMessage, key string) (int64, error) {
 	return id, nil
 }
 
-// rename copies the value of each old key to its new key: a few GET models
-// and PUT payloads name the same field differently.
 func rename(m map[string]json.RawMessage, names map[string]string) {
 	for from, to := range names {
 		if v, ok := m[from]; ok {
@@ -41,8 +39,6 @@ func rename(m map[string]json.RawMessage, names map[string]string) {
 	}
 }
 
-// addCreate registers a tool that POSTs its arguments to the path built from
-// the ID in idKey. defaults fill what the model left out.
 func addCreate[A any](s *mcp.Server, api *apiClient, name, description, pathFmt, idKey string, defaults map[string]any, names map[string]string) {
 	mcp.AddTool(s, &mcp.Tool{Name: name, Description: description, Annotations: create},
 		func(ctx context.Context, _ *mcp.CallToolRequest, in A) (*mcp.CallToolResult, any, error) {
@@ -93,7 +89,6 @@ func addUpdate[A any](s *mcp.Server, api *apiClient, name, description, pathFmt 
 		})
 }
 
-// patchEntity GETs path, applies changes and PUTs it back to the same path.
 func patchEntity(ctx context.Context, api *apiClient, path string, changes map[string]json.RawMessage, names map[string]string) (json.RawMessage, error) {
 	current := map[string]json.RawMessage{}
 	if err := api.do(ctx, http.MethodGet, path, nil, &current); err != nil {
@@ -117,9 +112,6 @@ func patchEntity(ctx context.Context, api *apiClient, path string, changes map[s
 type campaignScoped struct {
 	CampaignID int64 `json:"campaign_id" jsonschema:"campaign ID, from list_campaigns"`
 }
-
-// The create_* arguments embed campaignScoped; the update_* ones start with
-// the ID of what they change.
 
 type createArcArgs struct {
 	campaignScoped

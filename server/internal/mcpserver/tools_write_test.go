@@ -208,7 +208,6 @@ func TestItemsInventoryAndShop(t *testing.T) {
 	}
 }
 
-// call2 calls a tool and returns its structured result, failing on a tool error.
 func call2(t *testing.T, s *mcp.ClientSession, name string, args map[string]any) map[string]any {
 	t.Helper()
 	return structured(t, call(t, s, name, args))
