@@ -77,7 +77,9 @@ export function AgentsSettings({
           {clients.map((c) => (
             <div className="agents-list__row" key={c.id}>
               <span className="agents-list__name">{c.label}</span>
-              <span className="agents-list__status">
+              <span
+                className={`agents-list__status${c.connected ? " agents-list__status--connected" : ""}`}
+              >
                 {!c.installed
                   ? t("agents.notInstalled")
                   : c.connected
