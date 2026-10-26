@@ -60,6 +60,11 @@ func ClientsAt(configDir, home string) []Client {
 			detectDir:  filepath.Join(configDir, "Claude"),
 		},
 		{
+			ID: "claude-code", Label: "Claude Code",
+			configPath: filepath.Join(home, ".claude.json"),
+			detectDir:  filepath.Join(home, ".claude"),
+		},
+		{
 			ID: "antigravity", Label: "Antigravity",
 			configPath: filepath.Join(home, ".gemini", "config", "mcp_config.json"),
 			detectDir:  filepath.Join(home, ".gemini"),

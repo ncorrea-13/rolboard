@@ -207,3 +207,28 @@ func TestClientStatusAndConnect(t *testing.T) {
 		t.Errorf("expected ErrUnknownClient, got %v", err)
 	}
 }
+
+func TestClaudeCodeKeepsItsOwnConfig(t *testing.T) {
+	cfg, home := t.TempDir(), t.TempDir()
+	write(t, filepath.Join(home, ".claude.json"), `{"numStartups": 7, "mcpServers": {"other": {"command": "x"}}}`)
+	write(t, filepath.Join(home, ".claude", "settings.json"), `{}`)
+	code, err := FindClient(ClientsAt(cfg, home), "claude-code")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st := code.Status(); !st.Installed || st.Connected {
+		t.Fatalf("before connect: %+v", st)
+	}
+	if err := code.Connect("/x/rolboard"); err != nil {
+		t.Fatal(err)
+	}
+	if st := code.Status(); !st.Connected {
+		t.Errorf("not connected after Connect: %+v", st)
+	}
+	got := read(t, filepath.Join(home, ".claude.json"))
+	for _, want := range []string{`"numStartups": 7`, `"other"`, `"/x/rolboard"`} {
+		if !strings.Contains(got, want) {
+			t.Errorf("missing %s in:\n%s", want, got)
+		}
+	}
+}
