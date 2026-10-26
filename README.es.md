@@ -88,7 +88,7 @@ Compilar desde el código y cómo funciona: [`docs/ANDROID.es.md`](docs/ANDROID.
 
 ## Agentes de IA
 
-Un asistente de IA en tu computadora (Claude Code, Claude Desktop, OpenCode, Codex o Antigravity) puede leer una campaña y anotar notas, NPCs, quests, lore y preparación de sesiones por MCP. Sin claves de API ni OAuth: sigue usando tu propia cuenta con su proveedor. No puede borrar nada.
+Un asistente de IA en tu computadora (Claude Code, Claude Desktop, OpenCode, Codex o Antigravity) puede leer una campaña, y crear y editar sus notas, NPCs, quests, lore, objetos y más, por MCP. Sin claves de API ni OAuth: sigue usando tu propia cuenta con su proveedor. No puede borrar nada.
 
 - **App de escritorio:** activá **Permitir que agentes de IA se conecten** en **Ajustes de la app** y pulsá **Conectar** junto a tu cliente.
 - **Docker:** descargá `rolboard-mcp` del release, ejecutá `rolboard-mcp login` una vez para guardar el código de acceso de la campaña y copiá el comando de los ajustes de la campaña (**Conectar un agente de IA**).

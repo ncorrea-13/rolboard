@@ -910,10 +910,9 @@ const es: HelpPage[] = [
               te ayuden a preparar la siguiente.
             </p>
             <p>
-              Leen casi todo, secretos incluidos. Escriben poco: crean notas
-              sueltas, NPCs, quests, entradas de lore y objetos, reparten
-              objetos en inventarios y tiendas, y editan la preparación de una
-              sesión. No borran nada.
+              Leen todo, secretos incluidos. Crean y editan casi cualquier ficha
+              (notas sueltas, NPCs, quests, lore, objetos, locaciones, sesiones
+              y más). No borran nada ni reindexan el vault.
             </p>
             <Callout
               kind="warning"
@@ -1854,10 +1853,10 @@ const en: HelpPage[] = [
               prepare the next one.
             </p>
             <p>
-              They read almost everything, secrets included. They write little:
-              they create loose notes, NPCs, quests, lore entries and items, put
-              items in inventories and shops, and edit a session's prep. They
-              never delete anything.
+              They read everything, secrets included. They create and edit
+              almost any record (loose notes, NPCs, quests, lore, items,
+              locations, sessions and more). They never delete anything or
+              reindex the vault.
             </p>
             <Callout
               kind="warning"

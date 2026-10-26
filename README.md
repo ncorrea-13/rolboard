@@ -88,7 +88,7 @@ Building from source and how it works: [`docs/ANDROID.md`](docs/ANDROID.md).
 
 ## AI agents
 
-An AI assistant on your computer (Claude Code, Claude Desktop, OpenCode, Codex or Antigravity) can read a campaign and capture notes, NPCs, quests, lore and session prep through MCP. No API keys or OAuth: it keeps using your own account with its provider. It cannot delete anything.
+An AI assistant on your computer (Claude Code, Claude Desktop, OpenCode, Codex or Antigravity) can read a campaign, and create and edit its notes, NPCs, quests, lore, items and more, through MCP. No API keys or OAuth: it keeps using your own account with its provider. It cannot delete anything.
 
 - **Desktop app:** turn on **Let AI agents connect** in **App settings** and press **Connect** next to your client.
 - **Docker:** download `rolboard-mcp` from the release, run `rolboard-mcp login` once to save the campaign's access code, then copy the command from the campaign settings (**Connect an AI agent**).
