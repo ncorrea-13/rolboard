@@ -10,17 +10,27 @@ Pick the section that matches where your Rolboard runs: [desktop app](#desktop-a
 
 ## What the assistant can do
 
-It reads almost everything and writes very little.
+It reads everything in the campaign's database and writes with limits: it can create and edit, never delete.
 
-| Reads | Writes |
-|---|---|
-| `list_campaigns`, `list_npcs`, `list_player_characters`, `list_sessions`, `list_arcs`, `list_quests`, `list_locations`, `list_groups`, `list_lore_entries`, `list_loose_notes`, `list_secrets`, `list_timeline_events`, `list_npc_types`, `list_lore_categories`, `list_items`, `list_currencies` | `create_loose_note`, `update_loose_note` |
-| `get_npc`, `get_player_character`, `get_session`, `get_arc`, `get_quest`, `get_location`, `get_group`, `get_lore_entry`, `get_loose_note`, `get_secret`, `get_timeline_event`, `get_item` | `update_session_prep` (replaces the prep notes of one session) |
-| `get_appearances` (sessions, quests and lore where an NPC or character shows up), `search` (ranked search across the campaign), `get_item_owners` (who holds an item), `get_inventory` (what an NPC or character carries), `get_shop` (what a location sells) | `create_npc`, `create_quest`, `create_lore`, `create_item`, `update_inventory_item` (put an item in an inventory or change its quantity), `update_shop_item` (stock a shop or change its prices) |
+**Reads**
 
-- **No delete tool exists.** An assistant cannot remove anything.
+- `list_*` return summaries and `get_*` the full record, for campaigns, NPCs, player characters, sessions, arcs, quests, locations, groups, lore entries, loose notes, secrets, timelines, timeline events, items, currencies and encounters (`get_encounter` includes the participants).
+- `list_npc_types` and `list_lore_categories` give the keys that `create_npc` and `create_lore` need.
+- `get_appearances` (sessions, quests and lore where an NPC or character shows up), `get_item_owners`, `get_inventory`, `get_shop`.
+- `search`: ranked search across NPCs, characters, locations, groups, arcs, quests, sessions, lore, secrets, notes, timeline events, items and encounters.
+
+**Writes**
+
+- **Create:** `create_loose_note`, `create_npc`, `create_player_character`, `create_quest`, `create_lore`, `create_arc`, `create_session`, `create_location`, `create_group`, `create_secret`, `create_timeline_event`, `create_item`, `create_encounter`, `create_encounter_participant`.
+- **Edit:** `update_loose_note`, `update_npc`, `update_player_character`, `update_quest`, `update_lore`, `update_arc`, `update_session`, `update_session_prep`, `update_location`, `update_group`, `update_secret`, `update_timeline_event`, `update_item`, `update_encounter`, `update_encounter_participant`. Only the fields you pass change; a text field you pass replaces the old text, so the assistant reads it first to append.
+- **Inventories and shops:** `update_inventory_item` and `update_shop_item` put an item in or change its quantity, notes or prices.
+
+What it cannot do:
+
+- **No delete tool exists.** An assistant cannot remove anything, take an item out of an inventory or a shop, or clear a field. It also cannot restore the trash, reindex the vault or touch images.
 - **Secrets are readable.** Whatever the assistant reads travels to the AI service you use. If you don't want a secret to leave your machine, don't connect that client.
-- Encounters are not exposed yet. Inventories and shops can be filled but not emptied: there is no way to remove an item.
+- **One campaign.** With an access code (Docker) the connection reaches only that campaign: the client refuses any other `campaign_id`, and the server checks every reference in a request (a location, an NPC, an item...) against the campaign of the session. The desktop app is in local mode and reaches all your campaigns.
+- Entities created from the assistant live only in the database: they have no note in the Obsidian vault, and a vault note with the same name creates another one on the next reindex.
 
 ## Desktop app
 

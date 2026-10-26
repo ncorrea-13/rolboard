@@ -10,17 +10,27 @@ Elige la sección según dónde corre tu Rolboard: [app de escritorio](#app-de-e
 
 ## Qué puede hacer el asistente
 
-Lee casi todo y escribe muy poco.
+Lee todo lo que hay en la base de la campaña y escribe con límites: puede crear y editar, nunca borrar.
 
-| Lee | Escribe |
-|---|---|
-| `list_campaigns`, `list_npcs`, `list_player_characters`, `list_sessions`, `list_arcs`, `list_quests`, `list_locations`, `list_groups`, `list_lore_entries`, `list_loose_notes`, `list_secrets`, `list_timeline_events`, `list_npc_types`, `list_lore_categories`, `list_items`, `list_currencies` | `create_loose_note`, `update_loose_note` |
-| `get_npc`, `get_player_character`, `get_session`, `get_arc`, `get_quest`, `get_location`, `get_group`, `get_lore_entry`, `get_loose_note`, `get_secret`, `get_timeline_event`, `get_item` | `update_session_prep` (reemplaza las notas de preparación de una sesión) |
-| `get_appearances` (sesiones, quests y lore donde aparece un NPC o personaje), `search` (búsqueda ordenada por relevancia en toda la campaña), `get_item_owners` (quién tiene un objeto), `get_inventory` (qué lleva un NPC o personaje), `get_shop` (qué vende una locación) | `create_npc`, `create_quest`, `create_lore`, `create_item`, `update_inventory_item` (poner un objeto en un inventario o cambiar su cantidad), `update_shop_item` (surtir una tienda o cambiar sus precios) |
+**Lee**
 
-- **No existe ninguna herramienta para borrar.** Un asistente no puede eliminar nada.
+- `list_*` devuelven resúmenes y `get_*` el registro completo, de campañas, NPCs, personajes de jugadores, sesiones, arcos, quests, locaciones, facciones, entradas de lore, notas sueltas, secretos, líneas de tiempo, eventos, objetos, monedas y encuentros (`get_encounter` incluye los participantes).
+- `list_npc_types` y `list_lore_categories` dan las claves que necesitan `create_npc` y `create_lore`.
+- `get_appearances` (sesiones, quests y lore donde aparece un NPC o personaje), `get_item_owners`, `get_inventory`, `get_shop`.
+- `search`: búsqueda ordenada por relevancia en NPCs, personajes, locaciones, facciones, arcos, quests, sesiones, lore, secretos, notas, eventos, objetos y encuentros.
+
+**Escribe**
+
+- **Crear:** `create_loose_note`, `create_npc`, `create_player_character`, `create_quest`, `create_lore`, `create_arc`, `create_session`, `create_location`, `create_group`, `create_secret`, `create_timeline_event`, `create_item`, `create_encounter`, `create_encounter_participant`.
+- **Editar:** `update_loose_note`, `update_npc`, `update_player_character`, `update_quest`, `update_lore`, `update_arc`, `update_session`, `update_session_prep`, `update_location`, `update_group`, `update_secret`, `update_timeline_event`, `update_item`, `update_encounter`, `update_encounter_participant`. Solo cambian los campos que se pasan; un campo de texto que se pasa reemplaza al anterior, así que el asistente lo lee antes para agregar.
+- **Inventarios y tiendas:** `update_inventory_item` y `update_shop_item` ponen un objeto o cambian su cantidad, notas o precios.
+
+Lo que no puede hacer:
+
+- **No existe ninguna herramienta para borrar.** Un asistente no puede eliminar nada, sacar un objeto de un inventario o de una tienda, ni vaciar un campo. Tampoco restaura la papelera, reindexa el vault ni toca imágenes.
 - **Los secretos se pueden leer.** Todo lo que el asistente lee viaja al servicio de IA que uses. Si no quieres que un secreto salga de tu equipo, no conectes ese cliente.
-- Los encuentros todavía no se exponen. Los inventarios y las tiendas se pueden llenar pero no vaciar: no hay forma de quitar un objeto.
+- **Una sola campaña.** Con un código de acceso (Docker) la conexión llega solo a esa campaña: el cliente rechaza cualquier otro `campaign_id` y el servidor comprueba cada referencia de un request (una locación, un NPC, un objeto...) contra la campaña de la sesión. La app de escritorio está en modo local y llega a todas tus campañas.
+- Lo que se crea desde el asistente vive solo en la base: no tiene nota en el vault de Obsidian, y una nota del vault con el mismo nombre crea otra entidad en el próximo reindex.
 
 ## App de escritorio
 
