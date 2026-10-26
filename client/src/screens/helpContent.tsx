@@ -127,12 +127,9 @@ const es: HelpPage[] = [
                     la clave de admin de la instalación). Después, en el botón
                     de ajustes del sidebar, pon un{" "}
                     <strong>código de acceso</strong>: con ese código entras a
-                    la campaña desde el selector.
+                    la campaña desde el selector (más en{" "}
+                    <em>Acceso y seguridad</em>).
                   </p>
-                  <Callout kind="warning" title="Código de acceso">
-                    Quien tenga el código ve y edita toda la campaña: guárdalo
-                    como una contraseña.
-                  </Callout>
                 </>
               }
               desktop={
@@ -143,11 +140,9 @@ const es: HelpPage[] = [
                     código de acceso.
                   </p>
                   <p>
-                    Si usas Obsidian, abre <em>Ajustes de la app</em> (el
-                    engranaje del selector de campañas) y elige la carpeta que
-                    contiene tus vaults. Para usar las mismas campañas en otro
-                    dispositivo, elige además una{" "}
-                    <em>Carpeta de sincronización</em>.
+                    Si usas Obsidian, mira la página <em>Obsidian</em>. Para
+                    usar las mismas campañas en otro dispositivo, mira{" "}
+                    <em>Tus datos</em>.
                   </p>
                 </>
               }
@@ -159,11 +154,9 @@ const es: HelpPage[] = [
                     código de acceso.
                   </p>
                   <p>
-                    Si usas Obsidian, abre <em>Ajustes de la app</em> y elige la
-                    carpeta de vaults con el selector de Android: la primera vez
-                    te pide el permiso <em>Acceso a todos los archivos</em>.
-                    Para llevar las campañas a otro dispositivo, elige una{" "}
-                    <em>Carpeta de sincronización</em>.
+                    Si usas Obsidian, mira la página <em>Obsidian</em>. Para
+                    llevar las campañas a otro dispositivo, mira{" "}
+                    <em>Tus datos</em>.
                   </p>
                 </>
               }
@@ -224,10 +217,10 @@ const es: HelpPage[] = [
               preparación y marca los NPCs y las quests que esperas usar.
             </li>
             <li>
-              <strong>Juégala:</strong> ábrela y toca{" "}
-              <em>Marcar como jugada</em>. Anotas la fecha real y un resumen;
-              tus notas de preparación se conservan. Debajo del resumen ves los
-              temas sensibles para tenerlos presentes.
+              <strong>Juégala:</strong> ábrela, toca <em>Jugar</em> y confirma
+              con <em>Confirmar como jugada</em>. Anotas la fecha real y un
+              resumen; tus notas de preparación se conservan. Debajo del resumen
+              ves los temas sensibles para tenerlos presentes.
             </li>
             <li>
               <strong>Consúltala después:</strong> la sesión queda en la línea
@@ -355,8 +348,9 @@ const es: HelpPage[] = [
         body: (
           <p>
             Para ideas que aparecen a mitad de partida. Marca una nota como{" "}
-            <em>por archivar</em> para que quede arriba y no se pierda; el
-            Resumen te muestra cuántas hay pendientes.
+            <em>Pendiente de ubicar</em> para que no se pierda: el filtro del
+            mismo nombre las reúne y el Resumen cuenta cuántas hay. Cuando la
+            pases a su lugar, toca <em>Marcar como ubicada</em>.
           </p>
         ),
       },
@@ -829,6 +823,18 @@ const es: HelpPage[] = [
         ),
       },
       {
+        id: "exportar",
+        title: "Exportar la campaña",
+        body: (
+          <p>
+            En los ajustes de la campaña, <em>Exportar campaña</em> guarda todas
+            las entidades como notas Markdown, con la estructura que lee el
+            indexer, y sus imágenes en <code>Imagenes/</code>. No incluye lo que
+            está en la papelera.
+          </p>
+        ),
+      },
+      {
         id: "acceso",
         title: "Acceso y seguridad",
         modes: ["web"],
@@ -917,8 +923,8 @@ const es: HelpPage[] = [
             </p>
             <p>
               Leen casi todo, secretos incluidos. Escriben poco: crean notas
-              sueltas, NPCs, misiones y entradas de lore, y editan la
-              preparación de una sesión. No borran nada.
+              sueltas, NPCs, quests y entradas de lore, y editan la preparación
+              de una sesión. No borran nada.
             </p>
             <Callout
               kind="warning"
@@ -942,10 +948,12 @@ const es: HelpPage[] = [
                 Abre <em>Ajustes de la app</em> y busca la sección{" "}
                 <em>Agentes de IA</em>.
               </li>
-              <li>Activa la conexión de agentes.</li>
               <li>
-                Pulsa <em>Conectar</em> en el cliente que uses. Solo aparecen
-                como disponibles los que están instalados.
+                Activa <em>Permitir que agentes de IA se conecten</em>.
+              </li>
+              <li>
+                Pulsa <em>Conectar</em> en el cliente que uses; los que no
+                tienes figuran como <em>No instalado</em>.
               </li>
               <li>Reinicia el cliente para que lea la configuración nueva.</li>
             </ol>
@@ -963,8 +971,8 @@ const es: HelpPage[] = [
               comentarios, la app no la toca y te lo avisa.
             </Callout>
             <p>
-              Si mueves o actualizas la app y cambia su ubicación, vuelve a
-              pulsar <em>Conectar</em>.
+              Si mueves o actualizas la app y cambia su ubicación, pulsa{" "}
+              <em>Reconectar</em>.
             </p>
           </>
         ),
@@ -1105,12 +1113,9 @@ const en: HelpPage[] = [
                     On the first screen pick <em>New campaign</em> (it asks for
                     the installation's admin key). Then, in the sidebar's
                     settings button, set an <strong>access code</strong>: that
-                    code is how you enter the campaign from the selector.
+                    code is how you enter the campaign from the selector (more
+                    in <em>Access and security</em>).
                   </p>
-                  <Callout kind="warning" title="Access code">
-                    Anyone with the code sees and edits the whole campaign: keep
-                    it like a password.
-                  </Callout>
                 </>
               }
               desktop={
@@ -1121,10 +1126,9 @@ const en: HelpPage[] = [
                     needed.
                   </p>
                   <p>
-                    If you use Obsidian, open <em>App settings</em> (the gear on
-                    the campaign selector) and pick the folder that holds your
-                    vaults. To use the same campaigns on another device, also
-                    pick a <em>Sync folder</em>.
+                    If you use Obsidian, see the <em>Obsidian</em> page. To use
+                    the same campaigns on another device, see <em>Your data</em>
+                    .
                   </p>
                 </>
               }
@@ -1135,10 +1139,8 @@ const en: HelpPage[] = [
                     is saved on the phone and no key or access code is needed.
                   </p>
                   <p>
-                    If you use Obsidian, open <em>App settings</em> and pick the
-                    vaults folder with Android's picker: the first time it asks
-                    for the <em>All files access</em> permission. To take the
-                    campaigns to another device, pick a <em>Sync folder</em>.
+                    If you use Obsidian, see the <em>Obsidian</em> page. To take
+                    the campaigns to another device, see <em>Your data</em>.
                   </p>
                 </>
               }
@@ -1166,7 +1168,7 @@ const en: HelpPage[] = [
               />
             </p>
             <p>
-              The <strong>Overview</strong> is the campaign's front page:
+              The <strong>Summary</strong> is the campaign's front page:
             </p>
             <ul>
               <li>
@@ -1196,15 +1198,15 @@ const en: HelpPage[] = [
         body: (
           <ol>
             <li>
-              <strong>Plan it:</strong> from the Overview or from{" "}
+              <strong>Plan it:</strong> from the Summary or from{" "}
               <em>Sessions</em>, pick a tentative date, write the prep notes and
               tick the NPCs and quests you expect to use.
             </li>
             <li>
-              <strong>Play it:</strong> open it and press{" "}
-              <em>Mark as played</em>. You add the real date and a recap; your
-              prep notes are kept. Below the recap you see the sensitive topics,
-              to keep them in mind.
+              <strong>Play it:</strong> open it, press <em>Play</em> and confirm
+              with <em>Confirm as played</em>. You add the real date and a
+              recap; your prep notes are kept. Below the recap you see the
+              sensitive topics, to keep them in mind.
             </li>
             <li>
               <strong>Look it up later:</strong> the session stays on its arc's
@@ -1229,8 +1231,8 @@ const en: HelpPage[] = [
             <p>
               An <strong>arc</strong> groups sessions and has a status (planned,
               in progress or closed). Sub-arcs share the arc's number and the
-              Overview counts them as progress. Closing an arc doesn't delete
-              its sessions.
+              Summary counts them as progress. Closing an arc doesn't delete its
+              sessions.
             </p>
             <p>
               <strong>Sessions</strong> shows each arc on its own timeline. The{" "}
@@ -1328,9 +1330,10 @@ const en: HelpPage[] = [
         title: "Loose notes",
         body: (
           <p>
-            For ideas that pop up mid-game. Mark a note <em>to be filed</em> so
-            it stays on top and doesn't get lost; the Overview shows how many
-            are pending.
+            For ideas that pop up mid-game. Mark a note <em>To be filed</em> so
+            it doesn't get lost: the filter of the same name gathers them and
+            the Summary counts how many there are. Once it has a home, press{" "}
+            <em>Mark as filed</em>.
           </p>
         ),
       },
@@ -1629,7 +1632,7 @@ const en: HelpPage[] = [
           <>
             <p>
               You can point the campaign at your vault and bring in your notes
-              with <strong>Reindex vault</strong>, on the Overview. The app only
+              with <strong>Reindex vault</strong>, on the Summary. The app only
               reads: it never modifies your notes. Each note is converted by its
               folder and the file name is the entity's name:
             </p>
@@ -1796,6 +1799,18 @@ const en: HelpPage[] = [
         ),
       },
       {
+        id: "export",
+        title: "Exporting the campaign",
+        body: (
+          <p>
+            In the campaign settings, <em>Export campaign</em> saves every
+            entity as Markdown notes, with the structure the indexer reads, and
+            their images in <code>Imagenes/</code>. It leaves out whatever is in
+            the trash.
+          </p>
+        ),
+      },
+      {
         id: "access",
         title: "Access and security",
         modes: ["web"],
@@ -1907,10 +1922,12 @@ const en: HelpPage[] = [
                 Open <em>App settings</em> and find the <em>AI agents</em>{" "}
                 section.
               </li>
-              <li>Turn the agent connection on.</li>
               <li>
-                Press <em>Connect</em> on the client you use. Only installed
-                clients are available.
+                Turn on <em>Let AI agents connect</em>.
+              </li>
+              <li>
+                Press <em>Connect</em> on the client you use; the ones you don't
+                have show as <em>Not installed</em>.
               </li>
               <li>Restart the client so it reads the new configuration.</li>
             </ol>
@@ -1926,7 +1943,7 @@ const en: HelpPage[] = [
             </Callout>
             <p>
               If you move or update the app and its location changes, press{" "}
-              <em>Connect</em> again.
+              <em>Reconnect</em>.
             </p>
           </>
         ),

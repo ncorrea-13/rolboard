@@ -60,7 +60,7 @@ const dict = {
     "appSettings.auraHint": "Desactivalo para dejar el fondo liso y oscuro.",
     "agents.enable": "Permitir que agentes de IA se conecten",
     "agents.enableHint":
-      "Deja que Claude Desktop, Codex o Antigravity lean y escriban tu campaña mientras Rolboard esté abierto. Solo funciona en esta computadora.",
+      "Deja que Claude, OpenCode, Codex o Antigravity lean y escriban tu campaña mientras Rolboard esté abierto. Solo funciona en esta computadora.",
     "agents.connect": "Conectar",
     "agents.reconnect": "Reconectar",
     "agents.connected": "Conectado",
@@ -819,7 +819,7 @@ const dict = {
     "appSettings.auraHint": "Turn it off for a plain dark background.",
     "agents.enable": "Let AI agents connect",
     "agents.enableHint":
-      "Lets Claude Desktop, Codex or Antigravity read and write your campaign while Rolboard is open. It only works on this computer.",
+      "Lets Claude, OpenCode, Codex or Antigravity read and write your campaign while Rolboard is open. It only works on this computer.",
     "agents.connect": "Connect",
     "agents.reconnect": "Reconnect",
     "agents.connected": "Connected",
