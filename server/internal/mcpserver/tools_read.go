@@ -164,11 +164,18 @@ func registerEntity[T, S any](s *mcp.Server, api *apiClient, singular, plural, l
 func registerReadTools(s *mcp.Server, api *apiClient) {
 	mcp.AddTool(s, &mcp.Tool{
 		Name:        "list_campaigns",
-		Description: "List the campaigns of this Rolboard instance. You can only read the one this connection is logged into.",
+		Description: "List the campaigns this connection can use. With an access code that is the one campaign it is logged into.",
 		Annotations: readOnly,
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ noArgs) (*mcp.CallToolResult, list[campaignSummary], error) {
 		var campaigns []models.Campaign
-		if err := api.do(ctx, http.MethodGet, "/api/campaigns", nil, &campaigns); err != nil {
+		if api.cfg.Socket == "" {
+			// The server lists every campaign to anyone; this connection only gets its own.
+			var own models.Campaign
+			if err := api.do(ctx, http.MethodGet, fmt.Sprintf("/api/campaigns/%d", api.cfg.CampaignID), nil, &own); err != nil {
+				return nil, list[campaignSummary]{}, err
+			}
+			campaigns = []models.Campaign{own}
+		} else if err := api.do(ctx, http.MethodGet, "/api/campaigns", nil, &campaigns); err != nil {
 			return nil, list[campaignSummary]{}, err
 		}
 		out := list[campaignSummary]{Items: make([]campaignSummary, 0, len(campaigns))}

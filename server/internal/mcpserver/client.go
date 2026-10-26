@@ -12,6 +12,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/cookiejar"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -82,6 +83,9 @@ func (e *apiError) Error() string {
 // On 401 it logs in and retries once; it never loops, because the login
 // endpoint is rate limited.
 func (c *apiClient) do(ctx context.Context, method, path string, in, out any) error {
+	if err := c.checkScope(path); err != nil {
+		return err
+	}
 	err := c.send(ctx, method, path, in, out)
 	var apiErr *apiError
 	if c.cfg.Socket == "" && errors.As(err, &apiErr) && apiErr.Status == http.StatusUnauthorized {
@@ -91,6 +95,24 @@ func (c *apiClient) do(ctx context.Context, method, path string, in, out any) er
 		return c.send(ctx, method, path, in, out)
 	}
 	return err
+}
+
+// checkScope refuses a request for another campaign before it leaves the
+// process. The server rejects it anyway (the session cookie is for one
+// campaign); this gives the agent a clear error instead of a bare 401.
+func (c *apiClient) checkScope(path string) error {
+	if c.cfg.Socket != "" {
+		return nil
+	}
+	rest, ok := strings.CutPrefix(path, "/api/campaigns/")
+	if !ok {
+		return nil
+	}
+	id, _, _ := strings.Cut(rest, "/")
+	if n, err := strconv.ParseInt(id, 10, 64); err == nil && n != c.cfg.CampaignID {
+		return fmt.Errorf("this connection can only use campaign %d, not %d", c.cfg.CampaignID, n)
+	}
+	return nil
 }
 
 func (c *apiClient) send(ctx context.Context, method, path string, in, out any) error {

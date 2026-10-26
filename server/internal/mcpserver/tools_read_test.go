@@ -3,10 +3,13 @@ package mcpserver
 import (
 	"context"
 	"net/http"
+	"net/http/cookiejar"
 	"strings"
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
+
+	"github.com/ncorrea-13/rolboard/server/internal/models"
 )
 
 func connect(t *testing.T, api *apiClient) *mcp.ClientSession {
@@ -200,5 +203,52 @@ func TestGetAppearancesValidatesKind(t *testing.T) {
 	res = call(t, s, "get_appearances", map[string]any{"kind": "npc", "id": 999999})
 	if !res.IsError || strings.Contains(res.Content[0].(*mcp.TextContent).Text, "page not found") {
 		t.Errorf("expected the handler's own error, got %+v", res.Content)
+	}
+}
+
+func TestConnectionStaysInItsCampaign(t *testing.T) {
+	srv, id := startServer(t, false)
+	jar, _ := cookiejar.New(nil)
+	adminHTTP := srv.Client()
+	adminHTTP.Jar = jar
+	admin := &apiClient{http: adminHTTP, cfg: Config{BaseURL: srv.URL}}
+	ctx := context.Background()
+	if err := admin.send(ctx, http.MethodPost, "/api/admin/login", map[string]string{"token": testAdminToken}, nil); err != nil {
+		t.Fatal(err)
+	}
+	var other models.Campaign
+	if err := admin.send(ctx, http.MethodPost, "/api/campaigns", map[string]string{"name": "Secret", "system": "dnd5e"}, &other); err != nil {
+		t.Fatal(err)
+	}
+
+	api, err := newAPIClient(Config{BaseURL: srv.URL, CampaignID: id, AccessCode: testAccessCode})
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := connect(t, api)
+
+	items := structured(t, call(t, s, "list_campaigns", map[string]any{}))["items"].([]any)
+	if len(items) != 1 || int64(items[0].(map[string]any)["id"].(float64)) != id {
+		t.Errorf("the connection should only see its own campaign: %v", items)
+	}
+	for _, tool := range []string{"list_npcs", "list_items", "search"} {
+		args := map[string]any{"campaign_id": other.ID}
+		if tool == "search" {
+			args["query"] = "x"
+		}
+		if text := errorText(t, call(t, s, tool, args)); !strings.Contains(text, "can only use campaign") {
+			t.Errorf("%s: unexpected error %q", tool, text)
+		}
+	}
+	// An ID from the other campaign is refused by the server, not by the client.
+	var npc struct {
+		ID int64 `json:"id"`
+	}
+	body := map[string]any{"name": "Hidden", "npc_kind": "npc", "detail_level": "minor", "status": "vivo"}
+	if err := admin.send(ctx, http.MethodPost, "/api/campaigns/"+itoa(other.ID)+"/npcs", body, &npc); err != nil {
+		t.Fatal(err)
+	}
+	if text := errorText(t, call(t, s, "get_npc", map[string]any{"id": npc.ID})); !strings.Contains(text, "401") {
+		t.Errorf("get_npc of another campaign: %q", text)
 	}
 }
