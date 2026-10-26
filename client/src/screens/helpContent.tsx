@@ -46,16 +46,6 @@ const EN_TABLE = `| Era | Event |
 | Year 0 | The lighthouse is lit |
 | Year 120 | The first keeper vanishes |`;
 
-const ES_MCP_WEB = `claude mcp add --scope user rolboard \\
-  -e ROLBOARD_URL=https://mi-servidor \\
-  -e ROLBOARD_CAMPAIGN=3 \\
-  -- /ruta/a/rolboard-mcp`;
-
-const EN_MCP_WEB = `claude mcp add --scope user rolboard \\
-  -e ROLBOARD_URL=https://my-server \\
-  -e ROLBOARD_CAMPAIGN=3 \\
-  -- /path/to/rolboard-mcp`;
-
 const es: HelpPage[] = [
   {
     id: "inicio",
@@ -956,20 +946,8 @@ const es: HelpPage[] = [
               <li>Reinicia el cliente para que lea la configuración nueva.</li>
             </ol>
             <p>
-              La app tiene que estar abierta mientras el asistente trabaja: la
-              conexión pasa por un socket local de tu usuario, sin red y sin
-              claves.
-            </p>
-            <Callout
-              kind="warning"
-              title="Cierra Claude Code antes de conectar"
-            >
-              Claude Code reescribe su archivo de configuración mientras corre,
-              y podría pisar el cambio. Si tu configuración de OpenCode tiene
-              comentarios, la app no la toca y te lo avisa.
-            </Callout>
-            <p>
-              Si mueves o actualizas la app y cambia su ubicación, pulsa{" "}
+              La app tiene que estar abierta mientras el asistente trabaja. Si
+              la mueves o la actualizas y cambia su ubicación, pulsa{" "}
               <em>Reconectar</em>.
             </p>
           </>
@@ -982,38 +960,17 @@ const es: HelpPage[] = [
         body: (
           <>
             <p>
-              El asistente corre en tu computadora y se conecta al servidor con
-              un programa chico, <code>rolboard-mcp</code>. Descárgalo de la
-              página de <em>Releases</em> del repositorio en GitHub y sigue
-              estos pasos:
+              El asistente corre en tu computadora y se conecta al servidor con{" "}
+              <code>rolboard-mcp</code>, que descargas de la página de{" "}
+              <em>Releases</em> del repositorio en GitHub.
             </p>
-            <ol>
-              <li>
-                En una terminal, ejecuta una vez{" "}
-                <code>
-                  rolboard-mcp login --url https://mi-servidor --campaign 3
-                </code>
-                . Te pide el código de acceso sin mostrarlo, comprueba que el
-                servidor lo acepte y lo guarda en tu carpeta de configuración,
-                legible solo por tu usuario.
-              </li>
-              <li>
-                Conecta el cliente que uses. En los ajustes de la campaña, el
-                bloque <em>Conectar un agente de IA</em> arma el comando o la
-                configuración de cada uno. A mano, con Claude Code:
-              </li>
-            </ol>
-            <Code>{ES_MCP_WEB}</Code>
             <p>
-              <code>ROLBOARD_CAMPAIGN</code> es el número de la campaña, el que
-              aparece en la dirección tras <code>/c/</code>. Cada campaña tiene
-              su propio código, así que una conexión da acceso a una sola. Para
-              otra, repite los pasos con su número.
+              Después, en los ajustes de la campaña, abre{" "}
+              <em>Conectar un agente de IA</em>: ahí están el comando que se
+              ejecuta una vez para guardar el código de acceso y el de tu
+              cliente. Si cambias el código de la campaña, vuelve a ejecutar el
+              primero.
             </p>
-            <Callout kind="warning" title="El código queda en tu equipo">
-              Quien pueda leer ese archivo entra a la campaña. Si cambias el
-              código de la campaña, vuelve a ejecutar <code>login</code>.
-            </Callout>
           </>
         ),
       },
@@ -1932,18 +1889,8 @@ const en: HelpPage[] = [
               <li>Restart the client so it reads the new configuration.</li>
             </ol>
             <p>
-              The app has to be open while the assistant works: the connection
-              goes through a local socket owned by your user, with no network
-              and no keys.
-            </p>
-            <Callout kind="warning" title="Close Claude Code before connecting">
-              Claude Code rewrites its configuration file while it runs and
-              could overwrite the change. If your OpenCode configuration has
-              comments, the app leaves it alone and tells you.
-            </Callout>
-            <p>
-              If you move or update the app and its location changes, press{" "}
-              <em>Reconnect</em>.
+              The app has to be open while the assistant works. If you move or
+              update it and its location changes, press <em>Reconnect</em>.
             </p>
           </>
         ),
@@ -1955,38 +1902,16 @@ const en: HelpPage[] = [
         body: (
           <>
             <p>
-              The assistant runs on your computer and reaches the server through
-              a small program, <code>rolboard-mcp</code>. Download it from the
-              repository's <em>Releases</em> page on GitHub and follow these
-              steps:
+              The assistant runs on your computer and reaches the server through{" "}
+              <code>rolboard-mcp</code>, which you download from the
+              repository's <em>Releases</em> page on GitHub.
             </p>
-            <ol>
-              <li>
-                In a terminal, run{" "}
-                <code>
-                  rolboard-mcp login --url https://my-server --campaign 3
-                </code>{" "}
-                once. It asks for the access code without showing it, checks
-                that the server accepts it and saves it in your config folder,
-                readable only by your user.
-              </li>
-              <li>
-                Connect the client you use. In the campaign settings, the{" "}
-                <em>Connect an AI agent</em> block builds the command or the
-                configuration for each one. By hand, with Claude Code:
-              </li>
-            </ol>
-            <Code>{EN_MCP_WEB}</Code>
             <p>
-              <code>ROLBOARD_CAMPAIGN</code> is the campaign number, the one in
-              the address after <code>/c/</code>. Each campaign has its own
-              code, so one connection reaches a single campaign. For another
-              one, repeat the steps with its number.
+              Then, in the campaign settings, open <em>Connect an AI agent</em>:
+              it shows the command you run once to save the access code and the
+              one for your client. If you change the campaign's code, run the
+              first one again.
             </p>
-            <Callout kind="warning" title="The code stays on your machine">
-              Anyone who can read that file can enter the campaign. If you
-              change the campaign's code, run <code>login</code> again.
-            </Callout>
           </>
         ),
       },
