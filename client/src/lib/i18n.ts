@@ -96,8 +96,9 @@ const dict = {
     "agentsWeb.client": "Cliente",
     "agentsWeb.copy": "Copiar",
     "agentsWeb.copied": "Copiado",
-    "agentsWeb.mergeInto": "Agrégalo a {file}.",
-    "agentsWeb.runInTerminal": "Ejecútalo en una terminal.",
+    "agentsWeb.mergeInto": "Agrégalo a la configuración del cliente:",
+    "agentsWeb.runInTerminal":
+      "Ejecútalo en una terminal: el cliente guarda la configuración por ti.",
     "campaignSettings.openSettings": "Ajustes",
 
     "appShell.hideSidebar": "Ocultar barra lateral",
@@ -863,8 +864,9 @@ const dict = {
     "agentsWeb.client": "Client",
     "agentsWeb.copy": "Copy",
     "agentsWeb.copied": "Copied",
-    "agentsWeb.mergeInto": "Add it to {file}.",
-    "agentsWeb.runInTerminal": "Run it in a terminal.",
+    "agentsWeb.mergeInto": "Add it to the client's configuration:",
+    "agentsWeb.runInTerminal":
+      "Run it in a terminal: the client saves the configuration for you.",
     "campaignSettings.openSettings": "Settings",
 
     "appShell.hideSidebar": "Hide sidebar",

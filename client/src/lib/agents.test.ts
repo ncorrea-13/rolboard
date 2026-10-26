@@ -13,8 +13,10 @@ describe("webSnippet", () => {
   });
 
   it("emits valid JSON for the JSON clients", () => {
-    const desktop = JSON.parse(webSnippet("claude-desktop", "https://x", 3));
-    expect(desktop.mcpServers["rolboard-3"].env.ROLBOARD_CAMPAIGN).toBe("3");
+    for (const id of ["claude-desktop", "antigravity"] as const) {
+      const doc = JSON.parse(webSnippet(id, "https://x", 3));
+      expect(doc.mcpServers["rolboard-3"].env.ROLBOARD_CAMPAIGN).toBe("3");
+    }
     const opencode = JSON.parse(webSnippet("opencode", "https://x", 3));
     expect(opencode.mcp["rolboard-3"].type).toBe("local");
     expect(opencode.mcp["rolboard-3"].command).toEqual([
@@ -22,7 +24,17 @@ describe("webSnippet", () => {
     ]);
   });
 
+  it("puts the env flags before the -- of the command clients", () => {
+    expect(webSnippet("codex", "https://x", 3)).toBe(
+      "codex mcp add rolboard-3 --env ROLBOARD_URL=https://x --env ROLBOARD_CAMPAIGN=3 --env ROLBOARD_CODE_FILE=/path/to/access-code.txt -- /path/to/rolboard-mcp",
+    );
+    expect(webSnippet("claude-code", "https://x", 3)).toMatch(
+      /^claude mcp add --scope user rolboard-3 -e .* -- \/path\/to\/rolboard-mcp$/,
+    );
+  });
+
   it("never asks for the access code itself", () => {
-    expect(webSnippet("codex", "https://x", 3)).not.toMatch(/ACCESS_CODE\b/);
+    for (const { id } of WEB_CLIENTS)
+      expect(webSnippet(id, "https://x", 3)).not.toMatch(/ACCESS_CODE\b/);
   });
 });

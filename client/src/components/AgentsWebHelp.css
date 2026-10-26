@@ -7,6 +7,10 @@
   border-radius: 8px;
 }
 
+.agents-web > * {
+  min-width: 0;
+}
+
 .agents-web summary {
   cursor: pointer;
 }
@@ -14,9 +18,20 @@
 .agents-web__code {
   margin: 0;
   padding: 10px;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   font-size: 12px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 5px;
+}
+
+.agents-web__file {
+  display: block;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+}
+
+.agents-web .btn {
+  justify-self: start;
 }
