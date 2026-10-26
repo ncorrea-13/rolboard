@@ -46,13 +46,13 @@ const EN_TABLE = `| Era | Event |
 | Year 0 | The lighthouse is lit |
 | Year 120 | The first keeper vanishes |`;
 
-const ES_MCP_WEB = `claude mcp add rolboard \\
+const ES_MCP_WEB = `claude mcp add --scope user rolboard \\
   -e ROLBOARD_URL=https://mi-servidor \\
   -e ROLBOARD_CAMPAIGN=3 \\
   -e ROLBOARD_CODE_FILE=$HOME/.rolboard-codigo \\
   -- /ruta/a/rolboard-mcp`;
 
-const EN_MCP_WEB = `claude mcp add rolboard \\
+const EN_MCP_WEB = `claude mcp add --scope user rolboard \\
   -e ROLBOARD_URL=https://my-server \\
   -e ROLBOARD_CAMPAIGN=3 \\
   -e ROLBOARD_CODE_FILE=$HOME/.rolboard-code \\

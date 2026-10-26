@@ -90,6 +90,14 @@ const dict = {
     "campaignSettings.accessCodePlaceholder": "Código (mín. 8 caracteres)",
     "campaignSettings.accessCodeSave": "Guardar código",
     "campaignSettings.accessCodeSaved": "Código actualizado",
+    "agentsWeb.title": "Conectar un agente de IA",
+    "agentsWeb.hint":
+      "Corre en tu computadora con el programa rolboard-mcp y entra con el código de acceso de esta campaña, guardado en un archivo de texto. Reemplaza las rutas de ejemplo.",
+    "agentsWeb.client": "Cliente",
+    "agentsWeb.copy": "Copiar",
+    "agentsWeb.copied": "Copiado",
+    "agentsWeb.mergeInto": "Agrégalo a {file}.",
+    "agentsWeb.runInTerminal": "Ejecútalo en una terminal.",
     "campaignSettings.openSettings": "Ajustes",
 
     "appShell.hideSidebar": "Ocultar barra lateral",
@@ -849,6 +857,14 @@ const dict = {
     "campaignSettings.accessCodePlaceholder": "Code (min. 8 characters)",
     "campaignSettings.accessCodeSave": "Save code",
     "campaignSettings.accessCodeSaved": "Code updated",
+    "agentsWeb.title": "Connect an AI agent",
+    "agentsWeb.hint":
+      "It runs on your computer with the rolboard-mcp program and signs in with this campaign's access code, kept in a text file. Replace the example paths.",
+    "agentsWeb.client": "Client",
+    "agentsWeb.copy": "Copy",
+    "agentsWeb.copied": "Copied",
+    "agentsWeb.mergeInto": "Add it to {file}.",
+    "agentsWeb.runInTerminal": "Run it in a terminal.",
     "campaignSettings.openSettings": "Settings",
 
     "appShell.hideSidebar": "Hide sidebar",
