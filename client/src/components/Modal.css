@@ -11,7 +11,10 @@
 .modal-panel {
   width: 420px;
   max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 48px);
   padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-panel--large {
@@ -37,6 +40,7 @@
 .modal-panel--full .modal-panel__body {
   flex: 1;
   min-height: 0;
+  overflow-y: visible;
 }
 
 .modal-panel--sheet {
@@ -51,6 +55,7 @@
 }
 
 .modal-panel__header {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -72,6 +77,8 @@
 }
 
 .modal-panel__body {
+  min-height: 0;
+  overflow-y: auto;
   padding-top: 16px;
   display: flex;
   flex-direction: column;
