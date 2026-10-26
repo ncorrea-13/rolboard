@@ -10,6 +10,7 @@ type Config struct {
 	VaultsRoot string `json:"vaultsRoot"`
 	SyncDir    string `json:"syncDir,omitempty"`
 	LastSync   string `json:"lastSync,omitempty"`
+	MCPEnabled bool   `json:"mcpEnabled,omitempty"`
 }
 
 func Dir() (string, error) {
@@ -22,6 +23,10 @@ func Dir() (string, error) {
 
 func DBPath(dir string) string {
 	return filepath.Join(dir, "rolboard.db")
+}
+
+func SocketPath(dir string) string {
+	return filepath.Join(dir, "mcp.sock")
 }
 
 func UploadsDir(dir string) string {

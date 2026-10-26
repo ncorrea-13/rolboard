@@ -58,6 +58,17 @@ const dict = {
     "appSettings.title": "Ajustes de la app",
     "appSettings.aura": "Fondo violeta con constelaciones",
     "appSettings.auraHint": "Desactivalo para dejar el fondo liso y oscuro.",
+    "agents.enable": "Permitir que agentes de IA se conecten",
+    "agents.enableHint":
+      "Deja que Claude, OpenCode, Codex o Antigravity lean y escriban tu campaña mientras Rolboard esté abierto. Solo funciona en esta computadora.",
+    "agents.connect": "Conectar",
+    "agents.reconnect": "Reconectar",
+    "agents.connected": "Conectado",
+    "agents.notInstalled": "No instalado",
+    "agents.restartHint":
+      "Después de conectar, reiniciá el programa para que tome el cambio.",
+    "agents.confirm":
+      "Rolboard se va a agregar a la configuración de {client}. Antes se guarda una copia del archivo original. ¿Seguimos?",
     "update.available": "Hay una versión nueva:",
     "vaultsRoot.change": "Cambiar",
     "vaultsRoot.pick": "Elegir carpeta",
@@ -79,6 +90,18 @@ const dict = {
     "campaignSettings.accessCodePlaceholder": "Código (mín. 8 caracteres)",
     "campaignSettings.accessCodeSave": "Guardar código",
     "campaignSettings.accessCodeSaved": "Código actualizado",
+    "agentsWeb.title": "Conectar un agente de IA",
+    "agentsWeb.hint":
+      "Corre en tu computadora con el programa rolboard-mcp. Reemplaza /path/to/ por la ubicación donde lo descargaste.",
+    "agentsWeb.step1":
+      "1. Una vez, en una terminal. Te pide el código de acceso de esta campaña sin mostrarlo y lo guarda en tu equipo:",
+    "agentsWeb.step2": "2. Conecta el cliente:",
+    "agentsWeb.client": "Cliente",
+    "agentsWeb.copy": "Copiar",
+    "agentsWeb.copied": "Copiado",
+    "agentsWeb.mergeInto": "Agrégalo a la configuración del cliente:",
+    "agentsWeb.runInTerminal":
+      "Ejecútalo en una terminal: el cliente guarda la configuración por ti.",
     "campaignSettings.openSettings": "Ajustes",
 
     "appShell.hideSidebar": "Ocultar barra lateral",
@@ -590,6 +613,8 @@ const dict = {
     "toast.errorExporting": "Error exportando la campaña",
     "toast.errorVaultsRoot": "Error cambiando la carpeta de vaults",
     "toast.errorSyncDir": "Error cambiando la carpeta de sincronización",
+    "toast.errorAgents": "Error cambiando la conexión de agentes",
+    "toast.errorConnectClient": "Error conectando con el programa",
     "toast.vaultsRootPermission":
       "Da a Rolboard acceso a todos los archivos y vuelve a elegir la carpeta",
     "toast.errorLoading": "No se pudieron cargar los datos",
@@ -804,6 +829,17 @@ const dict = {
     "appSettings.title": "App settings",
     "appSettings.aura": "Violet sky background",
     "appSettings.auraHint": "Turn it off for a plain dark background.",
+    "agents.enable": "Let AI agents connect",
+    "agents.enableHint":
+      "Lets Claude, OpenCode, Codex or Antigravity read and write your campaign while Rolboard is open. It only works on this computer.",
+    "agents.connect": "Connect",
+    "agents.reconnect": "Reconnect",
+    "agents.connected": "Connected",
+    "agents.notInstalled": "Not installed",
+    "agents.restartHint":
+      "After connecting, restart the program for the change to take effect.",
+    "agents.confirm":
+      "Rolboard will add itself to {client}'s configuration. A copy of the original file is saved first. Continue?",
     "update.available": "A new version is available:",
     "vaultsRoot.change": "Change",
     "vaultsRoot.pick": "Choose folder",
@@ -825,6 +861,18 @@ const dict = {
     "campaignSettings.accessCodePlaceholder": "Code (min. 8 characters)",
     "campaignSettings.accessCodeSave": "Save code",
     "campaignSettings.accessCodeSaved": "Code updated",
+    "agentsWeb.title": "Connect an AI agent",
+    "agentsWeb.hint":
+      "It runs on your computer with the rolboard-mcp program. Replace /path/to/ with where you downloaded it.",
+    "agentsWeb.step1":
+      "1. Once, in a terminal. It asks for this campaign's access code without showing it and saves it on your computer:",
+    "agentsWeb.step2": "2. Connect the client:",
+    "agentsWeb.client": "Client",
+    "agentsWeb.copy": "Copy",
+    "agentsWeb.copied": "Copied",
+    "agentsWeb.mergeInto": "Add it to the client's configuration:",
+    "agentsWeb.runInTerminal":
+      "Run it in a terminal: the client saves the configuration for you.",
     "campaignSettings.openSettings": "Settings",
 
     "appShell.hideSidebar": "Hide sidebar",
@@ -1335,6 +1383,8 @@ const dict = {
     "toast.errorExporting": "Error exporting the campaign",
     "toast.errorVaultsRoot": "Error changing the vaults folder",
     "toast.errorSyncDir": "Error changing the sync folder",
+    "toast.errorAgents": "Error changing the agents connection",
+    "toast.errorConnectClient": "Error connecting to the program",
     "toast.vaultsRootPermission":
       "Give Rolboard access to all files and choose the folder again",
     "toast.errorLoading": "Couldn't load data",

@@ -373,3 +373,12 @@ GET  /api/admin/vault-dirs[?campaignId=N]
 - `vault-dirs`: folders under `VAULTS_ROOT` with no campaign assigned (the `campaignId` folder is included, so it can be reassigned). Admin with no parameter, or a session from the `campaignId` campaign.
 
 Details: [`VAULT_INDEXER.md`](./VAULT_INDEXER.md).
+
+## AI agents (MCP)
+
+The MCP server is one more client of this API: its tools call the endpoints above (`list_*`, `get_*`, `GET .../appearances`, and a few `POST` / `PUT` for the write tools), so the same auth, validation and soft delete apply. It does not add routes to the server.
+
+- **Docker:** `rolboard-mcp` logs in with `POST /api/campaigns/{id}/login` (5 attempts / min) and reuses the session cookie.
+- **Desktop:** requests go through the unix socket `mcp.sock`, in local mode. The socket serves `/api/` only; `/api/desktop/*` answers `404`. The desktop-only endpoints that manage it (`/api/desktop/mcp*`) are listed in [`DESKTOP.md`](DESKTOP.md#desktop-only-endpoints).
+
+Tools and setup: [`MCP.md`](MCP.md).

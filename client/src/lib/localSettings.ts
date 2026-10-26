@@ -6,6 +6,8 @@ export type FolderKind = "vaults-root" | "sync-dir";
 export interface LocalSettings {
   vaultsRoot: string;
   syncDir: string;
+  /** Only the desktop app reports it. */
+  mcpEnabled?: boolean;
 }
 
 export type PickResult =

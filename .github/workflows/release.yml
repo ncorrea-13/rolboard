@@ -56,16 +56,23 @@ jobs:
             product="0.0.0"
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "LDFLAGS=-X main.version=$tag" >> "$GITHUB_ENV"
           jq --arg v "$product" '.info.productVersion = $v' server/cmd/desktop/wails.json > wails.json.tmp
           mv wails.json.tmp server/cmd/desktop/wails.json
 
       - name: Build Linux
         working-directory: server/cmd/desktop
-        run: wails build -tags webkit2_41 -skipbindings
+        run: wails build -tags webkit2_41 -skipbindings -ldflags "$LDFLAGS"
 
       - name: Build Windows
         working-directory: server/cmd/desktop
-        run: wails build -platform windows/amd64 -skipbindings -s
+        run: wails build -platform windows/amd64 -skipbindings -s -ldflags "$LDFLAGS"
+
+      - name: Build MCP bridge
+        working-directory: server
+        run: |
+          GOOS=linux GOARCH=amd64 go build -ldflags "$LDFLAGS" -o ../rolboard-mcp-linux ./cmd/mcp
+          GOOS=windows GOARCH=amd64 go build -ldflags "$LDFLAGS" -o ../rolboard-mcp-windows.exe ./cmd/mcp
 
       - name: Package AppImage
         run: |
@@ -95,6 +102,8 @@ jobs:
           mkdir dist
           mv rolboard.AppImage "dist/rolboard-linux-amd64-$VERSION.AppImage"
           mv server/cmd/desktop/build/bin/rolboard.exe "dist/rolboard-windows-amd64-$VERSION.exe"
+          mv rolboard-mcp-linux "dist/rolboard-mcp-linux-amd64-$VERSION"
+          mv rolboard-mcp-windows.exe "dist/rolboard-mcp-windows-amd64-$VERSION.exe"
 
       - name: Upload artifacts
         if: github.event_name == 'workflow_dispatch'

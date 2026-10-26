@@ -1,0 +1,43 @@
+.agents-list {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  padding: 10px;
+  background: color-mix(in srgb, var(--accent-teal) 7%, var(--bg-surface));
+  border: 1px solid color-mix(in srgb, var(--accent-teal) 35%, var(--border));
+  border-radius: 8px;
+}
+
+.agents-list__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  padding: 4px 4px 4px 12px;
+  background: var(--bg-surface);
+  border: 1px solid color-mix(in srgb, var(--accent-teal) 22%, var(--border));
+  border-radius: 5px;
+}
+
+.agents-list__name {
+  flex: 1 1 120px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text-body);
+}
+
+.agents-list__status {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.agents-list__status--connected {
+  color: var(--accent-teal);
+}
+
+.agents-list__btn {
+  flex-shrink: 0;
+  margin-left: auto;
+  white-space: nowrap;
+  min-height: 0;
+}

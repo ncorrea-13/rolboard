@@ -38,6 +38,7 @@ Leer antes de proponer cambios de arquitectura, modelo o alcance. Si la doc y el
 - `docs/VAULT_INDEXER.md` — cómo se lee el vault de Obsidian
 - `docs/DECISIONS.md` — decisiones vigentes y su porqué
 - `docs/DESKTOP.md` — app de escritorio (Wails): cómo funciona, sincronización, build y release
+- `docs/MCP.md` — agentes de IA (MCP): herramientas, conexión en escritorio y Docker, `rolboard-mcp login`
 - `docs/ANDROID.md` — app de Android (gomobile + WebView): cómo funciona, build, firma y release
 ## Tono
 
