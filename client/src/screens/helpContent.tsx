@@ -813,12 +813,19 @@ const es: HelpPage[] = [
         id: "exportar",
         title: "Exportar la campaña",
         body: (
-          <p>
-            En los ajustes de la campaña, <em>Exportar campaña</em> guarda todas
-            las entidades como notas Markdown, con la estructura que lee el
-            indexer, y sus imágenes en <code>Imagenes/</code>. No incluye lo que
-            está en la papelera.
-          </p>
+          <>
+            <p>
+              Exportar sirve para leer la campaña fuera de Rolboard, por ejemplo
+              en Obsidian. No reemplaza un respaldo.
+            </p>
+            <p>
+              En los ajustes de la campaña, elige <em>Exportar campaña</em>. Se
+              descarga un ZIP con una nota Markdown por cada entidad, agrupada
+              en carpetas como <code>NPC/</code> o <code>Sesiones/</code>, y las
+              imágenes en <code>Imagenes/</code>.
+            </p>
+            <p>No incluye lo que está en la papelera.</p>
+          </>
         ),
       },
       {
@@ -847,15 +854,30 @@ const es: HelpPage[] = [
         body: (
           <>
             <p>
-              Elige una <em>Carpeta de sincronización</em> en{" "}
-              <em>Ajustes de la app</em> en cada dispositivo y mantenla
-              sincronizada con la herramienta que prefieras (Syncthing, una nube
-              o a mano). La app deja ahí una copia de las campañas y la recupera
-              al volver a abrirse.
+              Sirve para usar las mismas campañas en varios dispositivos, uno a
+              la vez. No sincroniza en tiempo real.
+            </p>
+            <p>
+              En <em>Ajustes de la app</em>, elige una{" "}
+              <em>Carpeta de sincronización</em> en cada dispositivo. Rolboard
+              guarda ahí una copia de todas tus campañas y de sus imágenes. La
+              carpeta la mantiene al día Syncthing, una nube o tú copiando los
+              archivos.
+            </p>
+            <p>
+              Rolboard trae la copia más nueva al abrir la app o al volver a
+              ella. Guarda una copia después de cada cambio: en escritorio, 30
+              segundos después del último cambio y al cerrar; en Android, al
+              pasar la app a segundo plano.
+            </p>
+            <p>
+              Cada dispositivo elige su propia carpeta. La ruta no se
+              sincroniza.
             </p>
             <Callout kind="warning" title="Un dispositivo por vez">
-              No está pensado para editar en dos dispositivos a la vez: gana la
-              última copia guardada.
+              Si editas en dos dispositivos sin sincronizar entre medio, gana la
+              última copia guardada. La otra queda en la carpeta como{" "}
+              <code>rolboard.conflict.db</code>, para recuperarla a mano.
             </Callout>
           </>
         ),
@@ -1756,12 +1778,19 @@ const en: HelpPage[] = [
         id: "export",
         title: "Exporting the campaign",
         body: (
-          <p>
-            In the campaign settings, <em>Export campaign</em> saves every
-            entity as Markdown notes, with the structure the indexer reads, and
-            their images in <code>Imagenes/</code>. It leaves out whatever is in
-            the trash.
-          </p>
+          <>
+            <p>
+              Exporting lets you read the campaign outside Rolboard, for example
+              in Obsidian. It doesn't replace a backup.
+            </p>
+            <p>
+              In the campaign settings, choose <em>Export campaign</em>. It
+              downloads a ZIP with one Markdown note per entity, grouped in
+              folders such as <code>NPC/</code> or <code>Sesiones/</code>, and
+              the images in <code>Imagenes/</code>.
+            </p>
+            <p>It leaves out whatever is in the trash.</p>
+          </>
         ),
       },
       {
@@ -1790,14 +1819,26 @@ const en: HelpPage[] = [
         body: (
           <>
             <p>
-              Pick a <em>Sync folder</em> in <em>App settings</em> on each
-              device and keep it in sync with whatever tool you prefer
-              (Syncthing, a cloud drive or by hand). The app leaves a copy of
-              the campaigns there and picks it up when it opens again.
+              It lets you use the same campaigns on several devices, one at a
+              time. It doesn't sync in real time.
             </p>
+            <p>
+              In <em>App settings</em>, pick a <em>Sync folder</em> on each
+              device. Rolboard keeps a copy of all your campaigns and their
+              images there. Syncthing, a cloud drive, or you copying files by
+              hand keeps that folder up to date.
+            </p>
+            <p>
+              Rolboard picks up the newest copy when the app opens or comes back
+              to the foreground. It saves a copy after each change: on desktop,
+              30 seconds after the last change and on close; on Android, when
+              the app goes to the background.
+            </p>
+            <p>Each device chooses its own folder. The path isn't synced.</p>
             <Callout kind="warning" title="One device at a time">
-              It's not meant for editing on two devices at once: the last saved
-              copy wins.
+              If you edit on two devices without syncing in between, the last
+              saved copy wins. The other one stays in the folder as{" "}
+              <code>rolboard.conflict.db</code>, so you can recover it by hand.
             </Callout>
           </>
         ),
