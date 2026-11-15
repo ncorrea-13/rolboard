@@ -59,15 +59,15 @@ const es: HelpPage[] = [
           <>
             <p>
               Rolboard es un tablero para dirigir campañas de rol de mesa:
-              sesiones, arcos, jugadores, NPCs, locaciones, facciones, quests y
-              un tracker de combate, todo en un mismo lugar. Funciona en el
-              navegador, como app de escritorio y en Android.
+              sesiones, arcos, jugadores, NPCs, ubicaciones, facciones, misiones
+              y un tracker de combate. Funciona en el navegador, como app de
+              escritorio y en Android.
             </p>
             <p>
-              Está pensado por y para la narrativa: no reemplaza a un VTT ni a
-              una ficha de personaje, no trae reglas cargadas ni resuelve
-              tiradas. El tracker de combate solo ordena los turnos y lleva la
-              vida de cada uno.
+              Rolboard organiza la narrativa. No reemplaza a un VTT ni a una
+              ficha de personaje, no trae reglas cargadas ni resuelve tiradas.
+              El tracker de combate solo ordena los turnos y lleva la vida de
+              cada uno.
             </p>
             <p>
               Es una herramienta para quien dirige. Nació para salir de Obsidian
@@ -113,7 +113,7 @@ const es: HelpPage[] = [
                   <p>
                     En la pantalla inicial elige <em>Nueva campaña</em> (te pide
                     la clave de admin de la instalación). Después, en el botón
-                    de ajustes del sidebar, pon un{" "}
+                    de ajustes de la barra lateral, pon un{" "}
                     <strong>código de acceso</strong>: con ese código entras a
                     la campaña desde el selector (más en{" "}
                     <em>Acceso y seguridad</em>).
@@ -152,7 +152,7 @@ const es: HelpPage[] = [
             <p>
               Después de crear la campaña, lo más corto es: cargar el primer
               arco, sumar a los jugadores y planificar la primera sesión. El
-              resto se va llenando sobre la marcha.
+              resto lo completas cuando lo necesites.
             </p>
           </>
         ),
@@ -163,9 +163,9 @@ const es: HelpPage[] = [
         body: (
           <>
             <p>
-              A la izquierda está el sidebar con todas las secciones. Arriba
-              tiene la lupa de búsqueda, el botón para volver al selector de
-              campañas y el acceso a esta ayuda (el ícono).{" "}
+              A la izquierda está la barra lateral con todas las secciones.
+              Arriba tiene la lupa de búsqueda, el botón para volver al selector
+              de campañas y el ícono de esta ayuda.{" "}
               <ForMode
                 web="Abajo, los ajustes de la campaña, el idioma y, si entraste como admin, el botón para cerrar sesión."
                 desktop="Abajo, los ajustes de la campaña y el idioma."
@@ -183,7 +183,7 @@ const es: HelpPage[] = [
                 La <strong>última sesión</strong> y cuánto hace que se jugó.
               </li>
               <li>
-                Las <strong>quests activas</strong>, el <strong>grupo</strong>{" "}
+                Las <strong>misiones activas</strong>, el <strong>grupo</strong>{" "}
                 con su HP, las <strong>notas pendientes</strong>, el lore
                 reciente y los oneshots.
               </li>
@@ -202,7 +202,7 @@ const es: HelpPage[] = [
             <li>
               <strong>Planifícala:</strong> desde el Resumen o desde{" "}
               <em>Sesiones</em>, elige una fecha tentativa, escribe las notas de
-              preparación y marca los NPCs y las quests que esperas usar.
+              preparación y marca los NPCs y las misiones que esperas usar.
             </li>
             <li>
               <strong>Juégala:</strong> ábrela, toca <em>Jugar</em> y confirma
@@ -212,8 +212,8 @@ const es: HelpPage[] = [
             </li>
             <li>
               <strong>Consúltala después:</strong> la sesión queda en la línea
-              de tiempo de su arco y aparece en la ficha de cada NPC y quest que
-              usaste.
+              de tiempo de su arco y aparece en la ficha de cada NPC y misión
+              que usaste.
             </li>
           </ol>
         ),
@@ -253,7 +253,7 @@ const es: HelpPage[] = [
             <p>
               Los <strong>NPCs</strong> se ven como una galería de figuras, con
               filtros por tipo y estado (vivo, muerto, desaparecido, pausado).
-              Cada ficha guarda descripción, locación, inventario, atributos y
+              Cada ficha guarda descripción, ubicación, inventario, atributos y
               relaciones con otros NPCs.
             </p>
             <p>
@@ -262,7 +262,7 @@ const es: HelpPage[] = [
               combate.
             </p>
             <Callout kind="tip" title="Aparece en">
-              Al final de cada ficha ves en qué sesiones, quests y entradas de
+              Al final de cada ficha ves en qué sesiones, misiones y entradas de
               lore figura ese personaje.
             </Callout>
           </>
@@ -270,12 +270,12 @@ const es: HelpPage[] = [
       },
       {
         id: "mundo",
-        title: "Locaciones, facciones y mundo",
+        title: "Ubicaciones, facciones y mundo",
         body: (
           <ul>
             <li>
-              <strong>Locaciones:</strong> forman un árbol (región, ciudad,
-              sitio). Una locación puede tener una tienda con precios propios.
+              <strong>Ubicaciones:</strong> forman un árbol (región, ciudad,
+              sitio). Una ubicación puede tener una tienda con precios propios.
             </li>
             <li>
               <strong>Facciones:</strong> agrupan NPCs y personajes de
@@ -291,10 +291,10 @@ const es: HelpPage[] = [
       },
       {
         id: "misiones",
-        title: "Quests",
+        title: "Misiones",
         body: (
           <p>
-            Cada quest tiene gancho narrativo, notas privadas del DM, estado
+            Cada misión tiene gancho narrativo, notas privadas del DM, estado
             (activa, en pausa, completada o fallida) y prioridad de P1 a P3. La
             lista las agrupa por estado y puedes vincularles NPCs con un rol.
           </p>
@@ -313,7 +313,7 @@ const es: HelpPage[] = [
             </p>
             <p>
               Los inventarios de NPCs y jugadores y las tiendas de las
-              locaciones usan ese mismo catálogo. Si una tienda no define un
+              ubicaciones usan ese mismo catálogo. Si una tienda no define un
               precio, rige el del catálogo.
             </p>
           </>
@@ -325,7 +325,7 @@ const es: HelpPage[] = [
         body: (
           <p>
             Un secreto está <strong>oculto</strong> o <strong>revelado</strong>,
-            apunta a un NPC, una locación o una entrada de lore, y registra qué
+            apunta a un NPC, una ubicación o una entrada de lore, y registra qué
             NPCs lo conocen.
           </p>
         ),
@@ -362,8 +362,9 @@ const es: HelpPage[] = [
           <p>
             Son los temas que quieren cuidar en la mesa (violencia, duelo,
             abuso…). Los escribes una vez por campaña en la sección{" "}
-            <em>Temas sensibles</em> del sidebar, con el botón <em>Editar</em>,
-            y se muestran en cada sesión jugada para tenerlos presentes.
+            <em>Temas sensibles</em> de la barra lateral, con el botón{" "}
+            <em>Editar</em>, y se muestran en cada sesión jugada para tenerlos
+            presentes.
           </p>
         ),
       },
@@ -372,13 +373,13 @@ const es: HelpPage[] = [
         title: "Papelera",
         body: (
           <p>
-            Lo que das de baja no se borra para siempre: va a la{" "}
-            <strong>Papelera</strong> del sidebar, agrupado por tipo, con un
-            botón <strong>Restaurar</strong>. Un arco con sesiones, una locación
-            con NPCs o sub-locaciones y un NPC que es el spren de un personaje
-            no se pueden borrar hasta mover lo que depende de ellos. Para
-            restaurar una sesión, su número tiene que estar libre y su arco no
-            puede estar borrado.
+            Lo que envías a la papelera no se borra para siempre: aparece en la{" "}
+            <strong>Papelera</strong> de la barra lateral, agrupado por tipo,
+            con un botón <strong>Restaurar</strong>. Un arco con sesiones, una
+            ubicación con NPCs o sub-ubicaciones y un NPC que es el spren de un
+            personaje no se pueden enviar a la papelera hasta mover lo que
+            depende de ellos. Para restaurar una sesión, su número tiene que
+            estar libre y su arco no puede estar en la papelera.
           </p>
         ),
       },
@@ -464,11 +465,11 @@ const es: HelpPage[] = [
         body: (
           <>
             <p>
-              La lupa del sidebar abre la búsqueda en toda la campaña: NPCs,
-              jugadores, locaciones, facciones, arcos, quests, sesiones,
-              encuentros, lore, secretos, notas, objetos, monedas y eventos de
-              la línea de tiempo. Desde cualquier pantalla también la abres con{" "}
-              <kbd>Ctrl</kbd> + <kbd>K</kbd>.
+              La lupa de la barra lateral abre la búsqueda en toda la campaña:
+              NPCs, jugadores, ubicaciones, facciones, arcos, misiones,
+              sesiones, encuentros, lore, secretos, notas, objetos, monedas y
+              eventos de la línea de tiempo. Desde cualquier pantalla también la
+              abres con <kbd>Ctrl</kbd> + <kbd>K</kbd>.
             </p>
             <p>
               Escribe, muévete entre los resultados con las flechas y confirma
@@ -483,9 +484,10 @@ const es: HelpPage[] = [
         body: (
           <>
             <p>
-              NPCs, jugadores, locaciones, facciones, objetos, arcos, lore y
-              quests admiten una imagen. Súbela desde el editor con{" "}
-              <em>Subir imagen</em>: en un alta se guarda al crear la entidad.
+              NPCs, jugadores, ubicaciones, facciones, objetos, arcos, lore y
+              misiones admiten una imagen. Súbela desde el editor con{" "}
+              <em>Subir imagen</em>. Si la entidad es nueva, se guarda al
+              crearla.
             </p>
             <ul>
               <li>Formatos PNG y JPEG, hasta 5 MiB.</li>
@@ -503,8 +505,8 @@ const es: HelpPage[] = [
         body: (
           <>
             <p>
-              Markdown es texto con unos pocos símbolos que le dan formato. Esta
-              es la referencia rápida de lo que más vas a usar:
+              Markdown es texto con unos pocos símbolos que le dan formato. Los
+              más usados:
             </p>
             <table>
               <thead>
@@ -579,10 +581,7 @@ const es: HelpPage[] = [
                 </tr>
               </tbody>
             </table>
-            <p>
-              Deja una línea en blanco entre párrafos. Más abajo están los
-              avisos y las tablas.
-            </p>
+            <p>Deja una línea en blanco entre párrafos.</p>
           </>
         ),
       },
@@ -687,7 +686,7 @@ const es: HelpPage[] = [
                   <td>
                     <code>Locaciones/</code>
                   </td>
-                  <td>Locaciones</td>
+                  <td>Ubicaciones</td>
                 </tr>
                 <tr>
                   <td>
@@ -733,7 +732,7 @@ const es: HelpPage[] = [
       },
       {
         id: "reindexar",
-        title: "Qué pasa al reindexar",
+        title: "Efectos del reindexado",
         body: (
           <ul>
             <li>
@@ -743,7 +742,7 @@ const es: HelpPage[] = [
             </li>
             <li>
               Los <code>[[enlaces]]</code> entre notas se resuelven como
-              relaciones: la locación de un NPC, sus facciones, el líder de una
+              relaciones: la ubicación de un NPC, sus facciones, el líder de una
               facción.
             </li>
             <li>
@@ -773,8 +772,8 @@ const es: HelpPage[] = [
                   de Obsidian se monta aparte y solo en lectura.
                 </p>
                 <p>
-                  Para hacer una copia, resguarda el archivo de la base y la
-                  carpeta de imágenes.
+                  Para respaldar, guarda el archivo de la base y la carpeta de
+                  imágenes.
                 </p>
               </>
             }
@@ -788,9 +787,9 @@ const es: HelpPage[] = [
                   <code>%AppData%\rolboard</code>.
                 </p>
                 <p>
-                  Para hacer una copia, resguarda el <code>.db</code> y la
-                  carpeta de imágenes. Para pasar una instalación de servidor,
-                  copia su base y su carpeta de imágenes acá.
+                  Para respaldar, guarda el <code>.db</code> y la carpeta de
+                  imágenes. Para pasar una instalación de servidor, copia su
+                  base y su carpeta de imágenes a esa carpeta de datos.
                 </p>
               </>
             }
@@ -814,12 +813,19 @@ const es: HelpPage[] = [
         id: "exportar",
         title: "Exportar la campaña",
         body: (
-          <p>
-            En los ajustes de la campaña, <em>Exportar campaña</em> guarda todas
-            las entidades como notas Markdown, con la estructura que lee el
-            indexer, y sus imágenes en <code>Imagenes/</code>. No incluye lo que
-            está en la papelera.
-          </p>
+          <>
+            <p>
+              Exportar sirve para leer la campaña fuera de Rolboard, por ejemplo
+              en Obsidian. No reemplaza un respaldo.
+            </p>
+            <p>
+              En los ajustes de la campaña, elige <em>Exportar campaña</em>. Se
+              descarga un ZIP con una nota Markdown por cada entidad, agrupada
+              en carpetas como <code>NPC/</code> o <code>Sesiones/</code>, y las
+              imágenes en <code>Imagenes/</code>.
+            </p>
+            <p>No incluye lo que está en la papelera.</p>
+          </>
         ),
       },
       {
@@ -848,15 +854,30 @@ const es: HelpPage[] = [
         body: (
           <>
             <p>
-              Elige una <em>Carpeta de sincronización</em> en{" "}
-              <em>Ajustes de la app</em> en cada dispositivo y mantenla
-              sincronizada con la herramienta que prefieras (Syncthing, una nube
-              o a mano). La app deja ahí una copia de las campañas y la recupera
-              al volver a abrirse.
+              Sirve para usar las mismas campañas en varios dispositivos, uno a
+              la vez. No sincroniza en tiempo real.
+            </p>
+            <p>
+              En <em>Ajustes de la app</em>, elige una{" "}
+              <em>Carpeta de sincronización</em> en cada dispositivo. Rolboard
+              guarda ahí una copia de todas tus campañas y de sus imágenes. La
+              carpeta la mantiene al día Syncthing, una nube o tú copiando los
+              archivos.
+            </p>
+            <p>
+              Rolboard trae la copia más nueva al abrir la app o al volver a
+              ella. Guarda una copia después de cada cambio: en escritorio, 30
+              segundos después del último cambio y al cerrar; en Android, al
+              pasar la app a segundo plano.
+            </p>
+            <p>
+              Cada dispositivo elige su propia carpeta. La ruta no se
+              sincroniza.
             </p>
             <Callout kind="warning" title="Un dispositivo por vez">
-              No está pensado para editar en dos dispositivos a la vez: gana la
-              última copia guardada.
+              Si editas en dos dispositivos sin sincronizar entre medio, gana la
+              última copia guardada. La otra queda en la carpeta como{" "}
+              <code>rolboard.conflict.db</code>, para recuperarla a mano.
             </Callout>
           </>
         ),
@@ -911,12 +932,12 @@ const es: HelpPage[] = [
             </p>
             <p>
               Leen todo, secretos incluidos. Crean y editan casi cualquier ficha
-              (notas sueltas, NPCs, quests, lore, objetos, locaciones, sesiones
-              y más). No borran nada ni reindexan el vault.
+              (notas sueltas, NPCs, misiones, lore, objetos, ubicaciones,
+              sesiones y más). No borran nada ni reindexan el vault.
             </p>
             <Callout
               kind="warning"
-              title="Lo que el asistente ve, lo ve su proveedor"
+              title="Tu proveedor de IA recibe lo que el asistente lee"
             >
               Lo que el asistente lee de tu campaña viaja al servicio de IA que
               uses. Si no quieres que un secreto salga de tu máquina, no
@@ -940,14 +961,14 @@ const es: HelpPage[] = [
                 Activa <em>Permitir que agentes de IA se conecten</em>.
               </li>
               <li>
-                Pulsa <em>Conectar</em> en el cliente que uses; los que no
-                tienes figuran como <em>No instalado</em>.
+                Toca <em>Conectar</em> en el cliente que uses; los que no tienes
+                figuran como <em>No instalado</em>.
               </li>
               <li>Reinicia el cliente para que lea la configuración nueva.</li>
             </ol>
             <p>
               La app tiene que estar abierta mientras el asistente trabaja. Si
-              la mueves o la actualizas y cambia su ubicación, pulsa{" "}
+              la mueves o la actualizas y cambia su ubicación, toca{" "}
               <em>Reconectar</em>.
             </p>
           </>
@@ -1016,11 +1037,11 @@ const en: HelpPage[] = [
             <p>
               Rolboard is a dashboard for running tabletop RPG campaigns:
               sessions, arcs, players, NPCs, locations, factions, quests and a
-              combat tracker, all in one place. It runs in the browser, as a
-              desktop app and on Android.
+              combat tracker. It runs in the browser, as a desktop app and on
+              Android.
             </p>
             <p>
-              It's built by and for the narrative: it doesn't replace a VTT or a
+              Rolboard organises the story. It doesn't replace a VTT or a
               character sheet, ships no rules and doesn't resolve rolls. The
               combat tracker only orders turns and keeps everyone's HP.
             </p>
@@ -1104,8 +1125,8 @@ const en: HelpPage[] = [
             />
             <p>
               Once the campaign exists, the shortest path is: add the first arc,
-              add the players and plan the first session. The rest fills in as
-              you go.
+              add the players and plan the first session. You fill in the rest
+              as you need it.
             </p>
           </>
         ),
@@ -1118,7 +1139,7 @@ const en: HelpPage[] = [
             <p>
               On the left is the sidebar with every section. At the top it has
               the search magnifier, the button back to the campaign selector and
-              the entry to this help (the icon).{" "}
+              the icon for this help.{" "}
               <ForMode
                 web="At the bottom, the campaign settings, the language and, if you signed in as admin, the sign-out button."
                 desktop="At the bottom, the campaign settings and the language."
@@ -1130,7 +1151,7 @@ const en: HelpPage[] = [
             <ul>
               <li>
                 The <strong>current arc</strong>, with its progress (closed
-                sub-arcs or sessions played).
+                subarcs or sessions played).
               </li>
               <li>
                 The <strong>last session</strong> and how long ago it was
@@ -1187,7 +1208,7 @@ const en: HelpPage[] = [
           <>
             <p>
               An <strong>arc</strong> groups sessions and has a status (planned,
-              in progress or closed). Sub-arcs share the arc's number and the
+              in progress or closed). Subarcs share the arc's number and the
               Summary counts them as progress. Closing an arc doesn't delete its
               sessions.
             </p>
@@ -1247,7 +1268,7 @@ const en: HelpPage[] = [
         title: "Quests",
         body: (
           <p>
-            Each quest has a narrative hook, private GM notes, a status (active,
+            Each quest has a narrative hook, private DM notes, a status (active,
             on hold, completed or failed) and a priority from P1 to P3. The list
             groups them by status and you can link NPCs to them with a role.
           </p>
@@ -1324,12 +1345,13 @@ const en: HelpPage[] = [
         title: "Trash",
         body: (
           <p>
-            What you deactivate isn't deleted for good: it goes to the sidebar's{" "}
-            <strong>Trash</strong>, grouped by type, with a{" "}
+            What you move to the Trash isn't deleted for good: it appears in the
+            sidebar's <strong>Trash</strong>, grouped by type, with a{" "}
             <strong>Restore</strong> button. An arc with sessions, a location
             with NPCs or sub-locations and an NPC that is a character's spren
-            can't be deleted until what depends on them is moved. To restore a
-            session, its number has to be free and its arc can't be deleted.
+            can't go to the Trash until you move what depends on them elsewhere.
+            To restore a session, its number has to be free and its arc can't be
+            in the Trash.
           </p>
         ),
       },
@@ -1458,7 +1480,7 @@ const en: HelpPage[] = [
           <>
             <p>
               Markdown is plain text with a few symbols that give it formatting.
-              Here is a quick reference for what you'll use most:
+              The ones you'll use most:
             </p>
             <table>
               <thead>
@@ -1532,10 +1554,7 @@ const en: HelpPage[] = [
                 </tr>
               </tbody>
             </table>
-            <p>
-              Leave a blank line between paragraphs. Notices and tables are
-              covered below.
-            </p>
+            <p>Leave a blank line between paragraphs.</p>
           </>
         ),
       },
@@ -1681,7 +1700,7 @@ const en: HelpPage[] = [
       },
       {
         id: "reindex",
-        title: "What happens when you reindex",
+        title: "Reindexing effects",
         body: (
           <ul>
             <li>
@@ -1759,12 +1778,19 @@ const en: HelpPage[] = [
         id: "export",
         title: "Exporting the campaign",
         body: (
-          <p>
-            In the campaign settings, <em>Export campaign</em> saves every
-            entity as Markdown notes, with the structure the indexer reads, and
-            their images in <code>Imagenes/</code>. It leaves out whatever is in
-            the trash.
-          </p>
+          <>
+            <p>
+              Exporting lets you read the campaign outside Rolboard, for example
+              in Obsidian. It doesn't replace a backup.
+            </p>
+            <p>
+              In the campaign settings, choose <em>Export campaign</em>. It
+              downloads a ZIP with one Markdown note per entity, grouped in
+              folders such as <code>NPC/</code> or <code>Sesiones/</code>, and
+              the images in <code>Imagenes/</code>.
+            </p>
+            <p>It leaves out whatever is in the trash.</p>
+          </>
         ),
       },
       {
@@ -1793,14 +1819,26 @@ const en: HelpPage[] = [
         body: (
           <>
             <p>
-              Pick a <em>Sync folder</em> in <em>App settings</em> on each
-              device and keep it in sync with whatever tool you prefer
-              (Syncthing, a cloud drive or by hand). The app leaves a copy of
-              the campaigns there and picks it up when it opens again.
+              It lets you use the same campaigns on several devices, one at a
+              time. It doesn't sync in real time.
             </p>
+            <p>
+              In <em>App settings</em>, pick a <em>Sync folder</em> on each
+              device. Rolboard keeps a copy of all your campaigns and their
+              images there. Syncthing, a cloud drive, or you copying files by
+              hand keeps that folder up to date.
+            </p>
+            <p>
+              Rolboard picks up the newest copy when the app opens or comes back
+              to the foreground. It saves a copy after each change: on desktop,
+              30 seconds after the last change and on close; on Android, when
+              the app goes to the background.
+            </p>
+            <p>Each device chooses its own folder. The path isn't synced.</p>
             <Callout kind="warning" title="One device at a time">
-              It's not meant for editing on two devices at once: the last saved
-              copy wins.
+              If you edit on two devices without syncing in between, the last
+              saved copy wins. The other one stays in the folder as{" "}
+              <code>rolboard.conflict.db</code>, so you can recover it by hand.
             </Callout>
           </>
         ),
@@ -1860,7 +1898,7 @@ const en: HelpPage[] = [
             </p>
             <Callout
               kind="warning"
-              title="What the assistant sees, its provider sees"
+              title="Your AI provider receives what the assistant reads"
             >
               Whatever the assistant reads from your campaign travels to the AI
               service you use. If you don't want a secret to leave your machine,

@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import { questStatusLabel, type Quest, type QuestStatus } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 import { EntityImageField } from "../components/EntityImageField";
 import { usePendingImage } from "../hooks/usePendingImage";
@@ -55,6 +56,7 @@ export function QuestEdit({
     status !== quest.status ||
     priority !== quest.priority ||
     notes !== quest.notes;
+  useUnsavedGuard(dirty);
 
   function handleSave() {
     onSave({ name, hook, status, priority, notes }, pendingImage.file);

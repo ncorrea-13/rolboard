@@ -5,10 +5,10 @@ export type EntityKind = "arc" | "faction" | "location" | "quest";
 
 export const entityKindLabel: Record<Lang, Record<EntityKind, string>> = {
   es: {
-    arc: "arco",
-    faction: "facción",
-    location: "locación",
-    quest: "quest",
+    arc: "este arco",
+    faction: "esta facción",
+    location: "esta ubicación",
+    quest: "esta misión",
   },
   en: {
     arc: "arc",

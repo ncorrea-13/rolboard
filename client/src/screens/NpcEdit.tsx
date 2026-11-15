@@ -21,6 +21,7 @@ import {
   type NpcTypesApi,
 } from "../components/NpcTypesManager";
 import { useT, useLang } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { reportError } from "../lib/notify";
 import type { CSSProperties } from "react";
 import { MarkdownField } from "../components/MarkdownField";
@@ -137,6 +138,7 @@ export function NpcEdit({
     JSON.stringify(skills) !== JSON.stringify(npc.skills) ||
     currentHp !== npc.currentHp ||
     maxHp !== npc.maxHp;
+  useUnsavedGuard(dirty);
 
   function syncLink(savedNpcId: string) {
     if (existingLink) {

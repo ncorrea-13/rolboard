@@ -12,6 +12,7 @@ import {
 } from "../data/domain";
 import type { SecretValues } from "../lib/apiMappers";
 import { useT } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 
 interface SecretEditProps {
@@ -52,6 +53,7 @@ export function SecretEdit({
     locationId !== (secret.locationId ?? "") ||
     loreEntryId !== (secret.loreEntryId ?? "") ||
     knownBy.join(",") !== secret.knownByNpcIds.join(",");
+  useUnsavedGuard(dirty);
 
   return (
     <div className="card npc-edit">

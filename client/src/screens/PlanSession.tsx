@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import type { Arc, Npc, Quest } from "../data/domain";
 import { useT } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 
 interface PlanSessionProps {
@@ -41,6 +42,15 @@ export function PlanSession({
   const [expectedNpcIds, setExpectedNpcIds] = useState<Set<string>>(new Set());
   const [expectedQuestIds, setExpectedQuestIds] = useState<Set<string>>(
     new Set(),
+  );
+
+  useUnsavedGuard(
+    date !== "" ||
+      text !== "" ||
+      title !== "" ||
+      arcId !== (oneshot ? "" : (currentArc?.id ?? "")) ||
+      expectedNpcIds.size > 0 ||
+      expectedQuestIds.size > 0,
   );
 
   const sessionCode = `${oneshot ? "O" : "S"}${String(nextNumber).padStart(2, "0")}`;

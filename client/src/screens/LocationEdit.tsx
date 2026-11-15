@@ -5,6 +5,7 @@ import { ImageUploadField } from "../components/ImageUploadField";
 import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 
 interface LocationEditProps {
@@ -43,6 +44,7 @@ export function LocationEdit({
     locationType !== location.locationType ||
     parentId !== (location.parentId ?? "") ||
     description !== location.description;
+  useUnsavedGuard(dirty);
 
   function handleSave() {
     onSave(
