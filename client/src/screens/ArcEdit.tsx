@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import { arcStatusLabel, type Arc, type ArcStatus } from "../data/domain";
 import { useT, useLang } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 import { EntityImageField } from "../components/EntityImageField";
 import { usePendingImage } from "../hooks/usePendingImage";
@@ -47,6 +48,7 @@ export function ArcEdit({
     subarcOrder !== (arc.subarcOrder != null ? String(arc.subarcOrder) : "") ||
     status !== arc.status ||
     obsidianPath !== arc.obsidianPath;
+  useUnsavedGuard(dirty);
 
   function handleSave() {
     onSave(
