@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./NpcEdit.css";
 import type { LooseNote } from "../data/domain";
 import { useT } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 
 interface NoteEditProps {
@@ -18,6 +19,7 @@ export function NoteEdit({ note, onSave, onDiscard }: NoteEditProps) {
 
   const dirty =
     title !== note.title || body !== note.body || pending !== note.pending;
+  useUnsavedGuard(dirty);
 
   return (
     <div className="card npc-edit">

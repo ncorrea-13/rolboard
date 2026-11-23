@@ -33,7 +33,7 @@ const dict = {
     "app.modal.campaignCode": "Código de la campaña",
     "app.modal.newCampaign": "Nueva campaña",
 
-    "newSessionForm.defaultSummary": "Sesión sin historial todavía.",
+    "newSessionForm.defaultSummary": "Sin resumen todavía.",
     "newSessionForm.session": "Sesión",
     "newSessionForm.date": "Fecha",
 
@@ -57,7 +57,7 @@ const dict = {
       "Rolboard guarda aquí una copia de tus datos y las imágenes. Elige la misma carpeta en todos tus dispositivos, una que tengas sincronizada entre ellos. Si ya tiene datos de otro dispositivo, se cargan esos y los tuyos quedan en un respaldo.",
     "appSettings.title": "Ajustes de la app",
     "appSettings.aura": "Fondo violeta con constelaciones",
-    "appSettings.auraHint": "Desactivalo para dejar el fondo liso y oscuro.",
+    "appSettings.auraHint": "Desactívalo para dejar el fondo liso y oscuro.",
     "agents.enable": "Permitir que agentes de IA se conecten",
     "agents.enableHint":
       "Deja que Claude, OpenCode, Codex o Antigravity lean y escriban tu campaña mientras Rolboard esté abierto. Solo funciona en esta computadora.",
@@ -66,7 +66,7 @@ const dict = {
     "agents.connected": "Conectado",
     "agents.notInstalled": "No instalado",
     "agents.restartHint":
-      "Después de conectar, reiniciá el programa para que tome el cambio.",
+      "Después de conectar, reinicia el cliente para que lea el cambio.",
     "agents.confirm":
       "Rolboard se va a agregar a la configuración de {client}. Antes se guarda una copia del archivo original. ¿Seguimos?",
     "update.available": "Hay una versión nueva:",
@@ -85,7 +85,7 @@ const dict = {
     "campaignSettings.export": "Exportar campaña",
     "campaignSettings.exportSaved": "Guardado en",
     "campaignSettings.exportHint":
-      "Todas las entidades en notas Markdown, con la estructura que lee el indexer, y sus imágenes en Imagenes/. No incluye lo borrado.",
+      "Todas las entidades en notas Markdown, con la estructura que lee el indexer, y sus imágenes en Imagenes/. No incluye lo que está en la papelera.",
     "campaignSettings.accessCodeTitle": "Nuevo código de acceso",
     "campaignSettings.accessCodePlaceholder": "Código (mín. 8 caracteres)",
     "campaignSettings.accessCodeSave": "Guardar código",
@@ -113,32 +113,32 @@ const dict = {
     "sidebar.sesiones": "Sesiones",
     "sidebar.npcs": "NPCs",
     "sidebar.jugadores": "Jugadores",
-    "sidebar.locaciones": "Locaciones",
+    "sidebar.locaciones": "Ubicaciones",
     "sidebar.facciones": "Facciones",
-    "sidebar.quests": "Quests",
+    "sidebar.quests": "Misiones",
     "sidebar.encuentros": "Encuentros",
     "sidebar.mundo": "Mundo",
     "trash.lore_entry": "Lore",
     "common.nounLore": "entrada de lore",
     "confirm.deleteLore":
-      "¿Dar de baja esta entrada? Se puede restaurar desde la Papelera.",
+      "¿Enviar esta entrada a la papelera? Puedes restaurarla desde ahí.",
     "loreList.title": "Lore",
     "loreList.count": "entradas",
     "loreList.new": "Nueva entrada",
-    "loreList.searchPlaceholder": "Buscar en el lore...",
+    "loreList.searchPlaceholder": "Buscar en el lore…",
     "loreList.categoryFilterLabel": "CATEGORÍA",
     "loreList.colTitle": "Título",
     "loreList.colCategory": "Categoría",
-    "loreList.colLinks": "Arco / Locación",
+    "loreList.colLinks": "Arco / Ubicación",
     "loreList.empty":
-      "El archivo está vacío. Escribí la primera entrada con «Nueva entrada».",
+      "Sin entradas de lore todavía. Escribe la primera con «Nueva entrada».",
     "loreEdit.new": "Nueva entrada de lore",
     "loreEdit.title": "Título",
     "loreEdit.body": "Contenido",
     "loreEdit.category": "Categoría",
     "loreEdit.noCategory": "— sin categoría —",
     "loreEdit.arc": "Arco",
-    "loreEdit.location": "Locación",
+    "loreEdit.location": "Ubicación",
     "loreDetail.empty": "Esta entrada no tiene contenido.",
     "loreCategories.manage": "Categorías",
     "loreCategories.title": "Categorías de lore",
@@ -150,18 +150,18 @@ const dict = {
       "No se puede borrar: hay entradas con esta categoría",
     "loreCategories.errorSaving": "Error guardando la categoría",
     "apiError.currencyInUse":
-      "la moneda tiene precios cargados, quitalos primero",
+      "la moneda tiene precios cargados, quítalos primero",
     "sidebar.objetos": "Objetos",
     "trash.item": "Objetos",
     "trash.currency": "Monedas",
     "common.nounItem": "objeto",
     "common.nounCurrency": "moneda",
     "economy.confirmDeleteItem":
-      "¿Dar de baja este objeto? Se puede restaurar desde la Papelera.",
+      "¿Enviar este objeto a la papelera? Puedes restaurarlo desde ahí.",
     "economy.confirmDeleteCurrency":
-      "¿Dar de baja esta moneda? Se puede restaurar desde la Papelera.",
+      "¿Enviar esta moneda a la papelera? Puedes restaurarla desde ahí.",
     "economy.noCurrenciesYet":
-      "Todavía no hay monedas. Creá una en la pestaña Monedas de Objetos.",
+      "Todavía no hay monedas. Crea una en la pestaña Monedas de Objetos.",
     "economy.currency": "Moneda",
     "economy.amount": "Monto",
     "economy.addPrice": "Agregar precio",
@@ -170,7 +170,7 @@ const dict = {
     "items.tabCurrencies": "Monedas",
     "items.newItem": "Nuevo objeto",
     "items.editItem": "Editar objeto",
-    "items.searchPlaceholder": "Buscar objetos...",
+    "items.searchPlaceholder": "Buscar objetos…",
     "items.categoryFilterLabel": "CATEGORÍA",
     "items.name": "Nombre",
     "items.category": "Categoría",
@@ -180,7 +180,7 @@ const dict = {
     "items.prices": "Precios",
     "items.heldBy": "Lo tienen",
     "items.empty":
-      "El inventario está vacío. Agregá el primer objeto con «Nuevo objeto».",
+      "El inventario está vacío. Agrega el primer objeto con «Nuevo objeto».",
     "currencies.title": "Monedas",
     "currencies.new": "Nueva moneda",
     "currencies.edit": "Editar moneda",
@@ -192,26 +192,26 @@ const dict = {
     "currencies.rateHint":
       "Cuántas unidades de la moneda base vale una unidad de esta. Opcional.",
     "currencies.circulatesIn": "Circula en",
-    "currencies.addLocation": "Agregar locación...",
+    "currencies.addLocation": "Agregar ubicación…",
     "currencies.empty":
-      "Todavía no circula ninguna moneda. Creá la primera con «Nueva moneda».",
+      "Todavía no circula ninguna moneda. Crea la primera con «Nueva moneda».",
     "inventory.title": "Inventario",
     "inventory.empty": "No lleva ningún objeto.",
-    "inventory.addItem": "Agregar objeto...",
+    "inventory.addItem": "Agregar objeto…",
     "inventory.quantity": "Cantidad",
     "inventory.notes": "Notas",
     "inventory.notesPlaceholder": "Notas",
     "shop.title": "Tienda / stock",
-    "shop.empty": "Esta locación no vende nada todavía.",
-    "shop.addItem": "Agregar objeto a la venta...",
-    "shop.priceHere": "Precio en esta locación (vacío: usa el precio base)",
-    "shop.notesPlaceholder": "Notas (stock, descuento...)",
+    "shop.empty": "Esta ubicación no vende nada todavía.",
+    "shop.addItem": "Agregar objeto a la venta…",
+    "shop.priceHere": "Precio en esta ubicación (vacío: usa el precio base)",
+    "shop.notesPlaceholder": "Notas (stock, descuento…)",
     "shop.basePrice": "base",
     "shop.ownPrice": "precio propio",
     "shop.noPrice": "sin precio",
     "playerDetail.tabInventory": "Inventario",
     "appearsIn.title": "Aparece en",
-    "appearsIn.npcsHere": "NPCs que están acá",
+    "appearsIn.npcsHere": "NPCs que están aquí",
     "appearsIn.lore": "Lore",
     "appearsIn.timeline": "Línea de tiempo",
     "appearsIn.secrets": "Secretos",
@@ -219,16 +219,16 @@ const dict = {
     "appearsIn.encounters": "Encuentros",
     "appearsIn.sessions": "Sesiones",
     "search.title": "Buscar",
-    "search.placeholder": "Buscar NPCs, sesiones, lore, objetos...",
+    "search.placeholder": "Buscar NPCs, sesiones, lore, objetos…",
     "search.open": "Buscar",
     "search.empty": "Nada coincide con esa búsqueda.",
-    "search.hint": "Escribí para buscar en toda la campaña.",
+    "search.hint": "Escribe para buscar en toda la campaña.",
     "search.kind.npc": "NPC",
     "search.kind.player": "Jugador",
-    "search.kind.location": "Locación",
+    "search.kind.location": "Ubicación",
     "search.kind.faction": "Facción",
     "search.kind.arc": "Arco",
-    "search.kind.quest": "Quest",
+    "search.kind.quest": "Misión",
     "search.kind.session": "Sesión",
     "search.kind.encounter": "Encuentro",
     "search.kind.lore": "Lore",
@@ -241,19 +241,19 @@ const dict = {
     "trash.secret": "Secretos",
     "common.nounSecret": "secreto",
     "confirm.deleteSecret":
-      "¿Dar de baja este secreto? Se puede restaurar desde la Papelera.",
+      "¿Enviar este secreto a la papelera? Puedes restaurarlo desde ahí.",
     "secret.hidden": "Oculto",
     "secret.revealed": "Revelado",
     "secretsList.title": "Secretos",
     "secretsList.new": "Nuevo secreto",
-    "secretsList.searchPlaceholder": "Buscar secretos...",
+    "secretsList.searchPlaceholder": "Buscar secretos…",
     "secretsList.statusFilterLabel": "ESTADO",
     "secretsList.colTitle": "Secreto",
     "secretsList.colStatus": "Estado",
     "secretsList.colPoints": "Apunta a",
     "secretsList.colKnownBy": "Lo conocen",
     "secretsList.empty":
-      "Ningún secreto guardado. Anotá el primero con «Nuevo secreto».",
+      "Ningún secreto guardado. Anota el primero con «Nuevo secreto».",
     "secretEdit.new": "Nuevo secreto",
     "secretEdit.title": "Título",
     "secretEdit.body": "El secreto",
@@ -264,7 +264,7 @@ const dict = {
     "secretEdit.none": "— ninguno —",
     "secretEdit.pointsTo": "Apunta a",
     "secretEdit.knownBy": "Lo conocen",
-    "secretEdit.addNpc": "Agregar NPC...",
+    "secretEdit.addNpc": "Agregar NPC…",
     "secretEdit.remove": "Quitar",
     "secretDetail.reveal": "Revelar",
     "secretDetail.hide": "Volver a ocultar",
@@ -274,16 +274,16 @@ const dict = {
     "trash.loose_note": "Notas",
     "common.nounNote": "nota",
     "confirm.deleteNote":
-      "¿Dar de baja esta nota? Se puede restaurar desde la Papelera.",
+      "¿Enviar esta nota a la papelera? Puedes restaurarla desde ahí.",
     "notesList.title": "Notas",
     "notesList.count": "notas",
     "notesList.pendingCount": "pendientes",
     "notesList.new": "Nueva nota",
-    "notesList.searchPlaceholder": "Buscar notas...",
+    "notesList.searchPlaceholder": "Buscar notas…",
     "notesList.filterAll": "Todas",
     "notesList.filterPending": "Pendientes de ubicar",
     "notesList.pendingChip": "Pendiente",
-    "notesList.empty": "Sin notas sueltas. Anotá la primera con «Nueva nota».",
+    "notesList.empty": "Sin notas sueltas. Anota la primera con «Nueva nota».",
     "noteEdit.new": "Nueva nota",
     "noteEdit.title": "Título",
     "noteEdit.body": "Contenido",
@@ -294,9 +294,9 @@ const dict = {
     "sidebar.wardails": "Temas sensibles",
     "sidebar.papelera": "Papelera",
     "trash.title": "Papelera",
-    "trash.subtitle": "Lo que diste de baja se puede recuperar acá",
+    "trash.subtitle": "Lo que enviaste a la papelera se puede recuperar aquí",
     "trash.empty": "La papelera está vacía.",
-    "trash.deletedAt": "Borrado el",
+    "trash.deletedAt": "En la papelera desde",
     "trash.restore": "Restaurar",
     "trash.restored": "Restaurado",
     "trash.errorRestoring": "Error restaurando",
@@ -304,12 +304,12 @@ const dict = {
     "trash.arc": "Arcos",
     "trash.npc": "NPCs",
     "trash.player_character": "Jugadores",
-    "trash.location": "Locaciones",
+    "trash.location": "Ubicaciones",
     "trash.group": "Facciones",
-    "trash.quest": "Quests",
+    "trash.quest": "Misiones",
     "trash.encounter": "Encuentros",
     "apiError.restoreParentDeleted":
-      "depende de un arco o ubicación borrado, restauralo primero",
+      "depende de un arco o ubicación que está en la papelera, restáuralo primero",
 
     "skillsEditor.newField": "Nuevo campo…",
     "skillsEditor.add": "Agregar",
@@ -320,7 +320,7 @@ const dict = {
     "characterSheet.skills": "Habilidades",
     "characterSheet.noSkills": "Sin habilidades cargadas.",
 
-    "entityDetail.deactivate": "Dar de baja",
+    "entityDetail.deactivate": "Enviar a la papelera",
     "entityDetail.obsidianNote": "Nota de Obsidian",
     "entityDetail.openInObsidian": "Abrir en Obsidian",
     "entityDetail.viewRenderedNote": "Ver nota renderizada",
@@ -337,7 +337,7 @@ const dict = {
     "encountersList.round": "Ronda",
     "encountersList.noSession": "Sin sesión asociada",
     "encountersList.empty":
-      "No hay combates a la vista. Armá uno con «Nuevo encuentro».",
+      "No hay combates a la vista. Arma uno con «Nuevo encuentro».",
     "encountersList.unnamed": "Encuentro",
     "encountersList.searchPlaceholder": "Buscar encuentro…",
     "encountersList.allSessions": "Todas las sesiones",
@@ -351,20 +351,20 @@ const dict = {
     "factionsList.members": "miembros",
     "factionsList.searchPlaceholder": "Buscar facción…",
 
-    "locationsList.title": "Locaciones",
-    "locationsList.count": "locaciones",
-    "locationsList.new": "Nueva locación",
-    "locationsList.searchPlaceholder": "Buscar locación…",
+    "locationsList.title": "Ubicaciones",
+    "locationsList.count": "ubicaciones",
+    "locationsList.new": "Nueva ubicación",
+    "locationsList.searchPlaceholder": "Buscar ubicación…",
 
-    "npcList.searchPlaceholder": "Buscar nombre, locación…",
+    "npcList.searchPlaceholder": "Buscar nombre, ubicación…",
     "npcList.new": "Nuevo NPC",
     "npcList.typeFilterLabel": "TIPO",
-    "npcList.statusFilterLabel": "STATUS",
+    "npcList.statusFilterLabel": "ESTADO",
     "npcList.colName": "Nombre",
     "npcList.colType": "Tipo",
     "npcList.colLocation": "Ubicación actual",
-    "npcList.colStatus": "Status",
-    "npcList.empty": "Nadie responde a ese filtro.",
+    "npcList.colStatus": "Estado",
+    "npcList.empty": "Ningún NPC coincide con ese filtro.",
     "npcList.prev": "Anterior",
     "npcList.next": "Siguiente",
     "npcList.page": "Página",
@@ -376,10 +376,10 @@ const dict = {
     "playersList.playedBy": "Jugado por",
     "playersList.searchPlaceholder": "Buscar personaje…",
 
-    "questsList.title": "Quests",
-    "questsList.count": "quests",
-    "questsList.new": "Nueva quest",
-    "questsList.searchPlaceholder": "Buscar quest…",
+    "questsList.title": "Misiones",
+    "questsList.count": "misiones",
+    "questsList.new": "Nueva misión",
+    "questsList.searchPlaceholder": "Buscar misión…",
 
     "common.description": "Descripción",
     "common.summary": "Resumen",
@@ -387,7 +387,7 @@ const dict = {
 
     "entityDetails.arcosBreadcrumb": "ARCOS",
     "entityDetails.faccionesBreadcrumb": "FACCIONES",
-    "entityDetails.locacionesBreadcrumb": "LOCACIONES",
+    "entityDetails.locacionesBreadcrumb": "UBICACIONES",
 
     "arcDetail.closeArc": "Cerrar arco",
     "arcDetail.startArc": "Iniciar arco",
@@ -404,18 +404,18 @@ const dict = {
     "factionDetail.addPlayerPlaceholder": "Agregar jugador…",
 
     "locationDetail.hierarchy": "Jerarquía",
-    "locationDetail.subLocations": "Sub-locaciones",
-    "locationDetail.noSubLocations": "Sin sub-locaciones registradas.",
+    "locationDetail.subLocations": "Sub-ubicaciones",
+    "locationDetail.noSubLocations": "Sin sub-ubicaciones registradas.",
 
     "questDetail.priorityHigh": "Alta",
     "questDetail.priorityMedium": "Media",
     "questDetail.priorityLow": "Baja",
     "questDetail.npcs": "NPCs involucrados",
     "questNpcs.empty": "Ningún NPC vinculado todavía.",
-    "questNpcs.addNpc": "Agregar NPC...",
+    "questNpcs.addNpc": "Agregar NPC…",
     "questNpcs.role": "Rol",
-    "questNpcs.rolePlaceholder": "Rol (aliado, objetivo, contacto...)",
-    "questNpcs.remove": "Quitar de la quest",
+    "questNpcs.rolePlaceholder": "Rol (aliado, objetivo, contacto…)",
+    "questNpcs.remove": "Quitar de la misión",
     "questDetail.hook": "Gancho",
     "questDetail.priority": "Prioridad",
     "questDetail.notes": "Notas del DM",
@@ -426,21 +426,21 @@ const dict = {
     "npcDetail.links": "Vínculos",
     "npcDetail.linkedPlayers": "Vinculado a",
     "npcDetail.appearances": "Apariciones",
-    "npcDetail.relatedQuests": "Quests relacionadas",
+    "npcDetail.relatedQuests": "Misiones relacionadas",
     "npcDetail.sheetPrefix": "Ficha",
 
     "playerDetail.breadcrumb": "JUGADORES",
     "playerDetail.linkedNpcs": "Vinculados",
     "playerDetail.backstory": "Trasfondo",
-    "playerDetail.viewFullBackstory": "Ver historia completa",
+    "playerDetail.viewFullBackstory": "Ver trasfondo completo",
     "playerDetail.progressionNotes": "Notas de progresión",
     "playerDetail.tabSummary": "Resumen",
-    "playerDetail.tabHistory": "Historia",
+    "playerDetail.tabHistory": "Trasfondo",
     "playerDetail.tabProgression": "Progresión",
     "playerDetail.tabSheet": "Ficha",
     "playerDetail.emptyDescription": "Sin descripción todavía.",
     "playerDetail.viewProgression": "Ver avances",
-    "playerDetail.historyTitlePrefix": "Historia",
+    "playerDetail.historyTitlePrefix": "Trasfondo",
     "playerDetail.progressTitlePrefix": "Avances",
 
     "sessionsTimeline.title": "Sesiones",
@@ -457,7 +457,7 @@ const dict = {
     "sessionsTimeline.tabOneshots": "Oneshots",
     "sessionsTimeline.oneshotsWord": "oneshots",
     "sessionsTimeline.noOneshots":
-      "Sin aventuras sueltas. Planificá una con «Planificar oneshot».",
+      "Sin aventuras sueltas. Planifica una con «Planificar oneshot».",
     "sessionEdit.oneshotPrefix": "Oneshot",
     "sessionEdit.titleLabel": "Título",
     "planSession.planningOneshot": "Planificando oneshot",
@@ -471,13 +471,18 @@ const dict = {
       "Qué quieres que pase, ganchos preparados, escenas planeadas…",
     "planSession.expectedNpcs": "NPCs esperados",
     "planSession.noNpcsYet": "Sin NPCs cargados todavía en esta campaña.",
-    "planSession.expectedQuests": "Quests esperadas",
-    "planSession.noQuestsYet": "Sin quests cargadas todavía en esta campaña.",
+    "planSession.expectedQuests": "Misiones esperadas",
+    "planSession.noQuestsYet": "Sin misiones cargadas todavía en esta campaña.",
     "planSession.note":
-      'La sesión queda marcada como "planificada" hasta que la abras y la confirmes como jugada, con fecha real y resumen.',
+      "La sesión queda marcada como «planificada» hasta que la abras y la confirmes como jugada, con fecha real y resumen.",
 
     "common.editing": "Editando",
     "common.unsavedChanges": "cambios sin guardar",
+    "unsaved.title": "Cambios sin guardar",
+    "unsaved.message":
+      "Tienes cambios sin guardar. Si sales ahora, se van a perder.\n¿Seguro que quieres salir?",
+    "unsaved.leave": "Salir sin guardar",
+    "unsaved.stay": "Seguir editando",
     "common.discard": "Descartar",
     "common.name": "Nombre",
     "common.type": "Tipo",
@@ -495,7 +500,7 @@ const dict = {
     "factionEdit.image": "Emblema",
     "factionEdit.noLeader": "Sin líder",
 
-    "locationEdit.new": "Nueva locación",
+    "locationEdit.new": "Nueva ubicación",
     "locationEdit.image": "Imagen",
     "arcEdit.image": "Portada",
     "questEdit.image": "Imagen",
@@ -531,7 +536,7 @@ const dict = {
     "playerEdit.maxHp": "HP máximo",
     "playerEdit.missingRace": "Falta definir la especie",
 
-    "questEdit.new": "Nueva quest",
+    "questEdit.new": "Nueva misión",
     "questEdit.title": "Título",
     "questEdit.hookLabel": "Gancho narrativo (admite Markdown)",
     "questEdit.notesLabel": "Notas del DM (privadas, admite Markdown)",
@@ -546,8 +551,8 @@ const dict = {
     "sessionEdit.notSet": "sin definir",
     "sessionEdit.whatHappened": "Lo que pasó",
     "sessionEdit.realDate": "Fecha real",
-    "sessionEdit.recapLabel": "Historial de lo jugado (admite Markdown)",
-    "sessionEdit.recapPlaceholder": "Qué pasó realmente…",
+    "sessionEdit.recapLabel": "Resumen de lo jugado (admite Markdown)",
+    "sessionEdit.recapPlaceholder": "Qué pasó…",
     "sessionEdit.prepNotesKeptSeparate":
       "Las notas de preparación se guardan aparte, no se sobrescriben.",
     "sessionEdit.arc": "Arco",
@@ -575,14 +580,14 @@ const dict = {
     "encounterDetail.participants": "Participantes",
     "encounterDetail.noTurnAssigned": "Sin turno asignado",
     "encounterDetail.noParticipantsYet":
-      "Sin combatientes todavía. Sumá el primero.",
-    "encounterDetail.addFighter": "Agregar peleador",
+      "Sin combatientes todavía. Agrega el primero.",
+    "encounterDetail.addFighter": "Agregar combatiente",
     "encounterDetail.optPc": "Personaje",
     "encounterDetail.optCustom": "Enemigo genérico",
     "encounterDetail.chooseNpc": "Elegir NPC…",
     "encounterDetail.choosePc": "Elegir personaje…",
     "encounterDetail.customNamePlaceholder": "Nombre (ej. Bandido 3)",
-    "encounterDetail.actedTitle": "Jugó su turno esta ronda",
+    "encounterDetail.actedTitle": "Ya actuó esta ronda",
     "encounterDetail.removeTitle": "Quitar del encuentro",
     "encounterDetail.fast": "Rápido",
     "encounterDetail.slow": "Lento",
@@ -591,18 +596,18 @@ const dict = {
     "encounterDetail.kindPc": "PJ",
     "encounterDetail.noName": "Sin nombre",
     "encounterDetail.fastPcs": "Rápidos · PJs",
-    "encounterDetail.fastNpcs": "Rápidos · PNJs",
+    "encounterDetail.fastNpcs": "Rápidos · NPCs",
     "encounterDetail.slowPcs": "Lentos · PJs",
-    "encounterDetail.slowNpcs": "Lentos · PNJs",
+    "encounterDetail.slowNpcs": "Lentos · NPCs",
 
     "common.toastErrorSaving": "Error guardando",
     "common.toastErrorCreating": "Error creando",
     "common.toastErrorDeleting": "Error borrando",
     "common.nounNpc": "NPC",
     "common.nounFaction": "facción",
-    "common.nounLocation": "locación",
+    "common.nounLocation": "ubicación",
     "common.nounArc": "arco",
-    "common.nounQuest": "quest",
+    "common.nounQuest": "misión",
     "common.nounSession": "sesión",
     "common.nounCharacter": "personaje",
     "common.nounEncounter": "encuentro",
@@ -614,37 +619,38 @@ const dict = {
     "toast.errorVaultsRoot": "Error cambiando la carpeta de vaults",
     "toast.errorSyncDir": "Error cambiando la carpeta de sincronización",
     "toast.errorAgents": "Error cambiando la conexión de agentes",
-    "toast.errorConnectClient": "Error conectando con el programa",
+    "toast.errorConnectClient": "Error conectando el cliente",
     "toast.vaultsRootPermission":
       "Da a Rolboard acceso a todos los archivos y vuelve a elegir la carpeta",
     "toast.errorLoading": "No se pudieron cargar los datos",
     "toast.errorOpeningLink": "No se pudo abrir el link",
     "toast.badRequest": "datos inválidos",
-    "toast.forbidden": "no tenés permiso para hacer esto",
+    "toast.forbidden": "no tienes permiso para hacer esto",
     "toast.notFound": "no se encontró, puede que ya se haya borrado",
     "toast.conflict": "el cambio choca con otro dato existente",
     "toast.imageTooLarge": "la imagen es demasiado grande",
     "apiError.imageUnsupportedFormat":
-      "formato de imagen no soportado, usá PNG o JPEG",
+      "formato de imagen no soportado, usa PNG o JPEG",
     "apiError.imageTooLarge": "la imagen es demasiado grande (máximo 5 MiB)",
     "toast.serverError": "error del servidor",
     "apiError.sessionConflict": "ya existe una sesión con ese número",
-    "apiError.arcInUse": "el arco tiene sesiones, movelas o borralas primero",
+    "apiError.arcInUse":
+      "el arco tiene sesiones, muévelas o envíalas a la papelera primero",
     "apiError.locationInUse":
-      "la ubicación tiene NPCs o sub-ubicaciones, reasignalos primero",
-    "apiError.npcInUse": "el NPC es el spren de un personaje, cambialo primero",
+      "la ubicación tiene NPCs o sub-ubicaciones, reasígnalos primero",
+    "apiError.npcInUse": "el NPC es el spren de un personaje, cámbialo primero",
     "apiError.timelineInUse":
-      "la cronología tiene eventos, movelos o borralos primero",
+      "la cronología tiene eventos, muévelos o envíalos a la papelera primero",
     "world.tabLore": "Lore",
     "world.tabTimeline": "Línea de tiempo",
     "common.nounTimeline": "cronología",
     "trash.timeline": "Cronologías",
     "trash.timeline_event": "Eventos de la línea de tiempo",
     "timeline.title": "Línea de tiempo",
-    "timeline.searchPlaceholder": "Buscar eventos...",
+    "timeline.searchPlaceholder": "Buscar eventos…",
     "timeline.manage": "Cronologías",
     "timeline.manageHint":
-      "Cada cronología es un carril con su color (Historia del mundo, Cronología de la campaña, una guerra...). Una cronología con eventos no se puede borrar.",
+      "Cada cronología es un carril con su color (Historia del mundo, Cronología de la campaña, una guerra…). Una cronología con eventos no se puede borrar.",
     "timeline.newTimeline": "Nueva cronología",
     "timeline.timelineName": "Nombre",
     "timeline.startLabel": "Desde (texto)",
@@ -668,18 +674,19 @@ const dict = {
     "timeline.loreEntry": "Entrada de lore",
     "timeline.none": "— ninguna —",
     "timeline.allFactions": "Todas las facciones",
-    "timeline.allLocations": "Todas las locaciones",
+    "timeline.allLocations": "Todas las ubicaciones",
     "timeline.clearFilters": "Limpiar filtros",
     "timeline.empty":
-      'Todavía no hay eventos. Creá el primero con "Nuevo evento".',
+      "Todavía no hay eventos. Crea el primero con «Nuevo evento».",
     "timeline.noMatches": "Ningún evento coincide con los filtros.",
     "timeline.confirmDeleteTimeline":
-      "¿Dar de baja esta cronología? Se puede restaurar desde la Papelera.",
+      "¿Enviar esta cronología a la papelera? Puedes restaurarla desde ahí.",
     "timeline.confirmDeleteEvent":
-      "¿Dar de baja este evento? Se puede restaurar desde la Papelera.",
+      "¿Enviar este evento a la papelera? Puedes restaurarlo desde ahí.",
     "toast.errorLinkingSession":
-      "La sesión se creó, pero no se pudieron asociar los NPCs o quests esperados",
-    "toast.unauthorized": "la sesión expiró o no tenés acceso, volvé a entrar",
+      "La sesión se creó, pero no se pudieron asociar los NPCs o misiones esperados",
+    "toast.unauthorized":
+      "la sesión expiró o no tienes acceso, vuelve a entrar",
     "toast.networkError": "no se pudo conectar con el servidor",
     "toast.missingFields": "Faltan campos obligatorios",
     "toast.missingDate": "Fecha (obligatoria en sesiones jugadas)",
@@ -696,9 +703,9 @@ const dict = {
     "npcTypes.inUse": "No se puede borrar: hay NPCs con este tipo",
     "npcTypes.errorSaving": "Error guardando el tipo",
     "wardails.title": "Temas sensibles",
-    "wardails.subtitle": "Lo que quieren cuidar en la mesa",
+    "wardails.subtitle": "Lo que quieres cuidar en la mesa",
     "wardails.empty":
-      "Sin temas sensibles definidos. Anotá los temas que quieren cuidar en la mesa.",
+      "Sin temas sensibles definidos. Anota los temas que quieres cuidar en la mesa.",
     "wardails.placeholder":
       "Un tema por línea, o usa > [!WARNING] para destacar los más delicados",
     "wardails.saved": "Temas sensibles guardados",
@@ -720,26 +727,26 @@ const dict = {
     "help.docs": "Documentación técnica en GitHub",
 
     "confirm.deactivateNpc":
-      "¿Dar de baja este NPC? Deja de verse en la campaña, no se borra.",
+      "¿Enviar este NPC a la papelera? Deja de verse en la campaña, pero se puede restaurar.",
     "confirm.deactivateCharacter":
-      "¿Dar de baja este personaje? Deja de verse en la campaña, no se borra.",
+      "¿Enviar este personaje a la papelera? Deja de verse en la campaña, pero se puede restaurar.",
     "confirm.title": "Confirmar",
     "confirm.accept": "Aceptar",
     "confirm.deleteSession":
-      "¿Dar de baja esta sesión? Se puede restaurar desde la Papelera.",
+      "¿Enviar esta sesión a la papelera? Puedes restaurarla desde ahí.",
     "confirm.deleteEncounter":
-      "¿Dar de baja este encuentro? Se puede restaurar desde la Papelera.",
-    "confirm.deactivateEntityBase": "¿Dar de baja este",
+      "¿Enviar este encuentro a la papelera? Puedes restaurarlo desde ahí.",
+    "confirm.deactivateEntityBase": "¿Enviar",
     "confirm.deactivateEntitySuffix":
-      "? Deja de verse en la campaña, no se borra.",
+      " a la papelera? Deja de verse en la campaña, pero se puede restaurar.",
 
     "dashboard.stat.sessions": "Sesiones jugadas",
     "dashboard.stat.oneshots": "oneshots",
     "dashboard.stat.npcs": "NPCs",
     "dashboard.stat.players": "Jugadores",
-    "dashboard.stat.locations": "Locaciones",
+    "dashboard.stat.locations": "Ubicaciones",
     "dashboard.stat.factions": "Facciones",
-    "dashboard.stat.quests": "Quests activas",
+    "dashboard.stat.quests": "Misiones activas",
     "dashboard.stat.lore": "Entradas de lore",
     "dashboard.stat.notes": "Notas pendientes",
     "dashboard.party": "El grupo",
@@ -747,15 +754,16 @@ const dict = {
     "dashboard.pendingNotes": "Notas pendientes",
     "dashboard.oneshots": "Oneshots",
     "dashboard.untitled": "Sin título",
-    "dashboard.empty": "Nada por acá todavía.",
-    "dashboard.empty.quests": "Sin misiones activas. Abrí una desde Quests.",
-    "dashboard.empty.npcs": "Todavía no conociste a nadie. Sumá al primer NPC.",
+    "dashboard.empty": "Nada por aquí todavía.",
+    "dashboard.empty.quests": "Sin misiones activas. Abre una desde Misiones.",
+    "dashboard.empty.npcs":
+      "Todavía no conociste a nadie. Agrega al primer NPC.",
     "dashboard.empty.party":
-      "Sin personajes en la mesa. Sumá al grupo desde Jugadores.",
+      "Sin personajes en la mesa. Agrega al grupo desde Jugadores.",
     "dashboard.empty.notes":
-      "Sin notas pendientes. Lo que se te ocurra a mitad de partida va acá.",
+      "Sin notas pendientes. Lo que se te ocurra a mitad de partida va aquí.",
     "dashboard.empty.lore":
-      "El mundo todavía no tiene crónicas. Escribí la primera entrada.",
+      "El mundo todavía no tiene crónicas. Escribe la primera entrada.",
     "dashboard.empty.oneshots": "Sin aventuras sueltas por ahora.",
     "secretsList.reveal": "Revelar",
     "secretsList.hide": "Volver a ocultar",
@@ -772,7 +780,7 @@ const dict = {
     "dashboard.reindexVault": "Reindexar vault",
     "dashboard.currentArc": "Arco actual",
     "dashboard.lastSession": "Última sesión",
-    "dashboard.activeQuests": "Quests activas",
+    "dashboard.activeQuests": "Misiones activas",
     "dashboard.viewAllFem": "Ver todas",
     "dashboard.viewAllMasc": "Ver todos",
     "dashboard.recentNpcs": "NPCs recientes",
@@ -804,7 +812,7 @@ const dict = {
     "app.modal.campaignCode": "Campaign code",
     "app.modal.newCampaign": "New campaign",
 
-    "newSessionForm.defaultSummary": "Session with no history yet.",
+    "newSessionForm.defaultSummary": "No summary yet.",
     "newSessionForm.session": "Session",
     "newSessionForm.date": "Date",
 
@@ -827,7 +835,7 @@ const dict = {
     "syncDir.hint":
       "Rolboard keeps a copy of your data and images here. Pick the same folder on all your devices, one you keep in sync between them. If it already has data from another device, that data is loaded and yours is kept in a backup.",
     "appSettings.title": "App settings",
-    "appSettings.aura": "Violet sky background",
+    "appSettings.aura": "Violet background with constellations",
     "appSettings.auraHint": "Turn it off for a plain dark background.",
     "agents.enable": "Let AI agents connect",
     "agents.enableHint":
@@ -837,7 +845,7 @@ const dict = {
     "agents.connected": "Connected",
     "agents.notInstalled": "Not installed",
     "agents.restartHint":
-      "After connecting, restart the program for the change to take effect.",
+      "After connecting, restart the client so it picks up the change.",
     "agents.confirm":
       "Rolboard will add itself to {client}'s configuration. A copy of the original file is saved first. Continue?",
     "update.available": "A new version is available:",
@@ -856,7 +864,7 @@ const dict = {
     "campaignSettings.export": "Export campaign",
     "campaignSettings.exportSaved": "Saved to",
     "campaignSettings.exportHint":
-      "Every entity as Markdown notes, in the structure the indexer reads, with their images in Imagenes/. Deleted items are not included.",
+      "Every entity as Markdown notes, in the structure the indexer reads, with their images in Imagenes/. Anything in the trash is left out.",
     "campaignSettings.accessCodeTitle": "New access code",
     "campaignSettings.accessCodePlaceholder": "Code (min. 8 characters)",
     "campaignSettings.accessCodeSave": "Save code",
@@ -892,17 +900,17 @@ const dict = {
     "trash.lore_entry": "Lore",
     "common.nounLore": "lore entry",
     "confirm.deleteLore":
-      "Deactivate this entry? It can be restored from the Trash.",
+      "Move this entry to the Trash? You can restore it from there.",
     "loreList.title": "Lore",
     "loreList.count": "entries",
     "loreList.new": "New entry",
-    "loreList.searchPlaceholder": "Search the lore...",
+    "loreList.searchPlaceholder": "Search the lore…",
     "loreList.categoryFilterLabel": "CATEGORY",
     "loreList.colTitle": "Title",
     "loreList.colCategory": "Category",
     "loreList.colLinks": "Arc / Location",
     "loreList.empty":
-      "The archive is empty. Write the first entry with “New entry”.",
+      "No lore entries yet. Write the first one with “New entry”.",
     "loreEdit.new": "New lore entry",
     "loreEdit.title": "Title",
     "loreEdit.body": "Content",
@@ -927,9 +935,9 @@ const dict = {
     "common.nounItem": "item",
     "common.nounCurrency": "currency",
     "economy.confirmDeleteItem":
-      "Deactivate this item? It can be restored from the Trash.",
+      "Move this item to the Trash? You can restore it from there.",
     "economy.confirmDeleteCurrency":
-      "Deactivate this currency? It can be restored from the Trash.",
+      "Move this currency to the Trash? You can restore it from there.",
     "economy.noCurrenciesYet":
       "No currencies yet. Create one in the Currencies tab of Items.",
     "economy.currency": "Currency",
@@ -940,7 +948,7 @@ const dict = {
     "items.tabCurrencies": "Currencies",
     "items.newItem": "New item",
     "items.editItem": "Edit item",
-    "items.searchPlaceholder": "Search items...",
+    "items.searchPlaceholder": "Search items…",
     "items.categoryFilterLabel": "CATEGORY",
     "items.name": "Name",
     "items.category": "Category",
@@ -962,20 +970,20 @@ const dict = {
     "currencies.rateHint":
       "How many units of the base currency one unit of this one is worth. Optional.",
     "currencies.circulatesIn": "Circulates in",
-    "currencies.addLocation": "Add location...",
+    "currencies.addLocation": "Add location…",
     "currencies.empty":
       "No coin circulates yet. Create the first one with “New currency”.",
     "inventory.title": "Inventory",
     "inventory.empty": "Carries no items.",
-    "inventory.addItem": "Add item...",
+    "inventory.addItem": "Add item…",
     "inventory.quantity": "Quantity",
     "inventory.notes": "Notes",
     "inventory.notesPlaceholder": "Notes",
     "shop.title": "Shop / stock",
     "shop.empty": "This location doesn't sell anything yet.",
-    "shop.addItem": "Add item for sale...",
+    "shop.addItem": "Add item for sale…",
     "shop.priceHere": "Price in this location (empty: base price)",
-    "shop.notesPlaceholder": "Notes (stock, discount...)",
+    "shop.notesPlaceholder": "Notes (stock, discount…)",
     "shop.basePrice": "base",
     "shop.ownPrice": "own price",
     "shop.noPrice": "no price",
@@ -989,7 +997,7 @@ const dict = {
     "appearsIn.encounters": "Encounters",
     "appearsIn.sessions": "Sessions",
     "search.title": "Search",
-    "search.placeholder": "Search NPCs, sessions, lore, items...",
+    "search.placeholder": "Search NPCs, sessions, lore, items…",
     "search.open": "Search",
     "search.empty": "Nothing matches that search.",
     "search.hint": "Type to search the whole campaign.",
@@ -1011,12 +1019,12 @@ const dict = {
     "trash.secret": "Secrets",
     "common.nounSecret": "secret",
     "confirm.deleteSecret":
-      "Deactivate this secret? It can be restored from the Trash.",
+      "Move this secret to the Trash? You can restore it from there.",
     "secret.hidden": "Hidden",
     "secret.revealed": "Revealed",
     "secretsList.title": "Secrets",
     "secretsList.new": "New secret",
-    "secretsList.searchPlaceholder": "Search secrets...",
+    "secretsList.searchPlaceholder": "Search secrets…",
     "secretsList.statusFilterLabel": "STATUS",
     "secretsList.colTitle": "Secret",
     "secretsList.colStatus": "Status",
@@ -1034,7 +1042,7 @@ const dict = {
     "secretEdit.none": "— none —",
     "secretEdit.pointsTo": "Points to",
     "secretEdit.knownBy": "Known by",
-    "secretEdit.addNpc": "Add NPC...",
+    "secretEdit.addNpc": "Add NPC…",
     "secretEdit.remove": "Remove",
     "secretDetail.reveal": "Reveal",
     "secretDetail.hide": "Hide again",
@@ -1044,12 +1052,12 @@ const dict = {
     "trash.loose_note": "Notes",
     "common.nounNote": "note",
     "confirm.deleteNote":
-      "Deactivate this note? It can be restored from the Trash.",
+      "Move this note to the Trash? You can restore it from there.",
     "notesList.title": "Notes",
     "notesList.count": "notes",
     "notesList.pendingCount": "pending",
     "notesList.new": "New note",
-    "notesList.searchPlaceholder": "Search notes...",
+    "notesList.searchPlaceholder": "Search notes…",
     "notesList.filterAll": "All",
     "notesList.filterPending": "To be filed",
     "notesList.pendingChip": "Pending",
@@ -1064,9 +1072,10 @@ const dict = {
     "sidebar.wardails": "Sensitive topics",
     "sidebar.papelera": "Trash",
     "trash.title": "Trash",
-    "trash.subtitle": "Anything you deleted can be recovered here",
+    "trash.subtitle":
+      "Anything you moved to the Trash can be restored from here",
     "trash.empty": "The trash is empty.",
-    "trash.deletedAt": "Deleted on",
+    "trash.deletedAt": "In the Trash since",
     "trash.restore": "Restore",
     "trash.restored": "Restored",
     "trash.errorRestoring": "Error restoring",
@@ -1079,7 +1088,7 @@ const dict = {
     "trash.quest": "Quests",
     "trash.encounter": "Encounters",
     "apiError.restoreParentDeleted":
-      "it depends on a deleted arc or location, restore that first",
+      "it depends on an arc or location in the Trash, restore that first",
 
     "skillsEditor.newField": "New field…",
     "skillsEditor.add": "Add",
@@ -1090,7 +1099,7 @@ const dict = {
     "characterSheet.skills": "Skills",
     "characterSheet.noSkills": "No skills loaded.",
 
-    "entityDetail.deactivate": "Deactivate",
+    "entityDetail.deactivate": "Move to Trash",
     "entityDetail.obsidianNote": "Obsidian note",
     "entityDetail.openInObsidian": "Open in Obsidian",
     "entityDetail.viewRenderedNote": "View rendered note",
@@ -1134,7 +1143,7 @@ const dict = {
     "npcList.colType": "Type",
     "npcList.colLocation": "Current location",
     "npcList.colStatus": "Status",
-    "npcList.empty": "Nobody answers to that filter.",
+    "npcList.empty": "No NPC matches that filter.",
     "npcList.prev": "Previous",
     "npcList.next": "Next",
     "npcList.page": "Page",
@@ -1182,9 +1191,9 @@ const dict = {
     "questDetail.priorityLow": "Low",
     "questDetail.npcs": "Involved NPCs",
     "questNpcs.empty": "No NPC linked yet.",
-    "questNpcs.addNpc": "Add NPC...",
+    "questNpcs.addNpc": "Add NPC…",
     "questNpcs.role": "Role",
-    "questNpcs.rolePlaceholder": "Role (ally, target, contact...)",
+    "questNpcs.rolePlaceholder": "Role (ally, target, contact…)",
     "questNpcs.remove": "Remove from the quest",
     "questDetail.hook": "Hook",
     "questDetail.priority": "Priority",
@@ -1244,10 +1253,15 @@ const dict = {
     "planSession.expectedQuests": "Expected quests",
     "planSession.noQuestsYet": "No quests loaded yet in this campaign.",
     "planSession.note":
-      'The session stays marked as "planned" until you open it and confirm it as played, with a real date and summary.',
+      "The session stays marked as “planned” until you open it and confirm it as played, with a real date and summary.",
 
     "common.editing": "Editing",
     "common.unsavedChanges": "unsaved changes",
+    "unsaved.title": "Unsaved changes",
+    "unsaved.message":
+      "You have unsaved changes. If you leave now, they'll be lost.\nAre you sure you want to leave?",
+    "unsaved.leave": "Leave without saving",
+    "unsaved.stay": "Keep editing",
     "common.discard": "Discard",
     "common.name": "Name",
     "common.type": "Type",
@@ -1315,11 +1329,11 @@ const dict = {
     "sessionEdit.tentativeDateLabel": "Tentative date",
     "sessionEdit.notSet": "not set",
     "sessionEdit.whatHappened": "What happened",
-    "sessionEdit.realDate": "Real date",
-    "sessionEdit.recapLabel": "History of what was played (supports Markdown)",
-    "sessionEdit.recapPlaceholder": "What actually happened…",
+    "sessionEdit.realDate": "Actual date",
+    "sessionEdit.recapLabel": "Summary of what was played (supports Markdown)",
+    "sessionEdit.recapPlaceholder": "What happened…",
     "sessionEdit.prepNotesKeptSeparate":
-      "Prep notes stay saved separately, they don't get overwritten.",
+      "Prep notes are saved separately and aren't overwritten.",
     "sessionEdit.arc": "Arc",
     "sessionEdit.history": "History",
     "sessionEdit.prepNotesOnly": "Prep notes",
@@ -1346,13 +1360,13 @@ const dict = {
     "encounterDetail.noTurnAssigned": "No turn assigned",
     "encounterDetail.noParticipantsYet":
       "No combatants yet. Add the first one.",
-    "encounterDetail.addFighter": "Add fighter",
+    "encounterDetail.addFighter": "Add combatant",
     "encounterDetail.optPc": "Character",
     "encounterDetail.optCustom": "Generic enemy",
     "encounterDetail.chooseNpc": "Choose NPC…",
     "encounterDetail.choosePc": "Choose character…",
     "encounterDetail.customNamePlaceholder": "Name (e.g. Bandit 3)",
-    "encounterDetail.actedTitle": "Played their turn this round",
+    "encounterDetail.actedTitle": "Has acted this round",
     "encounterDetail.removeTitle": "Remove from encounter",
     "encounterDetail.fast": "Fast",
     "encounterDetail.slow": "Slow",
@@ -1384,7 +1398,7 @@ const dict = {
     "toast.errorVaultsRoot": "Error changing the vaults folder",
     "toast.errorSyncDir": "Error changing the sync folder",
     "toast.errorAgents": "Error changing the agents connection",
-    "toast.errorConnectClient": "Error connecting to the program",
+    "toast.errorConnectClient": "Error connecting the client",
     "toast.vaultsRootPermission":
       "Give Rolboard access to all files and choose the folder again",
     "toast.errorLoading": "Couldn't load data",
@@ -1400,22 +1414,22 @@ const dict = {
     "apiError.imageTooLarge": "the image is too large (max 5 MiB)",
     "apiError.sessionConflict": "a session with that number already exists",
     "apiError.arcInUse":
-      "the arc still has sessions, move or delete them first",
+      "the arc still has sessions, move them or send them to the Trash first",
     "apiError.locationInUse":
       "the location still has NPCs or sub-locations, reassign them first",
     "apiError.npcInUse": "the NPC is a character's spren, change that first",
     "apiError.timelineInUse":
-      "the timeline still has events, move or delete them first",
+      "the timeline still has events, move them or send them to the Trash first",
     "world.tabLore": "Lore",
     "world.tabTimeline": "Timeline",
     "common.nounTimeline": "timeline",
     "trash.timeline": "Timelines",
     "trash.timeline_event": "Timeline events",
     "timeline.title": "Timeline",
-    "timeline.searchPlaceholder": "Search events...",
+    "timeline.searchPlaceholder": "Search events…",
     "timeline.manage": "Timelines",
     "timeline.manageHint":
-      "Each timeline is a lane with its own color (World history, Campaign chronicle, a war...). A timeline with events can't be deleted.",
+      "Each timeline is a lane with its own colour (World history, Campaign chronicle, a war…). A timeline with events can't be deleted.",
     "timeline.newTimeline": "New timeline",
     "timeline.timelineName": "Name",
     "timeline.startLabel": "From (text)",
@@ -1441,12 +1455,12 @@ const dict = {
     "timeline.allFactions": "All factions",
     "timeline.allLocations": "All locations",
     "timeline.clearFilters": "Clear filters",
-    "timeline.empty": 'No events yet. Create the first one with "New event".',
+    "timeline.empty": "No events yet. Create the first one with “New event”.",
     "timeline.noMatches": "No event matches the filters.",
     "timeline.confirmDeleteTimeline":
-      "Deactivate this timeline? It can be restored from the Trash.",
+      "Move this timeline to the Trash? You can restore it from there.",
     "timeline.confirmDeleteEvent":
-      "Deactivate this event? It can be restored from the Trash.",
+      "Move this event to the Trash? You can restore it from there.",
     "toast.errorLinkingSession":
       "The session was created, but the expected NPCs or quests couldn't be linked",
     "toast.unauthorized":
@@ -1458,11 +1472,11 @@ const dict = {
     "npcTypes.manage": "Types",
     "npcTypes.title": "NPC types",
     "npcTypes.hint":
-      "Name and color can be changed any time. In the vault, use the key in `tipo:`.",
+      "Name and colour can be changed any time. In the vault, use the key in `tipo:`.",
     "npcTypes.newPlaceholder": "New type (e.g. Monster)",
     "npcTypes.add": "Add",
     "npcTypes.delete": "Delete type",
-    "npcTypes.color": "Color",
+    "npcTypes.color": "Colour",
     "npcTypes.confirmDelete": "Delete this type?",
     "npcTypes.inUse": "Can't delete: NPCs use this type",
     "npcTypes.errorSaving": "Error saving the type",
@@ -1491,18 +1505,18 @@ const dict = {
     "help.docs": "Technical docs on GitHub",
 
     "confirm.deactivateNpc":
-      "Deactivate this NPC? It stops showing in the campaign, it isn't deleted.",
+      "Move this NPC to the Trash? It stops showing in the campaign, but you can restore it.",
     "confirm.deactivateCharacter":
-      "Deactivate this character? It stops showing in the campaign, it isn't deleted.",
+      "Move this character to the Trash? It stops showing in the campaign, but you can restore it.",
     "confirm.title": "Confirm",
     "confirm.accept": "Accept",
     "confirm.deleteSession":
-      "Deactivate this session? You can restore it from the Trash.",
+      "Move this session to the Trash? You can restore it from there.",
     "confirm.deleteEncounter":
-      "Deactivate this encounter? You can restore it from the Trash.",
-    "confirm.deactivateEntityBase": "Deactivate this",
+      "Move this encounter to the Trash? You can restore it from there.",
+    "confirm.deactivateEntityBase": "Move this",
     "confirm.deactivateEntitySuffix":
-      "? It stops showing in the campaign, it isn't deleted.",
+      " to the Trash? It stops showing in the campaign, but you can restore it.",
 
     "dashboard.stat.sessions": "Sessions played",
     "dashboard.stat.oneshots": "oneshots",
@@ -1586,14 +1600,14 @@ export function useT() {
 
 export function npcLeaderWarning(lang: Lang, count: number): string {
   return lang === "es"
-    ? ` Es líder de ${count} facción(es) — van a quedar sin líder visible.`
-    : ` Is the leader of ${count} faction(s) — they'll be left without a visible leader.`;
+    ? ` Es líder de ${count} facción(es). Van a quedar sin líder visible.`
+    : ` Is the leader of ${count} faction(s). They'll be left without a visible leader.`;
 }
 
 export function arcSessionsWarning(lang: Lang, count: number): string {
   return lang === "es"
-    ? ` Tiene ${count} sesión(es) asociada(s) — van a quedar sin arco visible.`
-    : ` Has ${count} associated session(s) — they'll be left without a visible arc.`;
+    ? ` Tiene ${count} sesión(es) asociada(s). Van a quedar sin arco visible.`
+    : ` Has ${count} associated session(s). They'll be left without a visible arc.`;
 }
 
 export function locationDependentsWarning(
@@ -1604,7 +1618,7 @@ export function locationDependentsWarning(
   const parts: string[] =
     lang === "es"
       ? [
-          ...(children > 0 ? [`${children} sub-locación(es)`] : []),
+          ...(children > 0 ? [`${children} sublocación(es)`] : []),
           ...(npcsHere > 0 ? [`${npcsHere} NPC(s)`] : []),
         ]
       : [
@@ -1613,6 +1627,6 @@ export function locationDependentsWarning(
         ];
   if (parts.length === 0) return "";
   return lang === "es"
-    ? ` Tiene ${parts.join(" y ")} que dependen de esta locación — van a quedar sin referencia visible.`
-    : ` Has ${parts.join(" and ")} depending on this location — they'll be left without a visible reference.`;
+    ? ` Tiene ${parts.join(" y ")} que dependen de esta locación. Van a quedar sin referencia visible.`
+    : ` Has ${parts.join(" and ")} depending on this location. They'll be left without a visible reference.`;
 }

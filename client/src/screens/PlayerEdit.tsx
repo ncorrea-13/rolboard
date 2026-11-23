@@ -12,6 +12,7 @@ import { ImageUploadField } from "../components/ImageUploadField";
 import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT, useLang } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 
 const statusOptions: StatusKind[] = ["alive", "missing", "dead", "paused"];
@@ -66,6 +67,7 @@ export function PlayerEdit({
     JSON.stringify(skills) !== JSON.stringify(player.skills) ||
     currentHp !== player.currentHp ||
     maxHp !== player.maxHp;
+  useUnsavedGuard(dirty);
 
   function handleSave() {
     onSave(
