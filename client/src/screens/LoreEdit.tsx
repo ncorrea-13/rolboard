@@ -8,6 +8,7 @@ import {
   type LoreEntry,
 } from "../data/domain";
 import { useT } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 import { EntityImageField } from "../components/EntityImageField";
 import { usePendingImage } from "../hooks/usePendingImage";
@@ -54,6 +55,7 @@ export function LoreEdit({
     categoryId !== (entry.categoryId ?? "") ||
     arcId !== (entry.arcId ?? "") ||
     locationId !== (entry.locationId ?? "");
+  useUnsavedGuard(dirty);
 
   return (
     <div className="card npc-edit">

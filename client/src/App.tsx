@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import "./App.css";
 import {
   apiFetch,
@@ -97,6 +97,8 @@ import { RouterContext } from "./lib/router";
 import { setErrorReporter } from "./lib/notify";
 import { setConfirmAsker } from "./lib/confirm";
 import { ConfirmDialog } from "./components/ConfirmDialog";
+import type { ConfirmOptions } from "./lib/confirm";
+import { confirmLeave, hasUnsaved } from "./lib/unsavedGuard";
 import { withViewTransition } from "./lib/motion";
 import { useCampaignData, blankDrafts } from "./hooks/useCampaignData";
 
@@ -160,6 +162,19 @@ export default function App() {
     () => window.location.pathname === "/help",
   );
 
+  // Last history entry the app rendered; restored when the user backs out of
+  // a browser back/forward that would have discarded unsaved changes.
+  const lastEntry = useRef({
+    url: window.location.pathname + window.location.search,
+    state: window.history.state as unknown,
+  });
+  function rememberEntry() {
+    lastEntry.current = {
+      url: window.location.pathname + window.location.search,
+      state: window.history.state,
+    };
+  }
+
   function show(next: Route, campaignId: string | null, mode: HistoryMode) {
     if (mode !== "none") {
       const path = routeToPath(next, campaignId);
@@ -170,34 +185,56 @@ export default function App() {
         window.history.replaceState(state, "", path);
       }
     }
+    rememberEntry();
     withViewTransition(() => setRoute(next), "route");
   }
 
+  // Replace navigation is what saves and deletes use once they finish, so it
+  // skips the unsaved-changes prompt. Everything else (links, sidebar, back,
+  // discard) is a push and asks first.
   function navigate(next: Route, opts?: { replace?: boolean }) {
-    show(next, activeCampaignId, opts?.replace ? "replace" : "push");
+    const go = () =>
+      show(next, activeCampaignId, opts?.replace ? "replace" : "push");
+    if (!opts?.replace && hasUnsaved()) {
+      void confirmLeave(t).then((leave) => leave && go());
+      return;
+    }
+    go();
   }
 
   const onPopState = useEffectEvent(() => {
-    const loc = currentLocation();
-    if (loc.help) {
-      withViewTransition(() => setHelpOpen(true), "help");
-      return;
-    }
-    if (helpOpen) {
-      withViewTransition(() => {
-        setHelpOpen(false);
-        setRoute(loc.route);
-      }, "help");
+    const applyPop = () => {
+      const loc = currentLocation();
+      rememberEntry();
+      if (loc.help) {
+        withViewTransition(() => setHelpOpen(true), "help");
+        return;
+      }
+      if (helpOpen) {
+        withViewTransition(() => {
+          setHelpOpen(false);
+          setRoute(loc.route);
+        }, "help");
+        if (loc.campaignId && loc.campaignId !== activeCampaignId) {
+          selectCampaign(loc.campaignId, loc.route, "none");
+        }
+        return;
+      }
       if (loc.campaignId && loc.campaignId !== activeCampaignId) {
         selectCampaign(loc.campaignId, loc.route, "none");
+      } else {
+        withViewTransition(() => setRoute(loc.route), "route");
       }
+    };
+    if (!hasUnsaved()) {
+      applyPop();
       return;
     }
-    if (loc.campaignId && loc.campaignId !== activeCampaignId) {
-      selectCampaign(loc.campaignId, loc.route, "none");
-    } else {
-      withViewTransition(() => setRoute(loc.route), "route");
-    }
+    const back = lastEntry.current;
+    void confirmLeave(t).then((leave) => {
+      if (leave) applyPop();
+      else window.history.pushState(back.state, "", back.url);
+    });
   });
 
   useEffect(() => {
@@ -217,12 +254,21 @@ export default function App() {
   useEffect(() => bootFromUrl(), []);
 
   function openHelp() {
+    if (!helpOpen && hasUnsaved()) {
+      void confirmLeave(t).then((leave) => leave && showHelp());
+      return;
+    }
+    showHelp();
+  }
+
+  function showHelp() {
     window.scrollTo(0, 0);
     if (helpOpen) {
       setHelpKey((k) => k + 1);
       return;
     }
     window.history.pushState({ help: true }, "", "/help");
+    rememberEntry();
     withViewTransition(() => setHelpOpen(true), "help");
   }
 
@@ -232,6 +278,7 @@ export default function App() {
       return;
     }
     window.history.replaceState(null, "", "/");
+    rememberEntry();
     withViewTransition(() => setHelpOpen(false), "help");
   }
 
@@ -248,14 +295,17 @@ export default function App() {
 
   const [confirmRequest, setConfirmRequest] = useState<{
     message: string;
+    options?: ConfirmOptions;
     resolve: (accepted: boolean) => void;
   } | null>(null);
 
   useEffect(
     () =>
       setConfirmAsker(
-        (message) =>
-          new Promise((resolve) => setConfirmRequest({ message, resolve })),
+        (message, options) =>
+          new Promise((resolve) =>
+            setConfirmRequest({ message, options, resolve }),
+          ),
       ),
     [],
   );
@@ -1591,6 +1641,7 @@ export default function App() {
       {confirmRequest && (
         <ConfirmDialog
           message={confirmRequest.message}
+          options={confirmRequest.options}
           onAnswer={(accepted) => {
             confirmRequest.resolve(accepted);
             setConfirmRequest(null);

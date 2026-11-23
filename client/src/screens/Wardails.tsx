@@ -6,6 +6,7 @@ import "./NpcEdit.css";
 import { MarkdownText } from "../components/MarkdownText";
 import { apiFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 
 const MAX_LENGTH = 20000;
@@ -21,6 +22,8 @@ export function Wardails({ campaignId, notify }: WardailsProps) {
   const [draft, setDraft] = useState("");
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  useUnsavedGuard(editing && draft !== saved);
 
   const loadFailed = useEffectEvent((err: unknown) => {
     notify(t("toast.errorLoading"), "error", err);

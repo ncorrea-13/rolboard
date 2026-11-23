@@ -14,6 +14,7 @@ import { RenderedNoteButton } from "../components/RenderedNoteButton";
 import { useSessionExpectations } from "../hooks/useSessionExpectations";
 import { apiFetch } from "../lib/api";
 import { useT } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { reportError } from "../lib/notify";
 import { MarkdownField } from "../components/MarkdownField";
 
@@ -70,6 +71,18 @@ export function SessionEdit({
   const savedQuestIds = new Set(expectedQuests.map((q) => String(q.quest_id)));
   const selectedNpcIds = npcIds ?? savedNpcIds;
   const selectedQuestIds = questIds ?? savedQuestIds;
+
+  const sameIds = (a: Set<string>, b: Set<string>) =>
+    a.size === b.size && [...a].every((id) => b.has(id));
+  useUnsavedGuard(
+    date !== session.date ||
+      title !== session.title ||
+      text !== session.summary ||
+      arcId !== (session.arcId ?? "") ||
+      recap !== "" ||
+      !sameIds(selectedNpcIds, savedNpcIds) ||
+      !sameIds(selectedQuestIds, savedQuestIds),
+  );
 
   function toggle(
     current: Set<string>,

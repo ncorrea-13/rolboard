@@ -5,6 +5,7 @@ import { ImageUploadField } from "../components/ImageUploadField";
 import { usePendingImage } from "../hooks/usePendingImage";
 import { entityImageUrl } from "../lib/images";
 import { useT } from "../lib/i18n";
+import { useUnsavedGuard } from "../hooks/useUnsavedGuard";
 import { MarkdownField } from "../components/MarkdownField";
 
 interface FactionEditProps {
@@ -38,6 +39,7 @@ export function FactionEdit({
     description !== group.description ||
     alineacion !== group.alineacion ||
     liderNpcId !== (group.liderNpcId ?? "");
+  useUnsavedGuard(dirty);
 
   function handleSave() {
     onSave(
